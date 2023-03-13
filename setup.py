@@ -24,6 +24,7 @@ setup(
         'jupyterlab-widgets==1.1.1',
         'kaleido==0.1.0post1',
         'mypy_extensions',
+        'notebook',
         'numba>=0.53.1; python_version < "3.10"',
         'numba>=0.56.0; python_version >= "3.10"',
         'numpy>=1.16.5',
