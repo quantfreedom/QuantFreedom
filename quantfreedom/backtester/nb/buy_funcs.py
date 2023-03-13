@@ -134,7 +134,8 @@ def long_increase_nb(
             leverage = order.max_lev
     else:
         raise RejectedOrderError(
-            "Either lev mode is nan or something is wrong with the leverage or leverage mode")
+            "Either lev mode is nan or something is wrong with the leverage or leverage mode"
+            )
 
     # Getting Order Cost
     # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001064&language=en_US
