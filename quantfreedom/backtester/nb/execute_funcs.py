@@ -59,20 +59,22 @@ def cart_tester(
     tsl_prices: tp.ArrayLike = np.array([np.nan]),
 ) -> tp.Tuple[tp.RecordArray, tp.RecordArray]:
 
-    total_order_settings = lev_mode.size
-    try:
-        total_indicator_settings = entries.shape[1]
-    except:
+    total_order_settings = sl_pcts.size
+    
+    if entries.ndim == 1:
         total_indicator_settings = 1
-    total_bars = open.shape[0]
+    else:
+        total_indicator_settings = entries.shape[1]
+        
+    total_bars = open.size
 
-    record_count = 0
-    for i in range(total_order_settings):
-        for ii in range(total_indicator_settings):
-            for iii in range(total_bars):
-                if entries[:, ii][iii]:
-                    record_count += 1
-    record_count = int(record_count / 2)
+    record_count = 100000
+    # for i in range(total_order_settings):
+    #     for ii in range(total_indicator_settings):
+    #         for iii in range(total_bars):
+    #             if entries[:, ii][iii]:
+    #                 record_count += 1
+    # record_count = int(record_count / 2)
 
     # need to figure out how to make this number would be easier to do it after because then i would know exactly how big to make it
     # but then that would require a for loop at the end which isn't a problem but don't want to do the math to figure it out lol
@@ -138,7 +140,12 @@ def cart_tester(
 
         for indicator_settings in range(total_indicator_settings):
 
-            current_indicator_entries = entries[:, indicator_settings]
+            if entries.ndim != 1:
+                current_indicator_entries = entries[:,
+                                                    indicator_settings]
+            else:
+                current_indicator_entries = entries
+                
             temp_order_records = np.empty(total_bars, dtype=order_dt)
             temp_log_records = np.empty(total_bars, dtype=log_dt)
             n = 0
@@ -199,12 +206,12 @@ def cart_tester(
                             n += 1
                             order_count_id += 1
                             log_count_id += 1
-            # if temp_order_records['equity'][n-1] > 120:
+            # if temp_order_records['equity'][n-1] > -np.inf:
             if temp_order_records['equity'][n-1] > og_account_state.equity:
                 temp_order_records = temp_order_records[:n]
                 w_l = temp_order_records['realized_pnl'][~np.isnan(
                     temp_order_records['realized_pnl'])]
-                if w_l.size > 30:  # this is more than 30 trades
+                if w_l.size > 0:  # this is more than 30 trades
                     end_order_count += n
                     order_records[start_order_count: end_order_count] = temp_order_records
                     start_order_count = end_order_count

@@ -13,14 +13,6 @@ def long_increase_nb(
     order: OrderEverything,
     account_state: AccountAndTradeState,
 ) -> tp.Tuple[AccountAndTradeState, ResultEverything]:
-    """
-    How you place an order to start or increase a long position.
-
-    Args:
-        order: See [Order][quantfreedom.backtester.enums.enums.OrderEverything].
-
-        account_state: See [Account_State][quantfreedom.backtester.enums.enums.AccountAndTradeState].
-    """
 
     # Setting variables
     available_balance = account_state.available_balance

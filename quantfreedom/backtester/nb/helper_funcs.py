@@ -18,15 +18,7 @@ def order_not_filled_nb(
     status: float,
     status_info: float,
 ) -> ResultEverything:
-    """
-    If for whatever reason your order isn't filled this is where it goes. It first calculates any stop prices then sends
-    back the reason why your order wasn't filled.
 
-    Args:
-        order: See [Order][quantfreedom.backtester.enums.enums.OrderEverything].
-        status: See [status][quantfreedom.backtester.enums.enums.OrderStatusT].
-        status_info: See [status_info][quantfreedom.backtester.enums.enums.OrderStatusInfoT].
-    """
     if order.order_type == OrderType.LongEntry:
         # Create stop loss prices if requested
         if not np.isnan(order.sl_pcts):

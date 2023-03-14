@@ -45,7 +45,7 @@ def cart_from_signals(
         high=high.values,
         low=low.values,
         close=close.values,
-        entries=entries.values,
+        entries=entries,
         og_account_state=account_state,
         # the orders with each indv array
         lev_mode=mydict['lev_mode'],
