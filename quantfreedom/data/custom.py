@@ -31,16 +31,17 @@ class CCXTData():
                 )
                 all_ohlcvs += ohlcvs
                 if len(ohlcvs):
-                    print('Fetched', len(ohlcvs), symbol, timeframe,
-                        'candles from', exchange.iso8601(ohlcvs[0][0]))
+                    # print('Fetched', len(ohlcvs), symbol, timeframe,
+                    #     'candles from', exchange.iso8601(ohlcvs[0][0]))
                     end = ohlcvs[0][0] - 1
                 else:
                     break
             except Exception as e:
                 print(type(e).__name__, str(e))
         data = pd.DataFrame(all_ohlcvs, columns=[
-                            'time', 'open', 'high', 'low', 'close', 'volume'])
-        data['time'] = pd.to_datetime(data['time'], unit='ms')
-        data.set_index('time', inplace=True)
+                            'open time', 'open', 'high', 'low', 'close', 'volume'])
+        data['open time'] = pd.to_datetime(data['time'], unit='ms')
+        data.set_index('open time', inplace=True)
         data.sort_index(ascending=True, inplace=True)
+        data.drop(data.tail(1).index,inplace=True)
         return data

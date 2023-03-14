@@ -1,5 +1,8 @@
 import numpy as np
 import plotly.graph_objects as go
+import talib
+import numpy as np
+import pandas as pd
 
 from quantfreedom import _typing as tp
 from quantfreedom.backtester.enums.enums import OrderType
@@ -21,9 +24,9 @@ def log_trades_plot(
     high_prices = high_prices[start:end]
     low_prices = low_prices[start:end]
     close_prices = close_prices[start:end]
-    
+
     array_size = end - start
-    
+
     order_price = np.full(array_size, np.nan)
     avg_entry = np.full(array_size, np.nan)
     stop_loss = np.full(array_size, np.nan)
@@ -268,6 +271,7 @@ def log_trades_plot(
     )
     fig.show()
 
+
 def replay_trade_plotter(
         open_prices,
         high_prices,
@@ -326,27 +330,27 @@ def replay_trade_plotter(
                 stop_loss[array_counter] = temp_stop_loss
                 trailing_sl[array_counter] = temp_trailing_sl
                 take_profit[array_counter] = temp_take_profit
-            
+
             elif log_records['real_pnl'][log_counter] > 0 and \
                 (log_records['order_type'][log_counter] == OrderType.LongTP or
                  log_records['order_type'][log_counter] == OrderType.ShortTP):
-            
+
                 order_price[array_counter] = np.nan
                 avg_entry[array_counter] = temp_avg_entry
                 stop_loss[array_counter] = temp_stop_loss
                 trailing_sl[array_counter] = temp_trailing_sl
                 take_profit[array_counter] = log_records['tp_prices'][log_counter]
-            
+
             elif log_records['real_pnl'][log_counter] > 0 and \
                 (log_records['order_type'][log_counter] == OrderType.LongTSL or
                  log_records['order_type'][log_counter] == OrderType.ShortTSL):
-            
+
                 order_price[array_counter] = np.nan
                 avg_entry[array_counter] = temp_avg_entry
                 stop_loss[array_counter] = temp_stop_loss
                 trailing_sl[array_counter] = log_records['tsl_prices'][log_counter]
                 take_profit[array_counter] = temp_take_profit
-            
+
             elif log_records['real_pnl'][log_counter] <= 0:
                 order_price[array_counter] = np.nan
                 avg_entry[array_counter] = temp_avg_entry
@@ -645,3 +649,32 @@ def replay_trade_plotter(
     fig.update(frames=frames)
     fig.show()
 
+
+def rsi_below_entries(
+    timeperiods: tp.List,
+    below_ranges: tp.List,
+    prices: tp.Series,
+) -> tp.Frame:
+    temp_rsi = np.empty((prices.shape[0], len(timeperiods)))
+    temp_rsi_below = np.empty(
+        (prices.shape[0], (len(timeperiods)*len(below_ranges))), dtype=np.bool_)
+    c = 0
+
+    for i in range(len(timeperiods)):
+        temp_rsi[:, i] = talib.RSI(
+            prices,
+            timeperiod=timeperiods[i],
+        )
+        for x in range(len(below_ranges)):
+            temp_rsi_below[:, c] = np.where(
+                temp_rsi[:, i] < below_ranges[x], True, False
+            )
+            c += 1
+
+    return pd.DataFrame(
+        temp_rsi_below,
+        index=prices.index,
+        columns=pd.MultiIndex.from_product(
+            [below_ranges, timeperiods],
+            names=['rsi_below', 'rsi_timeperiod'])
+    )
