@@ -20,13 +20,8 @@ other Numba-compatible types.
     >>> 300000 - sum([0.3 for _ in range(1000000)])
     5.657668225467205e-06
     ```
-    While quantfreedom has implemented tolerance checks when comparing floats for equality,
-    adding/subtracting small amounts large number of times may still introduce a noticable
-    error that cannot be corrected post factum.
-    To mitigate this issue, avoid repeating lots of micro-transactions of the same sign.
-    For example, reduce by `np.inf` or `position_now` to close a long/short position.
     
-::: quantfreedom.backtester.nb.buy_funcs
-::: quantfreedom.backtester.nb.execute_funcs
-::: quantfreedom.backtester.nb.helper_funcs
-::: quantfreedom.backtester.nb.sell_funcs
+::: backtester.nb.buy_funcs
+::: backtester.nb.execute_funcs
+::: backtester.nb.helper_funcs
+::: backtester.nb.sell_funcs

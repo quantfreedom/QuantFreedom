@@ -1,118 +1,647 @@
-import talib
 import numpy as np
-import pandas as pd
-import polars as pl
-import plotly.express as px
+import plotly.graph_objects as go
 
 from quantfreedom import _typing as tp
-from quantfreedom.backtester.enums.enums import *
-from quantfreedom.backtester.nb.execute_funcs import cart_tester
+from quantfreedom.backtester.enums.enums import OrderType
 
 
-def cart_from_signals(
-    open: tp.ArrayLike,
-    high: tp.ArrayLike,
-    low: tp.ArrayLike,
-    close: tp.ArrayLike,
-    entries: tp.ArrayLike,
-    order: OrderEverything,
-    account_state: AccountAndTradeState,
-) -> OrderEverything:
-    n = 1
-    for x in order:
-        n *= x.size
-    # out = np.empty((n, len(order)), dtype=order_everything_dt)
-    out = np.empty((n, len(order)))
+def log_trades_plot(
+        open_prices: tp.ArrayLike,
+        high_prices: tp.ArrayLike,
+        low_prices: tp.ArrayLike,
+        close_prices: tp.ArrayLike,
+        log_records: tp.RecordArray,
+):
 
-    for i in range(len(order)):
-        m = int(n / order[i].size)
-        out[:n, i] = np.repeat(order[i], m)
-        n //= order[i].size
+    start = log_records['bar'].min() - 2
+    end = log_records['bar'].max() + 3
 
-    n = order[-1].size
-    for k in range(len(order)-2, -1, -1):
-        n *= order[k].size
-        m = int(n / order[k].size)
-        for j in range(1, order[k].size):
-            out[j*m:(j+1)*m, k+1:] = out[0:m, k+1:]
-    out = out.T
-    mydict = {}
-    for i in range(out.shape[0]):
-        mydict[order._fields[i]] = out[i]
-    return cart_tester(
-        open=open.values,
-        high=high.values,
-        low=low.values,
-        close=close.values,
-        entries=entries.values,
-        og_account_state=account_state,
-        # the orders with each indv array
-        lev_mode=mydict['lev_mode'],
-        order_type=mydict['order_type'],
-        size_type=mydict['size_type'],
-        allow_partial=mydict['allow_partial'],
-        available_balance=mydict['available_balance'],
-        average_entry=mydict['average_entry'],
-        cash_borrowed=mydict['cash_borrowed'],
-        cash_used=mydict['cash_used'],
-        equity=mydict['equity'],
-        fee=mydict['fee'],
-        fees_paid=mydict['fees_paid'],
-        leverage=mydict['leverage'],
-        liq_price=mydict['liq_price'],
-        log=mydict['log'],
-        max_equity_risk=mydict['max_equity_risk'],
-        max_equity_risk_pct=mydict['max_equity_risk_pct'],
-        max_lev=mydict['max_lev'],
-        max_order_pct_size=mydict['max_order_pct_size'],
-        max_order_size=mydict['max_order_size'],
-        min_order_pct_size=mydict['min_order_pct_size'],
-        min_order_size=mydict['min_order_size'],
-        mmr=mydict['mmr'],
-        pct_chg=mydict['pct_chg'],
-        position=mydict['position'],
-        raise_reject=mydict['raise_reject'],
-        realized_pnl=mydict['realized_pnl'],
-        reject_prob=mydict['reject_prob'],
-        risk_rewards=mydict['risk_rewards'],
-        size=mydict['size'],
-        size_pct=mydict['size_pct'],
-        sl_pcts=mydict['sl_pcts'],
-        sl_prices=mydict['sl_prices'],
-        slippage_pct=mydict['slippage_pct'],
-        status=mydict['status'],
-        status_info=mydict['status_info'],
-        tp_pcts=mydict['tp_pcts'],
-        tp_prices=mydict['tp_prices'],
-        tsl_pcts=mydict['tsl_pcts'],
-        tsl_prices=mydict['tsl_prices'],
+    x_index = open_prices.index[start:end]
+    open_prices = open_prices[start:end]
+    high_prices = high_prices[start:end]
+    low_prices = low_prices[start:end]
+    close_prices = close_prices[start:end]
+    
+    array_size = end - start
+    
+    order_price = np.full(array_size, np.nan)
+    avg_entry = np.full(array_size, np.nan)
+    stop_loss = np.full(array_size, np.nan)
+    trailing_sl = np.full(array_size, np.nan)
+    take_profit = np.full(array_size, np.nan)
+
+    log_counter = 0
+    array_counter = 0
+    temp_avg_entry = 0
+    temp_stop_loss = 0
+    temp_trailing_sl = 0
+    temp_take_profit = 0
+
+    for i in range(start, end):
+        if log_counter <= log_records['id_log'].max() and log_records['bar'][log_counter] == i:
+            if temp_avg_entry != log_records['avg_entry'][log_counter]:
+                temp_avg_entry = log_records['avg_entry'][log_counter]
+            else:
+                temp_avg_entry = np.nan
+
+            if temp_stop_loss != log_records['sl_prices'][log_counter]:
+                temp_stop_loss = log_records['sl_prices'][log_counter]
+            else:
+                temp_stop_loss = np.nan
+
+            if temp_trailing_sl != log_records['tsl_prices'][log_counter]:
+                temp_trailing_sl = log_records['tsl_prices'][log_counter]
+            else:
+                temp_take_profit = np.nan
+
+            if temp_take_profit != log_records['tp_prices'][log_counter]:
+                temp_take_profit = log_records['tp_prices'][log_counter]
+            else:
+                temp_take_profit = np.nan
+
+            if np.isnan(log_records['real_pnl'][log_counter]):
+                order_price[array_counter] = log_records['order_price'][log_counter]
+                avg_entry[array_counter] = temp_avg_entry
+                stop_loss[array_counter] = temp_stop_loss
+                trailing_sl[array_counter] = temp_trailing_sl
+                take_profit[array_counter] = temp_take_profit
+
+            elif log_records['real_pnl'][log_counter] > 0 and \
+                (log_records['order_type'][log_counter] == OrderType.LongTP or
+                 log_records['order_type'][log_counter] == OrderType.ShortTP):
+
+                order_price[array_counter] = np.nan
+                avg_entry[array_counter] = temp_avg_entry
+                stop_loss[array_counter] = temp_stop_loss
+                trailing_sl[array_counter] = temp_trailing_sl
+                take_profit[array_counter] = log_records['tp_prices'][log_counter]
+                # break
+
+            elif log_records['real_pnl'][log_counter] > 0 and \
+                (log_records['order_type'][log_counter] == OrderType.LongTSL or
+                 log_records['order_type'][log_counter] == OrderType.ShortTSL):
+
+                order_price[array_counter] = np.nan
+                avg_entry[array_counter] = temp_avg_entry
+                stop_loss[array_counter] = temp_stop_loss
+                trailing_sl[array_counter] = log_records['tsl_prices'][log_counter]
+                take_profit[array_counter] = temp_take_profit
+                # break
+            elif log_records['real_pnl'][log_counter] <= 0:
+                order_price[array_counter] = np.nan
+                avg_entry[array_counter] = temp_avg_entry
+                stop_loss[array_counter] = log_records['sl_prices'][log_counter]
+                trailing_sl[array_counter] = log_records['tsl_prices'][log_counter]
+                take_profit[array_counter] = temp_take_profit
+                # break
+            temp_avg_entry = log_records['avg_entry'][log_counter]
+            temp_stop_loss = log_records['sl_prices'][log_counter]
+            temp_trailing_sl = log_records['tsl_prices'][log_counter]
+            temp_take_profit = log_records['tp_prices'][log_counter]
+            log_counter += 1
+            if log_counter <= log_records['id_log'].max() and log_records['bar'][log_counter] == i:
+                if temp_avg_entry != log_records['avg_entry'][log_counter]:
+                    temp_avg_entry = log_records['avg_entry'][log_counter]
+                else:
+                    temp_avg_entry = np.nan
+
+                if temp_stop_loss != log_records['sl_prices'][log_counter]:
+                    temp_stop_loss = log_records['sl_prices'][log_counter]
+                else:
+                    temp_stop_loss = np.nan
+
+                if temp_trailing_sl != log_records['tsl_prices'][log_counter]:
+                    temp_trailing_sl = log_records['tsl_prices'][log_counter]
+                else:
+                    temp_take_profit = np.nan
+
+                if temp_take_profit != log_records['tp_prices'][log_counter]:
+                    temp_take_profit = log_records['tp_prices'][log_counter]
+                else:
+                    temp_take_profit = np.nan
+
+                if np.isnan(log_records['real_pnl'][log_counter]):
+                    order_price[array_counter] = log_records['order_price'][log_counter]
+                    avg_entry[array_counter] = temp_avg_entry
+                    stop_loss[array_counter] = temp_stop_loss
+                    trailing_sl[array_counter] = temp_trailing_sl
+                    take_profit[array_counter] = temp_take_profit
+
+                elif log_records['real_pnl'][log_counter] > 0 and \
+                    (log_records['order_type'][log_counter] == OrderType.LongTP or
+                     log_records['order_type'][log_counter] == OrderType.ShortTP):
+
+                    order_price[array_counter] = np.nan
+                    avg_entry[array_counter] = temp_avg_entry
+                    stop_loss[array_counter] = temp_stop_loss
+                    trailing_sl[array_counter] = temp_trailing_sl
+                    take_profit[array_counter] = log_records['tp_prices'][log_counter]
+
+                elif log_records['real_pnl'][log_counter] > 0 and \
+                    (log_records['order_type'][log_counter] == OrderType.LongTSL or
+                     log_records['order_type'][log_counter] == OrderType.ShortTSL):
+
+                    order_price[array_counter] = np.nan
+                    avg_entry[array_counter] = temp_avg_entry
+                    stop_loss[array_counter] = temp_stop_loss
+                    trailing_sl[array_counter] = log_records['tsl_prices'][log_counter]
+                    take_profit[array_counter] = temp_take_profit
+                elif log_records['real_pnl'][log_counter] <= 0:
+                    order_price[array_counter] = np.nan
+                    avg_entry[array_counter] = temp_avg_entry
+                    stop_loss[array_counter] = log_records['sl_prices'][log_counter]
+                    trailing_sl[array_counter] = log_records['tsl_prices'][log_counter]
+                    take_profit[array_counter] = temp_take_profit
+                temp_avg_entry = log_records['avg_entry'][log_counter]
+                temp_stop_loss = log_records['sl_prices'][log_counter]
+                temp_trailing_sl = log_records['tsl_prices'][log_counter]
+                temp_take_profit = log_records['tp_prices'][log_counter]
+                log_counter += 1
+        array_counter += 1
+
+    fig = go.Figure()
+
+    symbol_size = 10
+
+    fig.add_candlestick(
+        x=x_index,
+        open=open_prices,
+        high=high_prices,
+        low=low_prices,
+        close=close_prices,
+        name='Candles'
     )
-    
-def rsi_below_entries(
-    timeperiods: tp.List,
-    below_ranges: tp.List,
-    prices: tp.Series,
-) -> tp.Frame:
-    temp_rsi = np.empty((prices.shape[0], len(timeperiods)))
-    temp_rsi_below = np.empty(
-        (prices.shape[0], (len(timeperiods)*len(below_ranges))), dtype=np.bool_)
-    c = 0
-    
-    for i in range(len(timeperiods)):
-        temp_rsi[:, i] = talib.RSI(
-            prices,
-            timeperiod=timeperiods[i],
-        )
-        for x in range(len(below_ranges)):
-            temp_rsi_below[:, c] = np.where(
-                temp_rsi[:, i] < below_ranges[x], True, False
+
+    # entries
+    fig.add_scatter(
+        name='Entries',
+        x=x_index,
+        y=order_price,
+        mode="markers",
+        marker=dict(
+            color='yellow',
+            size=symbol_size,
+            symbol='circle',
+            line=dict(
+                color='black',
+                width=2
             )
-            c += 1
-
-    return pd.DataFrame(
-        temp_rsi_below,
-        index=prices.index,
-        columns=pd.MultiIndex.from_product(
-            [below_ranges, timeperiods],
-            names=['rsi_below', 'rsi_timeperiod'])
+        ),
     )
+
+    # avg entrys
+    fig.add_scatter(
+        name='Avg Entries',
+        x=x_index,
+        y=avg_entry,
+        mode="markers",
+        marker=dict(
+            color='#57FF30',
+            size=symbol_size,
+            symbol='square',
+            line=dict(
+                color='black',
+                width=2
+            )
+        ),
+    )
+
+    # stop loss
+    fig.add_scatter(
+        name='Stop Loss',
+        x=x_index,
+        y=stop_loss,
+        mode="markers",
+        marker=dict(
+            color='red',
+            size=symbol_size,
+            symbol='x',
+            line=dict(
+                color='black',
+                width=2
+            )
+        ),
+    )
+
+    # trailing stop loss
+    fig.add_scatter(
+        name='Trailing SL',
+        x=x_index,
+        y=trailing_sl,
+        mode="markers",
+        marker=dict(
+            color='orange',
+            size=symbol_size,
+            symbol='triangle-up',
+            line=dict(
+                color='black',
+                width=2
+            )
+        ),
+    )
+
+    # take profits
+    fig.add_scatter(
+        name='Take Profits',
+        x=x_index,
+        y=take_profit,
+        mode="markers",
+        marker=dict(
+            color='#57FF30',
+            size=symbol_size,
+            symbol='star',
+            line=dict(
+                color='black',
+                width=2
+            )
+        ),
+    )
+
+    fig.update_layout(
+        xaxis=dict(
+            title='Date',
+            rangeslider=dict(visible=False)
+        ),
+        title="Candles over time",
+        autosize=True,
+        height=600
+    )
+    fig.show()
+
+def replay_trade_plotter(
+        open_prices,
+        high_prices,
+        low_prices,
+        close_prices,
+        log_records,
+):
+
+    start = log_records['bar'].min() - 2
+    end = log_records['bar'].max() + 3
+
+    x_index = open_prices.index[start:end]
+    open_prices = open_prices[start:end]
+    high_prices = high_prices[start:end]
+    low_prices = low_prices[start:end]
+    close_prices = close_prices[start:end]
+
+    order_price = np.full(end - start, np.nan)
+    avg_entry = np.full(end - start, np.nan)
+    stop_loss = np.full(end - start, np.nan)
+    trailing_sl = np.full(end - start, np.nan)
+    take_profit = np.full(end - start, np.nan)
+
+    log_counter = 0
+    array_counter = 0
+    temp_avg_entry = 0
+    temp_stop_loss = 0
+    temp_trailing_sl = 0
+    temp_take_profit = 0
+
+    for i in range(start, end):
+        if log_counter <= log_records['id_log'].max() and log_records['bar'][log_counter] == i:
+            if temp_avg_entry != log_records['avg_entry'][log_counter]:
+                temp_avg_entry = log_records['avg_entry'][log_counter]
+            else:
+                temp_avg_entry = np.nan
+
+            if temp_stop_loss != log_records['sl_prices'][log_counter]:
+                temp_stop_loss = log_records['sl_prices'][log_counter]
+            else:
+                temp_stop_loss = np.nan
+
+            if temp_trailing_sl != log_records['tsl_prices'][log_counter]:
+                temp_trailing_sl = log_records['tsl_prices'][log_counter]
+            else:
+                temp_take_profit = np.nan
+
+            if temp_take_profit != log_records['tp_prices'][log_counter]:
+                temp_take_profit = log_records['tp_prices'][log_counter]
+            else:
+                temp_take_profit = np.nan
+
+            if np.isnan(log_records['real_pnl'][log_counter]):
+                order_price[array_counter] = log_records['order_price'][log_counter]
+                avg_entry[array_counter] = temp_avg_entry
+                stop_loss[array_counter] = temp_stop_loss
+                trailing_sl[array_counter] = temp_trailing_sl
+                take_profit[array_counter] = temp_take_profit
+            
+            elif log_records['real_pnl'][log_counter] > 0 and \
+                (log_records['order_type'][log_counter] == OrderType.LongTP or
+                 log_records['order_type'][log_counter] == OrderType.ShortTP):
+            
+                order_price[array_counter] = np.nan
+                avg_entry[array_counter] = temp_avg_entry
+                stop_loss[array_counter] = temp_stop_loss
+                trailing_sl[array_counter] = temp_trailing_sl
+                take_profit[array_counter] = log_records['tp_prices'][log_counter]
+            
+            elif log_records['real_pnl'][log_counter] > 0 and \
+                (log_records['order_type'][log_counter] == OrderType.LongTSL or
+                 log_records['order_type'][log_counter] == OrderType.ShortTSL):
+            
+                order_price[array_counter] = np.nan
+                avg_entry[array_counter] = temp_avg_entry
+                stop_loss[array_counter] = temp_stop_loss
+                trailing_sl[array_counter] = log_records['tsl_prices'][log_counter]
+                take_profit[array_counter] = temp_take_profit
+            
+            elif log_records['real_pnl'][log_counter] <= 0:
+                order_price[array_counter] = np.nan
+                avg_entry[array_counter] = temp_avg_entry
+                stop_loss[array_counter] = log_records['sl_prices'][log_counter]
+                trailing_sl[array_counter] = log_records['tsl_prices'][log_counter]
+                take_profit[array_counter] = temp_take_profit
+
+            temp_avg_entry = log_records['avg_entry'][log_counter]
+            temp_stop_loss = log_records['sl_prices'][log_counter]
+            temp_trailing_sl = log_records['tsl_prices'][log_counter]
+            temp_take_profit = log_records['tp_prices'][log_counter]
+            log_counter += 1
+            if log_counter <= log_records['id_log'].max() and log_records['bar'][log_counter] == i:
+                if temp_avg_entry != log_records['avg_entry'][log_counter]:
+                    temp_avg_entry = log_records['avg_entry'][log_counter]
+                else:
+                    temp_avg_entry = np.nan
+
+                if temp_stop_loss != log_records['sl_prices'][log_counter]:
+                    temp_stop_loss = log_records['sl_prices'][log_counter]
+                else:
+                    temp_stop_loss = np.nan
+
+                if temp_trailing_sl != log_records['tsl_prices'][log_counter]:
+                    temp_trailing_sl = log_records['tsl_prices'][log_counter]
+                else:
+                    temp_take_profit = np.nan
+
+                if temp_take_profit != log_records['tp_prices'][log_counter]:
+                    temp_take_profit = log_records['tp_prices'][log_counter]
+                else:
+                    temp_take_profit = np.nan
+
+                if np.isnan(log_records['real_pnl'][log_counter]):
+                    order_price[array_counter] = log_records['order_price'][log_counter]
+                    avg_entry[array_counter] = temp_avg_entry
+                    stop_loss[array_counter] = temp_stop_loss
+                    trailing_sl[array_counter] = temp_trailing_sl
+                    take_profit[array_counter] = temp_take_profit
+
+                elif log_records['real_pnl'][log_counter] > 0 and \
+                    (log_records['order_type'][log_counter] == OrderType.LongTP or
+                     log_records['order_type'][log_counter] == OrderType.ShortTP):
+
+                    order_price[array_counter] = np.nan
+                    avg_entry[array_counter] = temp_avg_entry
+                    stop_loss[array_counter] = temp_stop_loss
+                    trailing_sl[array_counter] = temp_trailing_sl
+                    take_profit[array_counter] = log_records['tp_prices'][log_counter]
+
+                elif log_records['real_pnl'][log_counter] > 0 and \
+                    (log_records['order_type'][log_counter] == OrderType.LongTSL or
+                     log_records['order_type'][log_counter] == OrderType.ShortTSL):
+
+                    order_price[array_counter] = np.nan
+                    avg_entry[array_counter] = temp_avg_entry
+                    stop_loss[array_counter] = temp_stop_loss
+                    trailing_sl[array_counter] = log_records['tsl_prices'][log_counter]
+                    take_profit[array_counter] = temp_take_profit
+
+                elif log_records['real_pnl'][log_counter] <= 0:
+                    order_price[array_counter] = np.nan
+                    avg_entry[array_counter] = temp_avg_entry
+                    stop_loss[array_counter] = log_records['sl_prices'][log_counter]
+                    trailing_sl[array_counter] = log_records['tsl_prices'][log_counter]
+                    take_profit[array_counter] = temp_take_profit
+
+                temp_avg_entry = log_records['avg_entry'][log_counter]
+                temp_stop_loss = log_records['sl_prices'][log_counter]
+                temp_trailing_sl = log_records['tsl_prices'][log_counter]
+                temp_take_profit = log_records['tp_prices'][log_counter]
+                log_counter += 1
+        array_counter += 1
+
+    play_button = {
+        "args": [
+            None,
+            {
+                "frame": {
+                    "duration": 150,
+                    "redraw": True
+                },
+                "fromcurrent": True,
+                "transition": {
+                    "duration": 0,
+                    "easing": "quadratic-in-out"
+                }
+            }
+        ],
+        "label": "Play",
+        "method": "animate"
+    }
+
+    pause_button = {
+        "args": [
+            [None],
+            {
+                "frame": {"duration": 0, "redraw": False},
+                "mode": "immediate",
+                "transition": {"duration": 0}
+            }
+        ],
+        "label": "Pause",
+        "method": "animate"
+    }
+
+    sliders_steps = [
+        {"args": [
+            [0, i],  # 0, in order to reset the image, i in order to plot frame i
+            {"frame": {"duration": 150, "redraw": True},
+             "mode": "immediate",
+             "transition": {"duration": 0}}
+        ],
+            "label": i,
+            "method": "animate"}
+        for i in range(order_price.size)
+    ]
+
+    sliders_dict = {
+        "active": 0,
+        "yanchor": "top",
+        "xanchor": "left",
+        "currentvalue": {
+            "font": {"size": 20},
+            "prefix": "candle:",
+            "visible": True,
+            "xanchor": "right"
+        },
+        "transition": {"duration": 300, "easing": "cubic-in-out"},
+        "pad": {"b": 10, "t": 50},
+        "len": 0.9,
+        "x": 0.1,
+        "y": 0,
+        "steps": sliders_steps,
+    }
+
+    fig = go.Figure()
+
+    fig.add_candlestick(
+        x=x_index,
+        open=open_prices,
+        high=high_prices,
+        low=low_prices,
+        close=close_prices,
+        name='Candles'
+    )
+
+    # entries
+    fig.add_scatter(
+        name='Entries',
+        x=x_index,
+        y=order_price,
+        mode="markers",
+        marker=dict(
+            color='yellow',
+            size=10,
+            symbol='circle',
+            line=dict(
+                color='black',
+                width=2
+            )
+        ),
+    )
+
+    # avg entrys
+    fig.add_scatter(
+        name='Avg Entries',
+        x=x_index,
+        y=avg_entry,
+        mode="markers",
+        marker=dict(
+            color='#57FF30',
+            size=10,
+            symbol='square',
+            line=dict(
+                color='black',
+                width=2
+            )
+        ),
+    )
+
+    # stop loss
+    fig.add_scatter(
+        name='Stop Loss',
+        x=x_index,
+        y=stop_loss,
+        mode="markers",
+        marker=dict(
+            color='red',
+            size=10,
+            symbol='x',
+            line=dict(
+                color='black',
+                width=2
+            )
+        ),
+    )
+
+    # trailing stop loss
+    fig.add_scatter(
+        name='Trailing SL',
+        x=x_index,
+        y=trailing_sl,
+        mode="markers",
+        marker=dict(
+            color='orange',
+            size=10,
+            symbol='x',
+            line=dict(
+                color='black',
+                width=2
+            )
+        ),
+    )
+
+    # take profits
+    fig.add_scatter(
+        name='Take Profits',
+        x=x_index,
+        y=take_profit,
+        mode="markers",
+        marker=dict(
+            color='#57FF30',
+            size=10,
+            symbol='star',
+            line=dict(
+                color='black',
+                width=2
+            )
+        ),
+    )
+
+    fig.update_layout(
+        xaxis=dict(
+            title='Date',
+            rangeslider=dict(visible=False)
+        ),
+        title="Candles over time",
+        updatemenus=[
+            dict(
+                type="buttons",
+                buttons=[play_button, pause_button]
+            )
+        ],
+        sliders=[sliders_dict],
+        height=600
+    )
+
+    for_loop_len = order_price.size
+    for x in range(15, 0, -1):
+        if for_loop_len % x == 0:
+            for_loop_steps = x
+            break
+
+    frames = []
+    print(for_loop_len)
+    print(for_loop_steps)
+    for i in range(0, for_loop_len + 1, for_loop_steps):
+        frames.append(
+
+            # name, I imagine, is used to bind to frame i :)
+            go.Frame(
+                data=[
+                    go.Candlestick(
+                        x=x_index,
+                        open=open_prices[:i],
+                        high=high_prices[:i],
+                        low=low_prices[:i],
+                        close=close_prices[:i],
+                    ),
+                    go.Scatter(
+                        x=x_index,
+                        y=order_price[:i],
+                    ),
+                    go.Scatter(
+                        x=x_index,
+                        y=avg_entry[:i],
+                    ),
+                    go.Scatter(
+                        x=x_index,
+                        y=stop_loss[:i],
+                    ),
+                    go.Scatter(
+                        x=x_index,
+                        y=trailing_sl[:i],
+                    ),
+                    go.Scatter(
+                        x=x_index,
+                        y=take_profit[:i],
+                    ),
+                ],
+                traces=[0, 1, 2, 3, 4],
+                name=f"{i}"
+            )
+        )
+    fig.update(frames=frames)
+    fig.show()
+

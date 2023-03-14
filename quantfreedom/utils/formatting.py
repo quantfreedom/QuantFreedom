@@ -7,4 +7,4 @@ def pretty(object) -> None:
             items.append(indent + object._fields[x] + ' = ' + str(object[x]) + ',\n')
         print(type(object).__name__+'('+'\n'+''.join(items) + ')')
     except:
-        print("This isn't the correct option")
+        print(object)

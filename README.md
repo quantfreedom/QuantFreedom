@@ -9,15 +9,15 @@ Also if you have any spaces in the names of your folders make sure you put quote
 
 Create a new virtual environement by typing this into your command line
 ```
-python -m venv qfFree
+python -m venv qfPro
 ```
 Now we need to activate the newly created venv
 ```
-qfFree\Scripts\activate
+qfPro\Scripts\activate
 ```
 last if you still have your ven active then copy past the following pip install
 ```
-pip install -U git+https://github.com/QuantFreedom1022/QuantFreedom
+pip install -U git+https://github.com/QuantFreedom1022/quantfreedom
 ```
 You now should have created a veritual environment
 This is a test of adding info

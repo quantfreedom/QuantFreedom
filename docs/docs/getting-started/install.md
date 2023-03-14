@@ -17,11 +17,16 @@ ipython kernel install --user --name=venv
 ```
 last if you still have your ven active then copy past the following pip install
 ```
-pip install -U git+https://github.com/QuantFreedom1022/QuantFreedom
+pip install -U git+https://github.com/QuantFreedom1022/quantfreedom
 ```
 If you want to work on the dev branch then use this instead. But be warned ... it is called dev for a reason lol.
 ```
-pip install -U git+https://github.com/QuantFreedom1022/QuantFreedom@dev
+pip install -U git+https://github.com/QuantFreedom1022/quantfreedom@dev
+```
+```
+If you want to also install the packages that let you build documentation to your changes then add [web] at the end.
+```
+pip install -U git+https://github.com/QuantFreedom1022/quantfreedom[web]
 ```
 
 You now should have created a veritual environment

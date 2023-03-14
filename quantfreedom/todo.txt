@@ -1,5 +1,6 @@
 ******** do next *******
 take out price from order creation and put it as a var in process order
+Selling doesn't work ... need to fix all of it by looking at buy func
 
 ********* Super important *********
 - store original stop loss average entry and then you would know how much is at risk ... then from that average entry you can
@@ -14,6 +15,7 @@ if there is no sl but a tp then 197 in buy func
 if there is no sl or tp or tsl then the size is just the size
 
 Important:
+- make it so leverage goes to 100 when sl or tsl moves past entry
 - figure out a way to delete all cache and store cache in one place (https://numba.pydata.org/numba-doc/latest/reference/envvars.html#envvar-NUMBA_CACHE_DIR)
 - check calculations for cash used and cash borrowed for account
 - make it so that you can have a sl infront of your avg entry
@@ -43,10 +45,11 @@ TODO
 - make there be a difference between account increase pnl and trade pnl for
 - check to make sure that when you do np.inf it is grabing the position size and not adding any leverage too it ... close it out properly
 
-thing.plot_trades()
+if not moved sl to be and move sl be:
+    if user selected candle part is greater than user selected percent from entry
+        move sl to user selected zero or entry
+        set moved sl to be to True
 
-if something and not sl_moved_to_be
-
-    if ((low - avg entry) / avg entry) * 100 >= sl_be :
-        stop loss price = break even formula
-        sl_moved_to_be = True
+if true and true
+    if (low 2000 - avg entry 1000) / avg entry 1000 > user selected percent from entry
+        

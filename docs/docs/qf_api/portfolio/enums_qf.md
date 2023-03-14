@@ -2,4 +2,4 @@
 title: Enums
 ---
 
-::: quantfreedom.backtester.enums.enums
+::: backtester.enums.enums

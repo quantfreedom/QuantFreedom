@@ -1,6 +1,6 @@
 site_name: Quant Freedom
 
-repo_url: https://github.com/QuantFreedom1022/QuantFreedom
+repo_url: https://github.com/QuantFreedom1022/quantfreedom
 repo_name: Quant Freedom
 
 theme:
@@ -26,7 +26,7 @@ theme:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/QuantFreedom1022/QuantFreedom
+      link: https://github.com/QuantFreedom1022/quantfreedom
     - icon: fontawesome/brands/discord
       link: https://discord.gg/f3JTmPGBfe
     - icon: fontawesome/brands/youtube
@@ -72,7 +72,7 @@ markdown_extensions:
   - pymdownx.magiclink:
       repo_url_shorthand: true
       user: QuantFreedom1022
-      repo: QuantFreedom
+      repo: quantfreedom
   - pymdownx.smartsymbols
   - pymdownx.superfences
   - pymdownx.tabbed:
@@ -86,7 +86,7 @@ plugins:
       enable_inventory: true
       handlers:
         python:
-          paths: [../quantfreedom]
+          paths: [quantfreedom]
           options:
             show_source: true
             line_length: 1
@@ -105,6 +105,5 @@ nav:
   - Tutorials:
       - tutorials/rsi_long.md
   - API:
-      - backtester:
-        - api/backtester/enums.md
-        - api/backtester/numba.md
+      - api/enums.md
+      - api/numba.md
