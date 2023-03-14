@@ -31,8 +31,6 @@ class CCXTData():
                 )
                 all_ohlcvs += ohlcvs
                 if len(ohlcvs):
-                    # print('Fetched', len(ohlcvs), symbol, timeframe,
-                    #     'candles from', exchange.iso8601(ohlcvs[0][0]))
                     end = ohlcvs[0][0] - 1
                 else:
                     break
