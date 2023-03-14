@@ -206,12 +206,12 @@ def cart_tester(
                             n += 1
                             order_count_id += 1
                             log_count_id += 1
-            # if temp_order_records['equity'][n-1] > -np.inf:
-            if temp_order_records['equity'][n-1] > og_account_state.equity:
+            gains_pct = ((account_state.equity - og_account_state.equity) / og_account_state.equity) * 100       
+            if gains_pct > 50:
                 temp_order_records = temp_order_records[:n]
                 w_l = temp_order_records['realized_pnl'][~np.isnan(
                     temp_order_records['realized_pnl'])]
-                if w_l.size > 0:  # this is more than 30 trades
+                if w_l.size > 30:  # this is more than 30 trades
                     end_order_count += n
                     order_records[start_order_count: end_order_count] = temp_order_records
                     start_order_count = end_order_count

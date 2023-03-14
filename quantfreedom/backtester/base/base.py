@@ -1,12 +1,11 @@
+import talib
 import numpy as np
 import pandas as pd
 import polars as pl
 import plotly.express as px
 
+from quantfreedom import _typing as tp
 from quantfreedom.backtester.enums.enums import *
-from quantfreedom.backtester.nb.helper_funcs import *
-from quantfreedom.backtester.nb.buy_funcs import *
-from quantfreedom.backtester.nb.sell_funcs import *
 from quantfreedom.backtester.nb.execute_funcs import cart_tester
 
 
@@ -45,7 +44,7 @@ def cart_from_signals(
         high=high.values,
         low=low.values,
         close=close.values,
-        entries=entries,
+        entries=entries.values,
         og_account_state=account_state,
         # the orders with each indv array
         lev_mode=mydict['lev_mode'],
@@ -89,3 +88,31 @@ def cart_from_signals(
         tsl_prices=mydict['tsl_prices'],
     )
     
+def rsi_below_entries(
+    timeperiods: tp.List,
+    below_ranges: tp.List,
+    prices: tp.Series,
+) -> tp.Frame:
+    temp_rsi = np.empty((prices.shape[0], len(timeperiods)))
+    temp_rsi_below = np.empty(
+        (prices.shape[0], (len(timeperiods)*len(below_ranges))), dtype=np.bool_)
+    c = 0
+    
+    for i in range(len(timeperiods)):
+        temp_rsi[:, i] = talib.RSI(
+            prices,
+            timeperiod=timeperiods[i],
+        )
+        for x in range(len(below_ranges)):
+            temp_rsi_below[:, c] = np.where(
+                temp_rsi[:, i] < below_ranges[x], True, False
+            )
+            c += 1
+
+    return pd.DataFrame(
+        temp_rsi_below,
+        index=prices.index,
+        columns=pd.MultiIndex.from_product(
+            [below_ranges, timeperiods],
+            names=['rsi_below', 'rsi_timeperiod'])
+    )
