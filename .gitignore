@@ -1,3 +1,13 @@
+.ipynb_checkpoints
+__pycache__
+.vscode
+.idea
+.mypy_cache
+.pytest_cache
+docs/site
+dist
+quantfreedom.egg-info
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
