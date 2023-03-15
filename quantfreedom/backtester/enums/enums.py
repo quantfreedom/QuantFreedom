@@ -30,7 +30,7 @@ __all__ = [
     'OrderResult',
     'OrderType',
     'RejectedOrderError',
-    'SL_BE_andTrailBasedOn',
+    'SL_BE_or_Trail_BasedOn',
     'LeverageMode',
     'SizeType',
     'TestTuple',
@@ -47,14 +47,14 @@ class RejectedOrderError(Exception):
     """Rejected order error."""
     pass
 
-class SL_BE_andTrailBasedOnT(tp.NamedTuple):
+class SL_BE_or_Trail_BasedOnT(tp.NamedTuple):
     open_price: int = 0
     high_price: int = 1
     low_price: int = 2
     close_price: int = 3
 
 
-SL_BE_andTrailBasedOn = SL_BE_andTrailBasedOnT()
+SL_BE_or_Trail_BasedOn = SL_BE_or_Trail_BasedOnT()
 
 
 class TestTuple(tp.NamedTuple):
@@ -84,60 +84,59 @@ class AccountState(tp.NamedTuple):
 
 
 class OrderResult(tp.NamedTuple):
-    average_entry_order_result: float = 0.
-    fees_paid_order_result: float = 0.
-    leverage_auto_order_result: float = 0.
-    liq_price_order_result: float = 0.
-    moved_sl_to_be_order_result: bool = False
-    moved_tsl_order_result: bool = False
-    order_status_info_order_result: int = 0
-    order_status_order_result: int = 0
-    order_type_order_result: float = 0.
-    pct_chg_order_result: float = 0.
-    position_order_result: float = 0.
-    realized_pnl_order_result: float = 0.
-    size_value_order_result: float = 0.
-    sl_pcts_order_result: float = 0.
-    sl_prices_order_result: float = 0.
-    tp_pcts_order_result: float = 0.
-    tp_prices_order_result: float = 0.
-    tsl_pcts_order_result: float = 0.
-    tsl_prices_order_result: float = 0.
+    average_entry: float = 0.
+    fees_paid: float = 0.
+    leverage_auto: float = 0.
+    liq_price: float = 0.
+    moved_sl_to_be: bool = False
+    moved_tsl: bool = False
+    order_status_info: int = 0
+    order_status: int = 0
+    order_type: float = 0.
+    pct_chg: float = 0.
+    position: float = 0.
+    realized_pnl: float = 0.
+    size_value: float = 0.
+    sl_pcts: float = 0.
+    sl_prices: float = 0.
+    tp_pcts: float = 0.
+    tp_prices: float = 0.
+    tsl_pcts: float = 0.
+    tsl_prices: float = 0.
 
 
 class Order(tp.NamedTuple):
-    lev_mode_order: int = 0
-    leverage_iso_order: float = 0.
-    max_equity_risk_pct_order: float = np.nan
-    max_equity_risk_value_order: float = np.nan
-    max_lev_order: float = 100.
-    max_order_size_pct_order: float = 100.
-    max_order_size_value_order: float = np.inf
-    min_order_size_pct_order: float = .01
-    min_order_size_value_order: float = 1.
-    order_type_order: int = 0
-    risk_rewards_order: float = np.nan
-    size_pct_order: float = np.nan
-    size_type_order: int = 0
-    size_value_order: float = np.nan
-    sl_be_then_trail_order: bool = False
-    sl_pcts_order: float = np.nan
-    sl_prices_order: float = np.nan
-    sl_to_be_order: bool = False
-    sl_to_be_based_on_order: float = np.nan
-    sl_to_be_then_trail_order: bool = False
-    sl_to_be_trail_when_pct_from_avg_entry_order: float = np.nan
-    sl_to_be_when_pct_from_avg_entry_order: float = np.nan
-    sl_to_be_zero_or_entry_order: float = np.nan
-    slippage_pct_order: float = np.nan
-    tp_pcts_order: float = np.nan
-    tp_prices_order: float = np.nan
-    tsl_based_on_order: float = np.nan
-    tsl_pcts_order: float = np.nan
-    tsl_prices_order: float = np.nan
-    tsl_trail_by_order: float = np.nan
-    tsl_true_or_false_order: bool = False
-    tsl_when_pct_from_avg_entry_order: float = np.nan
+    lev_mode: int = 0
+    leverage_iso: float = 0.
+    max_equity_risk_pct: float = np.nan
+    max_equity_risk_value: float = np.nan
+    max_lev: float = 100.
+    max_order_size_pct: float = 100.
+    max_order_size_value: float = np.inf
+    min_order_size_pct: float = .01
+    min_order_size_value: float = 1.
+    order_type: int = 0
+    risk_rewards: float = np.nan
+    size_pct: float = np.nan
+    size_type: int = 0
+    size_value: float = np.nan
+    sl_pcts: float = np.nan
+    sl_prices: float = np.nan
+    sl_to_be: bool = False
+    sl_to_be_based_on: float = np.nan
+    sl_to_be_then_trail: bool = False
+    sl_to_be_trail_when_pct_from_avg_entry: float = np.nan
+    sl_to_be_when_pct_from_avg_entry: float = np.nan
+    sl_to_be_zero_or_entry: float = np.nan
+    slippage_pct: float = np.nan
+    tp_pcts: float = np.nan
+    tp_prices: float = np.nan
+    tsl_pcts: float = np.nan
+    tsl_prices: float = np.nan
+    tsl_based_on: float = np.nan
+    tsl_trail_by: float = np.nan
+    tsl_true_or_false: bool = False
+    tsl_when_pct_from_avg_entry: float = np.nan
 
 
 class LeverageModeT(tp.NamedTuple):

@@ -37,9 +37,9 @@ class CCXTData():
             except Exception as e:
                 print(type(e).__name__, str(e))
         data = pd.DataFrame(all_ohlcvs, columns=[
-                            'open time', 'open', 'high', 'low', 'close', 'volume'])
-        data['open time'] = pd.to_datetime(data['time'], unit='ms')
-        data.set_index('open time', inplace=True)
+                            'open_time', 'open', 'high', 'low', 'close', 'volume'])
+        data['open_time'] = pd.to_datetime(data['open_time'], unit='ms')
+        data.set_index('open_time', inplace=True)
         data.sort_index(ascending=True, inplace=True)
         data.drop(data.tail(1).index,inplace=True)
         return data

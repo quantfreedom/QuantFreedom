@@ -33,6 +33,7 @@ setup(
         'polars',
         'pyarrow',
         'typing_extensions; python_version < "3.8"',
+        'vectorbt',
     ],
     extras_require={
         'web': [
