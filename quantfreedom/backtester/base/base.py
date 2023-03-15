@@ -3,6 +3,7 @@ import plotly.graph_objects as go
 import talib
 import numpy as np
 import pandas as pd
+import polars as pl
 
 from quantfreedom import _typing as tp
 from quantfreedom.backtester.enums.enums import OrderType
@@ -653,8 +654,8 @@ def replay_trade_plotter(
 def rsi_below_entries(
     timeperiods: tp.List,
     below_ranges: tp.List,
-    prices: tp.Series,
-) -> tp.Frame:
+    prices: tp.plSeries,
+) -> tp.plFrame:
     temp_rsi = np.empty((prices.shape[0], len(timeperiods)))
     temp_rsi_below = np.empty(
         (prices.shape[0], (len(timeperiods)*len(below_ranges))), dtype=np.bool_)

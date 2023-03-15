@@ -1,5 +1,6 @@
 import numpy as np
-from pandas import Series, DataFrame as Frame, Index
+from pandas import Series as pdSeries, DataFrame as pdFrame, Index as pdIndex
+from polars import Series as plSeries, DataFrame as plFrame
 from typing import *
 
 try:
@@ -19,8 +20,8 @@ Array3d = np.ndarray
 Record = np.void
 RecordArray = np.ndarray
 RecArray = np.recarray
-AnyArray = Union[Array, Series, Frame]
-AnyArray1d = Union[Array1d, Series]
-AnyArray2d = Union[Array2d, Frame]
+AnyArray = Union[Array, pdSeries, pdFrame, plFrame, plSeries]
+AnyArray1d = Union[Array1d, pdSeries, plSeries]
+AnyArray2d = Union[Array2d, pdFrame, plFrame]
 _ArrayLike = Union[Scalar, Sequence[Scalar], Sequence[Sequence[Any]], SupportsArray]
-ArrayLike = Union[_ArrayLike, Array, Index, Series, Frame]
+ArrayLike = Union[_ArrayLike, Array, pdIndex, pdSeries, pdFrame, plSeries, plFrame]

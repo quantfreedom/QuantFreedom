@@ -31,6 +31,7 @@ setup(
         'pandas',
         'plotly>=4.12.0',
         'polars',
+        'pyarrow',
         'typing_extensions; python_version < "3.8"',
     ],
     extras_require={
