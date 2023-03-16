@@ -101,15 +101,15 @@ class OrderResult(tp.NamedTuple):
 
 
 class StaticVariables(tp.NamedTuple):
-    fee_pct: float
     lev_mode: int
-    max_lev: float
-    max_order_size_pct: float
-    max_order_size_value: float
-    min_order_size_pct: float
-    min_order_size_value: float
-    mmr: float
     size_type: int
+    fee_pct: float = .0006
+    max_lev: float = 100.
+    max_order_size_pct: float = 1.
+    min_order_size_pct: float = .0001
+    max_order_size_value: float = np.inf
+    min_order_size_value: float = 1.
+    mmr: float = .005
 
 
 class StopsOrder(tp.NamedTuple):

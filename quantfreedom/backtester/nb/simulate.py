@@ -13,7 +13,6 @@ from quantfreedom.backtester.nb.execute_funcs import (
     process_order_nb,
     process_stops_nb,
     check_sl_tp_nb,
-    order_checker_nb,
 )
 from quantfreedom.backtester.enums.enums import (
     cart_array_dt,
