@@ -20,12 +20,15 @@ from quantfreedom.backtester.enums.enums import (
     ready_for_df,
     order_records_dt,
     log_records_dt,
-    AccountState,
-    Order,
+    
     LeverageMode,
     OrderType,
     SizeType,
     SL_BE_or_Trail_BasedOn,
+    
+    AccountState,
+    Order,
+    OrderResult,
 )
 
 
@@ -197,7 +200,10 @@ def simulate_from_signals(
 
     tp_prices_array = to_1d_array_nb(np.asarray(tp_prices, dtype=np.float_))
 
-    # Checks
+    '''
+    Check Params
+    '''
+    
     if np.isfinite(size_value_array).all():
         if size_value_array.any() < 1:
             raise ValueError("size_value must be greater than 1.")
@@ -608,10 +614,6 @@ def simulate_from_signals(
                 order_settings_counter],
         )
 
-        order = order_checker_nb(
-            order=order
-        )
-
         for indicator_settings_counter in range(total_indicator_settings):
 
             if entries.ndim != 1:
@@ -629,37 +631,17 @@ def simulate_from_signals(
             # Account State Reset
             account_state = AccountState(
                 available_balance=og_equity,
-                cash_borrowed=0.,
-                cash_used=0.,
                 equity=og_equity,
                 fee_pct=fee_pct,
                 log_count_id=log_count_id,
-                log_records_filled=0,
                 mmr=mmr,
                 order_count_id=order_count_id,
-                order_records_filled=0,
             )
-            # log_and_order_records =
-            available_balance = equity
-            cash_borrowed = 0.
-            cash_used = 0.
-            equity = og_equity
-            log_records_filled = 0
-            order_count_id = 0
-            order_records_filled = 0
+            
+            log_order_records
 
             # Order Result Reset
-            average_entry = 0.
-            position = 0.
-            liq_price = np.nan
-            moved_sl_to_be_order_result = False
-            moved_tsl_order_result = False
-            sl_pcts_order_result = 0.
-            sl_prices_order_result = 0.
-            tp_pcts_order_result = 0.
-            tp_prices_order_result = 0.
-            tsl_pcts_order_result = 0.
-            tsl_prices_order_result = 0.
+            order_result = OrderResult()
 
             for bar in range(total_bars):
 

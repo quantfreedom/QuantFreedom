@@ -67,11 +67,9 @@ class LogAndOrderRecords(tp.NamedTuple):
     indicator_settings_counter: int = 0
     order_count_id: int = 0
     order_records_filled: int = 0
-    order_records: tp.RecordArray = np.nan
     order_settings_counter: int = 0
     log_count_id: tp.Optional[int] = None
     log_records_filled: tp.Optional[int] = None
-    log_records: tp.Optional[tp.RecordArray] = None
 
 
 class AccountState(tp.NamedTuple):
@@ -87,7 +85,7 @@ class OrderResult(tp.NamedTuple):
     average_entry: float = 0.
     fees_paid: float = 0.
     leverage_auto: float = 0.
-    liq_price: float = 0.
+    liq_price: float = np.nan
     moved_sl_to_be: bool = False
     moved_tsl: bool = False
     order_status_info: int = 0

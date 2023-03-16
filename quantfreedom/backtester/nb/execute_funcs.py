@@ -11,12 +11,13 @@ from quantfreedom.backtester.nb.helper_funcs import fill_log_records_nb, fill_or
 from quantfreedom.backtester.enums.enums import (
     OrderType,
     SL_BE_or_Trail_BasedOn,
-    TestTuple,
-    RejectedOrderError,
-    LeverageMode,
     SizeType,
     OrderStatus,
+
+    AccountState,
     Order,
+    OrderResult,
+    RejectedOrderError,
 )
 
 
@@ -217,93 +218,17 @@ def order_checker_nb(
 ):
 
     # create the right size_value if there is a sl pct or price
-    is_entry_not_amount = (order.order_type == OrderType.LongEntry or
-                           order.order_type == OrderType.ShortEntry) and \
-        order.size_type != SizeType.Amount
-
-    if is_entry_not_amount: 
-        if np.isfinite(order.sl_pcts):
-            order.sl_prices = price - (price * order.sl_pcts)
-            possible_loss = size_value * (order.sl_pcts)
-
-            size_value = -possible_loss / (((order.sl_prices/price) - 1) - (fee_pct) -
-                                        ((order.sl_prices * (fee_pct))/price))
-
-        elif np.isfinite(order.tsl_pcts):
-            order.tsl_prices = price - (price * order.tsl_pcts)
-            possible_loss = size_value * (order.tsl_pcts)
-
-            size_value = -possible_loss / (((order.tsl_prices/price) - 1) - (fee_pct) -
-                                        ((order.tsl_prices * (fee_pct))/price))
-
-        elif np.isfinite(order.sl_prices):
-            order.sl_prices = order.sl_prices
-            order.sl_pcts = abs((price - order.sl_prices) / price) * 100
-            possible_loss = size_value * (order.sl_pcts)
-
-            size_value = -possible_loss / (((order.sl_prices/price) - 1) - (fee_pct) -
-                                        ((order.sl_prices * (fee_pct))/price))
-
-        elif np.isfinite(order.tsl_prices):
-            order.tsl_prices = order.tsl_prices
-            order.tsl_pcts = abs((price - order.tsl_prices) / price) * 100
-            possible_loss = size_value * (order.tsl_pcts)
-
-            size_value = -possible_loss / (((order.tsl_prices/price) - 1) - (fee_pct) -
-                                        ((order.tsl_prices * (fee_pct))/price))
 
     pass
 
 
 @ njit(cache=True)
 def process_order_nb(
-    available_balance: float,
-    average_entry: float,
-    cash_borrowed: float,
-    cash_used: float,
-    equity: float,
-    fee_pct: float,
-    lev_mode: int,
-    leverage: float,
-    liq_price: float,
-    max_equity_risk_pct: float,
-    max_equity_risk_value: float,
-    max_lev: float,
-    max_order_size_pct: float,
-    max_order_size_value: float,
-    min_order_size_pct: float,
-    min_order_size_value: float,
-    mmr: float,
-    order_type: int,
-    position: float,
+    account_state: AccountState,
+    order: Order,
+    order_result: OrderResult,
+
     price: float,
-    risk_rewards: float,
-    size_pct: float,
-    size_type: int,
-    size_value: float,
-    slippage_pct: float,
-
-    sl_pcts: float,
-    sl_prices: float,
-    tp_pcts: float,
-    tp_prices: float,
-    tsl_pcts: float,
-    tsl_prices: float,
-
-    sl_be_then_trail: bool,
-    sl_to_be_zero_or_entry: float,
-    sl_to_be: bool,
-    tsl_based_on: float,
-    moved_sl_to_be: bool,
-    moved_tsl: bool,
-
-    sl_pcts_order_result: float,
-    sl_prices_order_result: float,
-    tp_pcts_order_result: float,
-    tp_prices_order_result: float,
-    tsl_pcts_order_result: float,
-    tsl_prices_order_result: float,
-
     bar: int,
     col: int,
     indicator_settings_counter: int,
@@ -318,134 +243,55 @@ def process_order_nb(
     log_count_id: tp.Optional[int] = None,
     log_records: tp.Optional[tp.RecordArray] = None,
     log_records_filled: tp.Optional[int] = None,
-) -> tp.Tuple[TestTuple]:
+):
 
-    average_entry_new = average_entry
-    price_new = price
-    order_count_id_new = order_count_id
-    order_records_filled_new = order_records_filled
-    log_count_id_new = log_count_id
-    log_records_filled_new = log_records_filled
+    # Get size value
+    size_value = order.size_value
+    if order.order_type == OrderType.LongEntry:
+        if order.size_type != SizeType.Amount:
+            if np.isfinite(order.sl_pcts):
+                sl_prices = price - (price * order.sl_pcts)
+                possible_loss = size_value * (order.sl_pcts)
+                
+                size_value = -possible_loss / \
+                    ((sl_prices/price - 1) - account_state.fee_pct -
+                    (sl_prices * account_state.fee_pct / price))
+            
+            elif np.isfinite(order.tsl_pcts):
+                tsl_prices = price - (price * order.tsl_pcts)
+                possible_loss = size_value * (order.tsl_pcts)
+                
+                size_value = -possible_loss / \
+                    ((tsl_prices / price - 1) - account_state.fee_pct -
+                    (tsl_prices * account_state.fee_pct / price))
 
-    # Check the order for errors and other things
-    if order_type == OrderType.LongEntry:
-        # TODO why am i sending size_pct back
-        leverage_new, \
-            price_new, \
-            size_value_new, \
-            = order_checker_nb(
-                available_balance=available_balance,
-                equity=equity,
-                fee_pct=fee_pct,
-                lev_mode=lev_mode,
-                leverage=leverage,
-                max_equity_risk_pct=max_equity_risk_pct,
-                max_equity_risk_value=max_equity_risk_value,
-                max_lev=max_lev,
-                max_order_size_pct=max_order_size_pct,
-                max_order_size_value=max_order_size_value,
-                min_order_size_pct=min_order_size_pct,
-                min_order_size_value=min_order_size_value,
-                mmr=mmr,
-                order_type=order_type,
-                position=position,
-                price=price,
-                risk_rewards=risk_rewards,
-                size_value=size_value,
-                size_pct=size_pct,
-                size_type=size_type,
-                sl_be_then_trail=sl_be_then_trail,
-                sl_pcts=sl_pcts,
-                sl_prices=sl_prices,
-                sl_to_be=sl_to_be,
-                sl_to_be_zero_or_entry=sl_to_be_zero_or_entry,
-                slippage_pct=slippage_pct,
-                tp_pcts=tp_pcts,
-                tp_prices=tp_prices,
-                tsl_based_on=tsl_based_on,
-                tsl_pcts=tsl_pcts,
-                tsl_prices=tsl_prices,
-            )
-        available_balance_new, \
-            average_entry_new, \
-            cash_borrowed_new, \
-            cash_used_new, \
-            leverage_new, \
-            liq_price_new, \
-            order_status, \
-            order_status_info, \
-            position_new, \
-            sl_pcts_new, \
-            sl_prices_new, \
-            tp_pcts_new, \
-            tp_prices_new, \
-            tsl_pcts_new, \
-            tsl_prices_new, \
-            = long_increase_nb(
-                available_balance=available_balance,
-                average_entry=average_entry,
-                cash_borrowed=cash_borrowed,
-                cash_used=cash_used,
-                equity=equity,
-                fee_pct=fee_pct,
-                lev_mode=lev_mode,
-                leverage=leverage_new,
-                liq_price=liq_price,
-                max_equity_risk_pct=max_equity_risk_pct,
-                max_equity_risk_value=max_equity_risk_value,
-                max_lev=max_lev,
-                mmr=mmr,
-                position=position,
-                price=price_new,
-                risk_rewards=risk_rewards,
-                size_value=size_value_new,
-                slippage_pct=slippage_pct,
+            elif np.isfinite(order.sl_prices):
+                sl_pcts = (price - order.sl_prices) / price
+                possible_loss = size_value * sl_pcts
+                
+                size_value = -possible_loss / \
+                    ((sl_prices/price - 1) - account_state.fee_pct -
+                    (sl_prices * account_state.fee_pct / price))
 
-                sl_pcts=sl_pcts,
-                sl_prices=sl_prices,
-                tp_pcts=tp_pcts,
-                tp_prices=tp_prices,
-                tsl_pcts=tsl_pcts,
-                tsl_prices=tsl_prices,
+            elif np.isfinite(order.tsl_prices):
+                tsl_pcts = (price - order.tsl_prices) / price
+                possible_loss = size_value * tsl_pcts
+                
+                size_value = -possible_loss / \
+                    ((tsl_prices/price - 1) - account_state.fee_pct -
+                    (tsl_prices * account_state.fee_pct / price))
+        
+        # TODO make sure that you check size value to max and min size
+        
+        order_result = long_increase_nb(
+            price=price,
+            size_value=size_value,
+            order=order,
+            order_result=order_result,
+            account_state=account_state,
+        )
 
-                sl_be_then_trail=sl_be_then_trail,
-                sl_to_be=sl_to_be,
-                sl_to_be_zero_or_entry=sl_to_be_zero_or_entry,
-
-                sl_pcts_order_result=sl_pcts_order_result,
-                sl_prices_order_result=sl_prices_order_result,
-                tp_pcts_order_result=tp_pcts_order_result,
-                tp_prices_order_result=tp_prices_order_result,
-                tsl_pcts_order_result=tsl_pcts_order_result,
-                tsl_prices_order_result=tsl_prices_order_result,
-            )
-
-    elif OrderType.LongLiq <= order_type <= OrderType.LongTSL:
-        available_balance_new, \
-            cash_borrowed_new, \
-            cash_used_new, \
-            equity_new, \
-            fees_paid, \
-            liq_price, \
-            order_status_info, \
-            order_status, \
-            position_new, \
-            realized_pnl, \
-            size_value, \
-            = long_decrease_nb(
-                available_balance=available_balance,
-                average_entry=average_entry,
-                cash_borrowed=cash_borrowed,
-                cash_used=cash_used,
-                equity=equity,
-                fee_pct=fee_pct,
-                liq_price=liq_price,
-                position=position,
-                price=price,
-                size_value=size_value,
-            )
-
-    if order_status == OrderStatus.Filled:
+    if order_result.order_status == OrderStatus.Filled:
         fill_order_records_nb(
             average_entry=average_entry_new,
             bar=bar,
