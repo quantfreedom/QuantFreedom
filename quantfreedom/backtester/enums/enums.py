@@ -33,9 +33,10 @@ __all__ = [
     'SL_BE_or_Trail_BasedOn',
     'LeverageMode',
     'SizeType',
-    'TestTuple',
-    'Order',
+    'EntryOrder',
+    'StopsOrder',
     'LogAndOrderRecords',
+    'StaticVariables',
 
     'log_records_dt',
     'order_records_dt',
@@ -43,23 +44,28 @@ __all__ = [
     'cart_array_dt',
 ]
 
-class RejectedOrderError(Exception):
-    """Rejected order error."""
-    pass
 
-class SL_BE_or_Trail_BasedOnT(tp.NamedTuple):
-    open_price: int = 0
-    high_price: int = 1
-    low_price: int = 2
-    close_price: int = 3
+class AccountState(tp.NamedTuple):
+    available_balance: float = 0.
+    cash_borrowed: float = 0.
+    cash_used: float = 0.
+    equity: float = 0.
 
 
-SL_BE_or_Trail_BasedOn = SL_BE_or_Trail_BasedOnT()
-
-
-class TestTuple(tp.NamedTuple):
-    order_records: tp.ArrayLike = np.nan
-    order_count_id: int = -1
+class EntryOrder(tp.NamedTuple):
+    leverage_iso: float = 0.
+    max_equity_risk_pct: float = np.nan
+    max_equity_risk_value: float = np.nan
+    order_type: int = 0
+    risk_rewards: float = np.nan
+    size_pct: float = np.nan
+    size_value: float = np.nan
+    sl_pcts: float = np.nan
+    sl_prices: float = np.nan
+    tp_pcts: float = np.nan
+    tp_prices: float = np.nan
+    tsl_pcts: float = np.nan
+    tsl_prices: float = np.nan
 
 
 class LogAndOrderRecords(tp.NamedTuple):
@@ -72,15 +78,6 @@ class LogAndOrderRecords(tp.NamedTuple):
     log_records_filled: tp.Optional[int] = None
 
 
-class AccountState(tp.NamedTuple):
-    available_balance: float = 0.
-    cash_borrowed: float = 0.
-    cash_used: float = 0.
-    equity: float = 0.
-    fee_pct: float = 0.06
-    mmr: float = .5
-
-
 class OrderResult(tp.NamedTuple):
     average_entry: float = 0.
     fees_paid: float = 0.
@@ -88,8 +85,8 @@ class OrderResult(tp.NamedTuple):
     liq_price: float = np.nan
     moved_sl_to_be: bool = False
     moved_tsl: bool = False
-    order_status_info: int = 0
     order_status: int = 0
+    order_status_info: int = 0
     order_type: float = 0.
     pct_chg: float = 0.
     position: float = 0.
@@ -103,34 +100,25 @@ class OrderResult(tp.NamedTuple):
     tsl_prices: float = 0.
 
 
-class Order(tp.NamedTuple):
-    lev_mode: int = 0
-    leverage_iso: float = 0.
-    max_equity_risk_pct: float = np.nan
-    max_equity_risk_value: float = np.nan
-    max_lev: float = 100.
-    max_order_size_pct: float = 100.
-    max_order_size_value: float = np.inf
-    min_order_size_pct: float = .01
-    min_order_size_value: float = 1.
-    order_type: int = 0
-    risk_rewards: float = np.nan
-    size_pct: float = np.nan
-    size_type: int = 0
-    size_value: float = np.nan
-    sl_pcts: float = np.nan
-    sl_prices: float = np.nan
+class StaticVariables(tp.NamedTuple):
+    fee_pct: float
+    lev_mode: int
+    max_lev: float
+    max_order_size_pct: float
+    max_order_size_value: float
+    min_order_size_pct: float
+    min_order_size_value: float
+    mmr: float
+    size_type: int
+
+
+class StopsOrder(tp.NamedTuple):
     sl_to_be: bool = False
     sl_to_be_based_on: float = np.nan
     sl_to_be_then_trail: bool = False
     sl_to_be_trail_when_pct_from_avg_entry: float = np.nan
     sl_to_be_when_pct_from_avg_entry: float = np.nan
     sl_to_be_zero_or_entry: float = np.nan
-    slippage_pct: float = np.nan
-    tp_pcts: float = np.nan
-    tp_prices: float = np.nan
-    tsl_pcts: float = np.nan
-    tsl_prices: float = np.nan
     tsl_based_on: float = np.nan
     tsl_trail_by: float = np.nan
     tsl_true_or_false: bool = False
@@ -182,6 +170,16 @@ class OrderTypeT(tp.NamedTuple):
 
 
 OrderType = OrderTypeT()
+
+
+class SL_BE_or_Trail_BasedOnT(tp.NamedTuple):
+    open_price: int = 0
+    high_price: int = 1
+    low_price: int = 2
+    close_price: int = 3
+
+
+SL_BE_or_Trail_BasedOn = SL_BE_or_Trail_BasedOnT()
 
 
 class SizeTypeT(tp.NamedTuple):
@@ -271,9 +269,8 @@ log_records_dt = np.dtype([
     ('real_pnl', np.float_),
 
 ], align=True)
-"""
-A numpy array with specific data types that allow you to store specific information about your order result.
 
-This is different from order records as log records is ment to store a lot of information about every order, \
-    where order records is just for the filled orders and the needed info for plotting and other stuff.
-"""
+
+class RejectedOrderError(Exception):
+    """Rejected order error."""
+    pass

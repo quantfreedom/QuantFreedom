@@ -20,15 +20,17 @@ from quantfreedom.backtester.enums.enums import (
     ready_for_df,
     order_records_dt,
     log_records_dt,
-    
+
     LeverageMode,
     OrderType,
     SizeType,
     SL_BE_or_Trail_BasedOn,
-    
+
     AccountState,
-    Order,
+    EntryOrder,
     OrderResult,
+    StopsOrder,
+    StaticVariables,
 )
 
 
@@ -128,10 +130,24 @@ def simulate_from_signals(
         raise ValueError(
             "max_order_size_value has to be > min_order_size_value")
 
-
     og_equity = equity
     fee_pct /= 100
     mmr /= 100
+    max_order_size_pct /= 100
+    min_order_size_pct /= 100
+
+    static_variables = StaticVariables(
+        fee_pct=fee_pct,
+        lev_mode=lev_mode,
+        max_lev=max_lev,
+        max_order_size_pct=max_order_size_pct,
+        max_order_size_value=max_order_size_value,
+        min_order_size_pct=min_order_size_pct,
+        min_order_size_value=min_order_size_value,
+        mmr=mmr,
+        size_type=size_type,
+
+    )
 
     # Order Arrays
     leverage_iso_array = to_1d_array_nb(
@@ -203,7 +219,7 @@ def simulate_from_signals(
     '''
     Check Params
     '''
-    
+
     if np.isfinite(size_value_array).all():
         if size_value_array.any() < 1:
             raise ValueError("size_value must be greater than 1.")
@@ -579,7 +595,7 @@ def simulate_from_signals(
 
     for order_settings_counter in range(total_order_settings):
 
-        order = Order(
+        entry_order = EntryOrder(
             lev_mode=lev_mode,
             leverage_iso=leverage_iso_cart_array[order_settings_counter],
             max_equity_risk_pct=max_equity_risk_pct_cart_array[order_settings_counter],
@@ -595,6 +611,12 @@ def simulate_from_signals(
             size_value=size_value_cart_array[order_settings_counter],
             sl_pcts=sl_pcts_cart_array[order_settings_counter],
             sl_prices=sl_prices_cart_array[order_settings_counter],
+            tp_pcts=tp_pcts_cart_array[order_settings_counter],
+            tp_prices=tp_prices_cart_array[order_settings_counter],
+            tsl_pcts=tsl_pcts_cart_array[order_settings_counter],
+            tsl_prices=tsl_prices_cart_array[order_settings_counter],
+        )
+        stops_order = StopsOrder(
             sl_to_be=sl_to_be_cart_array[order_settings_counter],
             sl_to_be_based_on=sl_to_be_based_on_cart_array[order_settings_counter],
             sl_to_be_then_trail=sl_to_be_then_trail_cart_array[order_settings_counter],
@@ -603,10 +625,7 @@ def simulate_from_signals(
             sl_to_be_when_pct_from_avg_entry=sl_to_be_when_pct_from_avg_entry_cart_array[
                 order_settings_counter],
             sl_to_be_zero_or_entry=sl_to_be_zero_or_entry_cart_array[order_settings_counter],
-            tp_pcts=tp_pcts_cart_array[order_settings_counter],
-            tp_prices=tp_prices_cart_array[order_settings_counter],
-            tsl_pcts=tsl_pcts_cart_array[order_settings_counter],
-            tsl_prices=tsl_prices_cart_array[order_settings_counter],
+
             tsl_based_on=tsl_based_on_cart_array[order_settings_counter],
             tsl_trail_by=tsl_trail_by_cart_array[order_settings_counter],
             tsl_true_or_false=tsl_true_or_false_cart_array[order_settings_counter],
@@ -637,7 +656,7 @@ def simulate_from_signals(
                 mmr=mmr,
                 order_count_id=order_count_id,
             )
-            
+
             log_order_records
 
             # Order Result Reset
@@ -679,23 +698,9 @@ def simulate_from_signals(
                             account_state=account_state,
 
                             # Order
-                            order=order,
-
-                            # Order Result
-                            average_entry=average_entry,
-                            leverage=leverage_order,
-                            liq_price=liq_price,
-                            moved_sl_to_be=moved_sl_to_be_order_result,
-                            moved_tsl=moved_tsl_order_result,
-                            order_type=order_type,
-                            position=position,
-                            size_value=size_value_order,
-                            sl_pcts_order_result=sl_pcts_order_result,
-                            sl_prices_order_result=sl_prices_order_result,
-                            tp_pcts_order_result=tp_pcts_order_result,
-                            tp_prices_order_result=tp_prices_order_result,
-                            tsl_pcts_order_result=tsl_pcts_order_result,
-                            tsl_prices_order_result=tsl_prices_order_result,
+                            entry_order=entry_order,
+                            order_result=order_result,
+                            static_variables=static_variables,
 
                             bar=bar,
                             col=col,

@@ -6,7 +6,7 @@ import numpy as np
 from numba import njit
 
 from quantfreedom import _typing as tp
-from quantfreedom.backtester.nb.buy_funcs import long_increase_nb, long_decrease_nb
+from quantfreedom.backtester.nb.buy_funcs import long_increase_nb
 from quantfreedom.backtester.nb.helper_funcs import fill_log_records_nb, fill_order_records_nb
 from quantfreedom.backtester.enums.enums import (
     OrderType,
@@ -15,9 +15,10 @@ from quantfreedom.backtester.enums.enums import (
     OrderStatus,
 
     AccountState,
-    Order,
+    EntryOrder,
     OrderResult,
     RejectedOrderError,
+    StaticVariables,
 )
 
 
@@ -54,7 +55,7 @@ def check_sl_tp_nb(
     log_records: tp.Optional[tp.RecordArray] = None,
     log_records_filled: tp.Optional[int] = None,
     order_count_id: tp.Optional[int] = None,
-) -> TestTuple:
+):
     """
     This checks if your stop or take profit was hit.
 
@@ -213,23 +214,15 @@ def check_sl_tp_nb(
 
 
 @ njit(cache=True)
-def order_checker_nb(
-    order: Order,
-):
-
-    # create the right size_value if there is a sl pct or price
-
-    pass
-
-
-@ njit(cache=True)
 def process_order_nb(
     account_state: AccountState,
-    order: Order,
+    entry_order: EntryOrder,
     order_result: OrderResult,
-
+    static_variables: StaticVariables,
+    
     price: float,
     bar: int,
+    
     col: int,
     indicator_settings_counter: int,
     order_settings_counter: int,
@@ -246,49 +239,50 @@ def process_order_nb(
 ):
 
     # Get size value
-    size_value = order.size_value
-    if order.order_type == OrderType.LongEntry:
-        if order.size_type != SizeType.Amount:
-            if np.isfinite(order.sl_pcts):
-                sl_prices = price - (price * order.sl_pcts)
-                possible_loss = size_value * (order.sl_pcts)
+    size_value = entry_order.size_value
+    if entry_order.order_type == OrderType.LongEntry:
+        if static_variables.size_type != SizeType.Amount:
+            if np.isfinite(entry_order.sl_pcts):
+                sl_prices = price - (price * entry_order.sl_pcts)
+                possible_loss = size_value * (entry_order.sl_pcts)
                 
                 size_value = -possible_loss / \
-                    ((sl_prices/price - 1) - account_state.fee_pct -
-                    (sl_prices * account_state.fee_pct / price))
+                    ((sl_prices/price - 1) - static_variables.fee_pct -
+                    (sl_prices * static_variables.fee_pct / price))
             
-            elif np.isfinite(order.tsl_pcts):
-                tsl_prices = price - (price * order.tsl_pcts)
-                possible_loss = size_value * (order.tsl_pcts)
+            elif np.isfinite(entry_order.tsl_pcts):
+                tsl_prices = price - (price * entry_order.tsl_pcts)
+                possible_loss = size_value * (entry_order.tsl_pcts)
                 
                 size_value = -possible_loss / \
-                    ((tsl_prices / price - 1) - account_state.fee_pct -
-                    (tsl_prices * account_state.fee_pct / price))
+                    ((tsl_prices / price - 1) - static_variables.fee_pct -
+                    (tsl_prices * static_variables.fee_pct / price))
 
-            elif np.isfinite(order.sl_prices):
-                sl_pcts = (price - order.sl_prices) / price
+            elif np.isfinite(entry_order.sl_prices):
+                sl_pcts = (price - entry_order.sl_prices) / price
                 possible_loss = size_value * sl_pcts
                 
                 size_value = -possible_loss / \
-                    ((sl_prices/price - 1) - account_state.fee_pct -
-                    (sl_prices * account_state.fee_pct / price))
+                    ((sl_prices/price - 1) - static_variables.fee_pct -
+                    (sl_prices * static_variables.fee_pct / price))
 
-            elif np.isfinite(order.tsl_prices):
-                tsl_pcts = (price - order.tsl_prices) / price
+            elif np.isfinite(entry_order.tsl_prices):
+                tsl_pcts = (price - entry_order.tsl_prices) / price
                 possible_loss = size_value * tsl_pcts
                 
                 size_value = -possible_loss / \
-                    ((tsl_prices/price - 1) - account_state.fee_pct -
-                    (tsl_prices * account_state.fee_pct / price))
+                    ((tsl_prices/price - 1) - static_variables.fee_pct -
+                    (tsl_prices * static_variables.fee_pct / price))
         
         # TODO make sure that you check size value to max and min size
         
         order_result = long_increase_nb(
             price=price,
             size_value=size_value,
-            order=order,
+            entry_order=entry_order,
             order_result=order_result,
             account_state=account_state,
+            static_variables=static_variables,
         )
 
     if order_result.order_status == OrderStatus.Filled:
@@ -391,7 +385,7 @@ def process_stops_nb(
     log_count_id: tp.Optional[int] = None,
     log_records_filled: tp.Optional[int] = None,
     log_records: tp.Optional[tp.RecordArray] = None,
-) -> tp.Tuple[TestTuple]:
+):
 
     order_count_id_new = order_count_id
     order_records_filled_new = order_records_filled
