@@ -19,6 +19,7 @@ from quantfreedom.backtester.enums.enums import (
     OrderResult,
     RejectedOrderError,
     StaticVariables,
+    RecordCounters,
 )
 
 
@@ -219,64 +220,65 @@ def process_order_nb(
     entry_order: EntryOrder,
     order_result: OrderResult,
     static_variables: StaticVariables,
-    
+    record_counters: RecordCounters,
+
     price: float,
+
     bar: int,
-    
     col: int,
+
     indicator_settings_counter: int,
     order_settings_counter: int,
 
-    order_records_filled: int,
-    order_count_id: int,
     order_records: tp.RecordArray,
 
     group: int = 0,
 
-    log_count_id: tp.Optional[int] = None,
     log_records: tp.Optional[tp.RecordArray] = None,
-    log_records_filled: tp.Optional[int] = None,
 ):
-
-    # Get size value
+    order_count_id_new = record_counters.order_count_id
+    order_records_filled_new = record_counters.order_records_filled
+    log_count_id_new = record_counters.log_count_id
+    log_records_filled_new = record_counters.log_records_filled
     size_value = entry_order.size_value
+
     if entry_order.order_type == OrderType.LongEntry:
         if static_variables.size_type != SizeType.Amount:
             if np.isfinite(entry_order.sl_pcts):
                 sl_prices = price - (price * entry_order.sl_pcts)
                 possible_loss = size_value * (entry_order.sl_pcts)
-                
+
                 size_value = -possible_loss / \
                     ((sl_prices/price - 1) - static_variables.fee_pct -
-                    (sl_prices * static_variables.fee_pct / price))
-            
+                     (sl_prices * static_variables.fee_pct / price))
+
             elif np.isfinite(entry_order.tsl_pcts):
                 tsl_prices = price - (price * entry_order.tsl_pcts)
                 possible_loss = size_value * (entry_order.tsl_pcts)
-                
+
                 size_value = -possible_loss / \
                     ((tsl_prices / price - 1) - static_variables.fee_pct -
-                    (tsl_prices * static_variables.fee_pct / price))
+                     (tsl_prices * static_variables.fee_pct / price))
 
             elif np.isfinite(entry_order.sl_prices):
                 sl_pcts = (price - entry_order.sl_prices) / price
                 possible_loss = size_value * sl_pcts
-                
+
                 size_value = -possible_loss / \
                     ((sl_prices/price - 1) - static_variables.fee_pct -
-                    (sl_prices * static_variables.fee_pct / price))
+                     (sl_prices * static_variables.fee_pct / price))
 
             elif np.isfinite(entry_order.tsl_prices):
                 tsl_pcts = (price - entry_order.tsl_prices) / price
                 possible_loss = size_value * tsl_pcts
-                
+
                 size_value = -possible_loss / \
                     ((tsl_prices/price - 1) - static_variables.fee_pct -
-                    (tsl_prices * static_variables.fee_pct / price))
-        
+                     (tsl_prices * static_variables.fee_pct / price))
+
         # TODO make sure that you check size value to max and min size
-        
-        order_result = long_increase_nb(
+
+        account_state_new, order_result_new = long_increase_nb(
             price=price,
             size_value=size_value,
             entry_order=entry_order,
@@ -287,69 +289,49 @@ def process_order_nb(
 
     if order_result.order_status == OrderStatus.Filled:
         fill_order_records_nb(
-            average_entry=average_entry_new,
             bar=bar,
             col=col,
-            equity=equity,
-            fees_paid=0.,
             indicator_settings_counter=indicator_settings_counter,
-            max_equity_risk_pct=max_equity_risk_pct,
-            order_count_id=order_count_id,
             order_records=order_records,
             order_settings_counter=order_settings_counter,
-            order_type=order_type,
-            price=price_new,
-            realized_pnl=np.nan,
-            risk_rewards=risk_rewards,
-            size_value=size_value_new,
-            sl_pcts=sl_pcts_new,
-        )
-        order_count_id_new += 1
-        order_records_filled_new += 1
-        moved_sl_to_be = False
-        moved_tsl = False
 
-    if log_count_id != None:
-        if order_status == OrderStatus.Filled:
+            price=price,
+            size_value=size_value,
+
+            entry_order=entry_order,
+            order_result=order_result_new,
+            account_state=account_state_new,
+            static_variables=static_variables,
+            record_counters=record_counters,
+        )
+        order_count_id_new += record_counters.order_count_id
+        order_records_filled_new += record_counters.order_records_filled
+
+    if record_counters.log_count_id != None:
+        if order_result.order_status == OrderStatus.Filled:
             fill_log_records_nb(
-                average_entry=average_entry_new,
                 bar=bar,
                 col=col,
-                log_count_id=log_count_id,
+                price=price,
+                
+                entry_order=entry_order,
+                order_result=order_result_new,
+                account_state=account_state_new,
+                static_variables=static_variables,
+                record_counters=record_counters,
                 log_records=log_records,
-                order_count_id=order_count_id,
-                order_type=order_type,
-                price=price_new,
-                realized_pnl=np.nan,
-                sl_prices=sl_prices_new,
-                tsl_prices=tsl_prices_new,
-                tp_prices=tp_prices_new,
             )
-            log_count_id_new += 1
-            log_records_filled_new += 1
-
-    return \
-        available_balance_new, \
-        average_entry_new, \
-        cash_borrowed_new, \
-        cash_used_new, \
-        leverage_new, \
-        liq_price_new, \
-        log_count_id_new, \
-        log_records_filled_new, \
-        moved_sl_to_be, \
-        moved_tsl, \
-        order_count_id_new, \
-        order_records_filled_new, \
-        order_status_info, \
-        order_status, \
-        position_new, \
-        sl_pcts_new, \
-        sl_prices_new, \
-        tp_pcts_new, \
-        tp_prices_new, \
-        tsl_pcts_new, \
-        tsl_prices_new
+            log_count_id_new += record_counters.log_count_id
+            log_records_filled_new += record_counters.log_records_filled
+    
+    record_counters_new = RecordCounters(
+        order_count_id=order_count_id_new,
+        order_records_filled=order_records_filled_new,
+        log_count_id=log_count_id_new,
+        log_records_filled=log_records_filled_new,
+    )
+    
+    return account_state_new, order_result_new, record_counters_new
 
 
 @ njit(cache=True)

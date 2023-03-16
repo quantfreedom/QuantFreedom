@@ -692,11 +692,7 @@ def simulate_from_signals(
                         tsl_prices_order_result,\
                         = process_order_nb(
                             price=open_price[bar],
-
-                            # Account
                             account_state=account_state,
-
-                            # Order
                             entry_order=entry_order,
                             order_result=order_result,
                             static_variables=static_variables,

@@ -35,7 +35,7 @@ __all__ = [
     'SizeType',
     'EntryOrder',
     'StopsOrder',
-    'LogAndOrderRecords',
+    'RecordCounters',
     'StaticVariables',
 
     'log_records_dt',
@@ -68,12 +68,9 @@ class EntryOrder(tp.NamedTuple):
     tsl_prices: float = np.nan
 
 
-class LogAndOrderRecords(tp.NamedTuple):
-    bar: int = 0
-    indicator_settings_counter: int = 0
+class RecordCounters(tp.NamedTuple):
     order_count_id: int = 0
     order_records_filled: int = 0
-    order_settings_counter: int = 0
     log_count_id: tp.Optional[int] = None
     log_records_filled: tp.Optional[int] = None
 

@@ -1,5 +1,7 @@
 # Import version
 from quantfreedom._version import __version__ as _version
+import os
+os.environ["NUMBA_CACHE_DIR"]="numba_cache"
 
 __version__ = _version
 
