@@ -86,7 +86,7 @@ plugins:
       enable_inventory: true
       handlers:
         python:
-          paths: [quantfreedom]
+          paths: [../quantfreedom]
           options:
             show_source: true
             line_length: 1
@@ -102,8 +102,7 @@ nav:
   - Getting Started:
       - index.md
       - Installation: getting-started/install.md
-  - Tutorials:
-      - tutorials/rsi_long.md
+      - Release Notes: getting-started/releasenotes.md
   - API:
       - api/enums.md
       - api/numba.md

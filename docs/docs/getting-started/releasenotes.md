@@ -9,3 +9,4 @@ title: Release Notes
 - Added the ability to delete cache 
 
 ## Version 0.0.1 (March 12 2023)
+- Initial commit where only longing works and the whole thing barely even works lol
