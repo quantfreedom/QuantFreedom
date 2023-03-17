@@ -1,0 +1,38 @@
+Currently Working on:
+    ☐ fix log records situation ... make it so you create the log records and crate the counters and it just gets passed and checked before it is filled like free vbt
+    ☐ work on check stops and process stops
+    ☐ instead of having temp order and log records ... if the gains is a false then put np.nan for order and log records start count to end count
+
+Todos:
+    ☐ figure out a way to delete all cache and store cache in one place (https://numba.pydata.org/numba-doc/latest/reference/envvars.html#envvar-NUMBA_CACHE_DIR)
+    ☐ check on seeing if the deletion of numba cache works
+    ☐ make it so leverage goes to 100 when sl or tsl moves past entry
+    ☐ check calculations for cash used and cash borrowed for account
+    ☐ make it so that you can have a sl infront of your avg entry
+    ☐ make a tp sl order checker
+    ☐ check if njit cache=True should be cache or not cache
+    ☐ figure out how to check if sl tp tsl is infront of current open position
+    ☐ add in risk amount
+    ☐ Check the raise returns and make sure they are things that need to break the code and not just something that
+    ☐ can be passed up but the loop should be able to continue
+    ☐ fix all the variable and put them all in a order ... same in the enums
+    ☐ allow user to put in their own tp price sl price tsl price
+    ☐ clean up all sl tp tsl pct ... check for if np.isnan and sl tp tsl prices > 0 and not np.finite
+    ☐ make sure if selecting percent of account or risk percent that you have to have a size pct
+    ☐ finish risk amount and risk percent of account ... i think i would have to do that in order_nb
+    ☐ make sure size_type is in order process order execute order and long and short and also in order result
+    ☐ figure out how to make order result have tp optional
+    ☐ make sure you factor in fee to take profit and stop losses
+    ☐ how should the take profit RR be caluclated of init stop loss or init trailing stop?
+    ☐ risk specific amount of account and make sure it is based on start balance or freecash > starting balance
+    ☐ risk % of account with fee taken into consideration
+    ☐ make there be a difference between account increase pnl and trade pnl for
+    ☐ check to make sure that when you do np.inf it is grabing the position size and not adding any leverage too it ... close it out properly
+
+Archive:
+  ✔ added the ability to delete pycache and also added a specific folder where numba cache is and also the clear cache deletes the numba cache as well @done(23-03-16 19:48) @project(March 16 2023)
+  ✔ created the named tuples now @done(23-03-16 19:48) @project(March 16 2023)
+  ✔ got the long increase working @done(23-03-16 19:48) @project(March 16 2023)
+  ✔ fixed the main branch for brandon @done(23-03-16 19:48) @project(March 16 2023)
+  ✔ cleaned up fill order and log records @done(23-03-16 19:48) @project(March 16 2023)
+  ✔ did the whole order check section over again @done(23-03-16 19:48) @project(March 16 2023)
