@@ -26,7 +26,6 @@ def long_increase_nb(
     order_result: OrderResult,
     static_variables: StaticVariables,
 ) -> Tuple[AccountState, OrderResult]:
-    size_value = entry_order.size_value
 
     # new cash borrowed needs to be returned
     available_balance_new = account_state.available_balance
@@ -43,38 +42,73 @@ def long_increase_nb(
     tsl_pcts_new = entry_order.tsl_pcts
     tsl_prices_new = entry_order.tsl_prices
 
-    if static_variables.size_type != SizeType.Amount:
+    if static_variables.size_type != SizeType.Amount and \
+            static_variables.size_type != SizeType.PercentOfAccount:
+        
         if np.isfinite(sl_pcts_new):
+            if static_variables.size_type == SizeType.RiskPercentOfAccount:
+                size_value = account_state.equity * entry_order.size_pct / sl_pcts_new
+
+            elif static_variables.size_type == SizeType.RiskAmount:
+                size_value = entry_order.size_value / sl_pcts_new
+                if size_value < 1:
+                    raise ValueError(
+                        "Risk Amount has produced a size_value values less than 1.")
             sl_prices_new = price - (price * sl_pcts_new)
             possible_loss = size_value * (sl_pcts_new)
 
             size_value = -possible_loss / \
                 ((sl_prices_new/price - 1) - static_variables.fee_pct -
                     (sl_prices_new * static_variables.fee_pct / price))
-
+        
         elif np.isfinite(tsl_pcts_new):
+            if static_variables.size_type == SizeType.RiskPercentOfAccount:
+                size_value = account_state.equity * entry_order.size_pct / tsl_pcts_new
+
+            elif static_variables.size_type == SizeType.RiskAmount:
+                size_value = entry_order.size_value / tsl_pcts_new
+                if size_value < 1:
+                    raise ValueError(
+                        "Risk Amount has produced a size_value values less than 1.") 
             tsl_prices_new = price - (price * tsl_pcts_new)
             possible_loss = size_value * (tsl_pcts_new)
 
             size_value = -possible_loss / \
                 ((tsl_prices_new / price - 1) - static_variables.fee_pct -
                     (tsl_prices_new * static_variables.fee_pct / price))
+            
+    elif static_variables.size_type == SizeType.Amount:
+        size_value = entry_order.size_value
+        if size_value > static_variables.max_order_size_value:
+            size_value = static_variables.max_order_size_value
+        elif size_value == np.inf:
+            size_value = order_result.position
 
-        elif np.isfinite(sl_prices_new):
-            sl_pcts_new = (price - sl_prices_new) / price
-            possible_loss = size_value * sl_pcts_new
+    # getting size_value for percent of account
+    elif static_variables.size_type == SizeType.PercentOfAccount:
+        size_value = account_state.equity * entry_order.size_pct  # math checked
 
-            size_value = -possible_loss / \
-                ((sl_prices_new/price - 1) - static_variables.fee_pct -
-                    (sl_prices_new * static_variables.fee_pct / price))
+    else:
+        raise TypeError(
+            "I have no clue what is wrong but something is wrong with making the size_value using size_value type")
 
-        elif np.isfinite(tsl_prices_new):
-            tsl_pcts_new = (price - tsl_prices_new) / price
-            possible_loss = size_value * tsl_pcts_new
+    # TODO talk to someone who would want to use set prices for sl and trailing sl 
+    # if np.isfinite(sl_prices_new):
+    #     sl_prices_new = price - sl_prices_new
+    #     sl_pcts_new = (price - sl_prices_new) / price
+    #     possible_loss = size_value * sl_pcts_new
 
-            size_value = -possible_loss / \
-                ((tsl_prices_new/price - 1) - static_variables.fee_pct -
-                    (tsl_prices_new * static_variables.fee_pct / price))
+    #     size_value = -possible_loss / \
+    #         ((sl_prices_new/price - 1) - static_variables.fee_pct -
+    #             (sl_prices_new * static_variables.fee_pct / price))
+
+    # elif np.isfinite(tsl_prices_new):
+    #     tsl_pcts_new = (price - tsl_prices_new) / price
+    #     possible_loss = size_value * tsl_pcts_new
+
+    #     size_value = -possible_loss / \
+    #         ((tsl_prices_new/price - 1) - static_variables.fee_pct -
+    #             (tsl_prices_new * static_variables.fee_pct / price))
 
     if size_value < 1 or \
             size_value > static_variables.max_order_size_value or \
@@ -162,7 +196,7 @@ def long_increase_nb(
                 OrderResult(
                     average_entry=order_result.average_entry,
                     fees_paid=0.,
-                    leverage_auto=order_result.leverage_auto,
+                    leverage=order_result.leverage,
                     liq_price=order_result.liq_price,
                     moved_sl_to_be=order_result.moved_sl_to_be,
                     moved_tsl=order_result.moved_sl_to_be,
@@ -191,7 +225,7 @@ def long_increase_nb(
             temp_price = tsl_prices_new
 
         leverage_new = -average_entry_new / \
-            (temp_price - temp_price * (.2 / 100) -  # TODO .2 is percent padding user wants
+            (temp_price - temp_price * .002 -  # TODO .2 is percent padding user wants
              average_entry_new - static_variables.mmr * average_entry_new)  # math checked
         if leverage_new > static_variables.max_lev:
             leverage_new = static_variables.max_lev

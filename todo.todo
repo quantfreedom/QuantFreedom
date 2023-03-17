@@ -1,7 +1,10 @@
 Currently Working on:
-    ☐ fix log records situation ... make it so you create the log records and crate the counters and it just gets passed and checked before it is filled like free vbt
+    ☐ change up df to remove sl pct and others
+    ☐ figure out why there is a trade of zero happening
+    ☐ multiple all the cart arrays pct by 100 before returning cart array
+    ☐ add an else statement to the gains that deals with erasing the data from order records
     ☐ work on check stops and process stops
-    ☐ instead of having temp order and log records ... if the gains is a false then put np.nan for order and log records start count to end count
+    ☐ try to figure out a way to only return the ids of the cart arrays that made it past the filter
 
 Todos:
     ☐ figure out a way to delete all cache and store cache in one place (https://numba.pydata.org/numba-doc/latest/reference/envvars.html#envvar-NUMBA_CACHE_DIR)
@@ -30,9 +33,13 @@ Todos:
     ☐ check to make sure that when you do np.inf it is grabing the position size and not adding any leverage too it ... close it out properly
 
 Archive:
-  ✔ added the ability to delete pycache and also added a specific folder where numba cache is and also the clear cache deletes the numba cache as well @done(23-03-16 19:48) @project(March 16 2023)
-  ✔ created the named tuples now @done(23-03-16 19:48) @project(March 16 2023)
-  ✔ got the long increase working @done(23-03-16 19:48) @project(March 16 2023)
-  ✔ fixed the main branch for brandon @done(23-03-16 19:48) @project(March 16 2023)
-  ✔ cleaned up fill order and log records @done(23-03-16 19:48) @project(March 16 2023)
-  ✔ did the whole order check section over again @done(23-03-16 19:48) @project(March 16 2023)
+  ✔ update code to get position size in buy func @done(23-03-17 08:22)
+  ✔ delete log records @done(23-03-17 08:49)
+  ✔ add each trade info to order records @done(23-03-17 08:49)
+  ✔ return cart array @done(23-03-17 08:51)
+  ✔ added the ability to delete pycache and also added a specific folder where numba cache is and also the clear cache deletes the numba cache as well @done(23-03-16 19:48)
+  ✔ created the named tuples now @done(23-03-16 19:48)
+  ✔ got the long increase working @done(23-03-16 19:48)
+  ✔ fixed the main branch for brandon @done(23-03-16 19:48)
+  ✔ cleaned up fill order and log records @done(23-03-16 19:48)
+  ✔ did the whole order check section over again @done(23-03-16 19:48)

@@ -6,7 +6,6 @@ import numpy as np
 from numba import literal_unroll, njit
 from quantfreedom._typing import (
     ArrayLike,
-    Optional,
 )
 
 from quantfreedom.backtester.nb.helper_funcs import (
@@ -14,13 +13,11 @@ from quantfreedom.backtester.nb.helper_funcs import (
 )
 from quantfreedom.backtester.nb.execute_funcs import (
     process_order_nb,
-    check_sl_tp_nb,
 )
 from quantfreedom.backtester.enums.enums import (
     cart_array_dt,
     ready_for_df,
-    order_records_dt,
-    log_records_dt,
+    or_dt,
 
     LeverageMode,
     OrderType,
@@ -32,7 +29,6 @@ from quantfreedom.backtester.enums.enums import (
     OrderResult,
     StopsOrder,
     StaticVariables,
-    RecordCounters,
 )
 
 
@@ -40,7 +36,10 @@ from quantfreedom.backtester.enums.enums import (
 def simulate_from_signals(
     # entry info
     entries: ArrayLike,
-    open_price: ArrayLike,
+    open_prices: ArrayLike,
+    high_prices: ArrayLike,
+    low_prices: ArrayLike,
+    close_prices: ArrayLike,
 
     # required account info
     equity: float,
@@ -51,11 +50,6 @@ def simulate_from_signals(
     lev_mode: int,
     order_type: int,
     size_type: int,
-
-    # Price params
-    high_price: Optional[ArrayLike] = None,
-    low_price: Optional[ArrayLike] = None,
-    close_price: Optional[ArrayLike] = None,
 
     # Order Params
     leverage: ArrayLike = np.nan,
@@ -94,15 +88,12 @@ def simulate_from_signals(
     tp_pcts: ArrayLike = np.nan,
     tp_prices: ArrayLike = np.nan,
 
-    # Record stops logs
-    want_to_record_stops_log: bool = False,
-
     # Results Filters
     gains_pct_filter: float = -np.inf,
     total_trade_filter: int = 0,
 ):
 
-    # static checks
+    # Static checks
     if equity < 0 or not np.isfinite(equity):
         raise ValueError("YOU HAVE NO MONEY!!!! You Broke!!!!")
 
@@ -132,6 +123,7 @@ def simulate_from_signals(
         raise ValueError(
             "max_order_size_value has to be > min_order_size_value")
 
+    # Static variables creation
     og_equity = equity
     fee_pct /= 100
     mmr /= 100
@@ -218,10 +210,7 @@ def simulate_from_signals(
 
     tp_prices_array = to_1d_array_nb(np.asarray(tp_prices, dtype=np.float_))
 
-    '''
-    Check Params
-    '''
-
+    # Checking all new arrays
     if np.isfinite(size_value_array).all():
         if size_value_array.any() < 1:
             raise ValueError("size_value must be greater than 1.")
@@ -337,7 +326,7 @@ def simulate_from_signals(
 
     # Getting the right size for Size Type Amount
     if size_type == SizeType.Amount:
-        if np.isnan(size_value_array).any():
+        if np.isnan(size_value_array).any() or size_value_array.any() < 1:
             raise ValueError(
                 "With SizeType as amount, size_value must be 1 or greater.")
 
@@ -350,7 +339,7 @@ def simulate_from_signals(
     if size_type == SizeType.RiskAmount or (
             size_type == SizeType.RiskPercentOfAccount) and check_sl_tsl_for_nan:
         raise ValueError(
-            "When using Risk Amount or Risk Percent of Account set a proper sl or tsl > 0")
+            "When using Risk Amount or Risk Percent of Account set a proper sl pct or tsl pct > 0")
 
     # setting risk percent size
     if size_type == SizeType.RiskPercentOfAccount:
@@ -408,10 +397,8 @@ def simulate_from_signals(
             raise ValueError(
                 "sl_to_be needs to be True to use sl_to_be_zero_or_entry.")
 
-    # trailing stop loss checks
-
-    if not np.isfinite(tsl_true_or_false).any() or \
-            tsl_true_or_false.any() < 0 or tsl_true_or_false.any() > 1:
+    if not np.isfinite(tsl_true_or_false_array).any() or \
+            tsl_true_or_false_array.any() < 0 or tsl_true_or_false_array.any() > 1:
         raise ValueError(
             "tsl_true_or_false needs to be true or false")
 
@@ -432,7 +419,7 @@ def simulate_from_signals(
         raise ValueError(
             "You need tsl_when_pct_from_avg_entry to be > 0 or not inf.")
 
-    if tsl_true_or_false.any() == False:
+    if tsl_true_or_false_array.any() == False:
         if np.isfinite(tsl_based_on_array).any():
             raise ValueError(
                 "tsl_true_or_false needs to be True to use tsl_based_on.")
@@ -443,10 +430,6 @@ def simulate_from_signals(
             raise ValueError(
                 "tsl_true_or_false needs to be True to use tsl_when_pct_from_avg_entry.")
 
-    if want_to_record_stops_log != True and want_to_record_stops_log != False:
-        raise ValueError(
-            "want_to_record_stops_log needs to be true or false")
-
     if gains_pct_filter == np.inf:
         raise ValueError(
             "gains_pct_filter can't be inf")
@@ -455,6 +438,7 @@ def simulate_from_signals(
         raise ValueError(
             "total_trade_filter needs to be greater than 0")
 
+    # Cart of new arrays
     arrays = (
         leverage_array,
         max_equity_risk_pct_array,
@@ -499,28 +483,28 @@ def simulate_from_signals(
             out[j*m:(j+1)*m, k+1:] = out[0:m, k+1:]
 
     dtype_names = (
-        'leverage_array',
-        'max_equity_risk_pct_array',
-        'max_equity_risk_value_array',
-        'risk_rewards_array',
-        'size_pct_array',
-        'size_value_array',
-        'sl_pcts_array',
-        'sl_prices_array',
-        'sl_to_be_array',
-        'sl_to_be_based_on_array',
-        'sl_to_be_then_trail_array',
-        'sl_to_be_trail_by_when_pct_from_avg_entry_array',
-        'sl_to_be_when_pct_from_avg_entry_array',
-        'sl_to_be_zero_or_entry_array',
-        'tp_pcts_array',
-        'tp_prices_array',
-        'tsl_based_on_array',
-        'tsl_pcts_array',
-        'tsl_prices_array',
-        'tsl_trail_by_array',
-        'tsl_true_or_false_array',
-        'tsl_when_pct_from_avg_entry_array',
+        'leverage',
+        'max_equity_risk_pct',
+        'max_equity_risk_value',
+        'risk_rewards',
+        'size_pct',
+        'size_value',
+        'sl_pcts',
+        'sl_prices',
+        'sl_to_be',
+        'sl_to_be_based_on',
+        'sl_to_be_then_trail',
+        'sl_to_be_trail_by_when_pct_from_avg_entry',
+        'sl_to_be_when_pct_from_avg_entry',
+        'sl_to_be_zero_or_entry',
+        'tp_pcts',
+        'tp_prices',
+        'tsl_based_on',
+        'tsl_pcts',
+        'tsl_prices',
+        'tsl_trail_by',
+        'tsl_true_or_false',
+        'tsl_when_pct_from_avg_entry',
     )
     counter = 0
     for dtype_name in literal_unroll(dtype_names):
@@ -528,37 +512,38 @@ def simulate_from_signals(
             cart_array[dtype_name][col] = out[col][counter]
         counter += 1
 
-    # setting arrys as cart arrays
-    leverage_cart_array = cart_array['leverage_array']
-    max_equity_risk_pct_cart_array = cart_array['max_equity_risk_pct_array']
-    max_equity_risk_value_cart_array = cart_array['max_equity_risk_value_array']
-    risk_rewards_cart_array = cart_array['risk_rewards_array']
-    size_pct_cart_array = cart_array['size_pct_array']
-    size_value_cart_array = cart_array['size_value_array']
-    sl_pcts_cart_array = cart_array['sl_pcts_array']
-    sl_prices_cart_array = cart_array['sl_prices_array']
+    # Setting variable arrys from cart arrays
+    leverage_cart_array = cart_array['leverage']
+    max_equity_risk_pct_cart_array = cart_array['max_equity_risk_pct']
+    max_equity_risk_value_cart_array = cart_array['max_equity_risk_value']
+    risk_rewards_cart_array = cart_array['risk_rewards']
+    size_pct_cart_array = cart_array['size_pct']
+    size_value_cart_array = cart_array['size_value']
+    sl_pcts_cart_array = cart_array['sl_pcts']
+    sl_prices_cart_array = cart_array['sl_prices']
     sl_to_be_cart_array = np.asarray(
-        cart_array['sl_to_be_array'], dtype=np.bool_)
-    sl_to_be_based_on_cart_array = cart_array['sl_to_be_based_on_array']
+        cart_array['sl_to_be'], dtype=np.bool_)
+    sl_to_be_based_on_cart_array = cart_array['sl_to_be_based_on']
     sl_to_be_then_trail_cart_array = np.asarray(
-        cart_array['sl_to_be_then_trail_array'], dtype=np.bool_)
+        cart_array['sl_to_be_then_trail'], dtype=np.bool_)
     sl_to_be_trail_by_when_pct_from_avg_entry_cart_array = cart_array[
-        'sl_to_be_trail_by_when_pct_from_avg_entry_array']
+        'sl_to_be_trail_by_when_pct_from_avg_entry']
     sl_to_be_when_pct_from_avg_entry_cart_array = cart_array[
-        'sl_to_be_when_pct_from_avg_entry_array']
-    sl_to_be_zero_or_entry_cart_array = cart_array['sl_to_be_zero_or_entry_array']
-    tp_pcts_cart_array = cart_array['tp_pcts_array']
-    tp_prices_cart_array = cart_array['tp_prices_array']
-    tsl_based_on_cart_array = cart_array['tsl_based_on_array']
-    tsl_pcts_cart_array = cart_array['tsl_pcts_array']
-    tsl_prices_cart_array = cart_array['tsl_prices_array']
-    tsl_trail_by_cart_array = cart_array['tsl_trail_by_array']
+        'sl_to_be_when_pct_from_avg_entry']
+    sl_to_be_zero_or_entry_cart_array = cart_array['sl_to_be_zero_or_entry']
+    tp_pcts_cart_array = cart_array['tp_pcts']
+    tp_prices_cart_array = cart_array['tp_prices']
+    tsl_based_on_cart_array = cart_array['tsl_based_on']
+    tsl_pcts_cart_array = cart_array['tsl_pcts']
+    tsl_prices_cart_array = cart_array['tsl_prices']
+    tsl_trail_by_cart_array = cart_array['tsl_trail_by']
     tsl_true_or_false_cart_array = np.asarray(
-        cart_array['tsl_true_or_false_array'], dtype=np.bool_)
-    tsl_when_pct_from_avg_entry_cart_array = cart_array['tsl_when_pct_from_avg_entry_array']
+        cart_array['tsl_true_or_false'], dtype=np.bool_)
+    tsl_when_pct_from_avg_entry_cart_array = cart_array['tsl_when_pct_from_avg_entry']
 
-    cart_array = counter = out = dtype_names = arrays = n = m = k = j = i = col = 0
+    counter = out = dtype_names = arrays = n = m = k = j = i = col = 0
 
+    # Creating Settings Vars
     total_order_settings = sl_pcts_cart_array.shape[0]
 
     if entries.ndim == 1:
@@ -566,7 +551,7 @@ def simulate_from_signals(
     else:
         total_indicator_settings = entries.shape[1]
 
-    total_bars = open_price.shape[0]
+    total_bars = open_prices.shape[0]
 
     # record_count = 0
     # for i in range(total_order_settings):
@@ -576,31 +561,15 @@ def simulate_from_signals(
     #                 record_count += 1
     # record_count = int(record_count / 2)
 
+    # Creating OR
     df_array = np.empty(10000, dtype=ready_for_df)
     df_counter = 0
 
-    order_records = np.empty(10000, dtype=order_records_dt)
-    start_order_count = 0
-    end_order_count = 0
-
-    if want_to_record_stops_log:
-        log_records = np.empty(100000, dtype=log_records_dt)
-        start_log_count = 0
-        end_log_count = 0
-
-        record_counters = RecordCounters(
-            order_count_id=0,
-            order_records_filled=0,
-            log_count_id=0,
-            log_records_filled=0,
-        )
-    else:
-        record_counters = RecordCounters(
-            order_count_id=0,
-            order_records_filled=0,
-            log_count_id=None,
-            log_records_filled=None,
-        )
+    order_records = np.empty(10000, dtype=or_dt)
+    or_filled_start = 0
+    or_filled_end = np.array([0])
+    order_count_id = np.array([0])
+    or_filled_end = np.array([0])
 
     use_stops = not np.isnan(sl_pcts_array[0]) or \
         not np.isnan(tsl_pcts_array[0]) or \
@@ -612,10 +581,6 @@ def simulate_from_signals(
             leverage=leverage_cart_array[order_settings_counter],
             max_equity_risk_pct=max_equity_risk_pct_cart_array[order_settings_counter],
             max_equity_risk_value=max_equity_risk_value_cart_array[order_settings_counter],
-            max_order_size_pct=max_order_size_pct,
-            max_order_size_value=max_order_size_value,
-            min_order_size_pct=min_order_size_pct,
-            min_order_size_value=min_order_size_value,
             order_type=order_type,
             risk_rewards=risk_rewards_cart_array[order_settings_counter],
             size_pct=size_pct_cart_array[order_settings_counter],
@@ -651,34 +616,6 @@ def simulate_from_signals(
             else:
                 current_indicator_entries = entries
 
-            temp_order_records = np.empty(
-                total_bars, dtype=order_records_dt)
-            
-            if want_to_record_stops_log:
-                temp_log_records = np.empty(total_bars, dtype=log_records_dt)
-                log_count_id=record_counters.log_count_id
-                log_records_filled=0
-            else:
-                temp_log_records = None
-                log_count_id = None
-                log_records_filled = None
-            
-            if want_to_record_stops_log:
-                temp_log_records = np.empty(total_bars, dtype=log_records_dt)
-                record_counters = RecordCounters(
-                    order_count_id=0,
-                    order_records_filled=0,
-                    log_count_id=0,
-                    log_records_filled=0,
-                )
-            else:
-                record_counters = RecordCounters(
-                    order_count_id=0,
-                    order_records_filled=0,
-                    log_count_id=None,
-                    log_records_filled=None,
-                )
-
             # Account State Reset
             account_state = AccountState(
                 available_balance=og_equity,
@@ -690,12 +627,6 @@ def simulate_from_signals(
             # Order Result Reset
             order_result = OrderResult()
 
-            record_counters = RecordCounters(
-                order_count_id=record_counters.order_count_id,
-                order_records_filled=0,
-
-            )
-
             for bar in range(total_bars):
 
                 if account_state.available_balance < 5:
@@ -703,104 +634,79 @@ def simulate_from_signals(
 
                 if current_indicator_entries[bar]:
 
-                    # all returns will be called current so like sl_prices_current
-                    order_result = process_order_nb(
-                        price=open_price[bar],
+                    # Process Order nb
+                    account_state, order_result = process_order_nb(
+                        price=open_prices[bar],
+                        
                         account_state=account_state,
                         entry_order=entry_order,
                         order_result=order_result,
                         static_variables=static_variables,
-                        record_counters=record_counters,
 
                         bar=bar,
                         indicator_settings_counter=indicator_settings_counter,
                         order_settings_counter=order_settings_counter,
 
-                        log_records=temp_log_records[record_counters.log_records_filled],
-
-                        order_records=temp_order_records[record_counters.order_records_filled],
+                        order_records=order_records[or_filled_end[0]],
+                        order_count_id=order_count_id,
+                        or_filled_end=or_filled_end,
                     )
-                if position > 0:
-                    log_count_id, \
-                        log_records_filled, \
-                        moved_sl_to_be_order_result, \
-                        moved_tsl_order_result, \
-                        order_type_order_result, \
-                        price_order_result, \
-                        size_value_order_result, \
-                        sl_prices_order_result, \
-                        tsl_prices_order_result,\
-                        = check_sl_tp_nb(
-                            average_entry=average_entry,
-                            high_price=high_price[bar],
-                            low_price=low_price[bar],
-                            open_price=open_price[bar],
-                            close_price=close_price[bar],
-                            fee_pct=fee_pct,
-                            order_type=order_type,
-                            liq_price=liq_price,
+                # if position > 0:
+                #         moved_sl_to_be_order_result, \
+                #         moved_tsl_order_result, \
+                #         order_type_order_result, \
+                #         price_order_result, \
+                #         size_value_order_result, \
+                #         sl_prices_order_result, \
+                #         tsl_prices_order_result,\
+                #         = check_sl_tp_nb(
+                #             average_entry=average_entry,
+                #             high_price=high_price[bar],
+                #             low_price=low_price[bar],
+                #             open_price=open_price[bar],
+                #             close_price=close_price[bar],
+                #             fee_pct=fee_pct,
+                #             order_type=order_type,
+                #             liq_price=liq_price,
 
-                            sl_prices=sl_prices_order_result,
-                            tsl_prices=tsl_prices_order_result,
-                            tp_prices=tp_prices_order_result,
+                #             sl_prices=sl_prices_order_result,
+                #             tsl_prices=tsl_prices_order_result,
+                #             tp_prices=tp_prices_order_result,
 
-                            moved_sl_to_be=moved_sl_to_be_order_result,
-                            sl_to_be=sl_to_be_order,
-                            sl_to_be_based_on=sl_to_be_based_on_order,
-                            sl_to_be_when_pct_from_avg_entry=sl_to_be_when_pct_from_avg_entry_order,
-                            sl_to_be_zero_or_entry=sl_to_be_zero_or_entry_order,
-                            want_to_record_stops_log=want_to_record_stops_log,
+                #             moved_sl_to_be=moved_sl_to_be_order_result,
+                #             sl_to_be=sl_to_be_order,
+                #             sl_to_be_based_on=sl_to_be_based_on_order,
+                #             sl_to_be_when_pct_from_avg_entry=sl_to_be_when_pct_from_avg_entry_order,
+                #             sl_to_be_zero_or_entry=sl_to_be_zero_or_entry_order,
 
-                            moved_tsl=moved_tsl_order_result,
-                            tsl_based_on=tsl_based_on_order,
-                            tsl_true_or_false=tsl_true_or_false_order,
-                            tsl_when_pct_from_avg_entry=tsl_when_pct_from_avg_entry_order,
-                            tsl_trail_by=tsl_trail_by_order,
+                #             moved_tsl=moved_tsl_order_result,
+                #             tsl_based_on=tsl_based_on_order,
+                #             tsl_true_or_false=tsl_true_or_false_order,
+                #             tsl_when_pct_from_avg_entry=tsl_when_pct_from_avg_entry_order,
+                #             tsl_trail_by=tsl_trail_by_order,
 
-                            # only needed if checking stops movement
-                            bar=bar,
-                            col=col,
-                            log_count_id=log_count_id,
-                            log_records=temp_log_records[log_records_filled],
-                            log_records_filled=log_records_filled,
-                            order_count_id=order_count_id,
-                        )
-                    if not np.isnan(size_value_order_result):
-                        pass
-                        # available_balance, \
-                        #     cash_borrowed, \
-                        #     cash_used, \
-                        #     equity, \
-                        #     fees_paid, \
-                        #     liq_price, \
-                        #     log_count_id, \
-                        #     log_records_filled, \
-                        #     order_count_id, \
-                        #     order_records_filled, \
-                        #     order_status_info, \
-                        #     order_status, \
-                        #     position, \
-                        #     realized_pnl, \
-                        #         = process_stops_nb(
-
-                        #         )
+                #             # only needed if checking stops movement
+                #             bar=bar,
+                #             col=col,
+                #             order_count_id=order_count_id,
+                #         )
+                #     if not np.isnan(size_value_order_result):
+                #         # hey there
+                #         pass
+            # Checking if gains
             gains_pct = ((equity - og_equity) / og_equity) * 100
             if gains_pct > gains_pct_filter:
-                temp_order_records = temp_order_records[:order_records_filled]
-                temp_log_records = temp_log_records[:log_records_filled]
+                temp_order_records = order_records[or_filled_start:or_filled_end[0]]
                 w_l = temp_order_records['real_pnl'][~np.isnan(
                     temp_order_records['real_pnl'])]
+                # Checking troal trade filter
                 if w_l.size > total_trade_filter:
 
                     w_l_no_be = w_l[w_l != 0]  # filter out all BE trades
 
-                    end_order_count += order_records_filled
+                    end_order_count += or_filled_end
                     order_records[start_order_count: end_order_count] = temp_order_records
                     start_order_count = end_order_count
-
-                    end_log_count += log_records_filled
-                    log_records[start_log_count: end_log_count] = temp_log_records
-                    start_log_count = end_log_count
 
                     # win rate calc
                     win_loss = np.where(w_l_no_be < 0, 0, 1)
@@ -848,4 +754,5 @@ def simulate_from_signals(
                     df_array['max_eq_risk_pct'][df_counter] = temp_order_records['max_eq_risk_pct'][0] * 100
                     df_counter += 1
 
-    return df_array[: df_counter], order_records[: end_order_count], log_records[: end_log_count]
+    # return sim
+    return df_array[: df_counter], order_records[: or_filled_end[0]], cart_array

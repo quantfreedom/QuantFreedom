@@ -35,11 +35,9 @@ __all__ = [
     'SizeType',
     'EntryOrder',
     'StopsOrder',
-    'RecordCounters',
     'StaticVariables',
 
-    'log_records_dt',
-    'order_records_dt',
+    'or_dt',
     'ready_for_df',
     'cart_array_dt',
 ]
@@ -66,13 +64,6 @@ class EntryOrder(tp.NamedTuple):
     tp_prices: float = np.nan
     tsl_pcts: float = np.nan
     tsl_prices: float = np.nan
-
-
-class RecordCounters(tp.NamedTuple):
-    order_count_id: int = 0
-    order_records_filled: int = 0
-    log_count_id: tp.Optional[int] = None
-    log_records_filled: tp.Optional[int] = None
 
 
 class OrderResult(tp.NamedTuple):
@@ -113,7 +104,7 @@ class StopsOrder(tp.NamedTuple):
     sl_to_be: bool = False
     sl_to_be_based_on: float = np.nan
     sl_to_be_then_trail: bool = False
-    sl_to_be_trail_when_pct_from_avg_entry: float = np.nan
+    sl_to_be_trail_by_when_pct_from_avg_entry: float = np.nan
     sl_to_be_when_pct_from_avg_entry: float = np.nan
     sl_to_be_zero_or_entry: float = np.nan
     tsl_based_on: float = np.nan
@@ -207,62 +198,48 @@ ready_for_df = np.dtype([
 ], align=True)
 
 cart_array_dt = np.dtype([
-    ('leverage_array', np.float_),
-    ('max_equity_risk_pct_array', np.float_),
-    ('max_equity_risk_value_array', np.float_),
-    ('risk_rewards_array', np.float_),
-    ('size_pct_array', np.float_),
-    ('size_value_array', np.float_),
-    ('sl_pcts_array', np.float_),
-    ('sl_prices_array', np.float_),
-    ('sl_to_be_array', np.float_),
-    ('sl_to_be_based_on_array', np.float_),
-    ('sl_to_be_then_trail_array', np.float_),
-    ('sl_to_be_trail_when_pct_from_avg_entry_array', np.float_),
-    ('sl_to_be_when_pct_from_avg_entry_array', np.float_),
-    ('sl_to_be_zero_or_entry_array', np.float_),
-    ('tp_pcts_array', np.float_),
-    ('tp_prices_array', np.float_),
-    ('tsl_based_on_array', np.float_),
-    ('tsl_pcts_array', np.float_),
-    ('tsl_prices_array', np.float_),
-    ('tsl_trail_by_array', np.float_),
-    ('tsl_true_or_false_array', np.float_),
-    ('tsl_when_pct_from_avg_entry_array', np.float_),
+    ('leverage', np.float_),
+    ('max_equity_risk_pct', np.float_),
+    ('max_equity_risk_value', np.float_),
+    ('risk_rewards', np.float_),
+    ('size_pct', np.float_),
+    ('size_value', np.float_),
+    ('sl_pcts', np.float_),
+    ('sl_prices', np.float_),
+    ('sl_to_be', np.float_),
+    ('sl_to_be_based_on', np.float_),
+    ('sl_to_be_then_trail', np.float_),
+    ('sl_to_be_trail_by_when_pct_from_avg_entry', np.float_),
+    ('sl_to_be_when_pct_from_avg_entry', np.float_),
+    ('sl_to_be_zero_or_entry', np.float_),
+    ('tp_pcts', np.float_),
+    ('tp_prices', np.float_),
+    ('tsl_based_on', np.float_),
+    ('tsl_pcts', np.float_),
+    ('tsl_prices', np.float_),
+    ('tsl_trail_by', np.float_),
+    ('tsl_true_or_false', np.float_),
+    ('tsl_when_pct_from_avg_entry', np.float_),
 ], align=True)
 """
 A numpy array with specific data types that allow you to store specific information about your order result
 """
 
-order_records_dt = np.dtype([
-    ('order_id', np.int_),
-    ('col', np.int_),
+or_dt = np.dtype([
+    ('avg_entry', np.float_),
+    ('bar', np.int_),
     ('equity', np.float_),
     ('fees_paid', np.float_),
-    ('bar', np.int_),
     ('ind_set', np.int_),
-    ('max_eq_risk_pct', np.float_),
     ('or_set', np.int_),
-    ('price', np.float_),
-    ('real_pnl', np.float_),
-    ('rr', np.float_),
-    ('order_type', np.float_),
-    ('size_value', np.float_),
-    ('sl_pct', np.float_),
-], align=True)
-
-log_records_dt = np.dtype([
-    ('bar', np.int_),
     ('order_id', np.int_),
-    ('log_id', np.int_),
-    ('price', np.float_),
     ('order_type', np.float_),
-    ('avg_entry', np.float_),
-    ('sl_prices', np.float_),
-    ('tsl_prices', np.float_),
-    ('tp_prices', np.float_),
+    ('price', np.float_),
     ('real_pnl', np.float_),
-
+    ('size_value', np.float_),
+    ('sl_prices', np.float_),
+    ('tp_prices', np.float_),
+    ('tsl_prices', np.float_),
 ], align=True)
 
 

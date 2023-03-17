@@ -6,10 +6,10 @@ import numpy as np
 from numba import njit
 
 from quantfreedom.backtester.nb.buy_funcs import long_increase_nb
-from quantfreedom.backtester.nb.helper_funcs import fill_log_records_nb, fill_order_records_nb
+from quantfreedom.backtester.nb.helper_funcs import fill_order_records_nb
 from quantfreedom._typing import (
     RecordArray,
-    Optional,
+    Array1d,
 )
 from quantfreedom.backtester.enums.enums import (
     OrderType,
@@ -22,7 +22,6 @@ from quantfreedom.backtester.enums.enums import (
     OrderResult,
     RejectedOrderError,
     StaticVariables,
-    RecordCounters,
 )
 
 
@@ -39,7 +38,6 @@ def check_sl_tp_nb(
     tsl_prices: float,
     liq_price: float,
     tp_prices: float,
-    want_to_record_stops_log: bool,
 
     moved_sl_to_be: bool,
     sl_to_be: bool,
@@ -53,11 +51,6 @@ def check_sl_tp_nb(
     tsl_trail_by: float,
     tsl_when_pct_from_avg_entry: float,
 
-    bar: Optional[int] = None,
-    log_count_id: Optional[int] = None,
-    log_records: Optional[RecordArray] = None,
-    log_records_filled: Optional[int] = None,
-    order_count_id: Optional[int] = None,
 ):
     """
     This checks if your stop or take profit was hit.
@@ -73,10 +66,7 @@ def check_sl_tp_nb(
     First it checks the order type and then it checks if the stop losses were hit and then checks to see if take profit was hit last.
     It defaults to checking tp last so it has a negative bias.
     """
-    log_count_id_new = log_count_id
-    log_records_filled_new = log_records_filled
     size_value = np.inf
-    record_log_sl_moved = False
 
     # checking if we are in a long
     if order_type == OrderType.LongEntry:
@@ -171,40 +161,8 @@ def check_sl_tp_nb(
     else:
         raise RejectedOrderError(
             "Check SL TP: Something is wrong checking sl tsl tp")
-    # create the order
-
-    record_logs = (
-        bar != None and
-        log_count_id != None and
-        log_records != None and
-        log_records_filled != None and
-        order_count_id != None
-    )
-    if want_to_record_stops_log:
-        if record_log_sl_moved:
-            if record_logs:
-                fill_log_records_nb(
-                    average_entry=average_entry,
-                    bar=bar,
-                    log_count_id=log_count_id,
-                    log_records=log_records,
-                    order_count_id=order_count_id,
-                    order_type=order_type,
-                    price=np.nan,
-                    realized_pnl=np.nan,
-                    sl_prices=sl_prices,
-                    tsl_prices=tsl_prices,
-                    tp_prices=tp_prices,
-                )
-                log_count_id_new += 1
-                log_records_filled_new += 1
-            else:
-                raise RejectedOrderError(
-                    "You forgot something to run logs in sl checker")
 
     return \
-        log_count_id_new, \
-        log_records_filled_new, \
         moved_sl_to_be, \
         moved_tsl, \
         order_type, \
@@ -222,19 +180,16 @@ def process_order_nb(
     indicator_settings_counter: int,
     order_settings_counter: int,
     order_records: RecordArray,
+    order_count_id: Array1d,
+    or_filled_end: Array1d,
+
 
     account_state: AccountState,
     entry_order: EntryOrder,
     order_result: OrderResult,
     static_variables: StaticVariables,
-    record_counters: RecordCounters,
 
-    log_records: Optional[RecordArray] = None,
 ):
-    order_count_id_new = record_counters.order_count_id
-    order_records_filled_new = record_counters.order_records_filled
-    log_count_id_new = record_counters.log_count_id
-    log_records_filled_new = record_counters.log_records_filled
 
     if entry_order.order_type == OrderType.LongEntry:
 
@@ -254,39 +209,15 @@ def process_order_nb(
             indicator_settings_counter=indicator_settings_counter,
             order_records=order_records,
             order_settings_counter=order_settings_counter,
+            order_count_id=order_count_id,
+            or_filled_end=or_filled_end,
+
 
             account_state=account_state_new,
-            entry_order=entry_order,
             order_result=order_result_new,
-            record_counters=record_counters,
         )
-        order_count_id_new += record_counters.order_count_id
-        order_records_filled_new += record_counters.order_records_filled
 
-    if record_counters.log_count_id != None:
-        if order_result.order_status == OrderStatus.Filled:
-            fill_log_records_nb(
-                bar=bar,
-                price=price,
-
-                entry_order=entry_order,
-                order_result=order_result_new,
-                account_state=account_state_new,
-                static_variables=static_variables,
-                record_counters=record_counters,
-                log_records=log_records,
-            )
-            log_count_id_new += record_counters.log_count_id
-            log_records_filled_new += record_counters.log_records_filled
-
-    record_counters_new = RecordCounters(
-        order_count_id=order_count_id_new,
-        order_records_filled=order_records_filled_new,
-        log_count_id=log_count_id_new,
-        log_records_filled=log_records_filled_new,
-    )
-
-    return account_state_new, order_result_new, record_counters_new
+    return account_state_new, order_result_new
 
 
 @ njit(cache=True)
@@ -314,18 +245,12 @@ def process_stops_nb(
     order_settings_counter: int,
 
     order_count_id: int,
-    order_records_filled: int,
+    or_filled_end: int,
     order_records: RecordArray,
-
-    log_count_id: Optional[int] = None,
-    log_records_filled: Optional[int] = None,
-    log_records: Optional[RecordArray] = None,
 ):
 
     order_count_id_new = order_count_id
-    order_records_filled_new = order_records_filled
-    log_count_id_new = log_count_id
-    log_records_filled_new = log_records_filled
+    order_records_filled_new = or_filled_end
 
     if OrderType.LongLiq <= order_type <= OrderType.LongTSL:
         available_balance_new, \
@@ -369,32 +294,12 @@ def process_stops_nb(
         order_count_id_new += 1
         order_records_filled_new += 1
 
-    if log_count_id != None:
-        if order_status == OrderStatus.Filled:
-            fill_log_records_nb(
-                average_entry=average_entry,
-                bar=bar,
-                log_count_id=log_count_id,
-                log_records=log_records,
-                order_count_id=order_count_id,
-                order_type=order_type,
-                price=price,
-                realized_pnl=realized_pnl,
-                sl_prices=sl_prices,
-                tsl_prices=tsl_prices,
-                tp_prices=tp_prices,
-            )
-            log_count_id_new += 1
-            log_records_filled_new += 1
-
     return available_balance_new, \
         cash_borrowed_new, \
         cash_used_new, \
         equity_new, \
         fees_paid, \
         liq_price, \
-        log_count_id_new, \
-        log_records_filled_new, \
         order_count_id_new, \
         order_records_filled_new, \
         order_status_info, \

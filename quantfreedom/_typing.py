@@ -16,10 +16,7 @@ class SupportsArray(Protocol):
 Array = np.ndarray  # ready to be used for n-dim data
 Array1d = np.ndarray
 Array2d = np.ndarray
-Array3d = np.ndarray
-Record = np.void
 RecordArray = np.ndarray
-RecArray = np.recarray
 AnyArray = Union[Array, pdSeries, pdFrame, plFrame, plSeries]
 AnyArray1d = Union[Array1d, pdSeries, plSeries]
 AnyArray2d = Union[Array2d, pdFrame, plFrame]

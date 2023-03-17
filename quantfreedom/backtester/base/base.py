@@ -5,16 +5,18 @@ import numpy as np
 import pandas as pd
 import polars as pl
 
-from quantfreedom import _typing as tp
+from quantfreedom._typing import (
+    plSeries, List, plFrame, RecordArray
+)
 from quantfreedom.backtester.enums.enums import OrderType
 
 
 def log_trades_plot(
-        open_prices: tp.ArrayLike,
-        high_prices: tp.ArrayLike,
-        low_prices: tp.ArrayLike,
-        close_prices: tp.ArrayLike,
-        log_records: tp.RecordArray,
+        open_prices: plSeries,
+        high_prices: plSeries,
+        low_prices: plSeries,
+        close_prices: plSeries,
+        log_records: RecordArray,
 ):
 
     start = log_records['bar'].min() - 2
@@ -652,10 +654,10 @@ def replay_trade_plotter(
 
 
 def rsi_below_entries(
-    timeperiods: tp.List,
-    below_ranges: tp.List,
-    prices: tp.plSeries,
-) -> tp.plFrame:
+    timeperiods: List,
+    below_ranges: List,
+    prices: plSeries,
+) -> plFrame:
     temp_rsi = np.empty((prices.shape[0], len(timeperiods)))
     temp_rsi_below = np.empty(
         (prices.shape[0], (len(timeperiods)*len(below_ranges))), dtype=np.bool_)
