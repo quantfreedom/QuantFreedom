@@ -1,6 +1,8 @@
 import numpy as np
 from numba import njit
 
+from quantfreedom._typing import Tuple
+
 from quantfreedom.backtester.enums.enums import (
     AccountState,
     EntryOrder,
@@ -23,7 +25,7 @@ def long_increase_nb(
     entry_order: EntryOrder,
     order_result: OrderResult,
     static_variables: StaticVariables,
-):
+) -> Tuple[AccountState, OrderResult]:
     size_value = entry_order.size_value
 
     # new cash borrowed needs to be returned

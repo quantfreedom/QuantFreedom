@@ -53,7 +53,7 @@ class AccountState(tp.NamedTuple):
 
 
 class EntryOrder(tp.NamedTuple):
-    leverage_iso: float = 0.
+    leverage: float = 0.
     max_equity_risk_pct: float = np.nan
     max_equity_risk_value: float = np.nan
     order_type: int = 0
