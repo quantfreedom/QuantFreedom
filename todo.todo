@@ -1,38 +1,23 @@
-Currently Working on:
+Currently Working On:
     ☐ change up df to remove sl pct and others
     ☐ figure out why there is a trade of zero happening
     ☐ multiple all the cart arrays pct by 100 before returning cart array
+    ☐ remove the ability for the user to create sl tsl tp prices
     ☐ add an else statement to the gains that deals with erasing the data from order records
     ☐ work on check stops and process stops
     ☐ try to figure out a way to only return the ids of the cart arrays that made it past the filter
 
-Todos:
-    ☐ figure out a way to delete all cache and store cache in one place (https://numba.pydata.org/numba-doc/latest/reference/envvars.html#envvar-NUMBA_CACHE_DIR)
-    ☐ check on seeing if the deletion of numba cache works
-    ☐ make it so leverage goes to 100 when sl or tsl moves past entry
-    ☐ check calculations for cash used and cash borrowed for account
-    ☐ make it so that you can have a sl infront of your avg entry
-    ☐ make a tp sl order checker
-    ☐ check if njit cache=True should be cache or not cache
-    ☐ figure out how to check if sl tp tsl is infront of current open position
-    ☐ add in risk amount
-    ☐ Check the raise returns and make sure they are things that need to break the code and not just something that
-    ☐ can be passed up but the loop should be able to continue
-    ☐ fix all the variable and put them all in a order ... same in the enums
-    ☐ allow user to put in their own tp price sl price tsl price
-    ☐ clean up all sl tp tsl pct ... check for if np.isnan and sl tp tsl prices > 0 and not np.finite
-    ☐ make sure if selecting percent of account or risk percent that you have to have a size pct
-    ☐ finish risk amount and risk percent of account ... i think i would have to do that in order_nb
-    ☐ make sure size_type is in order process order execute order and long and short and also in order result
-    ☐ figure out how to make order result have tp optional
-    ☐ make sure you factor in fee to take profit and stop losses
-    ☐ how should the take profit RR be caluclated of init stop loss or init trailing stop?
-    ☐ risk specific amount of account and make sure it is based on start balance or freecash > starting balance
-    ☐ risk % of account with fee taken into consideration
-    ☐ make there be a difference between account increase pnl and trade pnl for
-    ☐ check to make sure that when you do np.inf it is grabing the position size and not adding any leverage too it ... close it out properly
+TODOs:
+    ☐ make it so leverage goes to 100 when sl or tsl moves past entry and liq price is maxed out
 
-Archive:
+Other Users Needed:
+    ☐ check on seeing if the deletion of numba cache works on other peoples comps
+
+Ask Other Users ?:
+    ☐ add the ability to put user defined sl tp tsl prices
+
+    Archive:
+  ✔ figure out a way to delete all cache and store cache in one place @done(23-03-17 09:08)
   ✔ update code to get position size in buy func @done(23-03-17 08:22)
   ✔ delete log records @done(23-03-17 08:49)
   ✔ add each trade info to order records @done(23-03-17 08:49)
