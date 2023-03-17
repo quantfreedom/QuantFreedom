@@ -78,7 +78,7 @@ class RecordCounters(tp.NamedTuple):
 class OrderResult(tp.NamedTuple):
     average_entry: float = 0.
     fees_paid: float = 0.
-    leverage_auto: float = 0.
+    leverage: float = 0.
     liq_price: float = np.nan
     moved_sl_to_be: bool = False
     moved_tsl: bool = False
@@ -235,29 +235,27 @@ A numpy array with specific data types that allow you to store specific informat
 """
 
 order_records_dt = np.dtype([
-    ('id', np.int_),
+    ('order_id', np.int_),
     ('col', np.int_),
     ('equity', np.float_),
-    ('fees', np.float_),
-    ('idx', np.int_),
+    ('fees_paid', np.float_),
+    ('bar', np.int_),
     ('ind_set', np.int_),
     ('max_eq_risk_pct', np.float_),
     ('or_set', np.int_),
     ('price', np.float_),
     ('real_pnl', np.float_),
     ('rr', np.float_),
-    ('side', np.float_),
-    ('size', np.float_),
-    ('size_usd', np.float_),
+    ('order_type', np.float_),
+    ('size_value', np.float_),
     ('sl_pct', np.float_),
 ], align=True)
 
 log_records_dt = np.dtype([
     ('bar', np.int_),
-    ('col', np.int_),
-    ('id_order', np.int_),
-    ('id_log', np.int_),
-    ('order_price', np.float_),
+    ('order_id', np.int_),
+    ('log_id', np.int_),
+    ('price', np.float_),
     ('order_type', np.float_),
     ('avg_entry', np.float_),
     ('sl_prices', np.float_),

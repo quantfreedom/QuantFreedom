@@ -1,7 +1,6 @@
 import numpy as np
 from numba import njit
 
-from quantfreedom import _typing as tp
 from quantfreedom.backtester.enums.enums import (
     AccountState,
     EntryOrder,
@@ -11,34 +10,26 @@ from quantfreedom.backtester.enums.enums import (
     RejectedOrderError,
     LeverageMode,
     StaticVariables,
+    SizeType,
 )
 
 
 # Long order to enter or add to a long position
 @njit(cache=True)
 def long_increase_nb(
+    price: float,
+
     account_state: AccountState,
     entry_order: EntryOrder,
     order_result: OrderResult,
     static_variables: StaticVariables,
-
-    size_value: float,
-    price: float,
-
 ):
-    """
-    How you place an order to start or increase a long position.
-
-    Args:
-        order: See [Order][backtester.enums.enums.OrderEverything].
-
-        account_state: See [Account_State][backtester.enums.enums.AccountAndTradeState].
-    """
+    size_value = entry_order.size_value
 
     # new cash borrowed needs to be returned
     available_balance_new = account_state.available_balance
     cash_used_new = account_state.cash_used
-    leverage_auto_new = 1.
+    leverage_new = entry_order.leverage
     average_entry_new = order_result.average_entry
     liq_price_new = order_result.liq_price
     position_new = order_result.position
@@ -49,6 +40,46 @@ def long_increase_nb(
     tp_prices_new = entry_order.tp_prices
     tsl_pcts_new = entry_order.tsl_pcts
     tsl_prices_new = entry_order.tsl_prices
+
+    if static_variables.size_type != SizeType.Amount:
+        if np.isfinite(sl_pcts_new):
+            sl_prices_new = price - (price * sl_pcts_new)
+            possible_loss = size_value * (sl_pcts_new)
+
+            size_value = -possible_loss / \
+                ((sl_prices_new/price - 1) - static_variables.fee_pct -
+                    (sl_prices_new * static_variables.fee_pct / price))
+
+        elif np.isfinite(tsl_pcts_new):
+            tsl_prices_new = price - (price * tsl_pcts_new)
+            possible_loss = size_value * (tsl_pcts_new)
+
+            size_value = -possible_loss / \
+                ((tsl_prices_new / price - 1) - static_variables.fee_pct -
+                    (tsl_prices_new * static_variables.fee_pct / price))
+
+        elif np.isfinite(sl_prices_new):
+            sl_pcts_new = (price - sl_prices_new) / price
+            possible_loss = size_value * sl_pcts_new
+
+            size_value = -possible_loss / \
+                ((sl_prices_new/price - 1) - static_variables.fee_pct -
+                    (sl_prices_new * static_variables.fee_pct / price))
+
+        elif np.isfinite(tsl_prices_new):
+            tsl_pcts_new = (price - tsl_prices_new) / price
+            possible_loss = size_value * tsl_pcts_new
+
+            size_value = -possible_loss / \
+                ((tsl_prices_new/price - 1) - static_variables.fee_pct -
+                    (tsl_prices_new * static_variables.fee_pct / price))
+
+    if size_value < 1 or \
+            size_value > static_variables.max_order_size_value or \
+            size_value < static_variables.min_order_size_value:
+        raise RejectedOrderError(
+            "Long Increase - Size Value is either to big or too small"
+        )
 
     # Get average Entry
     if position_new != 0.:
@@ -79,7 +110,6 @@ def long_increase_nb(
         tsl_prices_new = average_entry_new - \
             (average_entry_new * tsl_pcts_new)  # math checked
     elif not np.isnan(tsl_prices_new):
-        # TODO figure out how to check to make sure the initial tsl price is not past the current entry
         tsl_pcts_new = (average_entry_new - tsl_prices_new) / \
             average_entry_new  # math checked
     else:
@@ -139,7 +169,7 @@ def long_increase_nb(
                     order_type=entry_order.order_type,
                     pct_chg=0.,
                     position=order_result.position,
-                    realized_pnl=0.,
+                    realized_pnl=np.nan,
                     size_value=0.,
                     sl_pcts=order_result.sl_pcts,
                     sl_prices=order_result.sl_prices,
@@ -149,33 +179,34 @@ def long_increase_nb(
                     tsl_prices=order_result.tsl_prices,
                 )
 
-    # check if leverage_auto_new amount is possible with size_value and free cash
+    # check if leverage_new amount is possible with size_value and free cash
+    # TODO add in info for leverage iso
     if static_variables.lev_mode == LeverageMode.LeastFreeCashUsed:
-        # create leverage_auto_new for sl
+        # create leverage_new for sl
         if not np.isnan(sl_prices_new):
             temp_price = sl_prices_new
         elif not np.isnan(tsl_prices_new):
             temp_price = tsl_prices_new
 
-        leverage_auto_new = -average_entry_new / \
+        leverage_new = -average_entry_new / \
             (temp_price - temp_price * (.2 / 100) -  # TODO .2 is percent padding user wants
              average_entry_new - static_variables.mmr * average_entry_new)  # math checked
-        if leverage_auto_new > static_variables.max_lev:
-            leverage_auto_new = static_variables.max_lev
+        if leverage_new > static_variables.max_lev:
+            leverage_new = static_variables.max_lev
     else:
         raise RejectedOrderError(
-            "Long Increase - Either lev mode is nan or something is wrong with the leverage_auto_new or leverage_auto_new mode")
+            "Long Increase - Either lev mode is nan or something is wrong with the leverage_new or leverage_new mode")
 
     # Getting Order Cost
     # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001064&language=en_US
-    initial_margin = size_value/leverage_auto_new
+    initial_margin = size_value/leverage_new
     fee_to_open = size_value * static_variables.fee_pct  # math checked
     possible_bankruptcy_fee = size_value * \
-        (leverage_auto_new - 1) / leverage_auto_new * static_variables.fee_pct
+        (leverage_new - 1) / leverage_new * static_variables.fee_pct
     cash_used_new = initial_margin + fee_to_open + \
         possible_bankruptcy_fee  # math checked
 
-    if cash_used_new > available_balance_new * leverage_auto_new:
+    if cash_used_new > available_balance_new * leverage_new:
         raise RejectedOrderError(
             "long inrease iso lev - cash used greater than available balance * lev ... size_value is too big")
 
@@ -191,7 +222,7 @@ def long_increase_nb(
         cash_borrowed_new = account_state.cash_borrowed + size_value - cash_used_new
 
         liq_price_new = average_entry_new * \
-            (1 - (1/leverage_auto_new) + static_variables.mmr)  # math checked
+            (1 - (1/leverage_new) + static_variables.mmr)  # math checked
 
     # Create take profits if requested
     if not np.isnan(entry_order.risk_rewards):
@@ -243,7 +274,7 @@ def long_increase_nb(
         OrderResult(
             average_entry=average_entry_new,
             fees_paid=0.,
-            leverage_auto=leverage_auto_new,
+            leverage=leverage_new,
             liq_price=liq_price_new,
             moved_sl_to_be=False,
             moved_tsl=False,

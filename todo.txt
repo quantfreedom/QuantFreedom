@@ -1,5 +1,12 @@
+march 16 2023
+- fix log records situation ... make it so you create the log records and crate the counters and it just gets passed and checked before it is filled like free vbt
+- work on check stops and process stops
+- instead of having temp order and log records ... if the gains is a false then put np.nan for order and log records start count to end count
+
+Other people install
+- check on seeing if the deletion of numba cache works
+
 ******** do next *******
-take out price from order creation and put it as a var in process order
 Selling doesn't work ... need to fix all of it by looking at buy func
 
 ********* Super important *********

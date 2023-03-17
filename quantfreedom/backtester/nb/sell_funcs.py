@@ -60,7 +60,6 @@
 #             (new_average_entry * (all_stops.tsl_pcts / 100))  # math checked
 #         tsl_pcts = all_stops.tsl_pcts
 #     elif not np.isnan(all_stops.tsl_prices):
-#         # TODO figure out how to check to make sure the initial tsl price is not past the current entry
 #         tsl_prices = all_stops.tsl_prices
 #         tsl_pcts = ((tsl_prices - new_average_entry) /
 #                     new_average_entry) * 100  # math checked

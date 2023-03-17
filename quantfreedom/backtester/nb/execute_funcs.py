@@ -5,9 +5,12 @@ Testing the tester
 import numpy as np
 from numba import njit
 
-from quantfreedom import _typing as tp
 from quantfreedom.backtester.nb.buy_funcs import long_increase_nb
 from quantfreedom.backtester.nb.helper_funcs import fill_log_records_nb, fill_order_records_nb
+from quantfreedom._typing import (
+    RecordArray,
+    Optional,
+)
 from quantfreedom.backtester.enums.enums import (
     OrderType,
     SL_BE_or_Trail_BasedOn,
@@ -50,12 +53,11 @@ def check_sl_tp_nb(
     tsl_trail_by: float,
     tsl_when_pct_from_avg_entry: float,
 
-    bar: tp.Optional[int] = None,
-    col: tp.Optional[int] = None,
-    log_count_id: tp.Optional[int] = None,
-    log_records: tp.Optional[tp.RecordArray] = None,
-    log_records_filled: tp.Optional[int] = None,
-    order_count_id: tp.Optional[int] = None,
+    bar: Optional[int] = None,
+    log_count_id: Optional[int] = None,
+    log_records: Optional[RecordArray] = None,
+    log_records_filled: Optional[int] = None,
+    order_count_id: Optional[int] = None,
 ):
     """
     This checks if your stop or take profit was hit.
@@ -173,7 +175,6 @@ def check_sl_tp_nb(
 
     record_logs = (
         bar != None and
-        col != None and
         log_count_id != None and
         log_records != None and
         log_records_filled != None and
@@ -185,7 +186,6 @@ def check_sl_tp_nb(
                 fill_log_records_nb(
                     average_entry=average_entry,
                     bar=bar,
-                    col=col,
                     log_count_id=log_count_id,
                     log_records=log_records,
                     order_count_id=order_count_id,
@@ -216,71 +216,30 @@ def check_sl_tp_nb(
 
 @ njit(cache=True)
 def process_order_nb(
+    price: float,
+    bar: int,
+
+    indicator_settings_counter: int,
+    order_settings_counter: int,
+    order_records: RecordArray,
+
     account_state: AccountState,
     entry_order: EntryOrder,
     order_result: OrderResult,
     static_variables: StaticVariables,
     record_counters: RecordCounters,
 
-    price: float,
-
-    bar: int,
-    col: int,
-
-    indicator_settings_counter: int,
-    order_settings_counter: int,
-
-    order_records: tp.RecordArray,
-
-    group: int = 0,
-
-    log_records: tp.Optional[tp.RecordArray] = None,
+    log_records: Optional[RecordArray] = None,
 ):
     order_count_id_new = record_counters.order_count_id
     order_records_filled_new = record_counters.order_records_filled
     log_count_id_new = record_counters.log_count_id
     log_records_filled_new = record_counters.log_records_filled
-    size_value = entry_order.size_value
 
     if entry_order.order_type == OrderType.LongEntry:
-        if static_variables.size_type != SizeType.Amount:
-            if np.isfinite(entry_order.sl_pcts):
-                sl_prices = price - (price * entry_order.sl_pcts)
-                possible_loss = size_value * (entry_order.sl_pcts)
-
-                size_value = -possible_loss / \
-                    ((sl_prices/price - 1) - static_variables.fee_pct -
-                     (sl_prices * static_variables.fee_pct / price))
-
-            elif np.isfinite(entry_order.tsl_pcts):
-                tsl_prices = price - (price * entry_order.tsl_pcts)
-                possible_loss = size_value * (entry_order.tsl_pcts)
-
-                size_value = -possible_loss / \
-                    ((tsl_prices / price - 1) - static_variables.fee_pct -
-                     (tsl_prices * static_variables.fee_pct / price))
-
-            elif np.isfinite(entry_order.sl_prices):
-                sl_pcts = (price - entry_order.sl_prices) / price
-                possible_loss = size_value * sl_pcts
-
-                size_value = -possible_loss / \
-                    ((sl_prices/price - 1) - static_variables.fee_pct -
-                     (sl_prices * static_variables.fee_pct / price))
-
-            elif np.isfinite(entry_order.tsl_prices):
-                tsl_pcts = (price - entry_order.tsl_prices) / price
-                possible_loss = size_value * tsl_pcts
-
-                size_value = -possible_loss / \
-                    ((tsl_prices/price - 1) - static_variables.fee_pct -
-                     (tsl_prices * static_variables.fee_pct / price))
-
-        # TODO make sure that you check size value to max and min size
 
         account_state_new, order_result_new = long_increase_nb(
             price=price,
-            size_value=size_value,
             entry_order=entry_order,
             order_result=order_result,
             account_state=account_state,
@@ -290,18 +249,15 @@ def process_order_nb(
     if order_result.order_status == OrderStatus.Filled:
         fill_order_records_nb(
             bar=bar,
-            col=col,
+            price=price,
+
             indicator_settings_counter=indicator_settings_counter,
             order_records=order_records,
             order_settings_counter=order_settings_counter,
 
-            price=price,
-            size_value=size_value,
-
+            account_state=account_state_new,
             entry_order=entry_order,
             order_result=order_result_new,
-            account_state=account_state_new,
-            static_variables=static_variables,
             record_counters=record_counters,
         )
         order_count_id_new += record_counters.order_count_id
@@ -311,9 +267,8 @@ def process_order_nb(
         if order_result.order_status == OrderStatus.Filled:
             fill_log_records_nb(
                 bar=bar,
-                col=col,
                 price=price,
-                
+
                 entry_order=entry_order,
                 order_result=order_result_new,
                 account_state=account_state_new,
@@ -323,14 +278,14 @@ def process_order_nb(
             )
             log_count_id_new += record_counters.log_count_id
             log_records_filled_new += record_counters.log_records_filled
-    
+
     record_counters_new = RecordCounters(
         order_count_id=order_count_id_new,
         order_records_filled=order_records_filled_new,
         log_count_id=log_count_id_new,
         log_records_filled=log_records_filled_new,
     )
-    
+
     return account_state_new, order_result_new, record_counters_new
 
 
@@ -355,18 +310,16 @@ def process_stops_nb(
     tsl_prices: float,
 
     bar: int,
-    col: int,
     indicator_settings_counter: int,
     order_settings_counter: int,
 
     order_count_id: int,
     order_records_filled: int,
-    order_records: tp.RecordArray,
+    order_records: RecordArray,
 
-    group: int = 0,
-    log_count_id: tp.Optional[int] = None,
-    log_records_filled: tp.Optional[int] = None,
-    log_records: tp.Optional[tp.RecordArray] = None,
+    log_count_id: Optional[int] = None,
+    log_records_filled: Optional[int] = None,
+    log_records: Optional[RecordArray] = None,
 ):
 
     order_count_id_new = order_count_id
@@ -402,14 +355,8 @@ def process_stops_nb(
     # Start the order filling process
     if order_status == OrderStatus.Filled:
         fill_order_records_nb(
-            average_entry=average_entry,
             bar=bar,
-            col=col,
-            equity=equity_new,
-            fees_paid=fees_paid,
             indicator_settings_counter=indicator_settings_counter,
-            max_equity_risk_pct=max_equity_risk_pct,
-            order_count_id=order_count_id,
             order_records=order_records,
             order_settings_counter=order_settings_counter,
             order_type=order_type,
@@ -427,7 +374,6 @@ def process_stops_nb(
             fill_log_records_nb(
                 average_entry=average_entry,
                 bar=bar,
-                col=col,
                 log_count_id=log_count_id,
                 log_records=log_records,
                 order_count_id=order_count_id,
