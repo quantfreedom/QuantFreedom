@@ -399,20 +399,23 @@ def simulate_from_signals(
 
     if sl_to_be and (
         not np.isfinite(sl_to_be_based_on_array).any() or
-        not np.isfinite(sl_to_be_when_pct_from_avg_entry_array.any()).any() or
-        not np.isfinite(sl_to_be_zero_or_entry_array.any()).any()
+        not np.isfinite(sl_to_be_when_pct_from_avg_entry_array).any() or
+        not np.isfinite(sl_to_be_zero_or_entry_array).any() or
+        not np.isfinite(sl_pcts_array).any()
     ):
         raise ValueError(
-            "If you have sl_to_be set to true then you must provide the other params")
+            "If you have sl_to_be set to true then you must provide the other params like sl_pcts etc")
 
     if (sl_to_be and sl_to_be_then_trail) and (
         not np.isfinite(sl_to_be_based_on_array).any() or
         not np.isfinite(sl_to_be_when_pct_from_avg_entry_array).any() or
         not np.isfinite(sl_to_be_zero_or_entry_array).any() or
-        not np.isfinite(sl_to_be_trail_by_when_pct_from_avg_entry_array).any()
+        not np.isfinite(sl_to_be_trail_by_when_pct_from_avg_entry_array).any() or
+        not np.isfinite(sl_pcts_array).any()
+
     ):
         raise ValueError(
-            "If you have sl_to_be set to true then you must provide the other params")
+            "If you have sl_to_be set to true then you must provide the other params like sl_pcts etc")
 
     # tsl Checks
     if np.isfinite(tsl_based_on_array).any() and (
@@ -446,10 +449,11 @@ def simulate_from_signals(
     if tsl_true_or_false and (
         not np.isfinite(tsl_based_on_array).any() or
         not np.isfinite(tsl_trail_by_pct_array).any() or
-        not np.isfinite(tsl_when_pct_from_avg_entry_array).any()
+        not np.isfinite(tsl_when_pct_from_avg_entry_array).any() or
+        not np.isfinite(tsl_pcts_array).any()
     ):
         raise ValueError(
-            "If you have tsl_true_or_false set to true then you must provide the other params")
+            "If you have tsl_true_or_false set to true then you must provide the other params like tsl_pcts etc")
 
     # Cart of new arrays
     arrays = (
