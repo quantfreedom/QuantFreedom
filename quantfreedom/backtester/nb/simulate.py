@@ -5,10 +5,10 @@ Testing the tester
 import numpy as np
 from numba import literal_unroll, njit
 from quantfreedom._typing import PossibleArray
-from quantfreedom.backtester.nb.helper_funcs import to_1d_array_nb
 from quantfreedom.backtester.nb.execute_funcs import (
     process_order_nb,
     check_sl_tp_nb,
+    to_1d_array_nb,
 )
 from quantfreedom.backtester.enums.enums import (
     cart_array_dt,
@@ -566,10 +566,11 @@ def simulate_from_signals(
     # record_count = int(record_count / 2)
 
     # Creating OR
-    df_array = np.empty(10000, dtype=df_array_dt)
+    df_array = np.empty(100000, dtype=df_array_dt)
+    df_cart_array = np.empty(100000, dtype=cart_array_dt)
     df_counter = 0
 
-    order_records = np.empty(10000, dtype=or_dt)
+    order_records = np.empty(100000, dtype=or_dt)
     or_filled_start = 0
     or_filled_temp = np.array([0])
     order_count_id = np.array([0])
@@ -758,21 +759,34 @@ def simulate_from_signals(
                     )
                     df_array['total_pnl'][df_counter] = total_pnl
                     df_array['ending_eq'][df_counter] = temp_order_records['equity'][-1]
-                    df_counter += 1
 
+                    # df cart array
+                    df_cart_array['leverage'][df_counter] = leverage_cart_array[order_settings_counter]
+                    df_cart_array['max_equity_risk_pct'][df_counter] = max_equity_risk_pct_cart_array[order_settings_counter] * 100
+                    df_cart_array['max_equity_risk_value'][df_counter] = max_equity_risk_value_cart_array[order_settings_counter]
+                    df_cart_array['risk_rewards'][df_counter] = risk_rewards_cart_array[order_settings_counter]
+                    df_cart_array['size_pct'][df_counter] = size_pct_cart_array[order_settings_counter] * 100
+                    df_cart_array['size_value'][df_counter] = size_value_cart_array[order_settings_counter]
+                    df_cart_array['sl_pcts'][df_counter] = sl_pcts_cart_array[order_settings_counter] * 100
+                    df_cart_array['sl_prices'][df_counter] = sl_prices_cart_array[order_settings_counter]
+                    df_cart_array['sl_to_be_based_on'][df_counter] = sl_to_be_based_on_cart_array[order_settings_counter]
+                    df_cart_array['sl_to_be_trail_by_when_pct_from_avg_entry'][
+                        df_counter] = sl_to_be_trail_by_when_pct_from_avg_entry_cart_array[order_settings_counter] * 100
+                    df_cart_array['sl_to_be_when_pct_from_avg_entry'][
+                        df_counter] = sl_to_be_when_pct_from_avg_entry_cart_array[order_settings_counter] * 100
+                    df_cart_array['sl_to_be_zero_or_entry'][df_counter] = sl_to_be_zero_or_entry_cart_array[order_settings_counter]
+                    df_cart_array['tp_pcts'][df_counter] = tp_pcts_cart_array[order_settings_counter] * 100
+                    df_cart_array['tp_prices'][df_counter] = tp_prices_cart_array[order_settings_counter]
+                    df_cart_array['tsl_based_on'][df_counter] = tsl_based_on_cart_array[order_settings_counter]
+                    df_cart_array['tsl_pcts'][df_counter] = tsl_pcts_cart_array[order_settings_counter] * 100
+                    df_cart_array['tsl_prices'][df_counter] = tsl_prices_cart_array[order_settings_counter]
+                    df_cart_array['tsl_trail_by_pct'][df_counter] = tsl_trail_by_cart_array[order_settings_counter] * 100
+                    df_cart_array['tsl_when_pct_from_avg_entry'][df_counter] = tsl_when_pct_from_avg_entry_cart_array[order_settings_counter] * 100
+
+                    df_counter += 1
             # Gains False
             else:
                 order_records[or_filled_start:order_count_id[0]] = 0
                 order_count_id[0] = order_count_id[0] - or_filled_temp[0]
 
-    # return sim
-    cart_array['max_equity_risk_pct'] = cart_array['max_equity_risk_pct']*100
-    cart_array['size_pct'] = cart_array['size_pct']*100
-    cart_array['sl_pcts'] = cart_array['sl_pcts']*100
-    cart_array['sl_to_be_trail_by_when_pct_from_avg_entry'] = cart_array['sl_to_be_trail_by_when_pct_from_avg_entry']*100
-    cart_array['sl_to_be_when_pct_from_avg_entry'] = cart_array['sl_to_be_when_pct_from_avg_entry']*100
-    cart_array['sl_to_be_when_pct_from_avg_entry'] = cart_array['sl_to_be_when_pct_from_avg_entry']*100
-    cart_array['tp_pcts'] = cart_array['tp_pcts']*100
-    cart_array['tsl_pcts'] = cart_array['tsl_pcts']*100
-    cart_array['tsl_when_pct_from_avg_entry'] = cart_array['tsl_when_pct_from_avg_entry']*100
-    return df_array[: df_counter], order_records[: order_count_id[0]], cart_array
+    return df_array[: df_counter], order_records[: order_count_id[0]], df_cart_array[: df_counter]

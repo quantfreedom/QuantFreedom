@@ -16,11 +16,11 @@ def log_trades_plot(
         high_prices: plSeries,
         low_prices: plSeries,
         close_prices: plSeries,
-        log_records: RecordArray,
+        order_records: RecordArray,
 ):
 
-    start = log_records['bar'].min() - 2
-    end = log_records['bar'].max() + 3
+    start = order_records['bar'].min() - 2
+    end = order_records['bar'].max() + 3
 
     x_index = open_prices.index[start:end]
     open_prices = open_prices[start:end]
@@ -44,124 +44,126 @@ def log_trades_plot(
     temp_take_profit = 0
 
     for i in range(start, end):
-        if log_counter <= log_records['id_log'].max() and log_records['bar'][log_counter] == i:
-            if temp_avg_entry != log_records['avg_entry'][log_counter]:
-                temp_avg_entry = log_records['avg_entry'][log_counter]
+        if log_counter < order_records.size and order_records['bar'][log_counter] == i:
+            if temp_avg_entry != order_records['avg_entry'][log_counter]:
+                temp_avg_entry = order_records['avg_entry'][log_counter]
             else:
                 temp_avg_entry = np.nan
 
-            if temp_stop_loss != log_records['sl_prices'][log_counter]:
-                temp_stop_loss = log_records['sl_prices'][log_counter]
+            if temp_stop_loss != order_records['sl_prices'][log_counter]:
+                temp_stop_loss = order_records['sl_prices'][log_counter]
             else:
                 temp_stop_loss = np.nan
 
-            if temp_trailing_sl != log_records['tsl_prices'][log_counter]:
-                temp_trailing_sl = log_records['tsl_prices'][log_counter]
+            if temp_trailing_sl != order_records['tsl_prices'][log_counter]:
+                temp_trailing_sl = order_records['tsl_prices'][log_counter]
+            else:
+                temp_trailing_sl = np.nan
+
+            if temp_take_profit != order_records['tp_prices'][log_counter]:
+                temp_take_profit = order_records['tp_prices'][log_counter]
             else:
                 temp_take_profit = np.nan
 
-            if temp_take_profit != log_records['tp_prices'][log_counter]:
-                temp_take_profit = log_records['tp_prices'][log_counter]
-            else:
-                temp_take_profit = np.nan
-
-            if np.isnan(log_records['real_pnl'][log_counter]):
-                order_price[array_counter] = log_records['order_price'][log_counter]
+            if np.isnan(order_records['real_pnl'][log_counter]):
+                order_price[array_counter] = order_records['price'][log_counter]
                 avg_entry[array_counter] = temp_avg_entry
                 stop_loss[array_counter] = temp_stop_loss
                 trailing_sl[array_counter] = temp_trailing_sl
                 take_profit[array_counter] = temp_take_profit
 
-            elif log_records['real_pnl'][log_counter] > 0 and \
-                (log_records['order_type'][log_counter] == OrderType.LongTP or
-                 log_records['order_type'][log_counter] == OrderType.ShortTP):
+            elif order_records['real_pnl'][log_counter] > 0 and \
+                (order_records['order_type'][log_counter] == OrderType.LongTP or
+                 order_records['order_type'][log_counter] == OrderType.ShortTP):
 
                 order_price[array_counter] = np.nan
-                avg_entry[array_counter] = temp_avg_entry
-                stop_loss[array_counter] = temp_stop_loss
-                trailing_sl[array_counter] = temp_trailing_sl
-                take_profit[array_counter] = log_records['tp_prices'][log_counter]
-                # break
+                avg_entry[array_counter] = np.nan
+                stop_loss[array_counter] = np.nan
+                trailing_sl[array_counter] = np.nan
+                take_profit[array_counter] = order_records['tp_prices'][log_counter]
 
-            elif log_records['real_pnl'][log_counter] > 0 and \
-                (log_records['order_type'][log_counter] == OrderType.LongTSL or
-                 log_records['order_type'][log_counter] == OrderType.ShortTSL):
+            elif order_records['real_pnl'][log_counter] > 0 and \
+                (order_records['order_type'][log_counter] == OrderType.LongTSL or
+                 order_records['order_type'][log_counter] == OrderType.ShortTSL):
 
                 order_price[array_counter] = np.nan
-                avg_entry[array_counter] = temp_avg_entry
-                stop_loss[array_counter] = temp_stop_loss
-                trailing_sl[array_counter] = log_records['tsl_prices'][log_counter]
-                take_profit[array_counter] = temp_take_profit
-                # break
-            elif log_records['real_pnl'][log_counter] <= 0:
+                avg_entry[array_counter] = np.nan
+                stop_loss[array_counter] = np.nan
+                trailing_sl[array_counter] = order_records['tsl_prices'][log_counter]
+                take_profit[array_counter] = np.nan
+
+            elif order_records['real_pnl'][log_counter] <= 0:
                 order_price[array_counter] = np.nan
-                avg_entry[array_counter] = temp_avg_entry
-                stop_loss[array_counter] = log_records['sl_prices'][log_counter]
-                trailing_sl[array_counter] = log_records['tsl_prices'][log_counter]
-                take_profit[array_counter] = temp_take_profit
-                # break
-            temp_avg_entry = log_records['avg_entry'][log_counter]
-            temp_stop_loss = log_records['sl_prices'][log_counter]
-            temp_trailing_sl = log_records['tsl_prices'][log_counter]
-            temp_take_profit = log_records['tp_prices'][log_counter]
+                avg_entry[array_counter] = np.nan
+                stop_loss[array_counter] = order_records['sl_prices'][log_counter]
+                trailing_sl[array_counter] = order_records['tsl_prices'][log_counter]
+                take_profit[array_counter] = np.nan
+                
+            temp_avg_entry = order_records['avg_entry'][log_counter]
+            temp_stop_loss = order_records['sl_prices'][log_counter]
+            temp_trailing_sl = order_records['tsl_prices'][log_counter]
+            temp_take_profit = order_records['tp_prices'][log_counter]
             log_counter += 1
-            if log_counter <= log_records['id_log'].max() and log_records['bar'][log_counter] == i:
-                if temp_avg_entry != log_records['avg_entry'][log_counter]:
-                    temp_avg_entry = log_records['avg_entry'][log_counter]
+            
+            if log_counter < order_records.size and order_records['bar'][log_counter] == i:
+                if temp_avg_entry != order_records['avg_entry'][log_counter]:
+                    temp_avg_entry = order_records['avg_entry'][log_counter]
                 else:
                     temp_avg_entry = np.nan
 
-                if temp_stop_loss != log_records['sl_prices'][log_counter]:
-                    temp_stop_loss = log_records['sl_prices'][log_counter]
+                if temp_stop_loss != order_records['sl_prices'][log_counter]:
+                    temp_stop_loss = order_records['sl_prices'][log_counter]
                 else:
                     temp_stop_loss = np.nan
 
-                if temp_trailing_sl != log_records['tsl_prices'][log_counter]:
-                    temp_trailing_sl = log_records['tsl_prices'][log_counter]
+                if temp_trailing_sl != order_records['tsl_prices'][log_counter]:
+                    temp_trailing_sl = order_records['tsl_prices'][log_counter]
+                else:
+                    temp_trailing_sl = np.nan
+
+                if temp_take_profit != order_records['tp_prices'][log_counter]:
+                    temp_take_profit = order_records['tp_prices'][log_counter]
                 else:
                     temp_take_profit = np.nan
 
-                if temp_take_profit != log_records['tp_prices'][log_counter]:
-                    temp_take_profit = log_records['tp_prices'][log_counter]
-                else:
-                    temp_take_profit = np.nan
-
-                if np.isnan(log_records['real_pnl'][log_counter]):
-                    order_price[array_counter] = log_records['order_price'][log_counter]
+                if np.isnan(order_records['real_pnl'][log_counter]):
+                    order_price[array_counter] = order_records['price'][log_counter]
                     avg_entry[array_counter] = temp_avg_entry
                     stop_loss[array_counter] = temp_stop_loss
                     trailing_sl[array_counter] = temp_trailing_sl
                     take_profit[array_counter] = temp_take_profit
 
-                elif log_records['real_pnl'][log_counter] > 0 and \
-                    (log_records['order_type'][log_counter] == OrderType.LongTP or
-                     log_records['order_type'][log_counter] == OrderType.ShortTP):
+                elif order_records['real_pnl'][log_counter] > 0 and \
+                    (order_records['order_type'][log_counter] == OrderType.LongTP or
+                     order_records['order_type'][log_counter] == OrderType.ShortTP):
 
                     order_price[array_counter] = np.nan
-                    avg_entry[array_counter] = temp_avg_entry
-                    stop_loss[array_counter] = temp_stop_loss
-                    trailing_sl[array_counter] = temp_trailing_sl
-                    take_profit[array_counter] = log_records['tp_prices'][log_counter]
+                    avg_entry[array_counter] = np.nan
+                    stop_loss[array_counter] = np.nan
+                    trailing_sl[array_counter] = np.nan
+                    take_profit[array_counter] = order_records['tp_prices'][log_counter]
 
-                elif log_records['real_pnl'][log_counter] > 0 and \
-                    (log_records['order_type'][log_counter] == OrderType.LongTSL or
-                     log_records['order_type'][log_counter] == OrderType.ShortTSL):
+                elif order_records['real_pnl'][log_counter] > 0 and \
+                    (order_records['order_type'][log_counter] == OrderType.LongTSL or
+                     order_records['order_type'][log_counter] == OrderType.ShortTSL):
 
                     order_price[array_counter] = np.nan
-                    avg_entry[array_counter] = temp_avg_entry
-                    stop_loss[array_counter] = temp_stop_loss
-                    trailing_sl[array_counter] = log_records['tsl_prices'][log_counter]
-                    take_profit[array_counter] = temp_take_profit
-                elif log_records['real_pnl'][log_counter] <= 0:
+                    avg_entry[array_counter] = np.nan
+                    stop_loss[array_counter] = np.nan
+                    trailing_sl[array_counter] = order_records['tsl_prices'][log_counter]
+                    take_profit[array_counter] = np.nan
+                    
+                elif order_records['real_pnl'][log_counter] <= 0:
                     order_price[array_counter] = np.nan
                     avg_entry[array_counter] = temp_avg_entry
-                    stop_loss[array_counter] = log_records['sl_prices'][log_counter]
-                    trailing_sl[array_counter] = log_records['tsl_prices'][log_counter]
-                    take_profit[array_counter] = temp_take_profit
-                temp_avg_entry = log_records['avg_entry'][log_counter]
-                temp_stop_loss = log_records['sl_prices'][log_counter]
-                temp_trailing_sl = log_records['tsl_prices'][log_counter]
-                temp_take_profit = log_records['tp_prices'][log_counter]
+                    stop_loss[array_counter] = order_records['sl_prices'][log_counter]
+                    trailing_sl[array_counter] = order_records['tsl_prices'][log_counter]
+                    take_profit[array_counter] = np.nan
+                    
+                temp_avg_entry = order_records['avg_entry'][log_counter]
+                temp_stop_loss = order_records['sl_prices'][log_counter]
+                temp_trailing_sl = order_records['tsl_prices'][log_counter]
+                temp_take_profit = order_records['tp_prices'][log_counter]
                 log_counter += 1
         array_counter += 1
 
@@ -280,11 +282,11 @@ def replay_trade_plotter(
         high_prices,
         low_prices,
         close_prices,
-        log_records,
+        order_records,
 ):
 
-    start = log_records['bar'].min() - 2
-    end = log_records['bar'].max() + 3
+    start = order_records['bar'].min() - 2
+    end = order_records['bar'].max() + 3
 
     x_index = open_prices.index[start:end]
     open_prices = open_prices[start:end]
@@ -306,125 +308,125 @@ def replay_trade_plotter(
     temp_take_profit = 0
 
     for i in range(start, end):
-        if log_counter <= log_records['id_log'].max() and log_records['bar'][log_counter] == i:
-            if temp_avg_entry != log_records['avg_entry'][log_counter]:
-                temp_avg_entry = log_records['avg_entry'][log_counter]
+        if log_counter <= order_records['order_id'].max() and order_records['bar'][log_counter] == i:
+            if temp_avg_entry != order_records['avg_entry'][log_counter]:
+                temp_avg_entry = order_records['avg_entry'][log_counter]
             else:
                 temp_avg_entry = np.nan
 
-            if temp_stop_loss != log_records['sl_prices'][log_counter]:
-                temp_stop_loss = log_records['sl_prices'][log_counter]
+            if temp_stop_loss != order_records['sl_prices'][log_counter]:
+                temp_stop_loss = order_records['sl_prices'][log_counter]
             else:
                 temp_stop_loss = np.nan
 
-            if temp_trailing_sl != log_records['tsl_prices'][log_counter]:
-                temp_trailing_sl = log_records['tsl_prices'][log_counter]
+            if temp_trailing_sl != order_records['tsl_prices'][log_counter]:
+                temp_trailing_sl = order_records['tsl_prices'][log_counter]
             else:
                 temp_take_profit = np.nan
 
-            if temp_take_profit != log_records['tp_prices'][log_counter]:
-                temp_take_profit = log_records['tp_prices'][log_counter]
+            if temp_take_profit != order_records['tp_prices'][log_counter]:
+                temp_take_profit = order_records['tp_prices'][log_counter]
             else:
                 temp_take_profit = np.nan
 
-            if np.isnan(log_records['real_pnl'][log_counter]):
-                order_price[array_counter] = log_records['order_price'][log_counter]
+            if np.isnan(order_records['real_pnl'][log_counter]):
+                order_price[array_counter] = order_records['price'][log_counter]
                 avg_entry[array_counter] = temp_avg_entry
                 stop_loss[array_counter] = temp_stop_loss
                 trailing_sl[array_counter] = temp_trailing_sl
                 take_profit[array_counter] = temp_take_profit
 
-            elif log_records['real_pnl'][log_counter] > 0 and \
-                (log_records['order_type'][log_counter] == OrderType.LongTP or
-                 log_records['order_type'][log_counter] == OrderType.ShortTP):
+            elif order_records['real_pnl'][log_counter] > 0 and \
+                (order_records['order_type'][log_counter] == OrderType.LongTP or
+                 order_records['order_type'][log_counter] == OrderType.ShortTP):
 
                 order_price[array_counter] = np.nan
                 avg_entry[array_counter] = temp_avg_entry
                 stop_loss[array_counter] = temp_stop_loss
                 trailing_sl[array_counter] = temp_trailing_sl
-                take_profit[array_counter] = log_records['tp_prices'][log_counter]
+                take_profit[array_counter] = order_records['tp_prices'][log_counter]
 
-            elif log_records['real_pnl'][log_counter] > 0 and \
-                (log_records['order_type'][log_counter] == OrderType.LongTSL or
-                 log_records['order_type'][log_counter] == OrderType.ShortTSL):
+            elif order_records['real_pnl'][log_counter] > 0 and \
+                (order_records['order_type'][log_counter] == OrderType.LongTSL or
+                 order_records['order_type'][log_counter] == OrderType.ShortTSL):
 
                 order_price[array_counter] = np.nan
                 avg_entry[array_counter] = temp_avg_entry
                 stop_loss[array_counter] = temp_stop_loss
-                trailing_sl[array_counter] = log_records['tsl_prices'][log_counter]
+                trailing_sl[array_counter] = order_records['tsl_prices'][log_counter]
                 take_profit[array_counter] = temp_take_profit
 
-            elif log_records['real_pnl'][log_counter] <= 0:
+            elif order_records['real_pnl'][log_counter] <= 0:
                 order_price[array_counter] = np.nan
                 avg_entry[array_counter] = temp_avg_entry
-                stop_loss[array_counter] = log_records['sl_prices'][log_counter]
-                trailing_sl[array_counter] = log_records['tsl_prices'][log_counter]
+                stop_loss[array_counter] = order_records['sl_prices'][log_counter]
+                trailing_sl[array_counter] = order_records['tsl_prices'][log_counter]
                 take_profit[array_counter] = temp_take_profit
 
-            temp_avg_entry = log_records['avg_entry'][log_counter]
-            temp_stop_loss = log_records['sl_prices'][log_counter]
-            temp_trailing_sl = log_records['tsl_prices'][log_counter]
-            temp_take_profit = log_records['tp_prices'][log_counter]
+            temp_avg_entry = order_records['avg_entry'][log_counter]
+            temp_stop_loss = order_records['sl_prices'][log_counter]
+            temp_trailing_sl = order_records['tsl_prices'][log_counter]
+            temp_take_profit = order_records['tp_prices'][log_counter]
             log_counter += 1
-            if log_counter <= log_records['id_log'].max() and log_records['bar'][log_counter] == i:
-                if temp_avg_entry != log_records['avg_entry'][log_counter]:
-                    temp_avg_entry = log_records['avg_entry'][log_counter]
+            if log_counter <= order_records['order_id'].max() and order_records['bar'][log_counter] == i:
+                if temp_avg_entry != order_records['avg_entry'][log_counter]:
+                    temp_avg_entry = order_records['avg_entry'][log_counter]
                 else:
                     temp_avg_entry = np.nan
 
-                if temp_stop_loss != log_records['sl_prices'][log_counter]:
-                    temp_stop_loss = log_records['sl_prices'][log_counter]
+                if temp_stop_loss != order_records['sl_prices'][log_counter]:
+                    temp_stop_loss = order_records['sl_prices'][log_counter]
                 else:
                     temp_stop_loss = np.nan
 
-                if temp_trailing_sl != log_records['tsl_prices'][log_counter]:
-                    temp_trailing_sl = log_records['tsl_prices'][log_counter]
+                if temp_trailing_sl != order_records['tsl_prices'][log_counter]:
+                    temp_trailing_sl = order_records['tsl_prices'][log_counter]
                 else:
                     temp_take_profit = np.nan
 
-                if temp_take_profit != log_records['tp_prices'][log_counter]:
-                    temp_take_profit = log_records['tp_prices'][log_counter]
+                if temp_take_profit != order_records['tp_prices'][log_counter]:
+                    temp_take_profit = order_records['tp_prices'][log_counter]
                 else:
                     temp_take_profit = np.nan
 
-                if np.isnan(log_records['real_pnl'][log_counter]):
-                    order_price[array_counter] = log_records['order_price'][log_counter]
+                if np.isnan(order_records['real_pnl'][log_counter]):
+                    order_price[array_counter] = order_records['price'][log_counter]
                     avg_entry[array_counter] = temp_avg_entry
                     stop_loss[array_counter] = temp_stop_loss
                     trailing_sl[array_counter] = temp_trailing_sl
                     take_profit[array_counter] = temp_take_profit
 
-                elif log_records['real_pnl'][log_counter] > 0 and \
-                    (log_records['order_type'][log_counter] == OrderType.LongTP or
-                     log_records['order_type'][log_counter] == OrderType.ShortTP):
+                elif order_records['real_pnl'][log_counter] > 0 and \
+                    (order_records['order_type'][log_counter] == OrderType.LongTP or
+                     order_records['order_type'][log_counter] == OrderType.ShortTP):
 
                     order_price[array_counter] = np.nan
                     avg_entry[array_counter] = temp_avg_entry
                     stop_loss[array_counter] = temp_stop_loss
                     trailing_sl[array_counter] = temp_trailing_sl
-                    take_profit[array_counter] = log_records['tp_prices'][log_counter]
+                    take_profit[array_counter] = order_records['tp_prices'][log_counter]
 
-                elif log_records['real_pnl'][log_counter] > 0 and \
-                    (log_records['order_type'][log_counter] == OrderType.LongTSL or
-                     log_records['order_type'][log_counter] == OrderType.ShortTSL):
+                elif order_records['real_pnl'][log_counter] > 0 and \
+                    (order_records['order_type'][log_counter] == OrderType.LongTSL or
+                     order_records['order_type'][log_counter] == OrderType.ShortTSL):
 
                     order_price[array_counter] = np.nan
                     avg_entry[array_counter] = temp_avg_entry
                     stop_loss[array_counter] = temp_stop_loss
-                    trailing_sl[array_counter] = log_records['tsl_prices'][log_counter]
+                    trailing_sl[array_counter] = order_records['tsl_prices'][log_counter]
                     take_profit[array_counter] = temp_take_profit
 
-                elif log_records['real_pnl'][log_counter] <= 0:
+                elif order_records['real_pnl'][log_counter] <= 0:
                     order_price[array_counter] = np.nan
                     avg_entry[array_counter] = temp_avg_entry
-                    stop_loss[array_counter] = log_records['sl_prices'][log_counter]
-                    trailing_sl[array_counter] = log_records['tsl_prices'][log_counter]
+                    stop_loss[array_counter] = order_records['sl_prices'][log_counter]
+                    trailing_sl[array_counter] = order_records['tsl_prices'][log_counter]
                     take_profit[array_counter] = temp_take_profit
 
-                temp_avg_entry = log_records['avg_entry'][log_counter]
-                temp_stop_loss = log_records['sl_prices'][log_counter]
-                temp_trailing_sl = log_records['tsl_prices'][log_counter]
-                temp_take_profit = log_records['tp_prices'][log_counter]
+                temp_avg_entry = order_records['avg_entry'][log_counter]
+                temp_stop_loss = order_records['sl_prices'][log_counter]
+                temp_trailing_sl = order_records['tsl_prices'][log_counter]
+                temp_take_profit = order_records['tp_prices'][log_counter]
                 log_counter += 1
         array_counter += 1
 

@@ -12,6 +12,8 @@ from quantfreedom.backtester.nb.buy_funcs import long_increase_nb, long_decrease
 from quantfreedom._typing import (
     RecordArray,
     Array1d,
+    Array2d,
+    PossibleArray,
 )
 from quantfreedom.backtester.enums.enums import (
     OrderType,
@@ -32,7 +34,7 @@ def check_sl_tp_nb(
     low_price: float,
     open_price: float,
     close_price: float,
-    
+
     indicator_settings_counter: int,
     order_settings_counter: int,
     order_count_id: Array1d,
@@ -80,15 +82,15 @@ def check_sl_tp_nb(
         # Stop Loss to break even
         elif not moved_sl_to_be_new and stops_order.sl_to_be:
             if stops_order.sl_to_be_based_on == SL_BE_or_Trail_BasedOn.low_price:
-                be_price = low_price
+                sl_be_based_on = low_price
             elif stops_order.sl_to_be_based_on == SL_BE_or_Trail_BasedOn.close_price:
-                be_price = close_price
+                sl_be_based_on = close_price
             elif stops_order.sl_to_be_based_on == SL_BE_or_Trail_BasedOn.open_price:
-                be_price = open_price
+                sl_be_based_on = open_price
             elif stops_order.sl_to_be_based_on == SL_BE_or_Trail_BasedOn.high_price:
-                be_price = high_price
+                sl_be_based_on = high_price
 
-            if (be_price - average_entry) / average_entry > stops_order.sl_to_be_when_pct_from_avg_entry:
+            if (sl_be_based_on - average_entry) / average_entry > stops_order.sl_to_be_when_pct_from_avg_entry:
                 if stops_order.sl_to_be_zero_or_entry == 0:
                     sl_prices_new = (fee_pct * average_entry +
                                      average_entry) / (1 - fee_pct)
@@ -103,19 +105,21 @@ def check_sl_tp_nb(
         # Trailing Stop Loss
         elif stops_order.tsl_true_or_false:
             if stops_order.tsl_based_on == SL_BE_or_Trail_BasedOn.low_price:
-                trailed_sl_price = low_price
+                trail_based_on = low_price
             elif stops_order.tsl_based_on == SL_BE_or_Trail_BasedOn.high_price:
-                trailed_sl_price = high_price
+                trail_based_on = high_price
             elif stops_order.tsl_based_on == SL_BE_or_Trail_BasedOn.open_price:
-                trailed_sl_price = open_price
+                trail_based_on = open_price
             elif stops_order.tsl_based_on == SL_BE_or_Trail_BasedOn.close_price:
-                trailed_sl_price = close_price
+                trail_based_on = close_price
 
             # not going to adjust every candle
-            if (trailed_sl_price - average_entry) / average_entry > stops_order.tsl_when_pct_from_avg_entry:
-                temp_tsl_price = trailed_sl_price - \
-                    trailed_sl_price * stops_order.tsl_trail_by_pct
-                if temp_tsl_price > trailed_sl_price:
+            x = (trail_based_on - average_entry) / \
+                average_entry > stops_order.tsl_when_pct_from_avg_entry
+            if x:
+                temp_tsl_price = trail_based_on - \
+                    trail_based_on * stops_order.tsl_trail_by_pct
+                if temp_tsl_price > tsl_prices_new:
                     tsl_prices_new = temp_tsl_price
                     moved_tsl = True
                     order_type_new = OrderType.MovedTSL
@@ -125,7 +129,6 @@ def check_sl_tp_nb(
             price_new = np.nan
             size_value_new = np.nan
 
-        
     order_result_new = OrderResult(
         average_entry=order_result.average_entry,
         fees_paid=order_result.fees_paid,
@@ -161,7 +164,7 @@ def check_sl_tp_nb(
             account_state=account_state,
             order_result=order_result_new,
         )
-    
+
     return order_result_new
 
 
@@ -182,7 +185,7 @@ def process_order_nb(
     order_result: OrderResult,
     static_variables: StaticVariables,
 ):
-        
+
     if order_type == OrderType.LongEntry:
         account_state_new, order_result_new = long_increase_nb(
             price=price,
@@ -255,3 +258,30 @@ def process_stops_nb(
         )
 
     return account_state_new, order_result_new
+
+@njit(cache=True)
+def to_1d_array_nb(
+    var: PossibleArray
+) -> Array1d:
+    """Resize array to one dimension."""
+    if var.ndim == 0:
+        return np.expand_dims(var, axis=0)
+    if var.ndim == 1:
+        return var
+    if var.ndim == 2 and var.shape[1] == 1:
+        return var[:, 0]
+    raise ValueError("to 1d array problem")
+
+
+@njit(cache=True)
+def to_2d_array_nb(
+    var: PossibleArray,
+    expand_axis: int = 1
+) -> Array2d:
+    if var.ndim == 0:
+        return np.expand_dims(np.expand_dims(var, axis=0), axis=0)
+    if var.ndim == 1:
+        return np.expand_dims(var, axis=expand_axis)
+    if var.ndim == 2:
+        return var
+    raise ValueError("to 2d array problem")
