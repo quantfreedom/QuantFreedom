@@ -72,7 +72,6 @@ class OrderResult(tp.NamedTuple):
     leverage: float = 0.
     liq_price: float = np.nan
     moved_sl_to_be: bool = False
-    moved_tsl: bool = False
     order_status: int = 0
     order_status_info: int = 0
     order_type: float = 0.

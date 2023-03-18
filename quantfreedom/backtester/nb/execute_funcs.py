@@ -5,6 +5,7 @@ Testing the tester
 import numpy as np
 from numba import njit
 
+from quantfreedom._typing import Optional
 from quantfreedom.backtester.nb.helper_funcs import fill_order_records_nb
 
 from quantfreedom.backtester.nb.buy_funcs import long_increase_nb, long_decrease_nb
@@ -31,29 +32,25 @@ def check_sl_tp_nb(
     low_price: float,
     open_price: float,
     close_price: float,
+    
+    indicator_settings_counter: int,
+    order_settings_counter: int,
+    order_count_id: Array1d,
+    or_filled_temp: Array1d,
+    order_records: RecordArray,
 
+    entry_type: int,
     fee_pct: float,
-
+    bar: int,
+    account_state: AccountState,
     order_result: OrderResult,
     stops_order: StopsOrder,
 ):
-    """
-    This checks if your stop or take profit was hit.
-
-    Args:
-        high_price: The high_price of the candle
-        low_price: The low_price of the candle
-        order_result: See [Order Result][backtester.enums.enums.ResultEverything].
-
-    !!! note
-        Right now it only fully closes the position. But that will be changing soon once multiple stops is implimented.
-
-    First it checks the order type and then it checks if the stop losses were hit and then checks to see if take profit was hit last.
-    It defaults to checking tp last so it has a negative bias.
-    """
+    # Check SL
     moved_sl_to_be_new = order_result.moved_sl_to_be
-    moved_tsl_new = order_result.moved_tsl
-    order_type_new = order_result.order_type
+    moved_tsl = False
+    record_sl_move = False
+    order_type_new = entry_type
     price_new = order_result.price
     size_value_new = np.inf
     sl_prices_new = order_result.sl_prices
@@ -98,7 +95,8 @@ def check_sl_tp_nb(
                 else:
                     sl_prices_new = average_entry
                 moved_sl_to_be_new = True
-            order_type_new = OrderType.MovedSLtoBE
+                order_type_new = OrderType.MovedSLtoBE
+                record_sl_move = True
             price_new = np.nan
             size_value_new = np.nan
 
@@ -119,7 +117,7 @@ def check_sl_tp_nb(
                     trailed_sl_price * stops_order.tsl_trail_by_pct
                 if temp_tsl_price > trailed_sl_price:
                     tsl_prices_new = temp_tsl_price
-                    moved_tsl_new = True
+                    moved_tsl = True
                     order_type_new = OrderType.MovedTSL
             price_new = np.nan
             size_value_new = np.nan
@@ -127,13 +125,13 @@ def check_sl_tp_nb(
             price_new = np.nan
             size_value_new = np.nan
 
-    return OrderResult(
+        
+    order_result_new = OrderResult(
         average_entry=order_result.average_entry,
         fees_paid=order_result.fees_paid,
         leverage=order_result.leverage,
         liq_price=order_result.liq_price,
         moved_sl_to_be=moved_sl_to_be_new,
-        moved_tsl=moved_tsl_new,
         order_status=order_result.order_status,
         order_status_info=order_result.order_status_info,
         order_type=order_type_new,
@@ -149,6 +147,22 @@ def check_sl_tp_nb(
         tsl_pcts=order_result.tsl_pcts,
         tsl_prices=tsl_prices_new,
     )
+
+    if record_sl_move or moved_tsl:
+        fill_order_records_nb(
+            bar=bar,
+
+            indicator_settings_counter=indicator_settings_counter,
+            order_records=order_records,
+            order_settings_counter=order_settings_counter,
+            order_count_id=order_count_id,
+            or_filled_temp=or_filled_temp,
+
+            account_state=account_state,
+            order_result=order_result_new,
+        )
+    
+    return order_result_new
 
 
 @ njit(cache=True)
@@ -167,9 +181,8 @@ def process_order_nb(
     entry_order: EntryOrder,
     order_result: OrderResult,
     static_variables: StaticVariables,
-
 ):
-
+        
     if order_type == OrderType.LongEntry:
         account_state_new, order_result_new = long_increase_nb(
             price=price,

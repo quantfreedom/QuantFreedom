@@ -1,9 +1,9 @@
 Currently Working On:
-    ☐ make a data frame array function
-    ☐ make a function for only getting the cart arrays that make it past the filter and include the order settings id ... basically just borrow from the df array
     ☐ create order status info for moved sl or tsl moved and set to filled for now
     ☐ work on check stops - investigate why no sl to be stops
     ☐ check trailing stop losses
+    ☐ make a data frame array function
+    ☐ make a function for only getting the cart arrays that make it past the filter and include the order settings id ... basically just borrow from the df array
     
 TODOs:
     ☐ remove the ability for the user to create sl tsl tp prices

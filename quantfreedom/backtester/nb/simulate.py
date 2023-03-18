@@ -575,6 +575,7 @@ def simulate_from_signals(
         not np.isnan(tsl_pcts_array[0]) or \
         not np.isnan(tp_pcts_array[0])
 
+    # order settings loops
     for order_settings_counter in range(total_order_settings):
 
         entry_order = EntryOrder(
@@ -608,6 +609,7 @@ def simulate_from_signals(
                 order_settings_counter],
         )
 
+        # ind set loop
         for indicator_settings_counter in range(total_indicator_settings):
 
             if entries.ndim != 1:
@@ -628,6 +630,7 @@ def simulate_from_signals(
             order_result = OrderResult()
             or_filled_temp[0] = 0
 
+            # entries loop
             for bar in range(total_bars):
 
                 if account_state.available_balance < 5:
@@ -639,7 +642,7 @@ def simulate_from_signals(
                     account_state, order_result = process_order_nb(
                         price=open_prices[bar],
                         order_type=entry_order.order_type,
-                        
+
                         account_state=account_state,
                         entry_order=entry_order,
                         order_result=order_result,
@@ -655,7 +658,7 @@ def simulate_from_signals(
                     )
                 if order_result.position > 0:
                     # Check Stops
-                    order_result_stops = check_sl_tp_nb(
+                    order_result = check_sl_tp_nb(
                         open_price=open_prices[bar],
                         high_price=high_prices[bar],
                         low_price=low_prices[bar],
@@ -663,20 +666,29 @@ def simulate_from_signals(
 
                         fee_pct=static_variables.fee_pct,
 
+                        entry_type=entry_order.order_type,
                         order_result=order_result,
                         stops_order=stops_order,
+
+                        account_state=account_state,
+                        order_records=order_records[order_count_id[0]],
+                        order_count_id=order_count_id,
+                        or_filled_temp=or_filled_temp,
+
+                        bar=bar,
+                        indicator_settings_counter=indicator_settings_counter,
+                        order_settings_counter=order_settings_counter,
                     )
                     # process stops
-                    if not np.isnan(order_result_stops.size_value):
-                        # account_state, order_result = process_stops_nb(
+                    if not np.isnan(order_result.size_value):
                         account_state, order_result = process_order_nb(
                             entry_order=entry_order,
-                            order_type=order_result_stops.order_type,
-                            
+                            order_type=order_result.order_type,
+
                             price=open_prices[bar],
 
                             account_state=account_state,
-                            order_result=order_result_stops,
+                            order_result=order_result,
                             static_variables=static_variables,
 
                             bar=bar,
@@ -744,8 +756,7 @@ def simulate_from_signals(
                     df_array['total_pnl'][df_counter] = total_pnl
                     df_array['ending_eq'][df_counter] = temp_order_records['equity'][-1]
                     df_counter += 1
-                    
-                    
+
             # Gains False
             else:
                 order_records[or_filled_start:order_count_id[0]] = 0
