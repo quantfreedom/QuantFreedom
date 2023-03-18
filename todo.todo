@@ -1,13 +1,12 @@
 Currently Working On:
-    ☐ change up df to remove sl pct and others
-    ☐ figure out why there is a trade of zero happening
-    ☐ multiple all the cart arrays pct by 100 before returning cart array
-    ☐ remove the ability for the user to create sl tsl tp prices
-    ☐ add an else statement to the gains that deals with erasing the data from order records
-    ☐ work on check stops and process stops
-    ☐ try to figure out a way to only return the ids of the cart arrays that made it past the filter
-
+    ☐ make a data frame array function
+    ☐ make a function for only getting the cart arrays that make it past the filter and include the order settings id ... basically just borrow from the df array
+    ☐ create order status info for moved sl or tsl moved and set to filled for now
+    ☐ work on check stops - investigate why no sl to be stops
+    ☐ check trailing stop losses
+    
 TODOs:
+    ☐ remove the ability for the user to create sl tsl tp prices
     ☐ make it so leverage goes to 100 when sl or tsl moves past entry and liq price is maxed out
 
 Other Users Needed:
@@ -16,12 +15,20 @@ Other Users Needed:
 Ask Other Users ?:
     ☐ add the ability to put user defined sl tp tsl prices
 
-    Archive:
-  ✔ figure out a way to delete all cache and store cache in one place @done(23-03-17 09:08)
+Would Be Nice:
+    ☐ send pct change of position in order result when decreasing or increaseing position size
+
+Archive:
+  ✔ change up df to remove sl pct and others @done(23-03-17 10:57) @project(Currently Working On)
+  ✔ create or filled so i can subtract that num from end or if the current settings don't pass gains filter @done(23-03-17 11:11) @project(Currently Working On)
+  ✔ work on long decrease @done(23-03-17 20:02) @project(Currently Working On)
+  ✔ add an else statement to the gains that deals with erasing the data from order records @done(23-03-17 20:02) @project(Currently Working On)
+  ✔ multiple all the cart arrays pct by 100 before returning cart array @done(23-03-17 20:03) @project(Currently Working On)
   ✔ update code to get position size in buy func @done(23-03-17 08:22)
   ✔ delete log records @done(23-03-17 08:49)
   ✔ add each trade info to order records @done(23-03-17 08:49)
   ✔ return cart array @done(23-03-17 08:51)
+
   ✔ added the ability to delete pycache and also added a specific folder where numba cache is and also the clear cache deletes the numba cache as well @done(23-03-16 19:48)
   ✔ created the named tuples now @done(23-03-16 19:48)
   ✔ got the long increase working @done(23-03-16 19:48)

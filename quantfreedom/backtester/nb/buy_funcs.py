@@ -44,7 +44,7 @@ def long_increase_nb(
 
     if static_variables.size_type != SizeType.Amount and \
             static_variables.size_type != SizeType.PercentOfAccount:
-        
+
         if np.isfinite(sl_pcts_new):
             if static_variables.size_type == SizeType.RiskPercentOfAccount:
                 size_value = account_state.equity * entry_order.size_pct / sl_pcts_new
@@ -60,7 +60,7 @@ def long_increase_nb(
             size_value = -possible_loss / \
                 ((sl_prices_new/price - 1) - static_variables.fee_pct -
                     (sl_prices_new * static_variables.fee_pct / price))
-        
+
         elif np.isfinite(tsl_pcts_new):
             if static_variables.size_type == SizeType.RiskPercentOfAccount:
                 size_value = account_state.equity * entry_order.size_pct / tsl_pcts_new
@@ -69,14 +69,14 @@ def long_increase_nb(
                 size_value = entry_order.size_value / tsl_pcts_new
                 if size_value < 1:
                     raise ValueError(
-                        "Risk Amount has produced a size_value values less than 1.") 
+                        "Risk Amount has produced a size_value values less than 1.")
             tsl_prices_new = price - (price * tsl_pcts_new)
             possible_loss = size_value * (tsl_pcts_new)
 
             size_value = -possible_loss / \
                 ((tsl_prices_new / price - 1) - static_variables.fee_pct -
                     (tsl_prices_new * static_variables.fee_pct / price))
-            
+
     elif static_variables.size_type == SizeType.Amount:
         size_value = entry_order.size_value
         if size_value > static_variables.max_order_size_value:
@@ -92,7 +92,7 @@ def long_increase_nb(
         raise TypeError(
             "I have no clue what is wrong but something is wrong with making the size_value using size_value type")
 
-    # TODO talk to someone who would want to use set prices for sl and trailing sl 
+    # TODO talk to someone who would want to use set prices for sl and trailing sl
     # if np.isfinite(sl_prices_new):
     #     sl_prices_new = price - sl_prices_new
     #     sl_pcts_new = (price - sl_prices_new) / price
@@ -195,7 +195,7 @@ def long_increase_nb(
             return account_state, \
                 OrderResult(
                     average_entry=order_result.average_entry,
-                    fees_paid=0.,
+                    fees_paid=np.nan,
                     leverage=order_result.leverage,
                     liq_price=order_result.liq_price,
                     moved_sl_to_be=order_result.moved_sl_to_be,
@@ -203,10 +203,11 @@ def long_increase_nb(
                     order_status=OrderStatus.Ignored,
                     order_status_info=OrderStatusInfo.MaxEquityRisk,
                     order_type=entry_order.order_type,
-                    pct_chg=0.,
+                    pct_chg_trade=np.nan,
                     position=order_result.position,
+                    price=price,
                     realized_pnl=np.nan,
-                    size_value=0.,
+                    size_value=np.nan,
                     sl_pcts=order_result.sl_pcts,
                     sl_prices=order_result.sl_prices,
                     tp_pcts=order_result.tp_pcts,
@@ -309,7 +310,7 @@ def long_increase_nb(
         ), \
         OrderResult(
             average_entry=average_entry_new,
-            fees_paid=0.,
+            fees_paid=np.nan,
             leverage=leverage_new,
             liq_price=liq_price_new,
             moved_sl_to_be=False,
@@ -317,8 +318,9 @@ def long_increase_nb(
             order_status=OrderStatus.Filled,
             order_status_info=OrderStatusInfo.HopefullyNoProblems,
             order_type=entry_order.order_type,
-            pct_chg=0.,
+            pct_chg_trade=np.nan,
             position=position_new,
+            price=price,
             realized_pnl=np.nan,
             size_value=size_value,
             sl_pcts=sl_pcts_new,
@@ -330,61 +332,79 @@ def long_increase_nb(
         )
 
 
-# @ njit(cache=True)
-# def long_decrease_nb(
-#     available_balance: float,
-#     average_entry: float,
-#     cash_borrowed: float,
-#     cash_used: float,
-#     equity: float,
-#     static_variables.fee_pct: float,
-#     liq_price: float,
-#     position: float,
-#     price: float,
-#     size_value: float,
-# ):
-#     """
-#     This is where the long position gets decreased or closed out.
-#     """
+@ njit(cache=True)
+def long_decrease_nb(
+    fee_pct: float,
+    
+    order_result: OrderResult,
+    account_state: AccountState,
+):
+    """
+    This is where the long position gets decreased or closed out.
+    """
 
-#     if size_value >= position:
-#         size_value = position
+    if order_result.size_value >= order_result.position:
+        size_value = order_result.position
+    else:
+        size_value = order_result.size_value
 
-#     pct_chg = (price - average_entry) / average_entry  # math checked
+    pct_chg_trade = (order_result.price - order_result.average_entry) / \
+        order_result.average_entry  # math checked
 
-#     # Set new position size_value and cash borrowed and cash used
-#     position_new = position - size_value
-#     position_pct_chg = (position - position_new) / position  # math checked
+    # Set new order_result.position size_value and cash borrowed and cash used
+    position_new = order_result.position - size_value
+    position_pct_chg = (order_result.position - position_new) / \
+        order_result.position  # math checked
 
-#     # profit and loss calulation
-#     coin_size = size_value / average_entry  # math checked
-#     pnl = coin_size * (price - average_entry)  # math checked
-#     fee_open = coin_size * average_entry * static_variables.fee_pct   # math checked
-#     fee_close = coin_size * price * static_variables.fee_pct   # math checked
-#     fees_paid = fee_open + fee_close  # math checked
-#     realized_pnl = pnl - fees_paid  # math checked
+    # profit and loss calulation
+    coin_size = size_value / order_result.average_entry  # math checked
+    pnl = coin_size * (order_result.price -
+                       order_result.average_entry)  # math checked
+    fee_open = coin_size * order_result.average_entry * \
+        fee_pct   # math checked
+    fee_close = coin_size * order_result.price * \
+        fee_pct   # math checked
+    fees_paid = fee_open + fee_close  # math checked
+    realized_pnl = pnl - fees_paid  # math checked
 
-#     # Setting new equity
-#     equity_new = equity + realized_pnl
+    # Setting new account_state.equity
+    equity_new = account_state.equity + realized_pnl
 
-#     cash_borrowed_new = cash_borrowed - (cash_borrowed * position_pct_chg)
+    cash_borrowed_new = account_state.cash_borrowed - \
+        (account_state.cash_borrowed * position_pct_chg)
 
-#     cash_used_new = cash_used - (cash_used * position_pct_chg)
+    cash_used_new = account_state.cash_used - \
+        (account_state.cash_used * position_pct_chg)
 
-#     available_balance_new = realized_pnl + \
-#         available_balance + (cash_used * position_pct_chg)
+    available_balance_new = realized_pnl + \
+        account_state.available_balance + \
+        (account_state.cash_used * position_pct_chg)
 
-#     if position <= 0:
-#         liq_price = np.nan
-
-#     return available_balance_new,\
-#         cash_borrowed_new,\
-#         cash_used_new,\
-#         equity_new,\
-#         fees_paid,\
-#         liq_price, \
-#         OrderStatus.Filled, \
-#         OrderStatusInfo.HopefullyNoProblems, \
-#         position_new,\
-#         realized_pnl, \
-#         size_value
+    return AccountState(
+        available_balance=available_balance_new,
+        cash_borrowed=cash_borrowed_new,
+        cash_used=cash_used_new,
+        equity=equity_new,
+    ), \
+        OrderResult(
+        average_entry=order_result.average_entry,
+        fees_paid=fees_paid,
+        leverage=order_result.leverage,
+        liq_price=order_result.liq_price,
+        moved_sl_to_be=order_result.moved_sl_to_be,
+        moved_tsl=order_result.moved_sl_to_be,
+        order_status=OrderStatus.Filled,
+        order_status_info=OrderStatusInfo.HopefullyNoProblems,
+        order_type=order_result.order_type,
+        pct_chg_trade=pct_chg_trade,
+        position=position_new,
+        price=order_result.price,
+        realized_pnl=realized_pnl,
+        size_value=size_value,
+        sl_pcts=order_result.sl_pcts,
+        sl_prices=order_result.sl_prices,
+        tp_pcts=order_result.tp_pcts,
+        tp_prices=order_result.tp_prices,
+        tsl_pcts=order_result.tsl_pcts,
+        tsl_prices=order_result.tsl_prices,
+    )

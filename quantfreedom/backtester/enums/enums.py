@@ -38,7 +38,7 @@ __all__ = [
     'StaticVariables',
 
     'or_dt',
-    'ready_for_df',
+    'df_array_dt',
     'cart_array_dt',
 ]
 
@@ -76,8 +76,9 @@ class OrderResult(tp.NamedTuple):
     order_status: int = 0
     order_status_info: int = 0
     order_type: float = 0.
-    pct_chg: float = 0.
+    pct_chg_trade: float = 0.
     position: float = 0.
+    price: float = 0.
     realized_pnl: float = 0.
     size_value: float = 0.
     sl_pcts: float = 0.
@@ -108,7 +109,7 @@ class StopsOrder(tp.NamedTuple):
     sl_to_be_when_pct_from_avg_entry: float = np.nan
     sl_to_be_zero_or_entry: float = np.nan
     tsl_based_on: float = np.nan
-    tsl_trail_by: float = np.nan
+    tsl_trail_by_pct: float = np.nan
     tsl_true_or_false: bool = False
     tsl_when_pct_from_avg_entry: float = np.nan
 
@@ -181,7 +182,7 @@ SizeType = SizeTypeT()
 
 # ############# Records ############# #
 
-ready_for_df = np.dtype([
+df_array_dt = np.dtype([
     ('or_set', np.int_),
     ('ind_set', np.int_),
     ('total_trades', np.float_),
@@ -192,10 +193,32 @@ ready_for_df = np.dtype([
     ('total_fees', np.float_),
     ('total_pnl', np.float_),
     ('ending_eq', np.float_),
-    ('sl_pct', np.float_),
-    ('rr', np.float_),
-    ('max_eq_risk_pct', np.float_),
 ], align=True)
+
+# cart_array_dt = np.dtype([
+#     ('leverage', np.float_),
+#     ('max_equity_risk_pct', np.float_),
+#     ('max_equity_risk_value', np.float_),
+#     ('risk_rewards', np.float_),
+#     ('size_pct', np.float_),
+#     ('size_value', np.float_),
+#     ('sl_pcts', np.float_),
+#     ('sl_prices', np.float_),
+#     ('sl_to_be', np.float_),
+#     ('sl_to_be_based_on', np.float_),
+#     ('sl_to_be_then_trail', np.float_),
+#     ('sl_to_be_trail_by_when_pct_from_avg_entry', np.float_),
+#     ('sl_to_be_when_pct_from_avg_entry', np.float_),
+#     ('sl_to_be_zero_or_entry', np.float_),
+#     ('tp_pcts', np.float_),
+#     ('tp_prices', np.float_),
+#     ('tsl_based_on', np.float_),
+#     ('tsl_pcts', np.float_),
+#     ('tsl_prices', np.float_),
+#     ('tsl_trail_by_pct', np.float_),
+#     ('tsl_true_or_false', np.float_),
+#     ('tsl_when_pct_from_avg_entry', np.float_),
+# ], align=True)
 
 cart_array_dt = np.dtype([
     ('leverage', np.float_),
@@ -206,9 +229,9 @@ cart_array_dt = np.dtype([
     ('size_value', np.float_),
     ('sl_pcts', np.float_),
     ('sl_prices', np.float_),
-    ('sl_to_be', np.float_),
+    ('sl_to_be', np.bool_),
     ('sl_to_be_based_on', np.float_),
-    ('sl_to_be_then_trail', np.float_),
+    ('sl_to_be_then_trail', np.bool_),
     ('sl_to_be_trail_by_when_pct_from_avg_entry', np.float_),
     ('sl_to_be_when_pct_from_avg_entry', np.float_),
     ('sl_to_be_zero_or_entry', np.float_),
@@ -217,8 +240,8 @@ cart_array_dt = np.dtype([
     ('tsl_based_on', np.float_),
     ('tsl_pcts', np.float_),
     ('tsl_prices', np.float_),
-    ('tsl_trail_by', np.float_),
-    ('tsl_true_or_false', np.float_),
+    ('tsl_trail_by_pct', np.float_),
+    ('tsl_true_or_false', np.bool_),
     ('tsl_when_pct_from_avg_entry', np.float_),
 ], align=True)
 """

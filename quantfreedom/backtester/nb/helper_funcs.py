@@ -16,12 +16,11 @@ from quantfreedom.backtester.enums import (
 @njit(cache=True)
 def fill_order_records_nb(
     bar: int,  # time stamp
-    price: float,
     indicator_settings_counter: int,
     order_records: RecordArray,
     order_settings_counter: int,
     order_count_id: Array1d,
-    or_filled_end: Array1d,
+    or_filled_temp: Array1d,
 
     account_state: AccountState,
     order_result: OrderResult,
@@ -35,7 +34,7 @@ def fill_order_records_nb(
     order_records['or_set'] = order_settings_counter
     order_records['order_id'] = order_count_id
     order_records['order_type'] = order_result.order_type
-    order_records['price'] = price
+    order_records['price'] = order_result.price
     order_records['real_pnl'] = round(order_result.realized_pnl, 4)
     order_records['size_value'] = order_result.size_value
     order_records['sl_prices'] = order_result.sl_prices
@@ -43,7 +42,7 @@ def fill_order_records_nb(
     order_records['tsl_prices'] = order_result.tsl_prices
     
     order_count_id[0] +=1
-    or_filled_end[0] += 1
+    or_filled_temp[0] += 1
 
 @njit(cache=True)
 def to_1d_array_nb(
