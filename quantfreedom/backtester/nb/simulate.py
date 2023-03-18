@@ -4,17 +4,11 @@ Testing the tester
 
 import numpy as np
 from numba import literal_unroll, njit
-from quantfreedom._typing import (
-    ArrayLike,
-)
-
-from quantfreedom.backtester.nb.helper_funcs import (
-    to_1d_array_nb,
-)
+from quantfreedom._typing import PossibleArray
+from quantfreedom.backtester.nb.helper_funcs import to_1d_array_nb
 from quantfreedom.backtester.nb.execute_funcs import (
     process_order_nb,
     check_sl_tp_nb,
-    process_stops_nb,
 )
 from quantfreedom.backtester.enums.enums import (
     cart_array_dt,
@@ -37,11 +31,11 @@ from quantfreedom.backtester.enums.enums import (
 @njit(cache=True)
 def simulate_from_signals(
     # entry info
-    entries: ArrayLike,
-    open_prices: ArrayLike,
-    high_prices: ArrayLike,
-    low_prices: ArrayLike,
-    close_prices: ArrayLike,
+    entries: PossibleArray,
+    open_prices: PossibleArray,
+    high_prices: PossibleArray,
+    low_prices: PossibleArray,
+    close_prices: PossibleArray,
 
     # required account info
     equity: float,
@@ -54,41 +48,41 @@ def simulate_from_signals(
     size_type: int,
 
     # Order Params
-    leverage: ArrayLike = np.nan,
-    max_equity_risk_pct: ArrayLike = np.nan,
-    max_equity_risk_value: ArrayLike = np.nan,
+    leverage: PossibleArray = np.nan,
+    max_equity_risk_pct: PossibleArray = np.nan,
+    max_equity_risk_value: PossibleArray = np.nan,
     max_lev: float = 100.,
     max_order_size_pct: float = 100.,
     min_order_size_pct: float = .01,
     max_order_size_value: float = np.inf,
     min_order_size_value: float = 1.,
-    size_pct: ArrayLike = np.nan,
-    size_value: ArrayLike = np.nan,
+    size_pct: PossibleArray = np.nan,
+    size_value: PossibleArray = np.nan,
 
     # Stop Losses
-    sl_pcts: ArrayLike = np.nan,
-    sl_prices: ArrayLike = np.nan,
+    sl_pcts: PossibleArray = np.nan,
+    sl_prices: PossibleArray = np.nan,
 
-    sl_to_be: ArrayLike = False,
-    sl_to_be_based_on: ArrayLike = np.nan,
-    sl_to_be_then_trail: ArrayLike = False,
-    sl_to_be_trail_by_when_pct_from_avg_entry: ArrayLike = np.nan,
-    sl_to_be_when_pct_from_avg_entry: ArrayLike = np.nan,
-    sl_to_be_zero_or_entry: ArrayLike = np.nan,
+    sl_to_be: bool = False,
+    sl_to_be_based_on: PossibleArray = np.nan,
+    sl_to_be_when_pct_from_avg_entry: PossibleArray = np.nan,
+    sl_to_be_zero_or_entry: PossibleArray = np.nan,
+    sl_to_be_then_trail: bool = False,
+    sl_to_be_trail_by_when_pct_from_avg_entry: PossibleArray = np.nan,
 
     # Trailing Stop Loss Params
-    tsl_pcts: ArrayLike = np.nan,
-    tsl_prices: ArrayLike = np.nan,
+    tsl_pcts: PossibleArray = np.nan,
+    tsl_prices: PossibleArray = np.nan,
 
-    tsl_true_or_false: ArrayLike = False,
-    tsl_based_on: ArrayLike = np.nan,
-    tsl_trail_by_pct: ArrayLike = np.nan,
-    tsl_when_pct_from_avg_entry: ArrayLike = np.nan,
+    tsl_true_or_false: bool = False,
+    tsl_based_on: PossibleArray = np.nan,
+    tsl_trail_by_pct: PossibleArray = np.nan,
+    tsl_when_pct_from_avg_entry: PossibleArray = np.nan,
 
     # Take Profit Params
-    risk_rewards: ArrayLike = np.nan,
-    tp_pcts: ArrayLike = np.nan,
-    tp_prices: ArrayLike = np.nan,
+    risk_rewards: PossibleArray = np.nan,
+    tp_pcts: PossibleArray = np.nan,
+    tp_prices: PossibleArray = np.nan,
 
     # Results Filters
     gains_pct_filter: float = -np.inf,
@@ -125,6 +119,30 @@ def simulate_from_signals(
         raise ValueError(
             "max_order_size_value has to be > min_order_size_value")
 
+    if gains_pct_filter == np.inf:
+        raise ValueError(
+            "gains_pct_filter can't be inf")
+
+    if total_trade_filter < 0 or not np.isfinite(total_trade_filter):
+        raise ValueError(
+            "total_trade_filter needs to be greater than 0")
+
+    if sl_to_be == True and tsl_true_or_false == True:
+        raise ValueError(
+            "You can't have sl_to_be and tsl_true_or_false both be true")
+
+    if sl_to_be != True and sl_to_be != False:
+        raise ValueError(
+            "sl_to_be needs to be true or false")
+
+    if sl_to_be_then_trail != True and sl_to_be_then_trail != False:
+        raise ValueError(
+            "sl_to_be_then_trail needs to be true or false")
+
+    if tsl_true_or_false != True and tsl_true_or_false != False:
+        raise ValueError(
+            "tsl_true_or_false needs to be true or false")
+
     # Static variables creation
     og_equity = equity
     fee_pct /= 100
@@ -142,7 +160,6 @@ def simulate_from_signals(
         min_order_size_value=min_order_size_value,
         mmr=mmr,
         size_type=size_type,
-
     )
 
     # Order Arrays
@@ -167,13 +184,8 @@ def simulate_from_signals(
 
     sl_prices_array = to_1d_array_nb(np.asarray(sl_prices, dtype=np.float_))
 
-    sl_to_be_array = to_1d_array_nb(np.asarray(sl_to_be, dtype=np.float_))
-
     sl_to_be_based_on_array = to_1d_array_nb(
         np.asarray(sl_to_be_based_on, dtype=np.float_))
-
-    sl_to_be_then_trail_array = to_1d_array_nb(
-        np.asarray(sl_to_be_then_trail, dtype=np.float_))
 
     sl_to_be_trail_by_when_pct_from_avg_entry_array = to_1d_array_nb(np.asarray(
         np.asarray(sl_to_be_trail_by_when_pct_from_avg_entry)/100, dtype=np.float_))
@@ -196,9 +208,6 @@ def simulate_from_signals(
 
     tsl_trail_by_pct_array = to_1d_array_nb(
         np.asarray(np.asarray(tsl_trail_by_pct)/100, dtype=np.float_))
-
-    tsl_true_or_false_array = to_1d_array_nb(
-        np.asarray(tsl_true_or_false, dtype=np.float_))
 
     tsl_when_pct_from_avg_entry_array = to_1d_array_nb(
         np.asarray(np.asarray(tsl_when_pct_from_avg_entry)/100, dtype=np.float_))
@@ -349,10 +358,6 @@ def simulate_from_signals(
             raise ValueError(
                 "You need size_pct to be > 0 if using risk percent of account.")
 
-    if not np.isfinite(sl_to_be_array).any() or sl_to_be_array.any() < 0 or sl_to_be_array.any() > 1:
-        raise ValueError(
-            "sl_to_be needs to be true or false")
-
     # stop loss break even checks
     if np.isfinite(sl_to_be_based_on_array).any() and (
         sl_to_be_based_on_array.any() < SL_BE_or_Trail_BasedOn.open_price or
@@ -360,11 +365,6 @@ def simulate_from_signals(
     ):
         raise ValueError(
             "You need sl_to_be_based_on to be be either 0 1 2 or 3. look up SL_BE_or_Trail_BasedOn enums")
-
-    if np.isfinite(sl_to_be_then_trail_array).any() and \
-            sl_to_be_then_trail_array.any() < 0 or sl_to_be_then_trail_array.any() > 1:
-        raise ValueError(
-            "sl_to_be_then_trail needs to be true or false")
 
     if np.isinf(sl_to_be_trail_by_when_pct_from_avg_entry_array).any() or \
             sl_to_be_trail_by_when_pct_from_avg_entry_array.any() < 0:
@@ -380,15 +380,13 @@ def simulate_from_signals(
         raise ValueError(
             "sl_to_be_zero_or_entry needs to be 0 for zero or 1 for entry")
 
-    if sl_to_be_array.any() == False:
+    if sl_to_be == False:
         if np.isfinite(sl_to_be_based_on_array).any():
             raise ValueError(
                 "sl_to_be needs to be True to use sl_to_be_based_on.")
-        if sl_to_be_then_trail_array.any():
+        if sl_to_be_then_trail == True:
             raise ValueError(
                 "sl_to_be needs to be True to use sl_to_be_then_trail.")
-        if np.isfinite(sl_to_be_trail_by_when_pct_from_avg_entry_array).any():
-            raise ValueError("sl_to_be needs to be True to use .")
         if np.isfinite(sl_to_be_trail_by_when_pct_from_avg_entry_array).any():
             raise ValueError(
                 "sl_to_be needs to be True to use sl_to_be_trail_by_when_pct_from_avg_entry.")
@@ -399,11 +397,24 @@ def simulate_from_signals(
             raise ValueError(
                 "sl_to_be needs to be True to use sl_to_be_zero_or_entry.")
 
-    if not np.isfinite(tsl_true_or_false_array).any() or \
-            tsl_true_or_false_array.any() < 0 or tsl_true_or_false_array.any() > 1:
+    if sl_to_be and (
+        not np.isfinite(sl_to_be_based_on_array).any() or
+        not np.isfinite(sl_to_be_when_pct_from_avg_entry_array.any()).any() or
+        not np.isfinite(sl_to_be_zero_or_entry_array.any()).any()
+    ):
         raise ValueError(
-            "tsl_true_or_false needs to be true or false")
+            "If you have sl_to_be set to true then you must provide the other params")
 
+    if (sl_to_be and sl_to_be_then_trail) and (
+        not np.isfinite(sl_to_be_based_on_array).any() or
+        not np.isfinite(sl_to_be_when_pct_from_avg_entry_array).any() or
+        not np.isfinite(sl_to_be_zero_or_entry_array).any() or
+        not np.isfinite(sl_to_be_trail_by_when_pct_from_avg_entry_array).any()
+    ):
+        raise ValueError(
+            "If you have sl_to_be set to true then you must provide the other params")
+
+    # tsl Checks
     if np.isfinite(tsl_based_on_array).any() and (
         tsl_based_on_array.any() < SL_BE_or_Trail_BasedOn.open_price or
         tsl_based_on_array.any() > SL_BE_or_Trail_BasedOn.close_price
@@ -421,7 +432,7 @@ def simulate_from_signals(
         raise ValueError(
             "You need tsl_when_pct_from_avg_entry to be > 0 or not inf.")
 
-    if tsl_true_or_false_array.any() == False:
+    if tsl_true_or_false == False:
         if np.isfinite(tsl_based_on_array).any():
             raise ValueError(
                 "tsl_true_or_false needs to be True to use tsl_based_on.")
@@ -432,13 +443,13 @@ def simulate_from_signals(
             raise ValueError(
                 "tsl_true_or_false needs to be True to use tsl_when_pct_from_avg_entry.")
 
-    if gains_pct_filter == np.inf:
+    if tsl_true_or_false and (
+        not np.isfinite(tsl_based_on_array).any() or
+        not np.isfinite(tsl_trail_by_pct_array).any() or
+        not np.isfinite(tsl_when_pct_from_avg_entry_array).any()
+    ):
         raise ValueError(
-            "gains_pct_filter can't be inf")
-
-    if total_trade_filter < 0 or not np.isfinite(total_trade_filter):
-        raise ValueError(
-            "total_trade_filter needs to be greater than 0")
+            "If you have tsl_true_or_false set to true then you must provide the other params")
 
     # Cart of new arrays
     arrays = (
@@ -450,9 +461,7 @@ def simulate_from_signals(
         size_value_array,
         sl_pcts_array,
         sl_prices_array,
-        sl_to_be_array,
         sl_to_be_based_on_array,
-        sl_to_be_then_trail_array,
         sl_to_be_trail_by_when_pct_from_avg_entry_array,
         sl_to_be_when_pct_from_avg_entry_array,
         sl_to_be_zero_or_entry_array,
@@ -462,7 +471,6 @@ def simulate_from_signals(
         tsl_pcts_array,
         tsl_prices_array,
         tsl_trail_by_pct_array,
-        tsl_true_or_false_array,
         tsl_when_pct_from_avg_entry_array,
     )
 
@@ -492,9 +500,7 @@ def simulate_from_signals(
         'size_value',
         'sl_pcts',
         'sl_prices',
-        'sl_to_be',
         'sl_to_be_based_on',
-        'sl_to_be_then_trail',
         'sl_to_be_trail_by_when_pct_from_avg_entry',
         'sl_to_be_when_pct_from_avg_entry',
         'sl_to_be_zero_or_entry',
@@ -504,7 +510,6 @@ def simulate_from_signals(
         'tsl_pcts',
         'tsl_prices',
         'tsl_trail_by_pct',
-        'tsl_true_or_false',
         'tsl_when_pct_from_avg_entry',
     )
 
@@ -524,11 +529,7 @@ def simulate_from_signals(
     size_value_cart_array = cart_array['size_value']
     sl_pcts_cart_array = cart_array['sl_pcts']
     sl_prices_cart_array = cart_array['sl_prices']
-    sl_to_be_cart_array = np.asarray(
-        cart_array['sl_to_be'], dtype=np.bool_)
     sl_to_be_based_on_cart_array = cart_array['sl_to_be_based_on']
-    sl_to_be_then_trail_cart_array = np.asarray(
-        cart_array['sl_to_be_then_trail'], dtype=np.bool_)
     sl_to_be_trail_by_when_pct_from_avg_entry_cart_array = cart_array[
         'sl_to_be_trail_by_when_pct_from_avg_entry']
     sl_to_be_when_pct_from_avg_entry_cart_array = cart_array[
@@ -540,8 +541,6 @@ def simulate_from_signals(
     tsl_pcts_cart_array = cart_array['tsl_pcts']
     tsl_prices_cart_array = cart_array['tsl_prices']
     tsl_trail_by_cart_array = cart_array['tsl_trail_by_pct']
-    tsl_true_or_false_cart_array = np.asarray(
-        cart_array['tsl_true_or_false'], dtype=np.bool_)
     tsl_when_pct_from_avg_entry_cart_array = cart_array['tsl_when_pct_from_avg_entry']
 
     # Creating Settings Vars
@@ -594,9 +593,9 @@ def simulate_from_signals(
             tsl_prices=tsl_prices_cart_array[order_settings_counter],
         )
         stops_order = StopsOrder(
-            sl_to_be=sl_to_be_cart_array[order_settings_counter],
+            sl_to_be=sl_to_be,
             sl_to_be_based_on=sl_to_be_based_on_cart_array[order_settings_counter],
-            sl_to_be_then_trail=sl_to_be_then_trail_cart_array[order_settings_counter],
+            sl_to_be_then_trail=sl_to_be_then_trail,
             sl_to_be_trail_by_when_pct_from_avg_entry=sl_to_be_trail_by_when_pct_from_avg_entry_cart_array[
                 order_settings_counter],
             sl_to_be_when_pct_from_avg_entry=sl_to_be_when_pct_from_avg_entry_cart_array[
@@ -604,7 +603,7 @@ def simulate_from_signals(
             sl_to_be_zero_or_entry=sl_to_be_zero_or_entry_cart_array[order_settings_counter],
             tsl_based_on=tsl_based_on_cart_array[order_settings_counter],
             tsl_trail_by_pct=tsl_trail_by_cart_array[order_settings_counter],
-            tsl_true_or_false=tsl_true_or_false_cart_array[order_settings_counter],
+            tsl_true_or_false=tsl_true_or_false,
             tsl_when_pct_from_avg_entry=tsl_when_pct_from_avg_entry_cart_array[
                 order_settings_counter],
         )

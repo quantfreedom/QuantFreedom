@@ -3,7 +3,7 @@ from numba import njit
 
 from quantfreedom._typing import (
     RecordArray,
-    ArrayLike,
+    PossibleArray,
     Array1d,
     Array2d
     )
@@ -46,7 +46,7 @@ def fill_order_records_nb(
 
 @njit(cache=True)
 def to_1d_array_nb(
-    var: ArrayLike
+    var: PossibleArray
 ) -> Array1d:
     """Resize array to one dimension."""
     if var.ndim == 0:
@@ -60,7 +60,7 @@ def to_1d_array_nb(
 
 @njit(cache=True)
 def to_2d_array_nb(
-    var: ArrayLike,
+    var: PossibleArray,
     expand_axis: int = 1
 ) -> Array2d:
     if var.ndim == 0:
