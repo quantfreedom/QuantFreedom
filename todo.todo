@@ -1,10 +1,11 @@
 Currently Working On:
+    ☐ make a non double for loop of cart array 
+    ☐ not sure when to upgrade version
 
 Documentation:
     ☐  just start it lol
 
 Numba:
-    ☐ make a non double for loop of cart array 
     ☐ see if you can repurpose cart array when using numba for df cart array
 
 TODOs:
