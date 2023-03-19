@@ -1,5 +1,4 @@
 .ipynb_checkpoints
-__pycache__
 .vscode
 .idea
 .mypy_cache
@@ -7,6 +6,7 @@ __pycache__
 docs/site
 dist
 quantfreedom.egg-info
+numba_cache
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

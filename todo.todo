@@ -1,6 +1,7 @@
 Currently Working On:
-    ☐ remove the ability for the user to create sl tsl tp prices
+    ☐ work on numba 
     ☐ see if you can repurpose cart array when using numba for df cart array
+    ☐ work in selling
 
 Selling:
     ☐ start with increase sell
@@ -20,6 +21,7 @@ Would Be Nice:
     ☐ send pct change of position in order result when decreasing or increaseing position size
 
 Archive:
+  ✔ remove the ability for the user to create sl tsl tp prices @done(23-03-18 19:27) @project(Currently Working On)
   ✔ make a function for only getting the cart arrays that make it past the filter and include the order settings id ... basically just borrow from the df array @done(23-03-18 18:54) @project(Currently Working On)
   ✔ map order type number to english @done(23-03-18 18:55) @project(Currently Working On)
   ✔ put df in an order that makes sense @done(23-03-18 18:55) @project(Currently Working On)

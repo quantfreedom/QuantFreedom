@@ -59,11 +59,8 @@ class EntryOrder(tp.NamedTuple):
     size_pct: float = np.nan
     size_value: float = np.nan
     sl_pcts: float = np.nan
-    sl_prices: float = np.nan
     tp_pcts: float = np.nan
-    tp_prices: float = np.nan
     tsl_pcts_init: float = np.nan
-    tsl_prices: float = np.nan
 
 
 class OrderResult(tp.NamedTuple):
@@ -74,7 +71,7 @@ class OrderResult(tp.NamedTuple):
     moved_sl_to_be: bool = False
     order_status: int = 0
     order_status_info: int = 0
-    order_type: float = 0.
+    order_type: int = 0
     pct_chg_trade: float = 0.
     position: float = 0.
     price: float = 0.
@@ -194,33 +191,9 @@ df_array_dt = np.dtype([
     ('ending_eq', np.float_),
 ], align=True)
 
-# cart_array_dt = np.dtype([
-#     ('leverage', np.float_),
-#     ('max_equity_risk_pct', np.float_),
-#     ('max_equity_risk_value', np.float_),
-#     ('risk_rewards', np.float_),
-#     ('size_pct', np.float_),
-#     ('size_value', np.float_),
-#     ('sl_pcts', np.float_),
-#     ('sl_prices', np.float_),
-#     ('sl_to_be', np.float_),
-#     ('sl_to_be_based_on', np.float_),
-#     ('sl_to_be_then_trail', np.float_),
-#     ('sl_to_be_trail_by_when_pct_from_avg_entry', np.float_),
-#     ('sl_to_be_when_pct_from_avg_entry', np.float_),
-#     ('sl_to_be_zero_or_entry', np.float_),
-#     ('tp_pcts', np.float_),
-#     ('tp_prices', np.float_),
-#     ('tsl_based_on', np.float_),
-#     ('tsl_pcts_init', np.float_),
-#     ('tsl_prices', np.float_),
-#     ('tsl_trail_by_pct', np.float_),
-#     ('tsl_true_or_false', np.float_),
-#     ('tsl_when_pct_from_avg_entry', np.float_),
-# ], align=True)
 
 cart_array_dt = np.dtype([
-    ('order_settings_id', np.int_),
+    ('order_settings_id', np.float_),
     ('leverage', np.float_),
     ('max_equity_risk_pct', np.float_),
     ('max_equity_risk_value', np.float_),
@@ -228,16 +201,13 @@ cart_array_dt = np.dtype([
     ('size_pct', np.float_),
     ('size_value', np.float_),
     ('sl_pcts', np.float_),
-    ('sl_prices', np.float_),
     ('sl_to_be_based_on', np.float_),
     ('sl_to_be_trail_by_when_pct_from_avg_entry', np.float_),
     ('sl_to_be_when_pct_from_avg_entry', np.float_),
     ('sl_to_be_zero_or_entry', np.float_),
     ('tp_pcts', np.float_),
-    ('tp_prices', np.float_),
     ('tsl_based_on', np.float_),
     ('tsl_pcts_init', np.float_),
-    ('tsl_prices', np.float_),
     ('tsl_trail_by_pct', np.float_),
     ('tsl_when_pct_from_avg_entry', np.float_),
 ], align=True)

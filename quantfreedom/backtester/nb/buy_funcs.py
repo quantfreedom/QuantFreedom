@@ -36,11 +36,16 @@ def long_increase_nb(
     position_new = order_result.position
 
     sl_pcts_new = entry_order.sl_pcts
-    sl_prices_new = entry_order.sl_prices
     tp_pcts_new = entry_order.tp_pcts
-    tp_prices_new = entry_order.tp_prices
     tsl_pcts_init_new = entry_order.tsl_pcts_init
-    tsl_prices_new = entry_order.tsl_prices
+    
+    # sl_prices_new = order_result.sl_prices
+    # tsl_prices_new = order_result.tsl_prices
+    # tp_prices_new = order_result.tp_prices
+    
+    sl_prices_new = np.nan
+    tsl_prices_new = np.nan
+    tp_prices_new = np.nan
 
     if static_variables.size_type != SizeType.Amount and \
             static_variables.size_type != SizeType.PercentOfAccount:
@@ -54,12 +59,12 @@ def long_increase_nb(
                 if size_value < 1:
                     raise ValueError(
                         "Risk Amount has produced a size_value values less than 1.")
-            sl_prices_new = price - (price * sl_pcts_new)
+            temp_sl_price = price - (price * sl_pcts_new)
             possible_loss = size_value * (sl_pcts_new)
 
             size_value = -possible_loss / \
-                ((sl_prices_new/price - 1) - static_variables.fee_pct -
-                    (sl_prices_new * static_variables.fee_pct / price))
+                ((temp_sl_price/price - 1) - static_variables.fee_pct -
+                    (temp_sl_price * static_variables.fee_pct / price))
 
         elif np.isfinite(tsl_pcts_init_new):
             if static_variables.size_type == SizeType.RiskPercentOfAccount:
@@ -70,12 +75,12 @@ def long_increase_nb(
                 if size_value < 1:
                     raise ValueError(
                         "Risk Amount has produced a size_value values less than 1.")
-            tsl_prices_new = price - (price * tsl_pcts_init_new)
+            temp_tsl_price = price - (price * tsl_pcts_init_new)
             possible_loss = size_value * (tsl_pcts_init_new)
 
             size_value = -possible_loss / \
-                ((tsl_prices_new / price - 1) - static_variables.fee_pct -
-                    (tsl_prices_new * static_variables.fee_pct / price))
+                ((temp_tsl_price / price - 1) - static_variables.fee_pct -
+                    (temp_tsl_price * static_variables.fee_pct / price))
 
     elif static_variables.size_type == SizeType.Amount:
         size_value = entry_order.size_value
@@ -131,12 +136,6 @@ def long_increase_nb(
     if not np.isnan(sl_pcts_new):
         sl_prices_new = average_entry_new - \
             (average_entry_new * sl_pcts_new)  # math checked
-    elif not np.isnan(sl_prices_new):
-        if sl_prices_new >= average_entry_new:
-            sl_prices_new = average_entry_new
-        # use  tsl if you want more than this
-        sl_pcts_new = (average_entry_new - sl_prices_new) / \
-            average_entry_new  # math checked
     else:
         sl_prices_new = np.nan
         sl_pcts_new = np.nan
@@ -145,9 +144,6 @@ def long_increase_nb(
     if not np.isnan(tsl_pcts_init_new):
         tsl_prices_new = average_entry_new - \
             (average_entry_new * tsl_pcts_init_new)  # math checked
-    elif not np.isnan(tsl_prices_new):
-        tsl_pcts_init_new = (average_entry_new - tsl_prices_new) / \
-            average_entry_new  # math checked
     else:
         tsl_prices_new = np.nan
         tsl_pcts_init_new = np.nan
@@ -289,9 +285,6 @@ def long_increase_nb(
         tp_prices_new = (average_entry_new +
                          (average_entry_new * tp_pcts_new))  # math checked
 
-    elif not np.isnan(tp_prices_new):
-        tp_pcts_new = ((tp_prices_new - average_entry_new) /
-                       average_entry_new)  # math checked
     else:
         tp_pcts_new = np.nan
         tp_prices_new = np.nan

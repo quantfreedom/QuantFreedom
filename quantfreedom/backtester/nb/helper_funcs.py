@@ -32,7 +32,7 @@ def fill_order_records_nb(
     order_records['fees_paid'] = order_result.fees_paid
     order_records['ind_set'] = indicator_settings_counter
     order_records['or_set'] = order_settings_counter
-    order_records['order_id'] = order_count_id
+    order_records['order_id'] = order_count_id[0]
     order_records['order_type'] = order_result.order_type
     order_records['price'] = order_result.price
     order_records['real_pnl'] = round(order_result.realized_pnl, 4)
