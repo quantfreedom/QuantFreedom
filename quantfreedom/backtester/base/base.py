@@ -683,3 +683,32 @@ def rsi_below_entries(
             [below_ranges, timeperiods],
             names=['rsi_below', 'rsi_timeperiod'])
     )
+
+def rsi_above_entries(
+    timeperiods: List,
+    above_ranges: List,
+    prices: plSeries,
+) -> plFrame:
+    temp_rsi = np.empty((prices.shape[0], len(timeperiods)))
+    temp_rsi_below = np.empty(
+        (prices.shape[0], (len(timeperiods)*len(above_ranges))), dtype=np.bool_)
+    c = 0
+
+    for i in range(len(timeperiods)):
+        temp_rsi[:, i] = talib.RSI(
+            prices,
+            timeperiod=timeperiods[i],
+        )
+        for x in range(len(above_ranges)):
+            temp_rsi_below[:, c] = np.where(
+                temp_rsi[:, i] > above_ranges[x], True, False
+            )
+            c += 1
+
+    return pd.DataFrame(
+        temp_rsi_below,
+        index=prices.index,
+        columns=pd.MultiIndex.from_product(
+            [above_ranges, timeperiods],
+            names=['rsi_above', 'rsi_timeperiod'])
+    )

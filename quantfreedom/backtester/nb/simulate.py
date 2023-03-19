@@ -421,8 +421,8 @@ def simulate_from_signals(
             "If you have tsl_true_or_false set to true then you must provide the other params like tsl_pcts_init etc")
 
     # Cart of new arrays
-    arrays2 = (
-        np.array([0.]),
+    arrays = (
+        # np.array([0.]),
         leverage_array,
         max_equity_risk_pct_array,
         max_equity_risk_value_array,
@@ -440,27 +440,28 @@ def simulate_from_signals(
         tsl_trail_by_pct_array,
         tsl_when_pct_from_avg_entry_array,
     )
-    arrays = (
-        np.array([0.]),
-        np.array([1., 2., 3.]),
-        np.array([np.nan]),
-        np.array([4., 5.]),
-        np.array([np.nan]),
-        np.array([np.nan]),
-        np.array([1., 6., 8.]),
-        np.array([0.]),
-        np.array([np.nan]),
-        np.array([3.]),
-        np.array([np.inf]),
-        np.array([np.inf]),
-        np.array([np.nan]),
-        np.array([np.inf]),
-        np.array([np.nan]),
-        np.array([np.inf]),
-        np.array([np.nan]),
-    )
+    # arrays = (
+    #     np.array([0.]),
+    #     np.array([1., 2., 3.]),
+    #     np.array([np.nan]),
+    #     np.array([4., 5.]),
+    #     np.array([np.nan]),
+    #     np.array([np.nan]),
+    #     np.array([1.,6.,8.]),
+    #     np.array([0.]),
+    #     np.array([np.nan]),
+    #     np.array([3.]),
+    #     np.array([np.inf]),
+    #     np.array([np.inf]),
+    #     np.array([np.nan]),
+    #     np.array([np.inf]),
+    #     np.array([np.nan]),
+    #     np.array([np.inf]),
+    #     np.array([np.nan]),
+    # )
+
     dtype_names = (
-        'order_settings_id',
+        # 'order_settings_id',
         'leverage',
         'max_equity_risk_pct',
         'max_equity_risk_value',
@@ -496,14 +497,13 @@ def simulate_from_signals(
         m = int(n / arrays[k].size)
         for j in range(1, arrays[k].size):
             out[j*m:(j+1)*m, k+1:] = out[0:m, k+1:]
-
+    
     # literal unroll
     counter = 0
     for dtype_name in literal_unroll(dtype_names):
         for col in range(n):
             cart_array[dtype_name][col] = out[col][counter]
         counter += 1
-    return cart_array
 
     # Setting variable arrys from cart arrays
     leverage_cart_array = cart_array['leverage']
@@ -743,6 +743,7 @@ def simulate_from_signals(
                     yp_ym_s = yp_ym**2
                     to_the_upside = yp_ym_s.sum() / y_ym_s.sum()
 
+                    # df array
                     df_array['or_set'][df_counter] = temp_order_records['or_set'][0]
                     df_array['ind_set'][df_counter] = temp_order_records['ind_set'][0]
                     df_array['total_trades'][df_counter] = w_l.size

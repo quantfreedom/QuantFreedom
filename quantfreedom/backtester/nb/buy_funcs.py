@@ -60,11 +60,11 @@ def long_increase_nb(
                     raise ValueError(
                         "Risk Amount has produced a size_value values less than 1.")
             temp_sl_price = price - (price * sl_pcts_new)
-            possible_loss = size_value * (sl_pcts_new)
+            possible_loss = size_value * sl_pcts_new
 
             size_value = -possible_loss / \
-                ((temp_sl_price/price - 1) - static_variables.fee_pct -
-                    (temp_sl_price * static_variables.fee_pct / price))
+                (temp_sl_price / price - 1 - static_variables.fee_pct -
+                 temp_sl_price * static_variables.fee_pct / price)
 
         elif np.isfinite(tsl_pcts_init_new):
             if static_variables.size_type == SizeType.RiskPercentOfAccount:
@@ -79,8 +79,8 @@ def long_increase_nb(
             possible_loss = size_value * (tsl_pcts_init_new)
 
             size_value = -possible_loss / \
-                ((temp_tsl_price / price - 1) - static_variables.fee_pct -
-                    (temp_tsl_price * static_variables.fee_pct / price))
+                (temp_tsl_price / price - 1 - static_variables.fee_pct -
+                 temp_tsl_price * static_variables.fee_pct / price)
 
     elif static_variables.size_type == SizeType.Amount:
         size_value = entry_order.size_value

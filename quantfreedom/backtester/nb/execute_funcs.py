@@ -9,6 +9,7 @@ from quantfreedom._typing import Optional
 from quantfreedom.backtester.nb.helper_funcs import fill_order_records_nb
 
 from quantfreedom.backtester.nb.buy_funcs import long_increase_nb, long_decrease_nb
+from quantfreedom.backtester.nb.sell_funcs import short_increase_nb, short_decrease_nb
 from quantfreedom._typing import (
     RecordArray,
     Array1d,
@@ -92,6 +93,8 @@ def check_sl_tp_nb(
 
             if (sl_be_based_on - average_entry) / average_entry > stops_order.sl_to_be_when_pct_from_avg_entry:
                 if stops_order.sl_to_be_zero_or_entry == 0:
+                    # this formula only works with a 1 because it represents a size val of 1
+                    # if i were to use any other value for size i would have to use the solving for tp code
                     sl_prices_new = (fee_pct * average_entry +
                                      average_entry) / (1 - fee_pct)
                 else:
@@ -120,6 +123,77 @@ def check_sl_tp_nb(
                 temp_tsl_price = trail_based_on - \
                     trail_based_on * stops_order.tsl_trail_by_pct
                 if temp_tsl_price > tsl_prices_new:
+                    tsl_prices_new = temp_tsl_price
+                    moved_tsl = True
+                    order_type_new = OrderType.MovedTSL
+            price_new = np.nan
+            size_value_new = np.nan
+        else:
+            price_new = np.nan
+            size_value_new = np.nan
+
+    # checking if we are in a short
+    elif order_type_new == OrderType.ShortEntry:
+        # Regular Stop Loss
+        if high_price >= sl_prices_new:
+            price_new = sl_prices_new
+            order_type_new = OrderType.ShortSL
+        # Trailing Stop Loss
+        elif high_price >= tsl_prices_new:
+            price_new = tsl_prices_new
+            order_type_new = OrderType.ShortTSL
+        # Liquidation
+        elif high_price >= order_result.liq_price:
+            price_new = order_result.liq_price
+            order_type_new = OrderType.ShortLiq
+        # Take Profit
+        elif low_price <= order_result.tp_prices:
+            price_new = order_result.tp_prices
+            order_type_new = OrderType.ShortTP
+
+        # Stop Loss to break even
+        elif not moved_sl_to_be_new and stops_order.sl_to_be:
+            if stops_order.sl_to_be_based_on == SL_BE_or_Trail_BasedOn.low_price:
+                sl_be_based_on = low_price
+            elif stops_order.sl_to_be_based_on == SL_BE_or_Trail_BasedOn.close_price:
+                sl_be_based_on = close_price
+            elif stops_order.sl_to_be_based_on == SL_BE_or_Trail_BasedOn.open_price:
+                sl_be_based_on = open_price
+            elif stops_order.sl_to_be_based_on == SL_BE_or_Trail_BasedOn.high_price:
+                sl_be_based_on = high_price
+
+            if (average_entry - sl_be_based_on) / average_entry > stops_order.sl_to_be_when_pct_from_avg_entry:
+                if stops_order.sl_to_be_zero_or_entry == 0:
+                    # this formula only works with a 1 because it represents a size val of 1
+                    # if i were to use any other value for size i would have to use the solving for tp code
+                    sl_prices_new = (average_entry - fee_pct *
+                                     average_entry) / (1 + fee_pct)
+                else:
+                    sl_prices_new = average_entry
+                moved_sl_to_be_new = True
+                order_type_new = OrderType.MovedSLtoBE
+                record_sl_move = True
+            price_new = np.nan
+            size_value_new = np.nan
+
+        # Trailing Stop Loss
+        elif stops_order.tsl_true_or_false:
+            if stops_order.tsl_based_on == SL_BE_or_Trail_BasedOn.high_price:
+                trail_based_on = high_price
+            elif stops_order.tsl_based_on == SL_BE_or_Trail_BasedOn.close_price:
+                trail_based_on = close_price
+            elif stops_order.tsl_based_on == SL_BE_or_Trail_BasedOn.open_price:
+                trail_based_on = open_price
+            elif stops_order.tsl_based_on == SL_BE_or_Trail_BasedOn.low_price:
+                trail_based_on = low_price
+
+            # not going to adjust every candle
+            x = (average_entry - trail_based_on) / \
+                average_entry > stops_order.tsl_when_pct_from_avg_entry
+            if x:
+                temp_tsl_price = trail_based_on + \
+                    trail_based_on * stops_order.tsl_trail_by_pct
+                if temp_tsl_price < tsl_prices_new:
                     tsl_prices_new = temp_tsl_price
                     moved_tsl = True
                     order_type_new = OrderType.MovedTSL
@@ -194,50 +268,22 @@ def process_order_nb(
             account_state=account_state,
             static_variables=static_variables,
         )
+    elif order_type == OrderType.ShortEntry:
+        account_state_new, order_result_new = short_increase_nb(
+            price=price,
+            entry_order=entry_order,
+            order_result=order_result,
+            account_state=account_state,
+            static_variables=static_variables,
+        )
     elif OrderType.LongLiq <= order_type <= OrderType.LongTSL:
         account_state_new, order_result_new = long_decrease_nb(
             order_result=order_result,
             account_state=account_state,
             fee_pct=static_variables.fee_pct,
         )
-
-    if order_result_new.order_status == OrderStatus.Filled:
-        fill_order_records_nb(
-            bar=bar,
-
-            indicator_settings_counter=indicator_settings_counter,
-            order_records=order_records,
-            order_settings_counter=order_settings_counter,
-            order_count_id=order_count_id,
-            or_filled_temp=or_filled_temp,
-
-            account_state=account_state_new,
-            order_result=order_result_new,
-        )
-
-    return account_state_new, order_result_new
-
-
-@ njit(cache=True)
-def process_stops_nb(
-    price: float,
-    bar: int,
-
-    indicator_settings_counter: int,
-    order_settings_counter: int,
-    order_records: RecordArray,
-    order_count_id: Array1d,
-    or_filled_temp: Array1d,
-
-    account_state: AccountState,
-    order_result: OrderResult,
-    static_variables: StaticVariables,
-
-):
-
-    if OrderType.LongLiq <= order_result.order_type <= OrderType.LongTSL:
-
-        account_state_new, order_result_new = long_decrease_nb(
+    elif OrderType.ShortLiq <= order_type <= OrderType.ShortTSL:
+        account_state_new, order_result_new = short_decrease_nb(
             order_result=order_result,
             account_state=account_state,
             fee_pct=static_variables.fee_pct,
@@ -258,6 +304,7 @@ def process_stops_nb(
         )
 
     return account_state_new, order_result_new
+
 
 @njit(cache=True)
 def to_1d_array_nb(
