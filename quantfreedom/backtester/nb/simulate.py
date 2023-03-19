@@ -421,7 +421,7 @@ def simulate_from_signals(
             "If you have tsl_true_or_false set to true then you must provide the other params like tsl_pcts_init etc")
 
     # Cart of new arrays
-    arrays = (
+    arrays2 = (
         np.array([0.]),
         leverage_array,
         max_equity_risk_pct_array,
@@ -439,6 +439,44 @@ def simulate_from_signals(
         tsl_pcts_init_array,
         tsl_trail_by_pct_array,
         tsl_when_pct_from_avg_entry_array,
+    )
+    arrays = (
+        np.array([0.]),
+        np.array([1., 2., 3.]),
+        np.array([np.nan]),
+        np.array([4., 5.]),
+        np.array([np.nan]),
+        np.array([np.nan]),
+        np.array([1., 6., 8.]),
+        np.array([0.]),
+        np.array([np.nan]),
+        np.array([3.]),
+        np.array([np.inf]),
+        np.array([np.inf]),
+        np.array([np.nan]),
+        np.array([np.inf]),
+        np.array([np.nan]),
+        np.array([np.inf]),
+        np.array([np.nan]),
+    )
+    dtype_names = (
+        'order_settings_id',
+        'leverage',
+        'max_equity_risk_pct',
+        'max_equity_risk_value',
+        'risk_rewards',
+        'size_pct',
+        'size_value',
+        'sl_pcts',
+        'sl_to_be_based_on',
+        'sl_to_be_trail_by_when_pct_from_avg_entry',
+        'sl_to_be_when_pct_from_avg_entry',
+        'sl_to_be_zero_or_entry',
+        'tp_pcts',
+        'tsl_based_on',
+        'tsl_pcts_init',
+        'tsl_trail_by_pct',
+        'tsl_when_pct_from_avg_entry',
     )
 
     n = 1
@@ -459,32 +497,13 @@ def simulate_from_signals(
         for j in range(1, arrays[k].size):
             out[j*m:(j+1)*m, k+1:] = out[0:m, k+1:]
 
-    dtype_names = (
-        'order_settings_id',
-        'leverage',
-        'max_equity_risk_pct',
-        'max_equity_risk_value',
-        'risk_rewards',
-        'size_pct',
-        'size_value',
-        'sl_pcts',
-        'sl_to_be_based_on',
-        'sl_to_be_trail_by_when_pct_from_avg_entry',
-        'sl_to_be_when_pct_from_avg_entry',
-        'sl_to_be_zero_or_entry',
-        'tp_pcts',
-        'tsl_based_on',
-        'tsl_pcts_init',
-        'tsl_trail_by_pct',
-        'tsl_when_pct_from_avg_entry',
-    )
-    
+    # literal unroll
     counter = 0
     for dtype_name in literal_unroll(dtype_names):
         for col in range(n):
             cart_array[dtype_name][col] = out[col][counter]
         counter += 1
-    return counter
+    return cart_array
 
     # Setting variable arrys from cart arrays
     leverage_cart_array = cart_array['leverage']
