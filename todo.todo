@@ -1,12 +1,9 @@
 Currently Working On:
-    ☐ make a function for only getting the cart arrays that make it past the filter and include the order settings id ... basically just borrow from the df array
-    
-    ☐ make a data frame array function
-    ☐ map order type number to english
-    ☐ put df in an order that makes sense
-    ☐ change all tsl_pcts to tsl_pcts init
     ☐ remove the ability for the user to create sl tsl tp prices
     ☐ see if you can repurpose cart array when using numba for df cart array
+
+Selling:
+    ☐ start with increase sell
     
 TODOs:
     ☐ make replay_trade_plotter work with order records
@@ -23,6 +20,10 @@ Would Be Nice:
     ☐ send pct change of position in order result when decreasing or increaseing position size
 
 Archive:
+  ✔ make a function for only getting the cart arrays that make it past the filter and include the order settings id ... basically just borrow from the df array @done(23-03-18 18:54) @project(Currently Working On)
+  ✔ map order type number to english @done(23-03-18 18:55) @project(Currently Working On)
+  ✔ put df in an order that makes sense @done(23-03-18 18:55) @project(Currently Working On)
+  ✔ change all tsl_pcts to tsl_pcts init @done(23-03-18 19:01) @project(Currently Working On)
   ✔ create order status info for moved sl moved and set to filled for now 
   ✔ work on check stops - investigate why no sl to be stops 
   ✔ order check for sl to be to make sure specific settings are there when wanting to sl to be 

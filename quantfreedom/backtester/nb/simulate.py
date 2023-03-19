@@ -71,7 +71,7 @@ def simulate_from_signals(
     sl_to_be_trail_by_when_pct_from_avg_entry: PossibleArray = np.nan,
 
     # Trailing Stop Loss Params
-    tsl_pcts: PossibleArray = np.nan,
+    tsl_pcts_init: PossibleArray = np.nan,
     tsl_prices: PossibleArray = np.nan,
 
     tsl_true_or_false: bool = False,
@@ -197,8 +197,8 @@ def simulate_from_signals(
         np.asarray(sl_to_be_zero_or_entry, dtype=np.float_))
 
     # Trailing Stop Loss Arrays
-    tsl_pcts_array = to_1d_array_nb(np.asarray(
-        np.asarray(tsl_pcts)/100, dtype=np.float_))
+    tsl_pcts_init_array = to_1d_array_nb(np.asarray(
+        np.asarray(tsl_pcts_init)/100, dtype=np.float_))
 
     tsl_prices_array = to_1d_array_nb(
         np.asarray(tsl_prices, dtype=np.float_))
@@ -249,9 +249,9 @@ def simulate_from_signals(
         raise ValueError(
             "sl_prices has to be nan or greater than 0 and not inf")
 
-    if np.isinf(tsl_pcts_array).any() or tsl_pcts_array.any() < 0:
+    if np.isinf(tsl_pcts_init_array).any() or tsl_pcts_init_array.any() < 0:
         raise ValueError(
-            "tsl_pcts has to be nan or greater than 0 and not inf")
+            "tsl_pcts_init has to be nan or greater than 0 and not inf")
 
     if np.isinf(tsl_prices_array).any() or tsl_prices_array.any() < 0:
         raise ValueError(
@@ -272,7 +272,7 @@ def simulate_from_signals(
     check_sl_tsl_for_nan = (
         np.isnan(sl_pcts_array).any() and
         np.isnan(sl_prices_array).any() and (
-            np.isnan(tsl_pcts_array).any() and
+            np.isnan(tsl_pcts_init_array).any() and
             np.isnan(tsl_prices_array).any())
     )
 
@@ -321,7 +321,7 @@ def simulate_from_signals(
     if not np.isnan(sl_pcts_array).any() and not np.isnan(sl_prices_array).any():
         raise ValueError(
             "You can't have sl pct and sl price both set at the same time.")
-    if not np.isnan(tsl_pcts_array).any() and not np.isnan(tsl_prices_array).any():
+    if not np.isnan(tsl_pcts_init_array).any() and not np.isnan(tsl_prices_array).any():
         raise ValueError(
             "You can't have tsl pct and tsl price both set at the same time.")
     if not np.isnan(tp_pcts_array).any() and not np.isnan(tp_prices_array).any():
@@ -450,10 +450,10 @@ def simulate_from_signals(
         not np.isfinite(tsl_based_on_array).any() or
         not np.isfinite(tsl_trail_by_pct_array).any() or
         not np.isfinite(tsl_when_pct_from_avg_entry_array).any() or
-        not np.isfinite(tsl_pcts_array).any()
+        not np.isfinite(tsl_pcts_init_array).any()
     ):
         raise ValueError(
-            "If you have tsl_true_or_false set to true then you must provide the other params like tsl_pcts etc")
+            "If you have tsl_true_or_false set to true then you must provide the other params like tsl_pcts_init etc")
 
     # Cart of new arrays
     arrays = (
@@ -472,7 +472,7 @@ def simulate_from_signals(
         tp_pcts_array,
         tp_prices_array,
         tsl_based_on_array,
-        tsl_pcts_array,
+        tsl_pcts_init_array,
         tsl_prices_array,
         tsl_trail_by_pct_array,
         tsl_when_pct_from_avg_entry_array,
@@ -511,7 +511,7 @@ def simulate_from_signals(
         'tp_pcts',
         'tp_prices',
         'tsl_based_on',
-        'tsl_pcts',
+        'tsl_pcts_init',
         'tsl_prices',
         'tsl_trail_by_pct',
         'tsl_when_pct_from_avg_entry',
@@ -542,7 +542,7 @@ def simulate_from_signals(
     tp_pcts_cart_array = cart_array['tp_pcts']
     tp_prices_cart_array = cart_array['tp_prices']
     tsl_based_on_cart_array = cart_array['tsl_based_on']
-    tsl_pcts_cart_array = cart_array['tsl_pcts']
+    tsl_pcts_init_cart_array = cart_array['tsl_pcts_init']
     tsl_prices_cart_array = cart_array['tsl_prices']
     tsl_trail_by_cart_array = cart_array['tsl_trail_by_pct']
     tsl_when_pct_from_avg_entry_cart_array = cart_array['tsl_when_pct_from_avg_entry']
@@ -576,7 +576,7 @@ def simulate_from_signals(
     order_count_id = np.array([0])
 
     use_stops = not np.isnan(sl_pcts_array[0]) or \
-        not np.isnan(tsl_pcts_array[0]) or \
+        not np.isnan(tsl_pcts_init_array[0]) or \
         not np.isnan(tp_pcts_array[0])
 
     # order settings loops
@@ -594,7 +594,7 @@ def simulate_from_signals(
             sl_prices=sl_prices_cart_array[order_settings_counter],
             tp_pcts=tp_pcts_cart_array[order_settings_counter],
             tp_prices=tp_prices_cart_array[order_settings_counter],
-            tsl_pcts=tsl_pcts_cart_array[order_settings_counter],
+            tsl_pcts_init=tsl_pcts_init_cart_array[order_settings_counter],
             tsl_prices=tsl_prices_cart_array[order_settings_counter],
         )
         stops_order = StopsOrder(
@@ -755,12 +755,12 @@ def simulate_from_signals(
                     df_array['gains_pct'][df_counter] = gains_pct
                     df_array['win_rate'][df_counter] = win_rate
                     df_array['to_the_upside'][df_counter] = to_the_upside
-                    df_array['total_fees'][df_counter] = temp_order_records['fees_paid'].sum(
-                    )
+                    df_array['total_fees'][df_counter] = np.nancumsum(temp_order_records['fees_paid'])[-1]
                     df_array['total_pnl'][df_counter] = total_pnl
                     df_array['ending_eq'][df_counter] = temp_order_records['equity'][-1]
 
-                    # df cart array
+                    # df cart array                    
+                    df_cart_array['order_settings_id'][df_counter] = order_settings_counter
                     df_cart_array['leverage'][df_counter] = leverage_cart_array[order_settings_counter]
                     df_cart_array['max_equity_risk_pct'][df_counter] = max_equity_risk_pct_cart_array[order_settings_counter] * 100
                     df_cart_array['max_equity_risk_value'][df_counter] = max_equity_risk_value_cart_array[order_settings_counter]
@@ -778,7 +778,7 @@ def simulate_from_signals(
                     df_cart_array['tp_pcts'][df_counter] = tp_pcts_cart_array[order_settings_counter] * 100
                     df_cart_array['tp_prices'][df_counter] = tp_prices_cart_array[order_settings_counter]
                     df_cart_array['tsl_based_on'][df_counter] = tsl_based_on_cart_array[order_settings_counter]
-                    df_cart_array['tsl_pcts'][df_counter] = tsl_pcts_cart_array[order_settings_counter] * 100
+                    df_cart_array['tsl_pcts_init'][df_counter] = tsl_pcts_init_cart_array[order_settings_counter] * 100
                     df_cart_array['tsl_prices'][df_counter] = tsl_prices_cart_array[order_settings_counter]
                     df_cart_array['tsl_trail_by_pct'][df_counter] = tsl_trail_by_cart_array[order_settings_counter] * 100
                     df_cart_array['tsl_when_pct_from_avg_entry'][df_counter] = tsl_when_pct_from_avg_entry_cart_array[order_settings_counter] * 100

@@ -147,7 +147,7 @@ def check_sl_tp_nb(
         sl_prices=sl_prices_new,
         tp_pcts=order_result.tp_pcts,
         tp_prices=order_result.tp_prices,
-        tsl_pcts=order_result.tsl_pcts,
+        tsl_pcts_init=order_result.tsl_pcts_init,
         tsl_prices=tsl_prices_new,
     )
 

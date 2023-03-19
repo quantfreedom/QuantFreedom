@@ -55,17 +55,17 @@
 #         sl_pcts = np.nan
 
 #     # Create trailing stop losses if requested
-#     if not np.isnan(all_stops.tsl_pcts):
+#     if not np.isnan(all_stops.tsl_pcts_init):
 #         tsl_prices = new_average_entry + \
-#             (new_average_entry * (all_stops.tsl_pcts / 100))  # math checked
-#         tsl_pcts = all_stops.tsl_pcts
+#             (new_average_entry * (all_stops.tsl_pcts_init / 100))  # math checked
+#         tsl_pcts_init = all_stops.tsl_pcts_init
 #     elif not np.isnan(all_stops.tsl_prices):
 #         tsl_prices = all_stops.tsl_prices
-#         tsl_pcts = ((tsl_prices - new_average_entry) /
+#         tsl_pcts_init = ((tsl_prices - new_average_entry) /
 #                     new_average_entry) * 100  # math checked
 #     else:
 #         tsl_prices = np.nan
-#         tsl_pcts = np.nan
+#         tsl_pcts_init = np.nan
 
 #     # Risk % check
 #     # checking if there is some sort of stop loss
@@ -269,7 +269,7 @@
 #         sl_prices=sl_prices,
 #         tp_pcts=tp_pcts,
 #         tp_prices=tp_prices,
-#         tsl_pcts=tsl_pcts,
+#         tsl_pcts_init=tsl_pcts_init,
 #         tsl_prices=tsl_prices,
 #     )
 
@@ -386,7 +386,7 @@
 #             sl_prices=np.nan,
 #             tp_pcts=np.nan,
 #             tp_prices=np.nan,
-#             tsl_pcts=np.nan,
+#             tsl_pcts_init=np.nan,
 #             tsl_prices=np.nan,
 #         )
 #         new_account_state = AccountAndTradeState(
@@ -449,7 +449,7 @@
 #             sl_prices=all_stops.sl_prices,
 #             tp_pcts=all_stops.tp_pcts,
 #             tp_prices=all_stops.tp_prices,
-#             tsl_pcts=all_stops.tsl_pcts,
+#             tsl_pcts_init=all_stops.tsl_pcts_init,
 #             tsl_prices=all_stops.tsl_prices,
 #         )
 #         new_account_state = AccountAndTradeState(

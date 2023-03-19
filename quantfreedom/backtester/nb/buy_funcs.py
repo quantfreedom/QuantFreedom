@@ -39,7 +39,7 @@ def long_increase_nb(
     sl_prices_new = entry_order.sl_prices
     tp_pcts_new = entry_order.tp_pcts
     tp_prices_new = entry_order.tp_prices
-    tsl_pcts_new = entry_order.tsl_pcts
+    tsl_pcts_init_new = entry_order.tsl_pcts_init
     tsl_prices_new = entry_order.tsl_prices
 
     if static_variables.size_type != SizeType.Amount and \
@@ -61,17 +61,17 @@ def long_increase_nb(
                 ((sl_prices_new/price - 1) - static_variables.fee_pct -
                     (sl_prices_new * static_variables.fee_pct / price))
 
-        elif np.isfinite(tsl_pcts_new):
+        elif np.isfinite(tsl_pcts_init_new):
             if static_variables.size_type == SizeType.RiskPercentOfAccount:
-                size_value = account_state.equity * entry_order.size_pct / tsl_pcts_new
+                size_value = account_state.equity * entry_order.size_pct / tsl_pcts_init_new
 
             elif static_variables.size_type == SizeType.RiskAmount:
-                size_value = entry_order.size_value / tsl_pcts_new
+                size_value = entry_order.size_value / tsl_pcts_init_new
                 if size_value < 1:
                     raise ValueError(
                         "Risk Amount has produced a size_value values less than 1.")
-            tsl_prices_new = price - (price * tsl_pcts_new)
-            possible_loss = size_value * (tsl_pcts_new)
+            tsl_prices_new = price - (price * tsl_pcts_init_new)
+            possible_loss = size_value * (tsl_pcts_init_new)
 
             size_value = -possible_loss / \
                 ((tsl_prices_new / price - 1) - static_variables.fee_pct -
@@ -103,8 +103,8 @@ def long_increase_nb(
     #             (sl_prices_new * static_variables.fee_pct / price))
 
     # elif np.isfinite(tsl_prices_new):
-    #     tsl_pcts_new = (price - tsl_prices_new) / price
-    #     possible_loss = size_value * tsl_pcts_new
+    #     tsl_pcts_init_new = (price - tsl_prices_new) / price
+    #     possible_loss = size_value * tsl_pcts_init_new
 
     #     size_value = -possible_loss / \
     #         ((tsl_prices_new/price - 1) - static_variables.fee_pct -
@@ -142,15 +142,15 @@ def long_increase_nb(
         sl_pcts_new = np.nan
 
     # Create trailing stop losses if requested
-    if not np.isnan(tsl_pcts_new):
+    if not np.isnan(tsl_pcts_init_new):
         tsl_prices_new = average_entry_new - \
-            (average_entry_new * tsl_pcts_new)  # math checked
+            (average_entry_new * tsl_pcts_init_new)  # math checked
     elif not np.isnan(tsl_prices_new):
-        tsl_pcts_new = (average_entry_new - tsl_prices_new) / \
+        tsl_pcts_init_new = (average_entry_new - tsl_prices_new) / \
             average_entry_new  # math checked
     else:
         tsl_prices_new = np.nan
-        tsl_pcts_new = np.nan
+        tsl_pcts_init_new = np.nan
 
     # Risk % check
     # checking if there is some sort of stop loss
@@ -211,7 +211,7 @@ def long_increase_nb(
                     sl_prices=order_result.sl_prices,
                     tp_pcts=order_result.tp_pcts,
                     tp_prices=order_result.tp_prices,
-                    tsl_pcts=order_result.tsl_pcts,
+                    tsl_pcts_init=order_result.tsl_pcts_init,
                     tsl_prices=order_result.tsl_prices,
                 )
 
@@ -325,7 +325,7 @@ def long_increase_nb(
             sl_prices=sl_prices_new,
             tp_pcts=tp_pcts_new,
             tp_prices=tp_prices_new,
-            tsl_pcts=tsl_pcts_new,
+            tsl_pcts_init=tsl_pcts_init_new,
             tsl_prices=tsl_prices_new,
         )
 
@@ -402,6 +402,6 @@ def long_decrease_nb(
         sl_prices=order_result.sl_prices,
         tp_pcts=order_result.tp_pcts,
         tp_prices=order_result.tp_prices,
-        tsl_pcts=order_result.tsl_pcts,
+        tsl_pcts_init=order_result.tsl_pcts_init,
         tsl_prices=order_result.tsl_prices,
     )
