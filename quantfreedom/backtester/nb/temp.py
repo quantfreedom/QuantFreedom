@@ -11,10 +11,8 @@ from quantfreedom.backtester.nb.execute_funcs import (
     to_1d_array_nb,
 )
 from quantfreedom.backtester.enums.enums import (
-    cart_array_dt,
-    df_array_dt,
-    or_dt,
-
+    strat_array_dt,
+    strat_dt,
     LeverageMode,
     OrderType,
     SizeType,
@@ -27,8 +25,9 @@ from quantfreedom.backtester.enums.enums import (
     StaticVariables,
 )
 
+
 @njit(cache=True)
-def simulate_from_signals(
+def simulate_df_only(
     # entry info
     entries: PossibleArray,
     open_prices: PossibleArray,
@@ -83,7 +82,7 @@ def simulate_from_signals(
     # Results Filters
     gains_pct_filter: float = -np.inf,
     total_trade_filter: int = 0,
-)-> tuple[Array1d, Array1d, Array1d]:
+) -> tuple[Array1d, Array1d, Array1d]:
 
     # Static checks
     if equity < 0 or not np.isfinite(equity):
@@ -419,91 +418,6 @@ def simulate_from_signals(
         raise ValueError(
             "If you have tsl_true_or_false set to true then you must provide the other params like tsl_pcts_init etc")
 
-    # # Cart of new arrays
-    # arrays = (
-    #     np.array([0.]),
-    #     leverage_array,
-    #     max_equity_risk_pct_array,
-    #     max_equity_risk_value_array,
-    #     risk_rewards_array,
-    #     size_pct_array,
-    #     size_value_array,
-    #     sl_pcts_array,
-    #     sl_to_be_based_on_array,
-    #     sl_to_be_trail_by_when_pct_from_avg_entry_array,
-    #     sl_to_be_when_pct_from_avg_entry_array,
-    #     sl_to_be_zero_or_entry_array,
-    #     tp_pcts_array,
-    #     tsl_based_on_array,
-    #     tsl_pcts_init_array,
-    #     tsl_trail_by_pct_array,
-    #     tsl_when_pct_from_avg_entry_array,
-    # )
-
-    # dtype_names = (
-    #     'order_settings_id',
-    #     'leverage',
-    #     'max_equity_risk_pct',
-    #     'max_equity_risk_value',
-    #     'risk_rewards',
-    #     'size_pct',
-    #     'size_value',
-    #     'sl_pcts',
-    #     'sl_to_be_based_on',
-    #     'sl_to_be_trail_by_when_pct_from_avg_entry',
-    #     'sl_to_be_when_pct_from_avg_entry',
-    #     'sl_to_be_zero_or_entry',
-    #     'tp_pcts',
-    #     'tsl_based_on',
-    #     'tsl_pcts_init',
-    #     'tsl_trail_by_pct',
-    #     'tsl_when_pct_from_avg_entry',
-    # )
-
-    # n = 1
-    # for x in arrays:
-    #     n *= x.size
-    # out = np.empty((n, len(arrays)))
-    # cart_array = np.empty(n, dtype=cart_array_dt)
-
-    # for i in range(len(arrays)):
-    #     m = int(n / arrays[i].size)
-    #     out[:n, i] = np.repeat(arrays[i], m)
-    #     n //= arrays[i].size
-
-    # n = arrays[-1].size
-    # for k in range(len(arrays)-2, -1, -1):
-    #     n *= arrays[k].size
-    #     m = int(n / arrays[k].size)
-    #     for j in range(1, arrays[k].size):
-    #         out[j*m:(j+1)*m, k+1:] = out[0:m, k+1:]
-    
-    # # literal unroll
-    # counter = 0
-    # for dtype_name in literal_unroll(dtype_names):
-    #     for col in range(n):
-    #         cart_array[dtype_name][col] = out[col][counter]
-    #     counter += 1
-
-    # leverage_cart_array = cart_array['leverage']
-    # max_equity_risk_pct_cart_array = cart_array['max_equity_risk_pct']
-    # max_equity_risk_value_cart_array = cart_array['max_equity_risk_value']
-    # risk_rewards_cart_array = cart_array['risk_rewards']
-    # size_pct_cart_array = cart_array['size_pct']
-    # size_value_cart_array = cart_array['size_value']
-    # sl_pcts_cart_array = cart_array['sl_pcts']
-    # sl_to_be_based_on_cart_array = cart_array['sl_to_be_based_on']
-    # sl_to_be_trail_by_when_pct_from_avg_entry_cart_array = cart_array[
-    #     'sl_to_be_trail_by_when_pct_from_avg_entry']
-    # sl_to_be_when_pct_from_avg_entry_cart_array = cart_array[
-    #     'sl_to_be_when_pct_from_avg_entry']
-    # sl_to_be_zero_or_entry_cart_array = cart_array['sl_to_be_zero_or_entry']
-    # tp_pcts_cart_array = cart_array['tp_pcts']
-    # tsl_based_on_cart_array = cart_array['tsl_based_on']
-    # tsl_pcts_init_cart_array = cart_array['tsl_pcts_init']
-    # tsl_trail_by_cart_array = cart_array['tsl_trail_by_pct']
-    # tsl_when_pct_from_avg_entry_cart_array = cart_array['tsl_when_pct_from_avg_entry']
-    
     # Cart of new arrays
     arrays = (
         leverage_array,
@@ -559,7 +473,10 @@ def simulate_from_signals(
     tsl_pcts_init_cart_array = out.T[13]
     tsl_trail_by_cart_array = out.T[14]
     tsl_when_pct_from_avg_entry_cart_array = out.T[15]
-    
+
+    out = 0
+    arrays = 0
+
     # Creating Settings Vars
     total_order_settings = sl_pcts_cart_array.shape[0]
 
@@ -570,27 +487,14 @@ def simulate_from_signals(
 
     total_bars = open_prices.shape[0]
 
-    # record_count = 0
-    # for i in range(total_order_settings):
-    #     for ii in range(total_indicator_settings):
-    #         for iii in range(total_bars):
-    #             if entries[:, ii][iii]:
-    #                 record_count += 1
-    # record_count = int(record_count / 2)
+    # Creating strat records
+    strat_array = np.empty(total_indicator_settings *
+                           total_order_settings, dtype=strat_array_dt)
+    strat_arrays_filled = 0
+    strat_id = 0
 
-    # Creating OR
-    df_array = np.empty(100000, dtype=df_array_dt)
-    df_cart_array = np.empty(100000, dtype=cart_array_dt)
-    df_counter = 0
-
-    order_records = np.empty(100000, dtype=or_dt)
-    or_filled_start = 0
-    or_filled_temp = np.array([0])
-    order_count_id = np.array([0])
-
-    use_stops = not np.isnan(sl_pcts_array[0]) or \
-        not np.isnan(tsl_pcts_init_array[0]) or \
-        not np.isnan(tp_pcts_array[0])
+    strat_records = np.empty(int(total_bars/1.5), dtype=strat_dt)
+    strat_records_filled = np.array([0])
 
     # order settings loops
     for order_settings_counter in range(total_order_settings):
@@ -662,7 +566,7 @@ def simulate_from_signals(
                 tsl_pcts_init=0.,
                 tsl_prices=0.,
             )
-            or_filled_temp[0] = 0
+            strat_records_filled[0] = 0
 
             # entries loop
             for bar in range(total_bars):
@@ -686,9 +590,12 @@ def simulate_from_signals(
                         indicator_settings_counter=indicator_settings_counter,
                         order_settings_counter=order_settings_counter,
 
-                        order_records=order_records[order_count_id[0]],
-                        order_count_id=order_count_id,
-                        or_filled_temp=or_filled_temp,
+                        order_records=None,
+                        order_count_id=None,
+                        or_filled_temp=None,
+
+                        strat_records=strat_records[strat_records_filled[0]],
+                        strat_records_filled=strat_records_filled,
                     )
                 if order_result.position > 0:
                     # Check Stops
@@ -705,9 +612,10 @@ def simulate_from_signals(
                         stops_order=stops_order,
 
                         account_state=account_state,
-                        order_records=order_records[order_count_id[0]],
-                        order_count_id=order_count_id,
-                        or_filled_temp=or_filled_temp,
+
+                        order_records=None,
+                        order_count_id=None,
+                        or_filled_temp=None,
 
                         bar=bar,
                         indicator_settings_counter=indicator_settings_counter,
@@ -729,21 +637,22 @@ def simulate_from_signals(
                             indicator_settings_counter=indicator_settings_counter,
                             order_settings_counter=order_settings_counter,
 
-                            order_records=order_records[order_count_id[0]],
-                            order_count_id=order_count_id,
-                            or_filled_temp=or_filled_temp,
+                            order_records=None,
+                            order_count_id=None,
+                            or_filled_temp=None,
+
+                            strat_records=strat_records[strat_records_filled[0]],
+                            strat_records_filled=strat_records_filled,
                         )
 
             # Checking if gains
             gains_pct = ((account_state.equity - og_equity) / og_equity) * 100
             if gains_pct > gains_pct_filter:
-                temp_order_records = order_records[or_filled_start:order_count_id[0]]
+                temp_order_records = strat_records[0:strat_records_filled[0]]
                 w_l = temp_order_records['real_pnl'][~np.isnan(
                     temp_order_records['real_pnl'])]
                 # Checking total trade filter
                 if w_l.size > total_trade_filter:
-
-                    or_filled_start = order_count_id[0]
 
                     w_l_no_be = w_l[w_l != 0]  # filter out all BE trades
 
@@ -778,44 +687,19 @@ def simulate_from_signals(
                     yp_ym_s = yp_ym**2
                     to_the_upside = yp_ym_s.sum() / y_ym_s.sum()
 
-                    # df array
-                    df_array['or_set'][df_counter] = temp_order_records['or_set'][0]
-                    df_array['ind_set'][df_counter] = temp_order_records['ind_set'][0]
-                    df_array['total_trades'][df_counter] = w_l.size
-                    df_array['total_BE'][df_counter] = w_l[w_l == 0].size
-                    df_array['gains_pct'][df_counter] = gains_pct
-                    df_array['win_rate'][df_counter] = win_rate
-                    df_array['to_the_upside'][df_counter] = to_the_upside
-                    df_array['total_fees'][df_counter] = np.nancumsum(
-                        temp_order_records['fees_paid'])[-1]
-                    df_array['total_pnl'][df_counter] = total_pnl
-                    df_array['ending_eq'][df_counter] = temp_order_records['equity'][-1]
+                    # strat array
+                    strat_array['strat_id'][strat_arrays_filled] = strat_id
+                    strat_array['or_set'][strat_arrays_filled] = temp_order_records['or_set'][0]
+                    strat_array['ind_set'][strat_arrays_filled] = temp_order_records['ind_set'][0]
+                    strat_array['total_trades'][strat_arrays_filled] = w_l.size
+                    strat_array['gains_pct'][strat_arrays_filled] = gains_pct
+                    strat_array['win_rate'][strat_arrays_filled] = win_rate
+                    strat_array['to_the_upside'][strat_arrays_filled] = to_the_upside
+                    strat_array['total_pnl'][strat_arrays_filled] = total_pnl
+                    strat_array['ending_eq'][strat_arrays_filled] = temp_order_records['equity'][-1]
 
-                    # df cart array
-                    df_cart_array['order_settings_id'][df_counter] = order_settings_counter
-                    df_cart_array['leverage'][df_counter] = leverage_cart_array[order_settings_counter]
-                    df_cart_array['max_equity_risk_pct'][df_counter] = max_equity_risk_pct_cart_array[order_settings_counter] * 100
-                    df_cart_array['max_equity_risk_value'][df_counter] = max_equity_risk_value_cart_array[order_settings_counter]
-                    df_cart_array['risk_rewards'][df_counter] = risk_rewards_cart_array[order_settings_counter]
-                    df_cart_array['size_pct'][df_counter] = size_pct_cart_array[order_settings_counter] * 100
-                    df_cart_array['size_value'][df_counter] = size_value_cart_array[order_settings_counter]
-                    df_cart_array['sl_pcts'][df_counter] = sl_pcts_cart_array[order_settings_counter] * 100
-                    df_cart_array['sl_to_be_based_on'][df_counter] = sl_to_be_based_on_cart_array[order_settings_counter]
-                    df_cart_array['sl_to_be_trail_by_when_pct_from_avg_entry'][
-                        df_counter] = sl_to_be_trail_by_when_pct_from_avg_entry_cart_array[order_settings_counter] * 100
-                    df_cart_array['sl_to_be_when_pct_from_avg_entry'][
-                        df_counter] = sl_to_be_when_pct_from_avg_entry_cart_array[order_settings_counter] * 100
-                    df_cart_array['sl_to_be_zero_or_entry'][df_counter] = sl_to_be_zero_or_entry_cart_array[order_settings_counter]
-                    df_cart_array['tp_pcts'][df_counter] = tp_pcts_cart_array[order_settings_counter] * 100
-                    df_cart_array['tsl_based_on'][df_counter] = tsl_based_on_cart_array[order_settings_counter]
-                    df_cart_array['tsl_pcts_init'][df_counter] = tsl_pcts_init_cart_array[order_settings_counter] * 100
-                    df_cart_array['tsl_trail_by_pct'][df_counter] = tsl_trail_by_cart_array[order_settings_counter] * 100
-                    df_cart_array['tsl_when_pct_from_avg_entry'][df_counter] = tsl_when_pct_from_avg_entry_cart_array[order_settings_counter] * 100
+                    strat_arrays_filled += 1
+            strat_id += 1
+            strat_array['strat_id'][strat_arrays_filled] = strat_id
 
-                    df_counter += 1
-            # Gains False
-            else:
-                # order_records[or_filled_start:order_count_id[0]] = np.zeros(order_records[0].size, dtype=or_dt)[0]
-                order_count_id[0] = order_count_id[0] - or_filled_temp[0]
-
-    return df_array[: df_counter], order_records[: order_count_id[0]], df_cart_array[: df_counter]
+    return strat_array[: strat_arrays_filled]

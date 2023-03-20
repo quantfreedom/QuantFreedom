@@ -6,8 +6,7 @@ import numpy as np
 from numba import njit
 
 from quantfreedom._typing import Optional
-from quantfreedom.backtester.nb.helper_funcs import fill_order_records_nb
-
+from quantfreedom.backtester.nb.helper_funcs import fill_order_records_nb, fill_strat_records_nb
 from quantfreedom.backtester.nb.buy_funcs import long_increase_nb, long_decrease_nb
 from quantfreedom.backtester.nb.sell_funcs import short_increase_nb, short_decrease_nb
 from quantfreedom._typing import (
@@ -225,7 +224,7 @@ def check_sl_tp_nb(
         tsl_prices=tsl_prices_new,
     )
 
-    if record_sl_move or moved_tsl:
+    if order_records is not None and (record_sl_move or moved_tsl):
         fill_order_records_nb(
             bar=bar,
 
@@ -254,12 +253,15 @@ def process_order_nb(
     order_count_id: Array1d,
     or_filled_temp: Array1d,
 
+    strat_records: RecordArray,
+    strat_records_filled: Array1d,
+
     account_state: AccountState,
     entry_order: EntryOrder,
     order_result: OrderResult,
     static_variables: StaticVariables,
 ):
-
+    fill_strat = False
     if order_type == OrderType.LongEntry:
         account_state_new, order_result_new = long_increase_nb(
             price=price,
@@ -282,14 +284,28 @@ def process_order_nb(
             account_state=account_state,
             fee_pct=static_variables.fee_pct,
         )
+        fill_strat = True
     elif OrderType.ShortLiq <= order_type <= OrderType.ShortTSL:
         account_state_new, order_result_new = short_decrease_nb(
             order_result=order_result,
             account_state=account_state,
             fee_pct=static_variables.fee_pct,
         )
+        fill_strat = True
 
-    if order_result_new.order_status == OrderStatus.Filled:
+    if fill_strat and order_result_new.order_status == OrderStatus.Filled:
+        fill_strat_records_nb(
+            indicator_settings_counter=indicator_settings_counter,
+            order_settings_counter=order_settings_counter,
+
+            strat_records=strat_records,
+            strat_records_filled=strat_records_filled,
+
+            equity=account_state_new.equity,
+            pnl=order_result_new.realized_pnl,
+        )
+
+    if order_records is not None and order_result_new.order_status == OrderStatus.Filled:
         fill_order_records_nb(
             bar=bar,
 

@@ -3,9 +3,7 @@ from numba import njit
 
 from quantfreedom._typing import (
     RecordArray,
-    PossibleArray,
     Array1d,
-    Array2d
     )
 from quantfreedom.backtester.enums import (
     AccountState,
@@ -24,7 +22,7 @@ def fill_order_records_nb(
 
     account_state: AccountState,
     order_result: OrderResult,
-):
+)-> tuple[RecordArray]:
 
     order_records['avg_entry'] = order_result.average_entry
     order_records['bar'] = bar
@@ -43,5 +41,25 @@ def fill_order_records_nb(
     
     order_count_id[0] +=1
     or_filled_temp[0] += 1
+
+@njit(cache=True)
+def fill_strat_records_nb(
+    indicator_settings_counter: int,
+    order_settings_counter: int,
+    
+    strat_records: RecordArray,
+    strat_records_filled: Array1d,
+
+    equity: float,
+    pnl: float,
+)-> tuple[RecordArray]:
+
+    strat_records['equity'] = equity
+    strat_records['ind_set'] = indicator_settings_counter
+    strat_records['or_set'] = order_settings_counter
+    strat_records['real_pnl'] = round(pnl, 4)
+    
+    strat_records_filled[0] += 1
+
 
 

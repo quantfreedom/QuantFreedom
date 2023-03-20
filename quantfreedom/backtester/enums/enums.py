@@ -39,6 +39,7 @@ __all__ = [
 
     'or_dt',
     'df_array_dt',
+    'strat_dt',
     'cart_array_dt',
 ]
 
@@ -191,6 +192,19 @@ df_array_dt = np.dtype([
     ('ending_eq', np.float_),
 ], align=True)
 
+strat_array_dt = np.dtype([
+    ('strats_tested', np.int_),
+    ('strat_id', np.int_),
+    ('or_set', np.int_),
+    ('ind_set', np.int_),
+    ('total_trades', np.float_),
+    ('gains_pct', np.float_),
+    ('win_rate', np.float_),
+    ('to_the_upside', np.float_),
+    ('total_pnl', np.float_),
+    ('ending_eq', np.float_),
+], align=True)
+
 
 cart_array_dt = np.dtype([
     ('order_settings_id', np.int_),
@@ -214,6 +228,13 @@ cart_array_dt = np.dtype([
 """
 A numpy array with specific data types that allow you to store specific information about your order result
 """
+
+strat_dt = np.dtype([
+    ('or_set', np.int_),
+    ('ind_set', np.int_),
+    ('real_pnl', np.float_),
+    ('equity', np.float_),
+], align=True)
 
 or_dt = np.dtype([
     ('order_id', np.int_),
