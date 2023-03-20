@@ -193,7 +193,7 @@ df_array_dt = np.dtype([
 
 
 cart_array_dt = np.dtype([
-    ('order_settings_id', np.float_),
+    ('order_settings_id', np.int_),
     ('leverage', np.float_),
     ('max_equity_risk_pct', np.float_),
     ('max_equity_risk_value', np.float_),

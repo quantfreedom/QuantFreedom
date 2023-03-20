@@ -4,7 +4,7 @@ Testing the tester
 
 import numpy as np
 from numba import literal_unroll, njit
-from quantfreedom._typing import PossibleArray
+from quantfreedom._typing import PossibleArray, Array1d
 from quantfreedom.backtester.nb.execute_funcs import (
     process_order_nb,
     check_sl_tp_nb,
@@ -84,7 +84,7 @@ def simulate_from_signals(
     # Results Filters
     gains_pct_filter: float = -np.inf,
     total_trade_filter: int = 0,
-):
+)-> tuple[Array1d, Array1d, Array1d]:
 
     # Static checks
     if equity < 0 or not np.isfinite(equity):
@@ -420,9 +420,93 @@ def simulate_from_signals(
         raise ValueError(
             "If you have tsl_true_or_false set to true then you must provide the other params like tsl_pcts_init etc")
 
+    # # Cart of new arrays
+    # arrays = (
+    #     np.array([0.]),
+    #     leverage_array,
+    #     max_equity_risk_pct_array,
+    #     max_equity_risk_value_array,
+    #     risk_rewards_array,
+    #     size_pct_array,
+    #     size_value_array,
+    #     sl_pcts_array,
+    #     sl_to_be_based_on_array,
+    #     sl_to_be_trail_by_when_pct_from_avg_entry_array,
+    #     sl_to_be_when_pct_from_avg_entry_array,
+    #     sl_to_be_zero_or_entry_array,
+    #     tp_pcts_array,
+    #     tsl_based_on_array,
+    #     tsl_pcts_init_array,
+    #     tsl_trail_by_pct_array,
+    #     tsl_when_pct_from_avg_entry_array,
+    # )
+
+    # dtype_names = (
+    #     'order_settings_id',
+    #     'leverage',
+    #     'max_equity_risk_pct',
+    #     'max_equity_risk_value',
+    #     'risk_rewards',
+    #     'size_pct',
+    #     'size_value',
+    #     'sl_pcts',
+    #     'sl_to_be_based_on',
+    #     'sl_to_be_trail_by_when_pct_from_avg_entry',
+    #     'sl_to_be_when_pct_from_avg_entry',
+    #     'sl_to_be_zero_or_entry',
+    #     'tp_pcts',
+    #     'tsl_based_on',
+    #     'tsl_pcts_init',
+    #     'tsl_trail_by_pct',
+    #     'tsl_when_pct_from_avg_entry',
+    # )
+
+    # n = 1
+    # for x in arrays:
+    #     n *= x.size
+    # out = np.empty((n, len(arrays)))
+    # cart_array = np.empty(n, dtype=cart_array_dt)
+
+    # for i in range(len(arrays)):
+    #     m = int(n / arrays[i].size)
+    #     out[:n, i] = np.repeat(arrays[i], m)
+    #     n //= arrays[i].size
+
+    # n = arrays[-1].size
+    # for k in range(len(arrays)-2, -1, -1):
+    #     n *= arrays[k].size
+    #     m = int(n / arrays[k].size)
+    #     for j in range(1, arrays[k].size):
+    #         out[j*m:(j+1)*m, k+1:] = out[0:m, k+1:]
+    
+    # # literal unroll
+    # counter = 0
+    # for dtype_name in literal_unroll(dtype_names):
+    #     for col in range(n):
+    #         cart_array[dtype_name][col] = out[col][counter]
+    #     counter += 1
+
+    # leverage_cart_array = cart_array['leverage']
+    # max_equity_risk_pct_cart_array = cart_array['max_equity_risk_pct']
+    # max_equity_risk_value_cart_array = cart_array['max_equity_risk_value']
+    # risk_rewards_cart_array = cart_array['risk_rewards']
+    # size_pct_cart_array = cart_array['size_pct']
+    # size_value_cart_array = cart_array['size_value']
+    # sl_pcts_cart_array = cart_array['sl_pcts']
+    # sl_to_be_based_on_cart_array = cart_array['sl_to_be_based_on']
+    # sl_to_be_trail_by_when_pct_from_avg_entry_cart_array = cart_array[
+    #     'sl_to_be_trail_by_when_pct_from_avg_entry']
+    # sl_to_be_when_pct_from_avg_entry_cart_array = cart_array[
+    #     'sl_to_be_when_pct_from_avg_entry']
+    # sl_to_be_zero_or_entry_cart_array = cart_array['sl_to_be_zero_or_entry']
+    # tp_pcts_cart_array = cart_array['tp_pcts']
+    # tsl_based_on_cart_array = cart_array['tsl_based_on']
+    # tsl_pcts_init_cart_array = cart_array['tsl_pcts_init']
+    # tsl_trail_by_cart_array = cart_array['tsl_trail_by_pct']
+    # tsl_when_pct_from_avg_entry_cart_array = cart_array['tsl_when_pct_from_avg_entry']
+    
     # Cart of new arrays
     arrays = (
-        # np.array([0.]),
         leverage_array,
         max_equity_risk_pct_array,
         max_equity_risk_value_array,
@@ -440,51 +524,12 @@ def simulate_from_signals(
         tsl_trail_by_pct_array,
         tsl_when_pct_from_avg_entry_array,
     )
-    # arrays = (
-    #     np.array([0.]),
-    #     np.array([1., 2., 3.]),
-    #     np.array([np.nan]),
-    #     np.array([4., 5.]),
-    #     np.array([np.nan]),
-    #     np.array([np.nan]),
-    #     np.array([1.,6.,8.]),
-    #     np.array([0.]),
-    #     np.array([np.nan]),
-    #     np.array([3.]),
-    #     np.array([np.inf]),
-    #     np.array([np.inf]),
-    #     np.array([np.nan]),
-    #     np.array([np.inf]),
-    #     np.array([np.nan]),
-    #     np.array([np.inf]),
-    #     np.array([np.nan]),
-    # )
 
-    dtype_names = (
-        # 'order_settings_id',
-        'leverage',
-        'max_equity_risk_pct',
-        'max_equity_risk_value',
-        'risk_rewards',
-        'size_pct',
-        'size_value',
-        'sl_pcts',
-        'sl_to_be_based_on',
-        'sl_to_be_trail_by_when_pct_from_avg_entry',
-        'sl_to_be_when_pct_from_avg_entry',
-        'sl_to_be_zero_or_entry',
-        'tp_pcts',
-        'tsl_based_on',
-        'tsl_pcts_init',
-        'tsl_trail_by_pct',
-        'tsl_when_pct_from_avg_entry',
-    )
-
+    # cart array loop
     n = 1
     for x in arrays:
         n *= x.size
     out = np.empty((n, len(arrays)))
-    cart_array = np.empty(n, dtype=cart_array_dt)
 
     for i in range(len(arrays)):
         m = int(n / arrays[i].size)
@@ -497,34 +542,25 @@ def simulate_from_signals(
         m = int(n / arrays[k].size)
         for j in range(1, arrays[k].size):
             out[j*m:(j+1)*m, k+1:] = out[0:m, k+1:]
-    
-    # literal unroll
-    counter = 0
-    for dtype_name in literal_unroll(dtype_names):
-        for col in range(n):
-            cart_array[dtype_name][col] = out[col][counter]
-        counter += 1
 
     # Setting variable arrys from cart arrays
-    leverage_cart_array = cart_array['leverage']
-    max_equity_risk_pct_cart_array = cart_array['max_equity_risk_pct']
-    max_equity_risk_value_cart_array = cart_array['max_equity_risk_value']
-    risk_rewards_cart_array = cart_array['risk_rewards']
-    size_pct_cart_array = cart_array['size_pct']
-    size_value_cart_array = cart_array['size_value']
-    sl_pcts_cart_array = cart_array['sl_pcts']
-    sl_to_be_based_on_cart_array = cart_array['sl_to_be_based_on']
-    sl_to_be_trail_by_when_pct_from_avg_entry_cart_array = cart_array[
-        'sl_to_be_trail_by_when_pct_from_avg_entry']
-    sl_to_be_when_pct_from_avg_entry_cart_array = cart_array[
-        'sl_to_be_when_pct_from_avg_entry']
-    sl_to_be_zero_or_entry_cart_array = cart_array['sl_to_be_zero_or_entry']
-    tp_pcts_cart_array = cart_array['tp_pcts']
-    tsl_based_on_cart_array = cart_array['tsl_based_on']
-    tsl_pcts_init_cart_array = cart_array['tsl_pcts_init']
-    tsl_trail_by_cart_array = cart_array['tsl_trail_by_pct']
-    tsl_when_pct_from_avg_entry_cart_array = cart_array['tsl_when_pct_from_avg_entry']
-
+    leverage_cart_array = out.T[0]
+    max_equity_risk_pct_cart_array = out.T[1]
+    max_equity_risk_value_cart_array = out.T[2]
+    risk_rewards_cart_array = out.T[3]
+    size_pct_cart_array = out.T[4]
+    size_value_cart_array = out.T[5]
+    sl_pcts_cart_array = out.T[6]
+    sl_to_be_based_on_cart_array = out.T[7]
+    sl_to_be_trail_by_when_pct_from_avg_entry_cart_array = out.T[8]
+    sl_to_be_when_pct_from_avg_entry_cart_array = out.T[9]
+    sl_to_be_zero_or_entry_cart_array = out.T[10]
+    tp_pcts_cart_array = out.T[11]
+    tsl_based_on_cart_array = out.T[12]
+    tsl_pcts_init_cart_array = out.T[13]
+    tsl_trail_by_cart_array = out.T[14]
+    tsl_when_pct_from_avg_entry_cart_array = out.T[15]
+    
     # Creating Settings Vars
     total_order_settings = sl_pcts_cart_array.shape[0]
 
@@ -757,7 +793,7 @@ def simulate_from_signals(
                     df_array['ending_eq'][df_counter] = temp_order_records['equity'][-1]
 
                     # df cart array
-                    df_cart_array['order_settings_id'][df_counter] = order_settings_counter * 1.
+                    df_cart_array['order_settings_id'][df_counter] = order_settings_counter
                     df_cart_array['leverage'][df_counter] = leverage_cart_array[order_settings_counter]
                     df_cart_array['max_equity_risk_pct'][df_counter] = max_equity_risk_pct_cart_array[order_settings_counter] * 100
                     df_cart_array['max_equity_risk_value'][df_counter] = max_equity_risk_value_cart_array[order_settings_counter]

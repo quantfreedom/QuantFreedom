@@ -11,7 +11,7 @@ from quantfreedom._typing import (
 from quantfreedom.backtester.enums.enums import OrderType
 
 
-def log_trades_plot(
+def plot_trades_all_info(
         open_prices: plSeries,
         high_prices: plSeries,
         low_prices: plSeries,

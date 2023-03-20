@@ -5,7 +5,6 @@ title: Release Notes
 # Release Notes
 
 ## Version 0.0.2 ()
-
 - Added the ability to delete cache
 - Return cart array
 
