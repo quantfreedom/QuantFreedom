@@ -700,6 +700,5 @@ def simulate_df_only(
 
                     strat_arrays_filled += 1
             strat_id += 1
-            strat_array['strat_id'][strat_arrays_filled] = strat_id
 
     return strat_array[: strat_arrays_filled]
