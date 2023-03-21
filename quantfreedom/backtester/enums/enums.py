@@ -193,7 +193,6 @@ df_array_dt = np.dtype([
 ], align=True)
 
 strat_array_dt = np.dtype([
-    ('strat_id', np.int_),
     ('or_set', np.int_),
     ('ind_set', np.int_),
     ('total_trades', np.float_),

@@ -688,7 +688,6 @@ def simulate_df_only(
                     to_the_upside = yp_ym_s.sum() / y_ym_s.sum()
 
                     # strat array
-                    strat_array['strat_id'][strat_arrays_filled] = strat_id
                     strat_array['or_set'][strat_arrays_filled] = temp_order_records['or_set'][0]
                     strat_array['ind_set'][strat_arrays_filled] = temp_order_records['ind_set'][0]
                     strat_array['total_trades'][strat_arrays_filled] = w_l.size
@@ -699,6 +698,5 @@ def simulate_df_only(
                     strat_array['ending_eq'][strat_arrays_filled] = temp_order_records['equity'][-1]
 
                     strat_arrays_filled += 1
-            strat_id += 1
 
     return strat_array[: strat_arrays_filled]
