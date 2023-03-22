@@ -14,7 +14,7 @@ class CCXTData():
     ):
         
         exchange = getattr(ccxt, exchange)()
-        markets = exchange.load_markets()
+        exchange.load_markets()
         # exchange.verbose = True  # uncomment for debugging purposes if necessary
         start = exchange.parse8601(start)
         end = exchange.parse8601(end)
