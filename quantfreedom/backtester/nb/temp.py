@@ -3,7 +3,7 @@ Testing the tester
 """
 
 import numpy as np
-from numba import literal_unroll, njit
+from numba import njit
 from quantfreedom._typing import PossibleArray, Array1d
 from quantfreedom.backtester.nb.execute_funcs import (
     process_order_nb,
@@ -11,8 +11,8 @@ from quantfreedom.backtester.nb.execute_funcs import (
     to_1d_array_nb,
 )
 from quantfreedom.backtester.enums.enums import (
-    strat_array_dt,
-    strat_dt,
+    strat_df_array_dt,
+    strat_records_dt,
     LeverageMode,
     OrderType,
     SizeType,
@@ -437,7 +437,27 @@ def simulate_df_only(
         tsl_trail_by_pct_array,
         tsl_when_pct_from_avg_entry_array,
     )
-
+    
+    # dtype_names = (
+    #     'order_settings_id',
+    #     'leverage',
+    #     'max_equity_risk_pct',
+    #     'max_equity_risk_value',
+    #     'risk_rewards',
+    #     'size_pct',
+    #     'size_value',
+    #     'sl_pcts',
+    #     'sl_to_be_based_on',
+    #     'sl_to_be_trail_by_when_pct_from_avg_entry',
+    #     'sl_to_be_when_pct_from_avg_entry',
+    #     'sl_to_be_zero_or_entry',
+    #     'tp_pcts',
+    #     'tsl_based_on',
+    #     'tsl_pcts_init',
+    #     'tsl_trail_by_pct',
+    #     'tsl_when_pct_from_avg_entry',
+    # )
+    
     # cart array loop
     n = 1
     for x in arrays:
@@ -455,6 +475,13 @@ def simulate_df_only(
         m = int(n / arrays[k].size)
         for j in range(1, arrays[k].size):
             out[j*m:(j+1)*m, k+1:] = out[0:m, k+1:]
+            
+    # # literal unroll
+    # counter = 0
+    # for dtype_name in literal_unroll(dtype_names):
+    #     for col in range(n):
+    #         cart_array[dtype_name][col] = out[col][counter]
+    #     counter += 1
 
     # Setting variable arrys from cart arrays
     leverage_cart_array = out.T[0]
@@ -473,6 +500,25 @@ def simulate_df_only(
     tsl_pcts_init_cart_array = out.T[13]
     tsl_trail_by_cart_array = out.T[14]
     tsl_when_pct_from_avg_entry_cart_array = out.T[15]
+    
+    # leverage_cart_array = cart_array['leverage']
+    # max_equity_risk_pct_cart_array = cart_array['max_equity_risk_pct']
+    # max_equity_risk_value_cart_array = cart_array['max_equity_risk_value']
+    # risk_rewards_cart_array = cart_array['risk_rewards']
+    # size_pct_cart_array = cart_array['size_pct']
+    # size_value_cart_array = cart_array['size_value']
+    # sl_pcts_cart_array = cart_array['sl_pcts']
+    # sl_to_be_based_on_cart_array = cart_array['sl_to_be_based_on']
+    # sl_to_be_trail_by_when_pct_from_avg_entry_cart_array = cart_array[
+    #     'sl_to_be_trail_by_when_pct_from_avg_entry']
+    # sl_to_be_when_pct_from_avg_entry_cart_array = cart_array[
+    #     'sl_to_be_when_pct_from_avg_entry']
+    # sl_to_be_zero_or_entry_cart_array = cart_array['sl_to_be_zero_or_entry']
+    # tp_pcts_cart_array = cart_array['tp_pcts']
+    # tsl_based_on_cart_array = cart_array['tsl_based_on']
+    # tsl_pcts_init_cart_array = cart_array['tsl_pcts_init']
+    # tsl_trail_by_cart_array = cart_array['tsl_trail_by_pct']
+    # tsl_when_pct_from_avg_entry_cart_array = cart_array['tsl_when_pct_from_avg_entry']
 
     out = 0
     arrays = 0
@@ -488,12 +534,11 @@ def simulate_df_only(
     total_bars = open_prices.shape[0]
 
     # Creating strat records
-    strat_array = np.empty(total_indicator_settings *
-                           total_order_settings, dtype=strat_array_dt)
+    strat_df_array = np.empty(total_indicator_settings *
+                           total_order_settings, dtype=strat_df_array_dt)
     strat_arrays_filled = 0
-    strat_id = 0
 
-    strat_records = np.empty(int(total_bars/1.5), dtype=strat_dt)
+    strat_records = np.empty(int(total_bars/1.5), dtype=strat_records_dt)
     strat_records_filled = np.array([0])
 
     # order settings loops
@@ -589,11 +634,7 @@ def simulate_df_only(
                         bar=bar,
                         indicator_settings_counter=indicator_settings_counter,
                         order_settings_counter=order_settings_counter,
-
-                        order_records=None,
-                        order_count_id=None,
-                        or_filled_temp=None,
-
+                        
                         strat_records=strat_records[strat_records_filled[0]],
                         strat_records_filled=strat_records_filled,
                     )
@@ -612,10 +653,6 @@ def simulate_df_only(
                         stops_order=stops_order,
 
                         account_state=account_state,
-
-                        order_records=None,
-                        order_count_id=None,
-                        or_filled_temp=None,
 
                         bar=bar,
                         indicator_settings_counter=indicator_settings_counter,
@@ -636,11 +673,7 @@ def simulate_df_only(
                             bar=bar,
                             indicator_settings_counter=indicator_settings_counter,
                             order_settings_counter=order_settings_counter,
-
-                            order_records=None,
-                            order_count_id=None,
-                            or_filled_temp=None,
-
+                            
                             strat_records=strat_records[strat_records_filled[0]],
                             strat_records_filled=strat_records_filled,
                         )
@@ -688,15 +721,15 @@ def simulate_df_only(
                     to_the_upside = yp_ym_s.sum() / y_ym_s.sum()
 
                     # strat array
-                    strat_array['or_set'][strat_arrays_filled] = temp_order_records['or_set'][0]
-                    strat_array['ind_set'][strat_arrays_filled] = temp_order_records['ind_set'][0]
-                    strat_array['total_trades'][strat_arrays_filled] = w_l.size
-                    strat_array['gains_pct'][strat_arrays_filled] = gains_pct
-                    strat_array['win_rate'][strat_arrays_filled] = win_rate
-                    strat_array['to_the_upside'][strat_arrays_filled] = to_the_upside
-                    strat_array['total_pnl'][strat_arrays_filled] = total_pnl
-                    strat_array['ending_eq'][strat_arrays_filled] = temp_order_records['equity'][-1]
+                    strat_df_array['or_set'][strat_arrays_filled] = temp_order_records['or_set'][0]
+                    strat_df_array['ind_set'][strat_arrays_filled] = temp_order_records['ind_set'][0]
+                    strat_df_array['total_trades'][strat_arrays_filled] = w_l.size
+                    strat_df_array['gains_pct'][strat_arrays_filled] = gains_pct
+                    strat_df_array['win_rate'][strat_arrays_filled] = win_rate
+                    strat_df_array['to_the_upside'][strat_arrays_filled] = to_the_upside
+                    strat_df_array['total_pnl'][strat_arrays_filled] = total_pnl
+                    strat_df_array['ending_eq'][strat_arrays_filled] = temp_order_records['equity'][-1]
 
                     strat_arrays_filled += 1
 
-    return strat_array[: strat_arrays_filled]
+    return strat_df_array[: strat_arrays_filled]

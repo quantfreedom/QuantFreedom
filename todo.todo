@@ -1,12 +1,32 @@
 Currently Working On:
-    ☐ make data frame return only function
-    ☐ create cart calc where the person can just copy paste their settings and get the number back as well as the number of cart times the number of ind settings ... then also include a number for total bars tested times number of order settings times number of ind settings
-    ☐ create cart index function that will return the settings of the order settings id
-    ☐ create cart index function that will return the settings of indicator settings id
-    ☐ not sure when to upgrade version
+    ☐ fix simulate from signals
+    ☐ Does disabling cache=True in your application change anything? 
+    ☐ update release notes
+    ☐ update feature notes
+    ☐ merge dev into main
+    ☐ 
+
+Next Verson:
+    ☐ create cart calc where the person can just copy paste their settings and get the number back as well as the number of cart times the number of ind settings ... then also include a number for total bars tested times number of order settings times number of ind settings make it a helper function because it will just print the results as the return
+    ☐ create base func that takes 1 set of settings and reutnrs the order record infor necessary to make an octobot like report in a new window https://raw.githubusercontent.com/Drakkar-Software/OctoBot-Pro/assets/images/report_1.jpg
+    ☐ create base that returns entry settings using vbt indicator creation thing
+    ☐ once new window then make it so you can select from a max of 5 or 10 different reports
 
 Documentation:
-    ☐  just start it lol
+
+    
+Python course:
+    ☐ watch some courses and make simple 1 or 2 min vids on the topic
+    ☐ find tips and tricks videos and make 1 or 2 min simple videos
+
+Numpy course:
+
+
+Pandas course:
+
+
+Polars course:
+
 
 Numba:
     ☐ see if you can repurpose cart array when using numba for df cart array
@@ -26,6 +46,7 @@ Would Be Nice:
     ☐ send pct change of position in order result when decreasing or increaseing position size
 
 Archive:
+  ✔ make data frame return only function @done(23-03-20 19:57)
   ✔ make a work around for cart array numba @done(23-03-19 18:46)
   ✔ work in selling @done(23-03-19 13:52)
   ✔ remove the ability for the user to create sl tsl tp prices @done(23-03-18 19:27) @project(Currently Working On)

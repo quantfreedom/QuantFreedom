@@ -11,8 +11,7 @@ from quantfreedom.backtester.nb.execute_funcs import (
     to_1d_array_nb,
 )
 from quantfreedom.backtester.enums.enums import (
-    cart_array_dt,
-    df_array_dt,
+    final_array_dt,
     or_dt,
 
     LeverageMode,
@@ -26,6 +25,7 @@ from quantfreedom.backtester.enums.enums import (
     StopsOrder,
     StaticVariables,
 )
+
 
 @njit(cache=True)
 def simulate_from_signals(
@@ -83,7 +83,7 @@ def simulate_from_signals(
     # Results Filters
     gains_pct_filter: float = -np.inf,
     total_trade_filter: int = 0,
-)-> tuple[Array1d, Array1d, Array1d]:
+) -> tuple[Array1d, Array1d, Array1d]:
 
     # Static checks
     if equity < 0 or not np.isfinite(equity):
@@ -376,7 +376,6 @@ def simulate_from_signals(
         not np.isfinite(sl_to_be_zero_or_entry_array).any() or
         not np.isfinite(sl_to_be_trail_by_when_pct_from_avg_entry_array).any() or
         not np.isfinite(sl_pcts_array).any()
-
     ):
         raise ValueError(
             "If you have sl_to_be set to true then you must provide the other params like sl_pcts etc")
@@ -419,93 +418,8 @@ def simulate_from_signals(
         raise ValueError(
             "If you have tsl_true_or_false set to true then you must provide the other params like tsl_pcts_init etc")
 
-    # # Cart of new arrays
-    # arrays = (
-    #     np.array([0.]),
-    #     leverage_array,
-    #     max_equity_risk_pct_array,
-    #     max_equity_risk_value_array,
-    #     risk_rewards_array,
-    #     size_pct_array,
-    #     size_value_array,
-    #     sl_pcts_array,
-    #     sl_to_be_based_on_array,
-    #     sl_to_be_trail_by_when_pct_from_avg_entry_array,
-    #     sl_to_be_when_pct_from_avg_entry_array,
-    #     sl_to_be_zero_or_entry_array,
-    #     tp_pcts_array,
-    #     tsl_based_on_array,
-    #     tsl_pcts_init_array,
-    #     tsl_trail_by_pct_array,
-    #     tsl_when_pct_from_avg_entry_array,
-    # )
-
-    # dtype_names = (
-    #     'order_settings_id',
-    #     'leverage',
-    #     'max_equity_risk_pct',
-    #     'max_equity_risk_value',
-    #     'risk_rewards',
-    #     'size_pct',
-    #     'size_value',
-    #     'sl_pcts',
-    #     'sl_to_be_based_on',
-    #     'sl_to_be_trail_by_when_pct_from_avg_entry',
-    #     'sl_to_be_when_pct_from_avg_entry',
-    #     'sl_to_be_zero_or_entry',
-    #     'tp_pcts',
-    #     'tsl_based_on',
-    #     'tsl_pcts_init',
-    #     'tsl_trail_by_pct',
-    #     'tsl_when_pct_from_avg_entry',
-    # )
-
-    # n = 1
-    # for x in arrays:
-    #     n *= x.size
-    # out = np.empty((n, len(arrays)))
-    # cart_array = np.empty(n, dtype=cart_array_dt)
-
-    # for i in range(len(arrays)):
-    #     m = int(n / arrays[i].size)
-    #     out[:n, i] = np.repeat(arrays[i], m)
-    #     n //= arrays[i].size
-
-    # n = arrays[-1].size
-    # for k in range(len(arrays)-2, -1, -1):
-    #     n *= arrays[k].size
-    #     m = int(n / arrays[k].size)
-    #     for j in range(1, arrays[k].size):
-    #         out[j*m:(j+1)*m, k+1:] = out[0:m, k+1:]
-    
-    # # literal unroll
-    # counter = 0
-    # for dtype_name in literal_unroll(dtype_names):
-    #     for col in range(n):
-    #         cart_array[dtype_name][col] = out[col][counter]
-    #     counter += 1
-
-    # leverage_cart_array = cart_array['leverage']
-    # max_equity_risk_pct_cart_array = cart_array['max_equity_risk_pct']
-    # max_equity_risk_value_cart_array = cart_array['max_equity_risk_value']
-    # risk_rewards_cart_array = cart_array['risk_rewards']
-    # size_pct_cart_array = cart_array['size_pct']
-    # size_value_cart_array = cart_array['size_value']
-    # sl_pcts_cart_array = cart_array['sl_pcts']
-    # sl_to_be_based_on_cart_array = cart_array['sl_to_be_based_on']
-    # sl_to_be_trail_by_when_pct_from_avg_entry_cart_array = cart_array[
-    #     'sl_to_be_trail_by_when_pct_from_avg_entry']
-    # sl_to_be_when_pct_from_avg_entry_cart_array = cart_array[
-    #     'sl_to_be_when_pct_from_avg_entry']
-    # sl_to_be_zero_or_entry_cart_array = cart_array['sl_to_be_zero_or_entry']
-    # tp_pcts_cart_array = cart_array['tp_pcts']
-    # tsl_based_on_cart_array = cart_array['tsl_based_on']
-    # tsl_pcts_init_cart_array = cart_array['tsl_pcts_init']
-    # tsl_trail_by_cart_array = cart_array['tsl_trail_by_pct']
-    # tsl_when_pct_from_avg_entry_cart_array = cart_array['tsl_when_pct_from_avg_entry']
-    
     # Cart of new arrays
-    arrays = (
+    broad_array = np.array([
         leverage_array,
         max_equity_risk_pct_array,
         max_equity_risk_value_array,
@@ -522,300 +436,258 @@ def simulate_from_signals(
         tsl_pcts_init_array,
         tsl_trail_by_pct_array,
         tsl_when_pct_from_avg_entry_array,
-    )
+    ])
 
-    # cart array loop
-    n = 1
-    for x in arrays:
-        n *= x.size
-    out = np.empty((n, len(arrays)))
+    x = 0
+    while x < 7:
+        if broad_array[x].size > 1:
+            biggest = broad_array[x].size
+            break
+        x += 1
 
-    for i in range(len(arrays)):
-        m = int(n / arrays[i].size)
-        out[:n, i] = np.repeat(arrays[i], m)
-        n //= arrays[i].size
-
-    n = arrays[-1].size
-    for k in range(len(arrays)-2, -1, -1):
-        n *= arrays[k].size
-        m = int(n / arrays[k].size)
-        for j in range(1, arrays[k].size):
-            out[j*m:(j+1)*m, k+1:] = out[0:m, k+1:]
+    while x < 7:
+        if broad_array[x].size > 1 and broad_array[x].size != biggest:
+            raise ValueError("Size mismatch")
+        x += 1
+    if biggest >= 6:
+        raise ValueError("Total amount of tests must be <= 6")
 
     # Setting variable arrys from cart arrays
-    leverage_cart_array = out.T[0]
-    max_equity_risk_pct_cart_array = out.T[1]
-    max_equity_risk_value_cart_array = out.T[2]
-    risk_rewards_cart_array = out.T[3]
-    size_pct_cart_array = out.T[4]
-    size_value_cart_array = out.T[5]
-    sl_pcts_cart_array = out.T[6]
-    sl_to_be_based_on_cart_array = out.T[7]
-    sl_to_be_trail_by_when_pct_from_avg_entry_cart_array = out.T[8]
-    sl_to_be_when_pct_from_avg_entry_cart_array = out.T[9]
-    sl_to_be_zero_or_entry_cart_array = out.T[10]
-    tp_pcts_cart_array = out.T[11]
-    tsl_based_on_cart_array = out.T[12]
-    tsl_pcts_init_cart_array = out.T[13]
-    tsl_trail_by_cart_array = out.T[14]
-    tsl_when_pct_from_avg_entry_cart_array = out.T[15]
-    
-    # Creating Settings Vars
-    total_order_settings = sl_pcts_cart_array.shape[0]
+    leverage_cart_array = np.broadcast_to(broad_array[0], biggest)
+    max_equity_risk_pct_cart_array = np.broadcast_to(broad_array[1], biggest)
+    max_equity_risk_value_cart_array = np.broadcast_to(broad_array[2], biggest)
+    risk_rewards_cart_array = np.broadcast_to(broad_array[3], biggest)
+    size_pct_cart_array = np.broadcast_to(broad_array[4], biggest)
+    size_value_cart_array = np.broadcast_to(broad_array[5], biggest)
+    sl_pcts_cart_array = np.broadcast_to(broad_array[6], biggest)
+    sl_to_be_based_on_cart_array = np.broadcast_to(broad_array[7], biggest)
+    sl_to_be_trail_by_when_pct_from_avg_entry_cart_array = np.broadcast_to(
+        broad_array[8], biggest)
+    sl_to_be_when_pct_from_avg_entry_cart_array = np.broadcast_to(
+        broad_array[9], biggest)
+    sl_to_be_zero_or_entry_cart_array = np.broadcast_to(
+        broad_array[10], biggest)
+    tp_pcts_cart_array = np.broadcast_to(broad_array[11], biggest)
+    tsl_based_on_cart_array = np.broadcast_to(broad_array[12], biggest)
+    tsl_pcts_init_cart_array = np.broadcast_to(broad_array[13], biggest)
+    tsl_trail_by_cart_array = np.broadcast_to(broad_array[14], biggest)
+    tsl_when_pct_from_avg_entry_cart_array = np.broadcast_to(
+        broad_array[15], biggest)
 
-    if entries.ndim == 1:
-        total_indicator_settings = 1
-    else:
-        total_indicator_settings = entries.shape[1]
+    broad_array = 0 
+
+    if entries.shape[1] == 1:
+        entries  = np.array([entries[:, 0]]* biggest)
+    elif entries.shape[1] != biggest:
+        raise ValueError("Something is wrong with entries")
 
     total_bars = open_prices.shape[0]
 
-    # record_count = 0
-    # for i in range(total_order_settings):
-    #     for ii in range(total_indicator_settings):
-    #         for iii in range(total_bars):
-    #             if entries[:, ii][iii]:
-    #                 record_count += 1
-    # record_count = int(record_count / 2)
+    # Record Arrays
+    final_array = np.empty(biggest, dtype=final_array_dt)
+    final_array_counter = 0
 
-    # Creating OR
-    df_array = np.empty(100000, dtype=df_array_dt)
-    df_cart_array = np.empty(100000, dtype=cart_array_dt)
-    df_counter = 0
-
-    order_records = np.empty(100000, dtype=or_dt)
+    order_records = np.empty(total_bars * 2, dtype=or_dt)
+    order_records_id = np.array([0])
     or_filled_start = 0
-    or_filled_temp = np.array([0])
-    order_count_id = np.array([0])
-
-    use_stops = not np.isnan(sl_pcts_array[0]) or \
-        not np.isnan(tsl_pcts_init_array[0]) or \
-        not np.isnan(tp_pcts_array[0])
+    
 
     # order settings loops
-    for order_settings_counter in range(total_order_settings):
-
+    for settings_counter in range(biggest):
         entry_order = EntryOrder(
-            leverage=leverage_cart_array[order_settings_counter],
-            max_equity_risk_pct=max_equity_risk_pct_cart_array[order_settings_counter],
-            max_equity_risk_value=max_equity_risk_value_cart_array[order_settings_counter],
+            leverage=leverage_cart_array[settings_counter],
+            max_equity_risk_pct=max_equity_risk_pct_cart_array[settings_counter],
+            max_equity_risk_value=max_equity_risk_value_cart_array[settings_counter],
             order_type=order_type,
-            risk_rewards=risk_rewards_cart_array[order_settings_counter],
-            size_pct=size_pct_cart_array[order_settings_counter],
-            size_value=size_value_cart_array[order_settings_counter],
-            sl_pcts=sl_pcts_cart_array[order_settings_counter],
-            tp_pcts=tp_pcts_cart_array[order_settings_counter],
-            tsl_pcts_init=tsl_pcts_init_cart_array[order_settings_counter],
+            risk_rewards=risk_rewards_cart_array[settings_counter],
+            size_pct=size_pct_cart_array[settings_counter],
+            size_value=size_value_cart_array[settings_counter],
+            sl_pcts=sl_pcts_cart_array[settings_counter],
+            tp_pcts=tp_pcts_cart_array[settings_counter],
+            tsl_pcts_init=tsl_pcts_init_cart_array[settings_counter],
         )
         stops_order = StopsOrder(
             sl_to_be=sl_to_be,
-            sl_to_be_based_on=sl_to_be_based_on_cart_array[order_settings_counter],
+            sl_to_be_based_on=sl_to_be_based_on_cart_array[settings_counter],
             sl_to_be_then_trail=sl_to_be_then_trail,
             sl_to_be_trail_by_when_pct_from_avg_entry=sl_to_be_trail_by_when_pct_from_avg_entry_cart_array[
-                order_settings_counter],
+                settings_counter],
             sl_to_be_when_pct_from_avg_entry=sl_to_be_when_pct_from_avg_entry_cart_array[
-                order_settings_counter],
-            sl_to_be_zero_or_entry=sl_to_be_zero_or_entry_cart_array[order_settings_counter],
-            tsl_based_on=tsl_based_on_cart_array[order_settings_counter],
-            tsl_trail_by_pct=tsl_trail_by_cart_array[order_settings_counter],
+                settings_counter],
+            sl_to_be_zero_or_entry=sl_to_be_zero_or_entry_cart_array[settings_counter],
+            tsl_based_on=tsl_based_on_cart_array[settings_counter],
+            tsl_trail_by_pct=tsl_trail_by_cart_array[settings_counter],
             tsl_true_or_false=tsl_true_or_false,
             tsl_when_pct_from_avg_entry=tsl_when_pct_from_avg_entry_cart_array[
-                order_settings_counter],
+                settings_counter],
         )
 
-        # ind set loop
-        for indicator_settings_counter in range(total_indicator_settings):
+        # Account State Reset
+        account_state = AccountState(
+            available_balance=og_equity,
+            cash_borrowed=0.,
+            cash_used=0.,
+            equity=og_equity,
+        )
 
-            if entries.ndim != 1:
-                current_indicator_entries = entries[
-                    :, indicator_settings_counter]
-            else:
-                current_indicator_entries = entries
+        # Order Result Reset
+        order_result = OrderResult(
+            average_entry=0.,
+            fees_paid=0.,
+            leverage=0.,
+            liq_price=np.nan,
+            moved_sl_to_be=False,
+            order_status=0,
+            order_status_info=0,
+            order_type=entry_order.order_type,
+            pct_chg_trade=0.,
+            position=0.,
+            price=0.,
+            realized_pnl=0.,
+            size_value=0.,
+            sl_pcts=0.,
+            sl_prices=0.,
+            tp_pcts=0.,
+            tp_prices=0.,
+            tsl_pcts_init=0.,
+            tsl_prices=0.,
+        )
+        
+        current_indicator_entries = entries[settings_counter]
 
-            # Account State Reset
-            account_state = AccountState(
-                available_balance=og_equity,
-                cash_borrowed=0.,
-                cash_used=0.,
-                equity=og_equity,
-            )
+        # entries loop
+        for bar in range(total_bars):
 
-            # Order Result Reset
-            order_result = OrderResult(
-                average_entry=0.,
-                fees_paid=0.,
-                leverage=0.,
-                liq_price=np.nan,
-                moved_sl_to_be=False,
-                order_status=0,
-                order_status_info=0,
-                order_type=entry_order.order_type,
-                pct_chg_trade=0.,
-                position=0.,
-                price=0.,
-                realized_pnl=0.,
-                size_value=0.,
-                sl_pcts=0.,
-                sl_prices=0.,
-                tp_pcts=0.,
-                tp_prices=0.,
-                tsl_pcts_init=0.,
-                tsl_prices=0.,
-            )
-            or_filled_temp[0] = 0
+            if account_state.available_balance < 5:
+                break
 
-            # entries loop
-            for bar in range(total_bars):
+            if current_indicator_entries[bar]:
 
-                if account_state.available_balance < 5:
-                    break
+                # Process Order nb
+                account_state, order_result = process_order_nb(
+                    price=open_prices[bar],
+                    order_type=entry_order.order_type,
 
-                if current_indicator_entries[bar]:
+                    account_state=account_state,
+                    entry_order=entry_order,
+                    order_result=order_result,
+                    static_variables=static_variables,
 
-                    # Process Order nb
+                    bar=bar,
+                    indicator_settings_counter=settings_counter,
+                    order_settings_counter=settings_counter,
+
+                    order_records=order_records[order_records_id[0]],
+                    order_records_id=order_records_id,
+                )
+            if order_result.position > 0:
+                # Check Stops
+                order_result = check_sl_tp_nb(
+                    open_price=open_prices[bar],
+                    high_price=high_prices[bar],
+                    low_price=low_prices[bar],
+                    close_price=close_prices[bar],
+
+                    fee_pct=static_variables.fee_pct,
+
+                    entry_type=entry_order.order_type,
+                    order_result=order_result,
+                    stops_order=stops_order,
+
+                    account_state=account_state,
+                    order_records=order_records[order_records_id[0]],
+                    order_records_id=order_records_id,
+
+                    bar=bar,
+                    indicator_settings_counter=settings_counter,
+                    order_settings_counter=settings_counter,
+                )
+                # process stops
+                if not np.isnan(order_result.size_value):
                     account_state, order_result = process_order_nb(
+                        entry_order=entry_order,
+                        order_type=order_result.order_type,
+
                         price=open_prices[bar],
-                        order_type=entry_order.order_type,
 
                         account_state=account_state,
-                        entry_order=entry_order,
                         order_result=order_result,
                         static_variables=static_variables,
 
                         bar=bar,
-                        indicator_settings_counter=indicator_settings_counter,
-                        order_settings_counter=order_settings_counter,
+                        indicator_settings_counter=settings_counter,
+                        order_settings_counter=settings_counter,
 
-                        order_records=order_records[order_count_id[0]],
-                        order_count_id=order_count_id,
-                        or_filled_temp=or_filled_temp,
+                        order_records=order_records[order_records_id[0]],
+                        order_records_id=order_records_id,
                     )
-                if order_result.position > 0:
-                    # Check Stops
-                    order_result = check_sl_tp_nb(
-                        open_price=open_prices[bar],
-                        high_price=high_prices[bar],
-                        low_price=low_prices[bar],
-                        close_price=close_prices[bar],
 
-                        fee_pct=static_variables.fee_pct,
+        # Checking if gains
+        temp_order_records = order_records[or_filled_start:order_records_id[0]]
+        or_filled_start = order_records_id[0]
+        gains_pct = ((account_state.equity - og_equity) / og_equity) * 100
+        
+        w_l = temp_order_records['real_pnl'][~np.isnan(
+            temp_order_records['real_pnl'])]
+        
+        w_l_no_be = w_l[w_l != 0]  # filter out all BE trades
 
-                        entry_type=entry_order.order_type,
-                        order_result=order_result,
-                        stops_order=stops_order,
+        # win rate calc
+        win_loss = np.where(w_l_no_be < 0, 0, 1)
+        win_rate = round(np.count_nonzero(
+            win_loss) / win_loss.size * 100, 2)
 
-                        account_state=account_state,
-                        order_records=order_records[order_count_id[0]],
-                        order_count_id=order_count_id,
-                        or_filled_temp=or_filled_temp,
+        total_pnl = temp_order_records['real_pnl'][~np.isnan(
+            temp_order_records['real_pnl'])].sum()
 
-                        bar=bar,
-                        indicator_settings_counter=indicator_settings_counter,
-                        order_settings_counter=order_settings_counter,
-                    )
-                    # process stops
-                    if not np.isnan(order_result.size_value):
-                        account_state, order_result = process_order_nb(
-                            entry_order=entry_order,
-                            order_type=order_result.order_type,
+        # to_the_upside calculation
+        x = np.arange(1, len(w_l_no_be)+1)
+        y = w_l_no_be.cumsum()
 
-                            price=open_prices[bar],
+        xm = x.mean()
+        ym = y.mean()
 
-                            account_state=account_state,
-                            order_result=order_result,
-                            static_variables=static_variables,
+        y_ym = y - ym
+        y_ym_s = y_ym**2
 
-                            bar=bar,
-                            indicator_settings_counter=indicator_settings_counter,
-                            order_settings_counter=order_settings_counter,
+        x_xm = x - xm
+        x_xm_s = x_xm**2
 
-                            order_records=order_records[order_count_id[0]],
-                            order_count_id=order_count_id,
-                            or_filled_temp=or_filled_temp,
-                        )
+        b1 = (x_xm * y_ym).sum() / x_xm_s.sum()
+        b0 = ym - b1 * xm
 
-            # Checking if gains
-            gains_pct = ((account_state.equity - og_equity) / og_equity) * 100
-            if gains_pct > gains_pct_filter:
-                temp_order_records = order_records[or_filled_start:order_count_id[0]]
-                w_l = temp_order_records['real_pnl'][~np.isnan(
-                    temp_order_records['real_pnl'])]
-                # Checking total trade filter
-                if w_l.size > total_trade_filter:
+        y_pred = b0 + b1 * x
 
-                    or_filled_start = order_count_id[0]
+        yp_ym = y_pred - ym
 
-                    w_l_no_be = w_l[w_l != 0]  # filter out all BE trades
+        yp_ym_s = yp_ym**2
+        to_the_upside = yp_ym_s.sum() / y_ym_s.sum()
 
-                    # win rate calc
-                    win_loss = np.where(w_l_no_be < 0, 0, 1)
-                    win_rate = round(np.count_nonzero(
-                        win_loss) / win_loss.size * 100, 2)
+        # df array
+        final_array['total_trades'][final_array_counter] = w_l.size
+        final_array['gains_pct'][final_array_counter] = gains_pct
+        final_array['win_rate'][final_array_counter] = win_rate
+        final_array['to_the_upside'][final_array_counter] = to_the_upside
+        final_array['total_pnl'][final_array_counter] = total_pnl
+        final_array['ending_eq'][final_array_counter] = temp_order_records['equity'][-1]
+        final_array['settings_id'][final_array_counter] = final_array_counter
+        final_array['leverage'][final_array_counter] = leverage_cart_array[final_array_counter]
+        final_array['max_equity_risk_pct'][final_array_counter] = max_equity_risk_pct_cart_array[final_array_counter] * 100
+        final_array['max_equity_risk_value'][final_array_counter] = max_equity_risk_value_cart_array[final_array_counter]
+        final_array['risk_rewards'][final_array_counter] = risk_rewards_cart_array[final_array_counter]
+        final_array['size_pct'][final_array_counter] = size_pct_cart_array[final_array_counter] * 100
+        final_array['size_value'][final_array_counter] = size_value_cart_array[final_array_counter]
+        final_array['sl_pcts'][final_array_counter] = sl_pcts_cart_array[final_array_counter] * 100
+        final_array['sl_to_be_based_on'][final_array_counter] = sl_to_be_based_on_cart_array[final_array_counter]
+        final_array['sl_to_be_trail_by_when_pct_from_avg_entry'][final_array_counter] = sl_to_be_trail_by_when_pct_from_avg_entry_cart_array[final_array_counter] * 100
+        final_array['sl_to_be_when_pct_from_avg_entry'][final_array_counter] = sl_to_be_when_pct_from_avg_entry_cart_array[final_array_counter] * 100
+        final_array['sl_to_be_zero_or_entry'][final_array_counter] = sl_to_be_zero_or_entry_cart_array[final_array_counter]
+        final_array['tp_pcts'][final_array_counter] = tp_pcts_cart_array[final_array_counter] * 100
+        final_array['tsl_based_on'][final_array_counter] = tsl_based_on_cart_array[final_array_counter]
+        final_array['tsl_pcts_init'][final_array_counter] = tsl_pcts_init_cart_array[final_array_counter] * 100
+        final_array['tsl_trail_by_pct'][final_array_counter] = tsl_trail_by_cart_array[final_array_counter] * 100
+        final_array['tsl_when_pct_from_avg_entry'][final_array_counter] = tsl_when_pct_from_avg_entry_cart_array[final_array_counter] * 100
 
-                    total_pnl = temp_order_records['real_pnl'][~np.isnan(
-                        temp_order_records['real_pnl'])].sum()
+        final_array_counter += 1
 
-                    # to_the_upside calculation
-                    x = np.arange(1, len(w_l_no_be)+1)
-                    y = w_l_no_be.cumsum()
-
-                    xm = x.mean()
-                    ym = y.mean()
-
-                    y_ym = y - ym
-                    y_ym_s = y_ym**2
-
-                    x_xm = x - xm
-                    x_xm_s = x_xm**2
-
-                    b1 = (x_xm * y_ym).sum() / x_xm_s.sum()
-                    b0 = ym - b1 * xm
-
-                    y_pred = b0 + b1 * x
-
-                    yp_ym = y_pred - ym
-
-                    yp_ym_s = yp_ym**2
-                    to_the_upside = yp_ym_s.sum() / y_ym_s.sum()
-
-                    # df array
-                    df_array['or_set'][df_counter] = temp_order_records['or_set'][0]
-                    df_array['ind_set'][df_counter] = temp_order_records['ind_set'][0]
-                    df_array['total_trades'][df_counter] = w_l.size
-                    df_array['total_BE'][df_counter] = w_l[w_l == 0].size
-                    df_array['gains_pct'][df_counter] = gains_pct
-                    df_array['win_rate'][df_counter] = win_rate
-                    df_array['to_the_upside'][df_counter] = to_the_upside
-                    df_array['total_fees'][df_counter] = np.nancumsum(
-                        temp_order_records['fees_paid'])[-1]
-                    df_array['total_pnl'][df_counter] = total_pnl
-                    df_array['ending_eq'][df_counter] = temp_order_records['equity'][-1]
-
-                    # df cart array
-                    df_cart_array['order_settings_id'][df_counter] = order_settings_counter
-                    df_cart_array['leverage'][df_counter] = leverage_cart_array[order_settings_counter]
-                    df_cart_array['max_equity_risk_pct'][df_counter] = max_equity_risk_pct_cart_array[order_settings_counter] * 100
-                    df_cart_array['max_equity_risk_value'][df_counter] = max_equity_risk_value_cart_array[order_settings_counter]
-                    df_cart_array['risk_rewards'][df_counter] = risk_rewards_cart_array[order_settings_counter]
-                    df_cart_array['size_pct'][df_counter] = size_pct_cart_array[order_settings_counter] * 100
-                    df_cart_array['size_value'][df_counter] = size_value_cart_array[order_settings_counter]
-                    df_cart_array['sl_pcts'][df_counter] = sl_pcts_cart_array[order_settings_counter] * 100
-                    df_cart_array['sl_to_be_based_on'][df_counter] = sl_to_be_based_on_cart_array[order_settings_counter]
-                    df_cart_array['sl_to_be_trail_by_when_pct_from_avg_entry'][
-                        df_counter] = sl_to_be_trail_by_when_pct_from_avg_entry_cart_array[order_settings_counter] * 100
-                    df_cart_array['sl_to_be_when_pct_from_avg_entry'][
-                        df_counter] = sl_to_be_when_pct_from_avg_entry_cart_array[order_settings_counter] * 100
-                    df_cart_array['sl_to_be_zero_or_entry'][df_counter] = sl_to_be_zero_or_entry_cart_array[order_settings_counter]
-                    df_cart_array['tp_pcts'][df_counter] = tp_pcts_cart_array[order_settings_counter] * 100
-                    df_cart_array['tsl_based_on'][df_counter] = tsl_based_on_cart_array[order_settings_counter]
-                    df_cart_array['tsl_pcts_init'][df_counter] = tsl_pcts_init_cart_array[order_settings_counter] * 100
-                    df_cart_array['tsl_trail_by_pct'][df_counter] = tsl_trail_by_cart_array[order_settings_counter] * 100
-                    df_cart_array['tsl_when_pct_from_avg_entry'][df_counter] = tsl_when_pct_from_avg_entry_cart_array[order_settings_counter] * 100
-
-                    df_counter += 1
-            # Gains False
-            else:
-                # order_records[or_filled_start:order_count_id[0]] = np.zeros(order_records[0].size, dtype=or_dt)[0]
-                order_count_id[0] = order_count_id[0] - or_filled_temp[0]
-
-    return df_array[: df_counter], order_records[: order_count_id[0]], df_cart_array[: df_counter]
+    return final_array, order_records

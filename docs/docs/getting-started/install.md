@@ -1,7 +1,12 @@
 # Index Page
 
 ## How to install in cmd line
+
+First you have to install git https://git-scm.com/downloads for windows get the executable and then run it when its done and git command line and also from 3rd party use bundled open ssh and lib ... then use windows default console https://www.youtube.com/watch?v=4xqVv2lTo40
+
 I am using vscode so just create a new terminal and then do the following
+
+if you are using google colab there seems to be an issues with kaleido and i am not sure how you would fix that but i suggest using vscode it is easier
 
 To avoid all types of issues i would suggestion uninstalling anaconda and all of your python installations, unless you know for sure that you need those previous versions for other projects and everything ... or if you are familar with python already and you know what you are doing you can keep them ... but there have been many pathing issues with having different versions and anaconda installed.
 

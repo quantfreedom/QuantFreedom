@@ -38,9 +38,9 @@ __all__ = [
     'StaticVariables',
 
     'or_dt',
-    'df_array_dt',
-    'strat_dt',
-    'cart_array_dt',
+    'strat_df_array_dt',
+    'final_array_dt',
+    'strat_records_dt',
 ]
 
 
@@ -179,20 +179,7 @@ SizeType = SizeTypeT()
 
 # ############# Records ############# #
 
-df_array_dt = np.dtype([
-    ('or_set', np.int_),
-    ('ind_set', np.int_),
-    ('win_rate', np.float_),
-    ('gains_pct', np.float_),
-    ('to_the_upside', np.float_),
-    ('total_trades', np.float_),
-    ('total_BE', np.int_),
-    ('total_fees', np.float_),
-    ('total_pnl', np.float_),
-    ('ending_eq', np.float_),
-], align=True)
-
-strat_array_dt = np.dtype([
+strat_df_array_dt = np.dtype([
     ('or_set', np.int_),
     ('ind_set', np.int_),
     ('total_trades', np.float_),
@@ -204,8 +191,14 @@ strat_array_dt = np.dtype([
 ], align=True)
 
 
-cart_array_dt = np.dtype([
-    ('order_settings_id', np.int_),
+final_array_dt = np.dtype([
+    ('total_trades', np.float_),
+    ('gains_pct', np.float_),
+    ('win_rate', np.float_),
+    ('to_the_upside', np.float_),
+    ('total_pnl', np.float_),
+    ('ending_eq', np.float_),
+    ('settings_id', np.int_),
     ('leverage', np.float_),
     ('max_equity_risk_pct', np.float_),
     ('max_equity_risk_value', np.float_),
@@ -227,7 +220,7 @@ cart_array_dt = np.dtype([
 A numpy array with specific data types that allow you to store specific information about your order result
 """
 
-strat_dt = np.dtype([
+strat_records_dt = np.dtype([
     ('or_set', np.int_),
     ('ind_set', np.int_),
     ('real_pnl', np.float_),
@@ -236,8 +229,7 @@ strat_dt = np.dtype([
 
 or_dt = np.dtype([
     ('order_id', np.int_),
-    ('or_set', np.int_),
-    ('ind_set', np.int_),
+    ('settings_id', np.int_),
     ('bar', np.int_),
     ('size_value', np.float_),
     ('price', np.float_),

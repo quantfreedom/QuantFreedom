@@ -1,3 +1,19 @@
-bank nifty dashboard
-braid filter
-swing arm atr trend
+funding people
+pay to make strat
+teaching python lessons
+discord
+discord updated links
+telegram channel
+telegram group
+
+if size is 1 then reshape to biggest size
+biggest = 0 
+if size bigger than 2 
+    for len of arrays
+        array_size = array .size
+        if array_size > biggest
+            biggest = array_size
+    if all other sizes greater than 2 aren't the same size then have a mis match error
+
+reshape all 1 size to bigger size and fill with value
+np.broadcast_to(np.array(1), 3)

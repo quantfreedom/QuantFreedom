@@ -14,6 +14,7 @@ from quantfreedom._typing import (
     Array1d,
     Array2d,
     PossibleArray,
+    Optional,
 )
 from quantfreedom.backtester.enums.enums import (
     OrderType,
@@ -37,9 +38,6 @@ def check_sl_tp_nb(
 
     indicator_settings_counter: int,
     order_settings_counter: int,
-    order_count_id: Array1d,
-    or_filled_temp: Array1d,
-    order_records: RecordArray,
 
     entry_type: int,
     fee_pct: float,
@@ -47,6 +45,9 @@ def check_sl_tp_nb(
     account_state: AccountState,
     order_result: OrderResult,
     stops_order: StopsOrder,
+    
+    order_records_id: Optional[Array1d] = None,
+    order_records: Optional[RecordArray] = None,
 ):
     # Check SL
     moved_sl_to_be_new = order_result.moved_sl_to_be
@@ -231,8 +232,7 @@ def check_sl_tp_nb(
             indicator_settings_counter=indicator_settings_counter,
             order_records=order_records,
             order_settings_counter=order_settings_counter,
-            order_count_id=order_count_id,
-            or_filled_temp=or_filled_temp,
+            order_records_id=order_records_id,
 
             account_state=account_state,
             order_result=order_result_new,
@@ -249,17 +249,17 @@ def process_order_nb(
 
     indicator_settings_counter: int,
     order_settings_counter: int,
-    order_records: RecordArray,
-    order_count_id: Array1d,
-    or_filled_temp: Array1d,
-
-    strat_records: RecordArray,
-    strat_records_filled: Array1d,
 
     account_state: AccountState,
     entry_order: EntryOrder,
     order_result: OrderResult,
     static_variables: StaticVariables,
+
+    order_records: Optional[RecordArray] = None,
+    order_records_id: Optional[Array1d] = None,
+
+    strat_records: Optional[RecordArray] = None,
+    strat_records_filled: Optional[Array1d] = None,
 ):
     fill_strat = False
     if order_type == OrderType.LongEntry:
@@ -293,7 +293,9 @@ def process_order_nb(
         )
         fill_strat = True
 
-    if fill_strat and order_result_new.order_status == OrderStatus.Filled:
+    if fill_strat and \
+            strat_records is not None and \
+            order_result_new.order_status == OrderStatus.Filled:
         fill_strat_records_nb(
             indicator_settings_counter=indicator_settings_counter,
             order_settings_counter=order_settings_counter,
@@ -309,11 +311,9 @@ def process_order_nb(
         fill_order_records_nb(
             bar=bar,
 
-            indicator_settings_counter=indicator_settings_counter,
             order_records=order_records,
-            order_settings_counter=order_settings_counter,
-            order_count_id=order_count_id,
-            or_filled_temp=or_filled_temp,
+            settings_counter=order_settings_counter,
+            order_records_id=order_records_id,
 
             account_state=account_state_new,
             order_result=order_result_new,
