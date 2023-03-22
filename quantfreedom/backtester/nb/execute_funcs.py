@@ -229,9 +229,8 @@ def check_sl_tp_nb(
         fill_order_records_nb(
             bar=bar,
 
-            indicator_settings_counter=indicator_settings_counter,
             order_records=order_records,
-            order_settings_counter=order_settings_counter,
+            settings_counter=order_settings_counter,
             order_records_id=order_records_id,
 
             account_state=account_state,

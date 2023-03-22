@@ -27,7 +27,7 @@ from quantfreedom.backtester.enums.enums import (
 
 
 @njit(cache=True)
-def simulate_df_only(
+def backtest_df_array_only(
     # entry info
     entries: PossibleArray,
     open_prices: PossibleArray,
