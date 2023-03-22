@@ -12,8 +12,6 @@ from quantfreedom.backtester.nb.sell_funcs import short_increase_nb, short_decre
 from quantfreedom._typing import (
     RecordArray,
     Array1d,
-    Array2d,
-    PossibleArray,
     Optional,
 )
 from quantfreedom.backtester.enums.enums import (
@@ -36,7 +34,6 @@ def check_sl_tp_nb(
     open_price: float,
     close_price: float,
 
-    indicator_settings_counter: int,
     order_settings_counter: int,
 
     entry_type: int,
@@ -45,7 +42,7 @@ def check_sl_tp_nb(
     account_state: AccountState,
     order_result: OrderResult,
     stops_order: StopsOrder,
-    
+
     order_records_id: Optional[Array1d] = None,
     order_records: Optional[RecordArray] = None,
 ):
@@ -319,31 +316,3 @@ def process_order_nb(
         )
 
     return account_state_new, order_result_new
-
-
-@njit(cache=True)
-def to_1d_array_nb(
-    var: PossibleArray
-) -> Array1d:
-    """Resize array to one dimension."""
-    if var.ndim == 0:
-        return np.expand_dims(var, axis=0)
-    if var.ndim == 1:
-        return var
-    if var.ndim == 2 and var.shape[1] == 1:
-        return var[:, 0]
-    raise ValueError("to 1d array problem")
-
-
-@njit(cache=True)
-def to_2d_array_nb(
-    var: PossibleArray,
-    expand_axis: int = 1
-) -> Array2d:
-    if var.ndim == 0:
-        return np.expand_dims(np.expand_dims(var, axis=0), axis=0)
-    if var.ndim == 1:
-        return np.expand_dims(var, axis=expand_axis)
-    if var.ndim == 2:
-        return var
-    raise ValueError("to 2d array problem")

@@ -3,16 +3,15 @@ Testing the tester
 """
 
 import numpy as np
-from numba import literal_unroll, njit
+from numba import njit
 from quantfreedom._typing import PossibleArray, Array1d
-from quantfreedom.backtester.nb.execute_funcs import (
-    process_order_nb,
-    check_sl_tp_nb,
-    to_1d_array_nb,
-)
+from quantfreedom.backtester.nb.helper_funcs import static_var_checker, to_1d_array_nb
+from quantfreedom.backtester.nb.execute_funcs import process_order_nb, check_sl_tp_nb
 from quantfreedom.backtester.enums.enums import (
     final_array_dt,
     or_dt,
+    strat_df_array_dt,
+    strat_records_dt,
 
     LeverageMode,
     OrderType,
@@ -25,6 +24,7 @@ from quantfreedom.backtester.enums.enums import (
     StopsOrder,
     StaticVariables,
 )
+
 
 @njit(cache=True)
 def backtest_df_array_only(
@@ -85,77 +85,26 @@ def backtest_df_array_only(
 ) -> tuple[Array1d, Array1d, Array1d]:
 
     # Static checks
-    if equity < 0 or not np.isfinite(equity):
-        raise ValueError("YOU HAVE NO MONEY!!!! You Broke!!!!")
-
-    if fee_pct < 0 or not np.isfinite(fee_pct):
-        raise ValueError("fee_pct must be finite")
-
-    if mmr < 0 or not np.isfinite(mmr):
-        raise ValueError("mmr must be finite")
-
-    if not np.isfinite(max_lev) or 1 > max_lev > 100:
-        raise ValueError(
-            "max lev has to be between 1 and 100")
-
-    if not np.isfinite(min_order_size_pct) or .01 > min_order_size_pct > 100:
-        raise ValueError(
-            "min_order_size_pct  has to be between .01 and 100")
-
-    if not np.isfinite(max_order_size_pct) or min_order_size_pct > max_order_size_pct > 100:
-        raise ValueError(
-            "max_order_size_pct has to be between min_order_size_pct and 100")
-
-    if not np.isfinite(min_order_size_value) or min_order_size_value < 1:
-        raise ValueError(
-            "min_order_size_value has to be between .01 and 1 min inf")
-
-    if np.isnan(max_order_size_value) or max_order_size_value < min_order_size_value:
-        raise ValueError(
-            "max_order_size_value has to be > min_order_size_value")
-
-    if gains_pct_filter == np.inf:
-        raise ValueError(
-            "gains_pct_filter can't be inf")
-
-    if total_trade_filter < 0 or not np.isfinite(total_trade_filter):
-        raise ValueError(
-            "total_trade_filter needs to be greater than 0")
-
-    if sl_to_be == True and tsl_true_or_false == True:
-        raise ValueError(
-            "You can't have sl_to_be and tsl_true_or_false both be true")
-
-    if sl_to_be != True and sl_to_be != False:
-        raise ValueError(
-            "sl_to_be needs to be true or false")
-
-    if sl_to_be_then_trail != True and sl_to_be_then_trail != False:
-        raise ValueError(
-            "sl_to_be_then_trail needs to be true or false")
-
-    if tsl_true_or_false != True and tsl_true_or_false != False:
-        raise ValueError(
-            "tsl_true_or_false needs to be true or false")
-
-    # Static variables creation
-    og_equity = equity
-    fee_pct /= 100
-    mmr /= 100
-    max_order_size_pct /= 100
-    min_order_size_pct /= 100
-
-    static_variables = StaticVariables(
+    static_variables = static_var_checker(
+        equity=equity,
         fee_pct=fee_pct,
+        mmr=mmr,
         lev_mode=lev_mode,
+        order_type=order_type,
+        size_type=size_type,
         max_lev=max_lev,
         max_order_size_pct=max_order_size_pct,
-        max_order_size_value=max_order_size_value,
         min_order_size_pct=min_order_size_pct,
+        max_order_size_value=max_order_size_value,
         min_order_size_value=min_order_size_value,
-        mmr=mmr,
-        size_type=size_type,
+        sl_to_be=sl_to_be,
+        sl_to_be_then_trail=sl_to_be_then_trail,
+        tsl_true_or_false=tsl_true_or_false,
+        gains_pct_filter=gains_pct_filter,
+        total_trade_filter=total_trade_filter,
     )
+
+    og_equity = equity
 
     # Order Arrays
     leverage_array = to_1d_array_nb(
@@ -437,7 +386,7 @@ def backtest_df_array_only(
         tsl_trail_by_pct_array,
         tsl_when_pct_from_avg_entry_array,
     )
-    
+
     # dtype_names = (
     #     'order_settings_id',
     #     'leverage',
@@ -457,7 +406,7 @@ def backtest_df_array_only(
     #     'tsl_trail_by_pct',
     #     'tsl_when_pct_from_avg_entry',
     # )
-    
+
     # cart array loop
     n = 1
     for x in arrays:
@@ -475,7 +424,7 @@ def backtest_df_array_only(
         m = int(n / arrays[k].size)
         for j in range(1, arrays[k].size):
             out[j*m:(j+1)*m, k+1:] = out[0:m, k+1:]
-            
+
     # # literal unroll
     # counter = 0
     # for dtype_name in literal_unroll(dtype_names):
@@ -500,7 +449,7 @@ def backtest_df_array_only(
     tsl_pcts_init_cart_array = out.T[13]
     tsl_trail_by_cart_array = out.T[14]
     tsl_when_pct_from_avg_entry_cart_array = out.T[15]
-    
+
     # leverage_cart_array = cart_array['leverage']
     # max_equity_risk_pct_cart_array = cart_array['max_equity_risk_pct']
     # max_equity_risk_value_cart_array = cart_array['max_equity_risk_value']
@@ -535,7 +484,7 @@ def backtest_df_array_only(
 
     # Creating strat records
     strat_df_array = np.empty(total_indicator_settings *
-                           total_order_settings, dtype=strat_df_array_dt)
+                              total_order_settings, dtype=strat_df_array_dt)
     strat_arrays_filled = 0
 
     strat_records = np.empty(int(total_bars/1.5), dtype=strat_records_dt)
@@ -634,7 +583,7 @@ def backtest_df_array_only(
                         bar=bar,
                         indicator_settings_counter=indicator_settings_counter,
                         order_settings_counter=order_settings_counter,
-                        
+
                         strat_records=strat_records[strat_records_filled[0]],
                         strat_records_filled=strat_records_filled,
                     )
@@ -655,7 +604,6 @@ def backtest_df_array_only(
                         account_state=account_state,
 
                         bar=bar,
-                        indicator_settings_counter=indicator_settings_counter,
                         order_settings_counter=order_settings_counter,
                     )
                     # process stops
@@ -673,7 +621,7 @@ def backtest_df_array_only(
                             bar=bar,
                             indicator_settings_counter=indicator_settings_counter,
                             order_settings_counter=order_settings_counter,
-                            
+
                             strat_records=strat_records[strat_records_filled[0]],
                             strat_records_filled=strat_records_filled,
                         )
@@ -734,6 +682,7 @@ def backtest_df_array_only(
 
     return strat_df_array[: strat_arrays_filled]
 
+
 @njit(cache=True)
 def simulate_up_to_6(
     # entry info
@@ -792,78 +741,26 @@ def simulate_up_to_6(
     total_trade_filter: int = 0,
 ) -> tuple[Array1d, Array1d, Array1d]:
 
-    # Static checks
-    if equity < 0 or not np.isfinite(equity):
-        raise ValueError("YOU HAVE NO MONEY!!!! You Broke!!!!")
-
-    if fee_pct < 0 or not np.isfinite(fee_pct):
-        raise ValueError("fee_pct must be finite")
-
-    if mmr < 0 or not np.isfinite(mmr):
-        raise ValueError("mmr must be finite")
-
-    if not np.isfinite(max_lev) or 1 > max_lev > 100:
-        raise ValueError(
-            "max lev has to be between 1 and 100")
-
-    if not np.isfinite(min_order_size_pct) or .01 > min_order_size_pct > 100:
-        raise ValueError(
-            "min_order_size_pct  has to be between .01 and 100")
-
-    if not np.isfinite(max_order_size_pct) or min_order_size_pct > max_order_size_pct > 100:
-        raise ValueError(
-            "max_order_size_pct has to be between min_order_size_pct and 100")
-
-    if not np.isfinite(min_order_size_value) or min_order_size_value < 1:
-        raise ValueError(
-            "min_order_size_value has to be between .01 and 1 min inf")
-
-    if np.isnan(max_order_size_value) or max_order_size_value < min_order_size_value:
-        raise ValueError(
-            "max_order_size_value has to be > min_order_size_value")
-
-    if gains_pct_filter == np.inf:
-        raise ValueError(
-            "gains_pct_filter can't be inf")
-
-    if total_trade_filter < 0 or not np.isfinite(total_trade_filter):
-        raise ValueError(
-            "total_trade_filter needs to be greater than 0")
-
-    if sl_to_be == True and tsl_true_or_false == True:
-        raise ValueError(
-            "You can't have sl_to_be and tsl_true_or_false both be true")
-
-    if sl_to_be != True and sl_to_be != False:
-        raise ValueError(
-            "sl_to_be needs to be true or false")
-
-    if sl_to_be_then_trail != True and sl_to_be_then_trail != False:
-        raise ValueError(
-            "sl_to_be_then_trail needs to be true or false")
-
-    if tsl_true_or_false != True and tsl_true_or_false != False:
-        raise ValueError(
-            "tsl_true_or_false needs to be true or false")
-
-    # Static variables creation
-    og_equity = equity
-    fee_pct /= 100
-    mmr /= 100
-    max_order_size_pct /= 100
-    min_order_size_pct /= 100
-
-    static_variables = StaticVariables(
+    # Static checks & create
+    static_variables = static_var_checker(
+        equity=equity,
         fee_pct=fee_pct,
+        mmr=mmr,
         lev_mode=lev_mode,
+        order_type=order_type,
+        size_type=size_type,
         max_lev=max_lev,
         max_order_size_pct=max_order_size_pct,
-        max_order_size_value=max_order_size_value,
         min_order_size_pct=min_order_size_pct,
+        max_order_size_value=max_order_size_value,
         min_order_size_value=min_order_size_value,
-        mmr=mmr,
-        size_type=size_type,
+        sl_to_be=sl_to_be,
+        sl_to_be_then_trail=sl_to_be_then_trail,
+        tsl_true_or_false=tsl_true_or_false,
+        gains_pct_filter=gains_pct_filter,
+        total_trade_filter=total_trade_filter,
     )
+    og_equity = equity
 
     # Order Arrays
     leverage_array = to_1d_array_nb(
@@ -1001,10 +898,6 @@ def simulate_up_to_6(
     if not np.isnan(size_value_array).any() and not np.isnan(size_pct_array).any():
         raise ValueError(
             "You can't have size and size pct set at the same time.")
-
-    # simple check if order size type is valid
-    if 0 > order_type > len(OrderType) or not np.isfinite(order_type):
-        raise ValueError("order_type is invalid")
 
     # Getting the right size for Size Type Amount
     if size_type == SizeType.Amount:
@@ -1181,7 +1074,6 @@ def simulate_up_to_6(
     tsl_when_pct_from_avg_entry_cart_array = np.broadcast_to(
         broad_array[15], biggest)
 
-
     if entries.shape[1] == 1:
         entries = np.broadcast_to(entries.T, (biggest, entries.shape[0]))
     elif entries.shape[1] != biggest:
@@ -1190,7 +1082,7 @@ def simulate_up_to_6(
     total_bars = open_prices.shape[0]
 
     broad_array = 0
-    
+
     # Record Arrays
     final_array = np.empty(biggest, dtype=final_array_dt)
     final_array_counter = 0
@@ -1198,7 +1090,6 @@ def simulate_up_to_6(
     order_records = np.empty(total_bars * 2, dtype=or_dt)
     order_records_id = np.array([0])
     or_filled_start = 0
-    
 
     # order settings loops
     for settings_counter in range(biggest):
@@ -1260,7 +1151,7 @@ def simulate_up_to_6(
             tsl_pcts_init=0.,
             tsl_prices=0.,
         )
-        
+
         current_indicator_entries = entries[settings_counter]
 
         # entries loop
@@ -1307,7 +1198,6 @@ def simulate_up_to_6(
                     order_records_id=order_records_id,
 
                     bar=bar,
-                    indicator_settings_counter=settings_counter,
                     order_settings_counter=settings_counter,
                 )
                 # process stops
@@ -1334,10 +1224,10 @@ def simulate_up_to_6(
         temp_order_records = order_records[or_filled_start:order_records_id[0]]
         or_filled_start = order_records_id[0]
         gains_pct = ((account_state.equity - og_equity) / og_equity) * 100
-        
+
         w_l = temp_order_records['real_pnl'][~np.isnan(
             temp_order_records['real_pnl'])]
-        
+
         w_l_no_be = w_l[w_l != 0]  # filter out all BE trades
 
         # win rate calc
