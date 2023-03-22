@@ -1,0 +1,8 @@
+talib rsi
+    r prices
+    kwargs timeperiod = [12,20]
+    price = 'low'
+
+contact with the following
+input_names
+parameters

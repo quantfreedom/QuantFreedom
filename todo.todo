@@ -1,8 +1,5 @@
 Currently Working On:
-    ☐ Does disabling cache=True in your application change anything?
-    ☐ update release notes
-    ☐ update feature notes
-    ☐ merge dev into main
+    ☐ create help function for from_talib abstract.Function('rsi')
 
 Next Verson:
     ☐ create cart calc where the person can just copy paste their settings and get the number back as well as the number of cart times the number of ind settings ... then also include a number for total bars tested times number of order settings times number of ind settings make it a helper function because it will just print the results as the return
@@ -17,6 +14,7 @@ Python course:
 
 Numba:
     ☐ see if you can repurpose cart array when using numba for df cart array
+    ☐ Does disabling cache=True in your application change anything?
 
 TODOs:
     ☐ make replay_trade_plotter work with order records
