@@ -1,8 +1,13 @@
-talib rsi
-    r prices
-    kwargs timeperiod = [12,20]
-    price = 'low'
+list len of things being returned
+    for x in list length
+        x[0] = pd.Dataframe()
 
-contact with the following
-input_names
-parameters
+for asdf the len of things being returned 
+    temp_def = getattrib(Function, thing returned[0])
+    temp_df.columns = pd.MultiIndex.from_product(
+                list(ind_settings_tup),
+                names=list(info['parameters'].keys())
+            )
+    concat(x[asdf], temp_def)
+
+create dictionary with keys and dataframe as values
