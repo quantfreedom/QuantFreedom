@@ -3,11 +3,12 @@ Currently Working On:
     ✔ create cart or comb based on users input @done(23-03-23 12:50)
     ✔ create for loop that runs through the selected ind multiple times @done(23-03-23 12:51)
     ✔ create dataframe with multiple columns for talib @done(23-03-24 11:34)
-    ☐ build is below function for evaluators
-    ☐ 
+    ✔ create help function for from_talib abstract.Function('rsi') @done(23-03-24 13:14)
+    ✔ build is below function for evaluators @done(23-03-24 14:07)
+    ☐ make it so that i can get true false based on being above ema and below rsi
+    ☐ check order records because there is tons of zeros that show up at the end
     ☐ in talib make it so that you add to list not append 
-    ☐ create help function for from_talib abstract.Function('rsi')
-    ☐ make sure all values if cart are unique
+    ☐ make sure all values in cart are unique
     ☐ for prices code check if list of lists or if only string req check if list
 
 Next Verson:
@@ -29,6 +30,11 @@ TODOs:
     ☐ make replay_trade_plotter work with order records
     ☐ make it so leverage goes to 100 when sl or tsl moves past entry and liq price is maxed out
     ☐ figure out a way to filter the true and false for stops and trails
+    ☐ allow for different fees for different coins
+    ☐ create a slippage function thing that is a random number gen between something and something and then let the user to set a random slippage percent when the random num gets hit
+    ☐ after you get your true and false entry and exit signals allow them to create an array of slippage associated with 
+    ☐ add back in slippage that auto adds slippage at a small slippage to all trades
+    ☐ slipage should be plus minus
 
 Other Users Needed:
     ☐ check on seeing if the deletion of numba cache works on other peoples comps
