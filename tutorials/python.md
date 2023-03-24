@@ -19,6 +19,14 @@ list
 
     turn a list into a dictionary https://builtin.com/software-engineering-perspectives/convert-list-to-dictionary-python
 
+    append to list without chaning the original list
+    https://stackoverflow.com/questions/35608790/how-to-add-new-value-to-a-list-without-using-append-and-then-store-the-value
+    ['yo'] + param_keys + ['hey']
+
+    get specific part of a string python
+    https://stackoverflow.com/questions/27387415/how-would-i-get-everything-before-a-in-a-string-python
+    param_keys[0].split('_')[0] returns rsi
+
 How to open a URL in python
 https://stackoverflow.com/questions/4302027/how-to-open-a-url-in-python
 

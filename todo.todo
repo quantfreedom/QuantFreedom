@@ -2,8 +2,10 @@ Currently Working On:
     ✔ check user kwargs for default inputs for each talib indicator dynamicly @done(23-03-23 08:49)
     ✔ create cart or comb based on users input @done(23-03-23 12:50)
     ✔ create for loop that runs through the selected ind multiple times @done(23-03-23 12:51)
-    ☐ create dataframe with multiple columns
-        ☐ test things with no params
+    ✔ create dataframe with multiple columns for talib @done(23-03-24 11:34)
+    ☐ build is below function for evaluators
+    ☐ 
+    ☐ in talib make it so that you add to list not append 
     ☐ create help function for from_talib abstract.Function('rsi')
     ☐ make sure all values if cart are unique
     ☐ for prices code check if list of lists or if only string req check if list

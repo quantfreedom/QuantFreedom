@@ -15,6 +15,7 @@ from quantfreedom.backtester.base import *
 from quantfreedom.backtester.enums import *
 from quantfreedom.backtester.nb import *
 from quantfreedom.backtester.indicators import *
+from quantfreedom.backtester.evaluators import *
 
 # silence NumbaExperimentalFeatureWarning
 import warnings
