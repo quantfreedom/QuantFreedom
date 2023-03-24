@@ -18,3 +18,9 @@ list
         https://stackoverflow.com/questions/17911091/append-integer-to-beginning-of-list-in-python
 
     turn a list into a dictionary https://builtin.com/software-engineering-perspectives/convert-list-to-dictionary-python
+
+How to open a URL in python
+https://stackoverflow.com/questions/4302027/how-to-open-a-url-in-python
+
+itertools cart product
+        final_user_args = np.array(list(product(*users_args_list))).T
