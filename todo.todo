@@ -1,8 +1,7 @@
 Currently Working On:
-    ☐ instead of creating a df every for loop finish and then concat just concat to a lsit of tuples then at the end throw the finished array into a df and then put the multindex column list of tuples with names and it should work ... do this for both talib and evals
-    ☐ have it so the user sends the prices df and then the cand ohlc then you do the get atr thing so you can do prices.close or prices.open
+    ✔ make one dataframe returned for out names so loop through 1 out name at a time @done(23-03-25 10:32)
+    ✔ in talib make it so that you add to list not append @done(23-03-25 10:33)
     ☐ check order records because there is tons of zeros that show up at the end
-    ☐ in talib make it so that you add to list not append 
     ☐ make sure all values in cart are unique
     ☐ for prices code check if list of lists or if only string req check if list
 
@@ -40,6 +39,10 @@ Would Be Nice:
     ☐ send pct change of position in order result when decreasing or increaseing position size
 
 Archive:
+  ✔ have it so the user sends the prices df and then the cand ohlc then you do the get atr thing so you can do prices.close or prices.open @done(23-03-25 08:15)
+  ✔ look into checkign whole array against 1 number and returning true or false and not doing a for loop @done(23-03-25 08:09)
+  ✔ instead of creating a df every for loop finish and then concat just concat to a lsit of tuples then at the end throw the finished array into a df and then put the multindex column list of tuples with names and it should work ... do this for both talib and evals @done(23-03-25 08:08)
+  ✔ look into checking the whole array against the whole array for np.where then returning true or false @done(23-03-25 08:09)
   ✔ make it so that i can get true false based on being above ema and below rsi @done(23-03-24 20:38)
   ✔ create help function for from_talib abstract.Function('rsi') @done(23-03-24 13:14)
   ✔ build is below function for evaluators @done(23-03-24 14:07)

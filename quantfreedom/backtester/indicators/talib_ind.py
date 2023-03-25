@@ -5,8 +5,9 @@ from talib.abstract import Function
 from talib import get_functions
 from itertools import product
 from quantfreedom._typing import (
-   pdFrame
+    pdFrame
 )
+
 
 def from_talib(
     func_name: str,
@@ -14,7 +15,7 @@ def from_talib(
     cart_product: bool,
     combos: bool,
     **kwargs,
-)-> pdFrame:
+) -> pdFrame:
     users_args_list = []
     biggest = 1
     indicator_info = Function(func_name).info
@@ -130,7 +131,7 @@ def from_talib(
     if biggest == 1 and (combos or cart_product):
         raise ValueError(
             f'You have to have a list for paramaters {ind_params} to use cart product or combos')
-    
+
     elif combos:
         final_user_args = []
         for x in users_args_list:
@@ -139,126 +140,105 @@ def from_talib(
             else:
                 final_user_args.append(x)
         final_user_args = tuple(final_user_args)
-    
+
     elif cart_product:
         final_user_args = np.array(list(product(*users_args_list))).T
-    
+
     else:
         final_user_args = tuple(users_args_list)
 
     ind_settings_tup = ()
+    pd_multind_tuples = ()
     ind_setings_len = final_user_args[0].size
-    final_df = {}
-    param_keys = ind_params.copy()
-    
+    param_keys = [ind_name + '_' + x for x in ind_params]
+    output_names_len = len(output_names)
+
     if len(output_names) > 1:
-        final_df = {}
-        for o_names in output_names:
-            final_df[o_names] = pd.DataFrame()
-    else:
-        final_df = pd.DataFrame()
+        final_array = np.empty((df_prices.shape[0], ind_setings_len * output_names_len))
+        param_keys = [ind_name + '_output_names'] + param_keys
+        # these are the names called by the fun like talib('rsi').real - real is the output name
+        counter = 0
+        for out_name in output_names:
+            # c is the indicator result of the array within the tuple (array[x], array[x])
+            for c in range(ind_setings_len):
+                # x is the array object in the tuple (x,x)
+                for x in final_user_args:
+                    if type(x[c]) == np.int_:
+                        ind_settings_tup = ind_settings_tup + (int(x[c]),)
+                    if type(x[c]) == np.float_:
+                        ind_settings_tup = ind_settings_tup + (float(x[c]),)
 
-    # c is the indicator result of the array within the tuple (array[x], array[x])
-    for c in range(ind_setings_len):
-        # x is the array object in the tuple (x,x)
-        for x in final_user_args:
-            if type(x[c]) == np.int_:
-                ind_settings_tup = ind_settings_tup + (int(x[c]),)
-            if type(x[c]) == np.float_:
-                ind_settings_tup = ind_settings_tup + (float(x[c]),)
-
-        if in_names_key == 'price':
-            # these are the names called by the fun like talib('rsi').real - real is the output name
-            if len(output_names) > 1:
-                param_keys = [ind_name + '_' + x for x in param_keys] 
-                for out_name in output_names:
-                    # setting temp df of result out name
-                    temp_df = Function(func_name)(
+                if in_names_key == 'price':
+                    final_array[:, counter] = Function(func_name)(
                         df_prices,
                         *ind_settings_tup,
                         price=input_names_dict[in_names_key]
-                    )[out_name].to_frame()
+                    )[out_name].values
 
-                    # creating multindex for new results
-                    temp_df.columns = pd.MultiIndex.from_tuples(
-                        [ind_settings_tup],
-                        names=param_keys
-                    )
-                    # param_keys = ind_params.copy()
-                    # param_keys.insert(0, out_name + '_count')
-                    # temp_df.columns = pd.MultiIndex.from_tuples(
-                    #     [(c,) + ind_settings_tup],
-                    #     names=param_keys
-                    # )
-
-                    # getting df from within list and concating to it
-                    final_df[out_name] = pd.concat(
-                        [final_df[out_name], temp_df], axis=1)
-            else:
-                # setting temp df of result out name
-                temp_df = Function(func_name)(
-                    df_prices,
-                    *ind_settings_tup,
-                    price=input_names_dict[in_names_key]
-                ).to_frame()
-
-                # creating multindex for new results
-                temp_df.columns = pd.MultiIndex.from_tuples(
-                        [ind_settings_tup],
-                        names=[ind_name + '_' + param_keys[0]]
-                    )
-
-                # getting df from within list and concating to it
-                final_df = pd.concat(
-                    [final_df, temp_df], axis=1)
-
-        elif in_names_key == 'prices':
-            # these are the names called by the fun like talib('rsi').real - real is the output name
-            if len(output_names) > 1:
-                param_keys = [ind_name + '_' + x for x in param_keys] 
-                for out_name in output_names:
-                    # setting temp df of result out name
-                    temp_df = Function(func_name)(
+                    pd_multind_tuples = pd_multind_tuples + ((out_name,) + ind_settings_tup,)
+                elif in_names_key == 'prices':
+                    final_array[:, counter] = Function(func_name)(
                         df_prices,
                         *ind_settings_tup,
                         prices=input_names_dict[in_names_key]
-                    )[out_name].to_frame()
+                    )[out_name].values
 
-                    # creating multindex for new results
-                    temp_df.columns = pd.MultiIndex.from_tuples(
-                        [ind_settings_tup],
-                        names=param_keys
-                    )
+                    pd_multind_tuples = pd_multind_tuples + ((out_name,) + ind_settings_tup,)
 
-                    # getting df from within list and concating to it
-                    final_df[out_name] = pd.concat(
-                        [final_df[out_name], temp_df], axis=1)
-            else:
-                # setting temp df of result out name
-                temp_df = Function(func_name)(
+                ind_settings_tup = ()
+                counter+=1
+            
+    elif len(output_names) == 1:
+        final_array = np.empty((df_prices.shape[0], ind_setings_len))
+        counter = 0
+        for c in range(ind_setings_len):
+            # x is the array object in the tuple (x,x)
+            for x in final_user_args:
+                if type(x[c]) == np.int_:
+                    ind_settings_tup = ind_settings_tup + (int(x[c]),)
+                if type(x[c]) == np.float_:
+                    ind_settings_tup = ind_settings_tup + (float(x[c]),)
+
+            if in_names_key == 'price':
+                final_array[:, counter] = Function(func_name)(
+                    df_prices,
+                    *ind_settings_tup,
+                    price=input_names_dict[in_names_key]
+                ).values
+
+                pd_multind_tuples = pd_multind_tuples + (ind_settings_tup,)
+            elif in_names_key == 'prices':
+                final_array[:, counter] = Function(func_name)(
                     df_prices,
                     *ind_settings_tup,
                     prices=input_names_dict[in_names_key]
-                ).to_frame()
+                ).values
 
-                # creating multindex for new results
-                temp_df.columns = pd.MultiIndex.from_tuples(
-                        [ind_settings_tup],
-                        names=[ind_name + '_' + param_keys[0]]
-                    )
+                pd_multind_tuples = pd_multind_tuples + (ind_settings_tup,)
 
-                # getting df from within list and concating to it
-                final_df = pd.concat(
-                    [final_df, temp_df], axis=1)
+            ind_settings_tup = ()
+            counter +=1
+    
+    else:
+        raise ValueError("Something is wrong with the output name length")
 
-        ind_settings_tup = ()
-    return final_df
+    return pd.DataFrame(
+        final_array,
+        index=df_prices.index,
+        columns=pd.MultiIndex.from_tuples(
+            tuples=list(pd_multind_tuples),
+            names=param_keys,
+        )
+    )
+
 
 def talib_ind_info(func_name: str):
     return Function(func_name).info
 
+
 def talib_func_list_website_link():
     print("https://ta-lib.github.io/ta-lib-python/funcs.html")
-    
+
+
 def talib_list_of_indicators():
     return get_functions()
