@@ -20,7 +20,9 @@ setup(
     install_requires=[
         'autopep8',
         'ccxt',
+        'dash',
         'ipywidgets==7.7.2',
+        'jupyter-dash',
         'jupyterlab-widgets==1.1.1',
         'kaleido==0.1.0post1',
         'mypy_extensions',
@@ -29,11 +31,10 @@ setup(
         'numba>=0.56.0; python_version >= "3.10"',
         'numpy>=1.16.5',
         'pandas',
-        'plotly>=4.12.0',
         'polars',
         'pyarrow',
+        'pybit',
         'typing_extensions; python_version < "3.8"',
-        'vectorbt',
     ],
     extras_require={
         'web': [
@@ -67,6 +68,7 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
         'Operating System :: OS Independent',
         'Intended Audience :: Science/Research',
         'Topic :: Software Development',

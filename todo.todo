@@ -1,6 +1,7 @@
 Currently Working On:
     ✔ make one dataframe returned for out names so loop through 1 out name at a time @done(23-03-25 10:32)
     ✔ in talib make it so that you add to list not append @done(23-03-25 10:33)
+    ☐ do enumerate where nececarry for count, value in enumerate(list(rsi_ind.columns)):
     ☐ check order records because there is tons of zeros that show up at the end
     ☐ make sure all values in cart are unique
     ☐ for prices code check if list of lists or if only string req check if list
