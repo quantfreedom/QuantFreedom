@@ -1,11 +1,6 @@
 Currently Working On:
-    ✔ check user kwargs for default inputs for each talib indicator dynamicly @done(23-03-23 08:49)
-    ✔ create cart or comb based on users input @done(23-03-23 12:50)
-    ✔ create for loop that runs through the selected ind multiple times @done(23-03-23 12:51)
-    ✔ create dataframe with multiple columns for talib @done(23-03-24 11:34)
-    ✔ create help function for from_talib abstract.Function('rsi') @done(23-03-24 13:14)
-    ✔ build is below function for evaluators @done(23-03-24 14:07)
-    ☐ make it so that i can get true false based on being above ema and below rsi
+    ☐ instead of creating a df every for loop finish and then concat just concat to a lsit of tuples then at the end throw the finished array into a df and then put the multindex column list of tuples with names and it should work ... do this for both talib and evals
+    ☐ have it so the user sends the prices df and then the cand ohlc then you do the get atr thing so you can do prices.close or prices.open
     ☐ check order records because there is tons of zeros that show up at the end
     ☐ in talib make it so that you add to list not append 
     ☐ make sure all values in cart are unique
@@ -16,7 +11,6 @@ Next Verson:
     ☐ create base func that takes 1 set of settings and reutnrs the order record infor necessary to make an octobot like report in a new window https://raw.githubusercontent.com/Drakkar-Software/OctoBot-Pro/assets/images/report_1.jpg
     ☐ create base that returns entry settings using vbt indicator creation thing
     ☐ once new window then make it so you can select from a max of 5 or 10 different reports
-
 
 Python course:
     ☐ watch some courses and make simple 1 or 2 min vids on the topic
@@ -46,6 +40,13 @@ Would Be Nice:
     ☐ send pct change of position in order result when decreasing or increaseing position size
 
 Archive:
+  ✔ make it so that i can get true false based on being above ema and below rsi @done(23-03-24 20:38)
+  ✔ create help function for from_talib abstract.Function('rsi') @done(23-03-24 13:14)
+  ✔ build is below function for evaluators @done(23-03-24 14:07)
+  ✔ create for loop that runs through the selected ind multiple times @done(23-03-23 12:51)
+  ✔ create dataframe with multiple columns for talib @done(23-03-24 11:34)
+  ✔ check user kwargs for default inputs for each talib indicator dynamicly @done(23-03-23 08:49)
+  ✔ create cart or comb based on users input @done(23-03-23 12:50)
   ✔ fix simulate from signals @done(23-03-22 09:30)
   ✔ make data frame return only function @done(23-03-20 19:57)
   ✔ make a work around for cart array numba @done(23-03-19 18:46)

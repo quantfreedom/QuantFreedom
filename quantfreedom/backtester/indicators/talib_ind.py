@@ -149,6 +149,7 @@ def from_talib(
     ind_settings_tup = ()
     ind_setings_len = final_user_args[0].size
     final_df = {}
+    param_keys = ind_params.copy()
     
     if len(output_names) > 1:
         final_df = {}
@@ -169,6 +170,7 @@ def from_talib(
         if in_names_key == 'price':
             # these are the names called by the fun like talib('rsi').real - real is the output name
             if len(output_names) > 1:
+                param_keys = [ind_name + '_' + x for x in param_keys] 
                 for out_name in output_names:
                     # setting temp df of result out name
                     temp_df = Function(func_name)(
@@ -178,12 +180,16 @@ def from_talib(
                     )[out_name].to_frame()
 
                     # creating multindex for new results
-                    param_keys = ind_params.copy()
-                    param_keys.insert(0, out_name + '_count')
                     temp_df.columns = pd.MultiIndex.from_tuples(
-                        [(c,) + ind_settings_tup],
+                        [ind_settings_tup],
                         names=param_keys
                     )
+                    # param_keys = ind_params.copy()
+                    # param_keys.insert(0, out_name + '_count')
+                    # temp_df.columns = pd.MultiIndex.from_tuples(
+                    #     [(c,) + ind_settings_tup],
+                    #     names=param_keys
+                    # )
 
                     # getting df from within list and concating to it
                     final_df[out_name] = pd.concat(
@@ -197,12 +203,10 @@ def from_talib(
                 ).to_frame()
 
                 # creating multindex for new results
-                param_keys = ind_params.copy()
-                param_keys.insert(0, ind_name + '_count')
                 temp_df.columns = pd.MultiIndex.from_tuples(
-                    [(c,) + ind_settings_tup],
-                    names=param_keys
-                )
+                        [ind_settings_tup],
+                        names=[ind_name + '_' + param_keys[0]]
+                    )
 
                 # getting df from within list and concating to it
                 final_df = pd.concat(
@@ -211,6 +215,7 @@ def from_talib(
         elif in_names_key == 'prices':
             # these are the names called by the fun like talib('rsi').real - real is the output name
             if len(output_names) > 1:
+                param_keys = [ind_name + '_' + x for x in param_keys] 
                 for out_name in output_names:
                     # setting temp df of result out name
                     temp_df = Function(func_name)(
@@ -220,10 +225,8 @@ def from_talib(
                     )[out_name].to_frame()
 
                     # creating multindex for new results
-                    param_keys = ind_params.copy()
-                    param_keys.insert(0, out_name + '_count')
                     temp_df.columns = pd.MultiIndex.from_tuples(
-                        [(c,) + ind_settings_tup],
+                        [ind_settings_tup],
                         names=param_keys
                     )
 
@@ -239,12 +242,10 @@ def from_talib(
                 ).to_frame()
 
                 # creating multindex for new results
-                param_keys = ind_params.copy()
-                param_keys.insert(0, ind_name + '_count')
                 temp_df.columns = pd.MultiIndex.from_tuples(
-                    [(c,) + ind_settings_tup],
-                    names=param_keys
-                )
+                        [ind_settings_tup],
+                        names=[ind_name + '_' + param_keys[0]]
+                    )
 
                 # getting df from within list and concating to it
                 final_df = pd.concat(

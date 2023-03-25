@@ -32,3 +32,19 @@ https://stackoverflow.com/questions/4302027/how-to-open-a-url-in-python
 
 itertools cart product
         final_user_args = np.array(list(product(*users_args_list))).T
+
+if statement one line
+'Yes' if fruit == 'Apple' else 'No'
+https://stackoverflow.com/questions/2802726/putting-a-simple-if-then-else-statement-on-one-line
+
+How to test multiple variables for equality against a single value?
+and test one variable against multiple values
+https://stackoverflow.com/questions/15112125/how-to-test-multiple-variables-for-equality-against-a-single-value
+if tester.lower() in ('open', 'high', 'low', 'close'):
+if tester.lower() not in ('open', 'high', 'low', 'close'):
+
+capitalize upper lowercase str or list
+.upper .lower .capitialize
+
+list comprehension for loop 
+param_keys = [ind_name + '_' + x for x in param_keys] 
