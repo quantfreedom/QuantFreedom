@@ -2,7 +2,9 @@ Currently Working On:
     ✔ make one dataframe returned for out names so loop through 1 out name at a time @done(23-03-25 10:32)
     ✔ in talib make it so that you add to list not append @done(23-03-25 10:33)
     ✔ check order records because there is tons of zeros that show up at the end @done(23-03-25 20:01)
-    ☐ make it so that talib can take in atr data and process it
+    ✔ make it so that talib can take in atr data and process it with combos @done(23-03-26 13:53)
+    ☐ check all numba stuff
+    ☐ do a check to make sure user isn't sending prices or price if they are sending user in df
     ☐ add order order records based on clicking tab of settings 1 2 or 3
     ☐ do enumerate where nececarry for count, value in enumerate(list(rsi_ind.columns)):
     ☐ make sure all values in cart are unique

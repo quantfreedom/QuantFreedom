@@ -5,19 +5,34 @@ from talib.abstract import Function
 from talib import get_functions
 from itertools import product
 from quantfreedom._typing import (
-    pdFrame, Optional, Array1d
+    pdFrame, Optional, pdSeries
 )
 
 
 def from_talib(
     func_name: str,
-    df_prices: Optional[pdFrame],
-    user_ind_values: Optional[Array1d],
     cart_product: bool,
     combos: bool,
+    df_prices: Optional[pdFrame] = None,
+    user_ind_df: Optional[pdFrame] = None,
     **kwargs,
 ) -> pdFrame:
-    
+
+    if all(x is None for x in (df_prices, user_ind_df)):
+        raise ValueError(
+            f"You need to send either a dataframe of prices 'df_prices' or a dataframe with multindexed values 'user_ind_df'")
+    elif all(x is not None for x in (df_prices, user_ind_df)):
+        raise ValueError(
+            f"You can't send both prices and values ... please pick one or the other")
+    elif not isinstance(user_ind_df, pdFrame) and user_ind_df is not None or \
+        not isinstance(df_prices, pdFrame) and df_prices is not None:
+        raise ValueError(
+            f"You must send this as a pandas dataframe")
+    elif isinstance(user_ind_df, pdFrame):
+        pd_index = user_ind_df.index
+    elif isinstance(df_prices, pdFrame):
+        pd_index = df_prices.index
+
     users_args_list = []
     biggest = 1
     indicator_info = Function(func_name).info
@@ -105,7 +120,7 @@ def from_talib(
                     elif isinstance(kwarg_values, list):
                         if cart_product == False and combos == False and len(indicator_info['parameters']) > 1:
                             raise ValueError(
-                                f"you can't have list(s) as args with indicators that have mutiple params without doing a combo or cart product")
+                                f"you can't have list(s) as args when the {func_name} has mutiple params without doing a combo or cart product")
                         if not all(isinstance(x, (int, float)) for x in kwarg_values):
                             raise ValueError(
                                 f'{param_names_key} your list has to be filled with ints or floats')
@@ -132,7 +147,7 @@ def from_talib(
 
     if biggest == 1 and (combos or cart_product):
         raise ValueError(
-            f'You have to have a list for paramaters {ind_params} to use cart product or combos')
+            f'You have to have a list for paramaters for {ind_params} to use cart product or combos')
 
     elif combos:
         final_user_args = []
@@ -154,14 +169,105 @@ def from_talib(
     ind_setings_len = final_user_args[0].size
     param_keys = [ind_name + '_' + x for x in ind_params]
     output_names_len = len(output_names)
-
-    if len(output_names) > 1:
-        final_array = np.empty((df_prices.shape[0], ind_setings_len * output_names_len))
-        param_keys = [ind_name + '_output_names'] + param_keys
-        # these are the names called by the fun like talib('rsi').real - real is the output name
+    
+    # sending indicator data as the data you want to work with
+    if user_ind_df is not None:        
         counter = 0
-        for out_name in output_names:
-            # c is the indicator result of the array within the tuple (array[x], array[x])
+        user_ind_settings = tuple(user_ind_df.columns)
+        user_ind_values = user_ind_df.values
+        user_ind_names = list(user_ind_df.columns.names)
+        # param_keys = param_keys + user_ind_names
+        param_keys = user_ind_names + param_keys
+        final_array = np.empty(
+            (user_ind_df.shape[0],
+             ind_setings_len * output_names_len * user_ind_df.shape[1]))
+        if len(output_names) > 1:
+            param_keys = [ind_name + '_output_names'] + param_keys
+
+            # these are the names called by the fun like talib('rsi').real - real is the output name
+            for out_count, out_name in enumerate(output_names):
+                for col in range(user_ind_values.shape[1]):
+                    # c is the indicator result of the array within the tuple (array[x], array[x])
+                    for c in range(ind_setings_len):
+                        # x is the array object in the tuple (x,x)
+                        for x in final_user_args:
+                            if type(x[c]) == np.int_:
+                                ind_settings_tup = ind_settings_tup + (int(x[c]),)
+                            if type(x[c]) == np.float_:
+                                ind_settings_tup = ind_settings_tup + \
+                                    (float(x[c]),)
+                        final_array[:, counter] = Function(func_name)(
+                            user_ind_values[:, col],
+                            *ind_settings_tup,
+                        )[out_count]
+                        pd_multind_tuples = pd_multind_tuples + \
+                            ((out_name,) + user_ind_settings[col] + ind_settings_tup,)
+                        counter += 1
+                        ind_settings_tup = ()
+        elif len(output_names) == 1:
+            for col in range(user_ind_values.shape[1]):
+                # c is the indicator result of the array within the tuple (array[x], array[x])
+                for c in range(ind_setings_len):
+                    # x is the array object in the tuple (x,x)
+                    for x in final_user_args:
+                        if type(x[c]) == np.int_:
+                            ind_settings_tup = ind_settings_tup + (int(x[c]),)
+                        if type(x[c]) == np.float_:
+                            ind_settings_tup = ind_settings_tup + \
+                                (float(x[c]),)
+                    final_array[:, counter] = Function(func_name)(
+                        user_ind_values[:, col],
+                        *ind_settings_tup,
+                    )
+                    pd_multind_tuples = pd_multind_tuples + (user_ind_settings[col] + ind_settings_tup,)
+                    counter += 1
+                    ind_settings_tup = ()
+
+        else:
+            raise ValueError("Something is wrong with the output name length for user ind data")
+    
+    # sending price data as your data to work with
+    else:
+        final_array = np.empty((df_prices.shape[0], ind_setings_len * output_names_len))
+        if output_names_len > 1:
+            param_keys = [ind_name + '_output_names'] + param_keys
+
+            # these are the names called by the fun like talib('rsi').real - real is the output name
+            counter = 0
+            for out_name in output_names:
+                # c is the indicator result of the array within the tuple (array[x], array[x])
+                for c in range(ind_setings_len):
+                    # x is the array object in the tuple (x,x)
+                    for x in final_user_args:
+                        if type(x[c]) == np.int_:
+                            ind_settings_tup = ind_settings_tup + (int(x[c]),)
+                        if type(x[c]) == np.float_:
+                            ind_settings_tup = ind_settings_tup + (float(x[c]),)
+                    if in_names_key == 'price':
+                        final_array[:, counter] = Function(func_name)(
+                            df_prices.squeeze(),
+                            *ind_settings_tup,
+                            price=input_names_dict[in_names_key]
+                        )[out_name]
+
+                        pd_multind_tuples = pd_multind_tuples + \
+                            ((out_name,) + ind_settings_tup,)
+                    elif in_names_key == 'prices':
+                        final_array[:, counter] = Function(func_name)(
+                            df_prices.squeeze(),
+                            *ind_settings_tup,
+                            prices=input_names_dict[in_names_key]
+                        )[out_name]
+
+                        pd_multind_tuples = pd_multind_tuples + \
+                            ((out_name,) + ind_settings_tup,)
+
+                    ind_settings_tup = ()
+                    counter += 1
+
+        elif output_names_len == 1:
+            counter = 0
+            
             for c in range(ind_setings_len):
                 # x is the array object in the tuple (x,x)
                 for x in final_user_args:
@@ -169,70 +275,38 @@ def from_talib(
                         ind_settings_tup = ind_settings_tup + (int(x[c]),)
                     if type(x[c]) == np.float_:
                         ind_settings_tup = ind_settings_tup + (float(x[c]),)
-
+                
                 if in_names_key == 'price':
                     final_array[:, counter] = Function(func_name)(
                         df_prices,
                         *ind_settings_tup,
                         price=input_names_dict[in_names_key]
-                    )[out_name].values
+                    ).values
 
-                    pd_multind_tuples = pd_multind_tuples + ((out_name,) + ind_settings_tup,)
+                    pd_multind_tuples = pd_multind_tuples + (ind_settings_tup,)
                 elif in_names_key == 'prices':
                     final_array[:, counter] = Function(func_name)(
                         df_prices,
                         *ind_settings_tup,
                         prices=input_names_dict[in_names_key]
-                    )[out_name].values
+                    ).values
 
-                    pd_multind_tuples = pd_multind_tuples + ((out_name,) + ind_settings_tup,)
+                    pd_multind_tuples = pd_multind_tuples + (ind_settings_tup,)
 
                 ind_settings_tup = ()
-                counter+=1
-            
-    elif len(output_names) == 1:
-        final_array = np.empty((df_prices.shape[0], ind_setings_len))
-        counter = 0
-        for c in range(ind_setings_len):
-            # x is the array object in the tuple (x,x)
-            for x in final_user_args:
-                if type(x[c]) == np.int_:
-                    ind_settings_tup = ind_settings_tup + (int(x[c]),)
-                if type(x[c]) == np.float_:
-                    ind_settings_tup = ind_settings_tup + (float(x[c]),)
+                counter += 1
 
-            if in_names_key == 'price':
-                final_array[:, counter] = Function(func_name)(
-                    df_prices,
-                    *ind_settings_tup,
-                    price=input_names_dict[in_names_key]
-                ).values
-
-                pd_multind_tuples = pd_multind_tuples + (ind_settings_tup,)
-            elif in_names_key == 'prices':
-                final_array[:, counter] = Function(func_name)(
-                    df_prices,
-                    *ind_settings_tup,
-                    prices=input_names_dict[in_names_key]
-                ).values
-
-                pd_multind_tuples = pd_multind_tuples + (ind_settings_tup,)
-
-            ind_settings_tup = ()
-            counter +=1
-    
-    else:
-        raise ValueError("Something is wrong with the output name length")
+        else:
+            raise ValueError("Something is wrong with the output name length")
 
     return pd.DataFrame(
         final_array,
-        index=df_prices.index,
+        index=pd_index,
         columns=pd.MultiIndex.from_tuples(
             tuples=list(pd_multind_tuples),
             names=param_keys,
         )
     )
-
 
 def talib_ind_info(func_name: str):
     return Function(func_name).info

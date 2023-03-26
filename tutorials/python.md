@@ -48,3 +48,15 @@ capitalize upper lowercase str or list
 
 list comprehension for loop 
 param_keys = [ind_name + '_' + x for x in param_keys] 
+
+How to "test" NoneType in python?
+if variable is None:
+
+how to check whether list contains only None in python
+print('yes') if all(x is None for x in test) else print('No')
+
+
+How do I check if a list is empty?
+https://stackoverflow.com/questions/53513/how-do-i-check-if-a-list-is-empty
+if not a:
+    print("List is empty")
