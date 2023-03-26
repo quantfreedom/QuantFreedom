@@ -475,10 +475,7 @@ def backtest_df_array_only(
     # Creating Settings Vars
     total_order_settings = sl_pcts_cart_array.shape[0]
 
-    if entries.ndim == 1:
-        total_indicator_settings = 1
-    else:
-        total_indicator_settings = entries.shape[1]
+    total_indicator_settings = entries.shape[1]
 
     total_bars = open_prices.shape[0]
 
@@ -524,11 +521,7 @@ def backtest_df_array_only(
         # ind set loop
         for indicator_settings_counter in range(total_indicator_settings):
 
-            if entries.ndim != 1:
-                current_indicator_entries = entries[
-                    :, indicator_settings_counter]
-            else:
-                current_indicator_entries = entries
+            current_indicator_entries = entries[:, indicator_settings_counter]
 
             # Account State Reset
             account_state = AccountState(
@@ -1075,7 +1068,7 @@ def simulate_up_to_6(
         broad_array[15], biggest)
 
     if entries.shape[1] == 1:
-        entries = np.broadcast_to(entries.T, (biggest, entries.shape[0]))
+        entries = np.broadcast_to(entries, (entries.shape[0], biggest))
     elif entries.shape[1] != biggest:
         raise ValueError("Something is wrong with entries")
 
@@ -1087,7 +1080,7 @@ def simulate_up_to_6(
     final_array = np.empty(biggest, dtype=final_array_dt)
     final_array_counter = 0
 
-    order_records = np.empty(total_bars * 2, dtype=or_dt)
+    order_records = np.empty(total_bars*2, dtype=or_dt)
     order_records_id = np.array([0])
     or_filled_start = 0
 
@@ -1152,7 +1145,7 @@ def simulate_up_to_6(
             tsl_prices=0.,
         )
 
-        current_indicator_entries = entries[settings_counter]
+        current_indicator_entries = entries[:, settings_counter]
 
         # entries loop
         for bar in range(total_bars):
@@ -1288,4 +1281,4 @@ def simulate_up_to_6(
 
         final_array_counter += 1
 
-    return final_array, order_records
+    return final_array, order_records[:order_records_id[-1]]

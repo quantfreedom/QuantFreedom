@@ -1,7 +1,8 @@
 import quantfreedom as qf
 import numpy as np
 import pandas as pd
-from dash import Dash, dcc, html, Input, Output
+from dash import Dash, dcc, html, Input, Output, dash_table
+import dash_bootstrap_components as dbc
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -18,27 +19,45 @@ rsi_ind = from_talib(
     combos=False,
     timeperiod=[15, 55],
 )
+df = pd.read_csv(
+    'https://raw.githubusercontent.com/plotly/datasets/master/solar.csv')
+
 
 temp_list = []
 for count, value in enumerate(list(rsi_ind.columns)):
     temp_list.append(value[0])
-print(temp_list)
+    
+# dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
+# app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
 app = Dash(__name__)
 
-app.layout = html.Div([
-    dcc.Graph(id='graph-with-slider'),
-    dcc.RadioItems(
-        options=temp_list,
-        value=temp_list[0],
-        id='ind-settings',
-        inline=True,
-    )
-])
+theme = {
+    'dark': True,
+    'detail': '#007439',
+    'primary': '#00EA64',
+    'secondary': '#6E6E6E',
+}
 
+fig = go.Figure()
+
+candle_fig = go.Figure(
+    data=[
+        go.Candlestick(
+            x=prices.index,
+            open=prices.open,
+            high=prices.high,
+            low=prices.low,
+            close=prices.close,
+            name='Candles'
+        ),
+    ],
+    layout_xaxis_rangeslider_visible=False,
+)
 
 @app.callback(
     Output('graph-with-slider', 'figure'),
-    Input('ind-settings', 'value'))
+    Input('ind-settings', 'value'),
+)
 def update_figure(selected_ind_settings):
     fig = px.line(
         x=rsi_ind.index.to_list(),
@@ -49,6 +68,31 @@ def update_figure(selected_ind_settings):
 
     return fig
 
+
+app.layout = html.Div([
+    html.H1(
+        dcc.RadioItems(
+            options=temp_list,
+            value=temp_list[0],
+            id='ind-settings',
+            inline=True,
+        ),
+    ),
+    html.Div(
+        dcc.Graph(
+            id='candles',
+            figure=candle_fig
+        ),
+    ),
+    dcc.Graph(
+        id='graph-with-slider',
+        figure=fig
+    ),
+    dash_table.DataTable(
+        data = df.to_dict('records'),
+        columns = [{"name": i, "id": i} for i in df.columns]
+    ),
+])
 
 if __name__ == '__main__':
     app.run_server(debug=True)
