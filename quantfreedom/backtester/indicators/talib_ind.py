@@ -5,17 +5,19 @@ from talib.abstract import Function
 from talib import get_functions
 from itertools import product
 from quantfreedom._typing import (
-    pdFrame
+    pdFrame, Optional, Array1d
 )
 
 
 def from_talib(
     func_name: str,
-    df_prices: pdFrame,
+    df_prices: Optional[pdFrame],
+    user_ind_values: Optional[Array1d],
     cart_product: bool,
     combos: bool,
     **kwargs,
 ) -> pdFrame:
+    
     users_args_list = []
     biggest = 1
     indicator_info = Function(func_name).info

@@ -728,10 +728,6 @@ def simulate_up_to_6(
     # Take Profit Params
     risk_rewards: PossibleArray = np.nan,
     tp_pcts: PossibleArray = np.nan,
-
-    # Results Filters
-    gains_pct_filter: float = -np.inf,
-    total_trade_filter: int = 0,
 ) -> tuple[Array1d, Array1d, Array1d]:
 
     # Static checks & create
@@ -750,8 +746,8 @@ def simulate_up_to_6(
         sl_to_be=sl_to_be,
         sl_to_be_then_trail=sl_to_be_then_trail,
         tsl_true_or_false=tsl_true_or_false,
-        gains_pct_filter=gains_pct_filter,
-        total_trade_filter=total_trade_filter,
+        gains_pct_filter=0.,
+        total_trade_filter=0,
     )
     og_equity = equity
 

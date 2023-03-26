@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from quantfreedom._typing import (
-    pdFrame, Union, Array1d, Optional
+    pdFrame, Union, Array1d, Optional,pdSeries
 )
 
 
@@ -45,6 +45,7 @@ def combine_evals(
 def eval_is_below(
     ind_data: pdFrame,
     user_args: Optional[Union[list[int, float], int, float, Array1d]] = None,
+    ind_results: Optional[Union[pdFrame, pdSeries]] = None,
     df_prices: Optional[pdFrame] = None,
     cand_ohlc: Optional[str] = None,
 ) -> pdFrame:
@@ -94,7 +95,19 @@ def eval_is_below(
 
             pd_multind_tuples = pd_multind_tuples + \
                 (ind_data.columns[col] + (cand_ohlc,),)
-                
+    
+    elif isinstance(ind_results, pdSeries):
+        eval_array = np.empty_like(ind_data, dtype=np.bool_)
+        price_values = ind_results.values
+        if not all(isinstance(x, (np.int_, np.float_)) for x in price_values):
+            raise ValueError(
+                "price data must be ints or floats")
+        for col in range(ind_data.shape[1]):
+            eval_array[:, col] = np.where(
+                ind_data_values[:, col] > price_values, True, False)
+
+            pd_multind_tuples = pd_multind_tuples + \
+                (ind_data.columns[col] + ('something',),)            
     else:
         raise ValueError(
             "user_args must be a list of ints or floats or int or float or you need to send price data")
@@ -112,6 +125,7 @@ def eval_is_below(
 def eval_is_above(
     ind_data: pdFrame,
     user_args: Optional[Union[list[int, float], int, float, Array1d]] = None,
+    ind_results: Optional[Union[pdFrame, pdSeries]] = None,
     df_prices: Optional[pdFrame] = None,
     cand_ohlc: Optional[str] = None,
 ) -> pdFrame:
@@ -161,6 +175,19 @@ def eval_is_above(
 
             pd_multind_tuples = pd_multind_tuples + \
                 (ind_data.columns[col] + (cand_ohlc,),)
+    
+    elif isinstance(ind_results, pdSeries):
+        eval_array = np.empty_like(ind_data, dtype=np.bool_)
+        price_values = ind_results.values
+        if not all(isinstance(x, (np.int_, np.float_)) for x in price_values):
+            raise ValueError(
+                "price data must be ints or floats")
+        for col in range(ind_data.shape[1]):
+            eval_array[:, col] = np.where(
+                ind_data_values[:, col] > price_values, True, False)
+
+            pd_multind_tuples = pd_multind_tuples + \
+                (ind_data.columns[col] + ('something',),)
 
     else:
         raise ValueError(

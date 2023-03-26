@@ -21,7 +21,6 @@ setup(
         'autopep8',
         'ccxt',
         'dash',
-        'dash-bootstrap-templates',
         'ipywidgets==7.7.2',
         'jupyter-dash',
         'jupyterlab-widgets==1.1.1',
