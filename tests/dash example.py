@@ -1,41 +1,61 @@
-from dash import Dash, dcc, html, Input, Output
-import plotly.express as px
-from jupyter_dash import JupyterDash
-
-
+from datetime import date
 import pandas as pd
+from dash import Dash, dcc, html
+from dash.dependencies import Input, Output
+prices = pd.read_csv(
+    'E:/Coding/backtesters/QuantFreedom/tests/data/30min.csv', index_col='time')
+price_index = prices.index.to_list()
+index_list = price_index[1:]
+start_time = price_index[0].split(" ")[1]
+index_time = [start_time]
+for x in index_list:
+    temp_time = x.split(" ")[1]
+    if temp_time == start_time:
+        break
+    index_time.append(x.split(" ")[1])
 
-df = pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/gapminderDataFiveYear.csv')
+price_start_date = price_index[0].split(" ")[0].split("-")
+start_year=int(price_start_date[0])
+start_month=int(price_start_date[1])
+start_day=int(price_start_date[2])
 
-app = JupyterDash(__name__)
+price_end_date = price_index[-1].split(" ")[0].split("-")
+end_year=int(price_end_date[0])
+end_month=int(price_end_date[1])
+end_day=int(price_end_date[2])
 
+app = Dash(__name__)
 app.layout = html.Div([
-    dcc.Graph(id='graph-with-slider'),
-    dcc.Slider(
-        df['year'].min(),
-        df['year'].max(),
-        step=None,
-        value=df['year'].min(),
-        marks={str(year): str(year) for year in df['year'].unique()},
-        id='year-slider'
-    )
+    dcc.DatePickerRange(
+            id='my-date-picker-range',
+            min_date_allowed=date(start_year, start_month, start_day),
+            max_date_allowed=date(end_year, end_month, end_day),
+            initial_visible_month=date(start_year, start_month, start_day),
+            end_date=date(end_year, end_month, end_day),
+        ),
+    html.Div(id='output-container-date-picker-range')
 ])
 
 
 @app.callback(
-    Output('graph-with-slider', 'figure'),
-    Input('year-slider', 'value'))
-def update_figure(selected_year):
-    filtered_df = df[df.year == selected_year]
-
-    fig = px.scatter(filtered_df, x="gdpPercap", y="lifeExp",
-                     size="pop", color="continent", hover_name="country",
-                     log_x=True, size_max=55)
-
-    fig.update_layout(transition_duration=500)
-
-    return fig
+    Output('output-container-date-picker-range', 'children'),
+    Input('my-date-picker-range', 'start_date'),
+    Input('my-date-picker-range', 'end_date'))
+def update_output(start_date, end_date):
+    string_prefix = 'You have selected: '
+    if start_date is not None:
+        start_date_object = date.fromisoformat(start_date)
+        start_date_string = start_date_object.strftime('%B %d, %Y')
+        string_prefix = string_prefix + 'Start Date: ' + start_date_string + ' | '
+    if end_date is not None:
+        end_date_object = date.fromisoformat(end_date)
+        end_date_string = end_date_object.strftime('%B %d, %Y')
+        string_prefix = string_prefix + 'End Date: ' + end_date_string
+    if len(string_prefix) == len('You have selected: '):
+        return 'Select a date to see it displayed here'
+    else:
+        return string_prefix
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True, port=3003)
+    app.run_server(debug=True, Port=3003)

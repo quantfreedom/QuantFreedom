@@ -1,11 +1,17 @@
+Plotly Dash:
+    ☐ make it so that trades is the first candle stick chart
+    ☐ create dropdown of all times
+    ☐ create date picker
+    ☐ cumsum trade pnl chart lines with markers
+    ☐ fix number formating in table
+    ☐ change bar in order recoders to date time
+    
 Currently Working On:
-    ✔ make one dataframe returned for out names so loop through 1 out name at a time @done(23-03-25 10:32)
-    ✔ in talib make it so that you add to list not append @done(23-03-25 10:33)
-    ✔ check order records because there is tons of zeros that show up at the end @done(23-03-25 20:01)
-    ✔ make it so that talib can take in atr data and process it with combos @done(23-03-26 13:53)
     ☐ check all numba stuff
     ☐ do a check to make sure user isn't sending prices or price if they are sending user in df
+    ☐ instead of doing logical and you can do np.where((test > 12) & (test < 70)) to get index or np.where((test > 12) & (test < 70), True, False) to fill values
     ☐ add order order records based on clicking tab of settings 1 2 or 3
+    ☐ be able to select a specific date range 
     ☐ do enumerate where nececarry for count, value in enumerate(list(rsi_ind.columns)):
     ☐ make sure all values in cart are unique
     ☐ allow for there to be the ability to send the eval in the from talib so that it can do it all at once
@@ -46,6 +52,11 @@ Would Be Nice:
     ☐ send pct change of position in order result when decreasing or increaseing position size
 
 Archive:
+  ✔ make it so that table header is frozen @done(23-03-27 20:25)
+  ✔ check order records because there is tons of zeros that show up at the end @done(23-03-25 20:01)
+  ✔ make it so that talib can take in atr data and process it with combos @done(23-03-26 13:53)
+  ✔ make one dataframe returned for out names so loop through 1 out name at a time @done(23-03-25 10:32)
+  ✔ in talib make it so that you add to list not append @done(23-03-25 10:33)
   ✔ have it so the user sends the prices df and then the cand ohlc then you do the get atr thing so you can do prices.close or prices.open @done(23-03-25 08:15)
   ✔ look into checkign whole array against 1 number and returning true or false and not doing a for loop @done(23-03-25 08:09)
   ✔ instead of creating a df every for loop finish and then concat just concat to a lsit of tuples then at the end throw the finished array into a df and then put the multindex column list of tuples with names and it should work ... do this for both talib and evals @done(23-03-25 08:08)
