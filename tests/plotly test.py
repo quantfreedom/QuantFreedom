@@ -3,24 +3,24 @@ import sys
 
 sys.dont_write_bytecode = True
 os.environ["NUMBA_DISABLE_JIT"] = "1"
-import numpy as np
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from datetime import date
-from plotly.subplots import make_subplots
-
-from dash import Dash, dcc, html, Input, Output, dash_table
-from quantfreedom.backtester.nb.simulate import simulate_up_to_6
-from quantfreedom.backtester.indicators.talib_ind import from_talib
-from quantfreedom.backtester.evaluators.evaluators import eval_is_below
-from quantfreedom._typing import pdFrame, RecordArray
 from quantfreedom.backtester.enums.enums import (
     LeverageMode,
     SizeType,
     OrderType,
     SL_BE_or_Trail_BasedOn,
 )
+from quantfreedom.backtester.evaluators.evaluators import eval_is_below
+from quantfreedom.backtester.indicators.talib_ind import from_talib
+from quantfreedom.backtester.nb.simulate import simulate_up_to_6
+from dash import Dash, dcc, html, Input, Output, dash_table
+from plotly.subplots import make_subplots
+from datetime import date
+import plotly.graph_objects as go
+import pandas as pd
+import numpy as np
+import dash_bootstrap_components as dbc
+
+np.set_printoptions(formatter={"float_kind": "{:.2f}".format})
 
 pd.options.display.float_format = "{:,.2f}".format
 
@@ -86,12 +86,14 @@ temp_list = []
 for count, value in enumerate(list(rsi_ind.columns)):
     temp_list.append(value[0])
 
-app = Dash(__name__)
+# app = Dash(__name__)
+app = Dash(external_stylesheets=[dbc.themes.CYBORG])
 
 
 @app.callback(
     Output("candles-figure", "figure"),
     Output("d-table", "data"),
+    Output("pnl-graph", "figure"),
     Input("my-date-picker-range", "start_date"),
     Input("time-dropdown_start", "value"),
     Input("my-date-picker-range", "end_date"),
@@ -102,7 +104,6 @@ def update_candles(
     start_time,
     end_date,
     end_time,
-    or_df=or_df,
 ):
 
     if start_date is not None:
@@ -112,122 +113,129 @@ def update_candles(
         end_date_object = date.fromisoformat(end_date)
         end_date_string = end_date_object.strftime("%Y-%m-%d ") + end_time
 
+    start_bar = prices.index.to_list().index(start_date_string)
+    end_bar = prices.index.to_list().index(end_date_string)
+    filtered_or = order_records[order_records["settings_id"] == 0]
+    bar_index = np.where(
+        (filtered_or["bar"] >= start_bar) & (filtered_or["bar"] <= end_bar)
+    )[0]
+    start_bar_index = bar_index[0]
+    end_bar_index = bar_index[-1] + 1
+    order_records_filtered = filtered_or[start_bar_index:end_bar_index]
+
+    open_prices = prices.open.loc[start_date_string:end_date_string].values
+    high_prices = prices.high.loc[start_date_string:end_date_string].values
+    low_prices = prices.low.loc[start_date_string:end_date_string].values
+    close_prices = prices.close.loc[start_date_string:end_date_string].values
+    index_prices = prices.open.loc[start_date_string:end_date_string].index
+
     fig = make_subplots(
         rows=2,
         cols=1,
         shared_xaxes=True,
         vertical_spacing=0.05,
-        # specs=[[{"type": "scatter"}], [{"type": "scatter"}], [{"type": "table"}]],
     )
-    fig.add_trace(
-        go.Candlestick(
-            x=prices.loc[start_date_string:end_date_string].index,
-            open=prices.open.loc[start_date_string:end_date_string],
-            high=prices.high.loc[start_date_string:end_date_string],
-            low=prices.low.loc[start_date_string:end_date_string],
-            close=prices.close.loc[start_date_string:end_date_string],
-            name="Candles",
-        ),
-        
-        row=1,
-        col=1,
+
+    (
+        candles,
+        entries,
+        avg_entries,
+        stop_losses,
+        tailing_stop_losses,
+        take_profits,
+    ) = plot_trades_all_info(
+        open_prices=open_prices,
+        high_prices=high_prices,
+        low_prices=low_prices,
+        close_prices=close_prices,
+        index_prices=index_prices,
+        order_records=order_records_filtered,
+        start_bar=start_bar,
+        end_bar=end_bar,
     )
-    
+    fig.add_traces(
+        data=[
+            candles,
+            entries,
+            avg_entries,
+            stop_losses,
+            tailing_stop_losses,
+            take_profits,
+        ],
+        rows=1,
+        cols=1,
+    )
     fig.add_traces(
         data=[
             go.Scatter(
                 x=rsi_ind.loc[start_date_string:end_date_string].index.to_list(),
                 y=rsi_ind.loc[start_date_string:end_date_string].values.flatten(),
                 mode="lines",
+                name="RSI",
+                line=dict(color="lightblue"),
+                legendgroup="2",
             ),
             go.Scatter(
                 x=rsi_ind.loc[start_date_string:end_date_string].index.to_list(),
                 y=np.where(
-                    rsi_eval[15][50].loc[start_date_string:end_date_string].values,
+                    rsi_eval[15][40].loc[start_date_string:end_date_string].values,
                     rsi_ind.loc[start_date_string:end_date_string].values.flatten(),
                     np.nan,
                 ),
                 mode="markers",
                 name="Entries",
                 marker=dict(color="green"),
+                legendgroup="2",
             ),
         ],
         rows=2,
         cols=1,
     )
-    # headerColor = "grey"
-    # rowEvenColor = "lightgrey"
-    # rowOddColor = "white"
-    # fig.add_traces(
-    #     data=[
-    #         go.Table(
-    #             header=dict(
-    #                 values=(order_records.dtype.names),
-    #                 line_color="darkslategray",
-    #                 fill_color=headerColor,
-    #                 align=["left", "center"],
-    #                 font=dict(color="white", size=20),
-    #             ),
-    #             cells=dict(
-    #                 values=pd.DataFrame(order_records[:20]).T.values,
-    #                 line_color="darkslategray",
-    #                 # 2-D list of colors for alternating rows
-    #                 # fill_color=[
-    #                 #     [
-    #                 #         rowOddColor,
-    #                 #         rowEvenColor,
-    #                 #         rowOddColor,
-    #                 #         rowEvenColor,
-    #                 #         rowOddColor,
-    #                 #     ]
-    #                 #     * 5
-    #                 # ],
-    #                 align=["left", "center"],
-    #                 font=dict(color="darkslategray", size=15),
-    #             ),
-    #         )
-    #     ],
-    #     rows=3,
-    #     cols=1,
-    # ),
     fig.update_xaxes(
         title_text="xaxis 1 title", row=1, col=1, rangeslider_visible=False
     )
-    fig.update_layout(height=1000)
-    d_table = or_df.to_dict("records")
-    return fig, d_table
+    fig.update_layout(height=100000, legend_tracegroupgap=320, template="plotly_dark")
+
+    d_table = pd.DataFrame(order_records_filtered)
+    for i in range(len(OrderType._fields)):
+        d_table.replace({"order_type": {i: OrderType._fields[i]}}, inplace=True)
+
+    for col in d_table:
+        if d_table[col].dtype == "float64":
+            d_table[col] = d_table[col].map("{:,.2f}".format)
+    d_table = d_table.to_dict("records")
+
+    upside_y = np.append(
+        0,
+        order_records_filtered["real_pnl"][
+            ~np.isnan(order_records_filtered["real_pnl"])
+        ].cumsum(),
+    )
+
+    pnl_graph = go.Figure(
+        data=[
+            go.Scatter(
+                x=index_prices,
+                y=upside_y,
+                mode="lines+markers",
+                marker=dict(size=6),
+                line=dict(color="blue"),
+            ),
+        ],
+    ).update_layout(title="PNL Graph", template="plotly_dark")
+    return fig, d_table, pnl_graph
 
 
-@app.callback(
-    Output("plotted-trades", "figure"),
-    Input("thing-thing", "value"),
-    Input("thing-thing", "value"),
-    Input("thing-thing", "value"),
-)
 def plot_trades_all_info(
-    start_date,
-    # end_date,
-    # prices: pdFrame,
-    # order_records: RecordArray,
+    open_prices,
+    high_prices,
+    low_prices,
+    close_prices,
+    index_prices,
+    order_records,
+    start_bar,
+    end_bar,
 ):
-    global prices, order_records
-    start = prices.index[30]
-    end = prices.index[200]
-
-    start_bar = prices.index.to_list().index(start)
-    end_bar = prices.index.to_list().index(end)
-    bar_index = np.where(
-        (order_records["bar"] >= start_bar) & (order_records["bar"] <= end_bar)
-    )[0]
-    start_bar_index = bar_index[0]
-    end_bar_index = bar_index[-1] + 1
-    order_records = order_records[start_bar_index:end_bar_index]
-
-    open_prices = prices.open.loc[start:end].values
-    high_prices = prices.high.loc[start:end].values
-    low_prices = prices.low.loc[start:end].values
-    close_prices = prices.close.loc[start:end].values
-    x_index = prices.open.loc[start:end].index
 
     array_size = open_prices.shape[0]
 
@@ -379,129 +387,176 @@ def plot_trades_all_info(
                 log_counter += 1
         array_counter += 1
 
-    fig = go.Figure()
-
-    symbol_size = 10
-
-    fig.add_candlestick(
-        x=x_index,
+    candles = go.Candlestick(
+        x=index_prices,
         open=open_prices,
         high=high_prices,
         low=low_prices,
         close=close_prices,
         name="Candles",
+        legendgroup="1",
     )
 
     # entries
-    fig.add_scatter(
+    entries = go.Scatter(
         name="Entries",
-        x=x_index,
+        x=index_prices,
         y=order_price,
         mode="markers",
         marker=dict(
             color="yellow",
-            size=symbol_size,
+            size=10,
             symbol="circle",
-            line=dict(color="black", width=2),
+            line=dict(color="black", width=1),
         ),
+        legendgroup="1",
     )
 
     # avg entrys
-    fig.add_scatter(
+    avg_entries = go.Scatter(
         name="Avg Entries",
-        x=x_index,
+        x=index_prices,
         y=avg_entry,
         mode="markers",
         marker=dict(
             color="#57FF30",
-            size=symbol_size,
+            size=10,
             symbol="square",
-            line=dict(color="black", width=2),
+            line=dict(color="black", width=1),
         ),
+        legendgroup="1",
     )
 
     # stop loss
-    fig.add_scatter(
+    stop_losses = go.Scatter(
         name="Stop Loss",
-        x=x_index,
+        x=index_prices,
         y=stop_loss,
         mode="markers",
         marker=dict(
-            color="red", size=symbol_size, symbol="x", line=dict(color="black", width=2)
+            color="red", size=10, symbol="x", line=dict(color="black", width=1)
         ),
+        legendgroup="1",
     )
 
     # trailing stop loss
-    fig.add_scatter(
+    tailing_stop_losses = go.Scatter(
         name="Trailing SL",
-        x=x_index,
+        x=index_prices,
         y=trailing_sl,
         mode="markers",
         marker=dict(
             color="orange",
-            size=symbol_size,
+            size=10,
             symbol="triangle-up",
-            line=dict(color="black", width=2),
+            line=dict(color="black", width=1),
         ),
+        legendgroup="1",
     )
 
     # take profits
-    fig.add_scatter(
+    take_profits = go.Scatter(
         name="Take Profits",
-        x=x_index,
+        x=index_prices,
         y=take_profit,
         mode="markers",
         marker=dict(
             color="#57FF30",
-            size=symbol_size,
+            size=10,
             symbol="star",
-            line=dict(color="black", width=2),
+            line=dict(color="black", width=1),
         ),
+        legendgroup="1",
     )
 
-    fig.update_layout(
-        xaxis=dict(title="Date", rangeslider=dict(visible=False)),
-        title="Candles over time",
-        autosize=True,
-        height=600,
-    )
-    return fig
+    return candles, entries, avg_entries, stop_losses, tailing_stop_losses, take_profits
 
 
 app.layout = html.Div(
     [
         html.Div(
             [
-                dcc.DatePickerRange(
-                    month_format="MM-DD-YYYY",
-                    display_format="MM-DD-YYYY",
-                    start_date=date(start_year, start_month, start_day),
-                    end_date=date(end_year, end_month, end_day),
-                    min_date_allowed=date(start_year, start_month, start_day),
-                    max_date_allowed=date(end_year, end_month, end_day),
-                    id="my-date-picker-range",
-                    # initial_visible_month=date(start_year, start_month, start_day),
+                html.Div(
+                    [
+                        html.H2("Date Range"),
+                    ],
+                    style=(
+                        {
+                            "display": "flex",
+                            "justify-content": "center",
+                        }
+                    ),
                 ),
-            ]
-        ),
-        html.Div(
-            [
-                dcc.Dropdown(
-                    options=index_time,
-                    value=index_time[0],
-                    id="time-dropdown_start",
+                html.Div(
+                    [
+                        dcc.DatePickerRange(
+                            id="my-date-picker-range",
+                            month_format="MM-DD-YYYY",
+                            display_format="MM-DD-YYYY",
+                            start_date=date(start_year, start_month, start_day),
+                            end_date=date(end_year, end_month, end_day),
+                            min_date_allowed=date(start_year, start_month, start_day),
+                            max_date_allowed=date(end_year, end_month, end_day),
+                            with_portal=True,
+                        ),
+                    ],
+                    style=(
+                        {
+                            "display": "flex",
+                            "justify-content": "center",
+                        }
+                    ),
                 ),
-                dcc.Dropdown(
-                    options=index_time,
-                    value=index_time[-1],
-                    id="time-dropdown_end",
+                html.Div(
+                    [
+                        html.Div(
+                            [
+                                dcc.Dropdown(
+                                    options=index_time,
+                                    value=index_time[0],
+                                    id="time-dropdown_start",
+                                ),
+                            ],
+                            style=(
+                                {
+                                    "width": "145px",
+                                }
+                            ),
+                        ),
+                        html.Div(
+                            [
+                                dcc.Dropdown(
+                                    options=index_time,
+                                    value=index_time[-1],
+                                    id="time-dropdown_end",
+                                ),
+                            ],
+                            style=(
+                                {
+                                    "width": "145px",
+                                }
+                            ),
+                        ),
+                    ],
+                    style=(
+                        {
+                            "display": "flex",
+                            "margin": "auto",
+                            "width": "auto",
+                            "justify-content": "center",
+                        }
+                    ),
                 ),
             ],
-            style={"width": "20%", "display": "inline-block"},
         ),
         html.Div(
             dcc.Graph(
                 id="candles-figure",
+            ),
+        ),
+        html.Div(
+            dcc.Graph(
+                id="pnl-graph",
             ),
         ),
         dash_table.DataTable(
@@ -509,10 +564,16 @@ app.layout = html.Div(
             page_size=100,
             # page_action='none',
             style_table={"height": "400px", "overflowY": "auto"},
-            fixed_rows={'headers': True},
+            fixed_rows={"headers": True},
+            style_header={"backgroundColor": "rgb(30, 30, 30)", "color": "white"},
+            style_data={"backgroundColor": "rgb(50, 50, 50)", "color": "white"},
+            style_cell_conditional=[
+                {"if": {"column_id": "settings_id"}, "width": "110px"},
+                {"if": {"column_id": "order_id"}, "width": "90px"},
+            ],
         ),
     ]
 )
 
 if __name__ == "__main__":
-    app.run_server(debug=True, port=3003)
+    app.run_server(debug=False, port=3003)

@@ -1,7 +1,7 @@
 Plotly Dash:
-    ☐ make it so that trades is the first candle stick chart
-    ☐ create dropdown of all times
-    ☐ create date picker
+    ✔ make it so that trades is the first candle stick chart @done(23-03-28 07:57)
+    ✔ create dropdown of all times @done(23-03-28 07:57)
+    ✔ create date picker @done(23-03-28 07:57)
     ☐ cumsum trade pnl chart lines with markers
     ☐ fix number formating in table
     ☐ change bar in order recoders to date time
