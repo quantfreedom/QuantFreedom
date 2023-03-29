@@ -9,18 +9,30 @@ So if you do not need to do any of this then you can move to the next section ..
 
 Also if you have any spaces in the names of your folders make sure you put quotes around the whole thing like "E:/Coding/virtual environments/qfFree/Scripts/activate.bat" ... as you can see i have a space in virtual environments ... so i was getting errors if i ever needed to copy and past a specific directory
 
-make sure your env var looks like mine in the order
+be sure do download git
+download vscode
+clone the repository in the welcmoe or cmd thing for vscode backtester folder
+config temrinal settings to cmd promot as default
+change your cd in the cmd promot folder to a folder where you want the venv 
+create venv in folder
+ipython kernel install --user --name=
+activate
+pip install from backtester folder pip install -e "blhablhab"
+you have to make sure you have auto save on if you want to have your commits auto showing up in source control or you have to save the file before it shows up
+make sure you have auto save set to after delay if you want it to auto update
+                                
 ![env var](docs/docs/assets/env_var.png)
 
+inside of your terminal in vscode ... first make you are in the folder you want to actually create your vertual env
 Create a new virtual environement by typing this into your command line
 
 ```
-python -m venv qfPro
+python -m venv qfFree
 ```
 
 Now we need to activate the newly created venv
 ```
-qfPro\Scripts\activate
+qfFree\Scripts\activate
 ```
 
 last if you still have your ven active then copy past the following pip install
