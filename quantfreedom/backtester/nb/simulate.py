@@ -1028,6 +1028,7 @@ def simulate_up_to_6(
     )
 
     x = 0
+    biggest = 1
     while x < 7:
         if broad_array[x].size > 1:
             biggest = broad_array[x].size

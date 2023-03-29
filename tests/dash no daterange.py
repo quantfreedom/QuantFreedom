@@ -19,10 +19,16 @@ import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
 import dash_bootstrap_components as dbc
+from dash_bootstrap_templates import load_figure_template
+
 
 np.set_printoptions(formatter={"float_kind": "{:.2f}".format})
 
 pd.options.display.float_format = "{:,.2f}".format
+
+load_figure_template('darkly')
+dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
+app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
 
 prices = pd.read_csv(
     "E:/Coding/backtesters/QuantFreedom/tests/data/30min.csv", index_col="time"
@@ -45,6 +51,7 @@ rsi_eval = eval_is_below(
     ind_data=rsi_ind,
     user_args=50,
 )
+
 final_array, order_records = simulate_up_to_6(
     open_prices=prices.open.values,
     high_prices=prices.high.values,
@@ -68,58 +75,9 @@ temp_list = []
 for count, value in enumerate(list(rsi_ind.columns)):
     temp_list.append(value[0])
 
-app = Dash(__name__)
 
 
-def update_candles():
-
-    fig = make_subplots(
-        rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.05, row_heights=[0.7, 0.3]
-    )
-
-    fig.add_traces(
-        data=[
-            candles,
-            entries,
-            avg_entries,
-            stop_losses,
-            tailing_stop_losses,
-            take_profits,
-        ],
-        rows=1,
-        cols=1,
-    )
-    fig.add_traces(
-        data=[
-            go.Scatter(
-                x=rsi_ind.index.to_list(),
-                y=rsi_ind.values.flatten(),
-                mode="lines",
-                name="RSI",
-                line=dict(color="white"),
-                legendgroup="2",
-            ),
-            go.Scatter(
-                x=rsi_ind.index.to_list(),
-                y=np.where(
-                    rsi_eval[15][40].values,
-                    rsi_ind.values.flatten(),
-                    np.nan,
-                ),
-                mode="markers",
-                name="Entries",
-                marker=dict(color="darkorange"),
-                legendgroup="2",
-            ),
-        ],
-        rows=2,
-        cols=1,
-    )
-    fig.update_xaxes(
-        title_text="xaxis 1 title", row=1, col=1, rangeslider_visible=False
-    )
-    fig.update_layout(height=1000, legend_tracegroupgap=500, template="plotly_dark")
-
+def d_table_update():
     d_table = pd.DataFrame(order_records)
     for i in range(len(OrderType._fields)):
         d_table.replace({"order_type": {i: OrderType._fields[i]}}, inplace=True)
@@ -129,7 +87,27 @@ def update_candles():
             d_table[col] = d_table[col].map("{:,.2f}".format)
     d_table = d_table.to_dict("records")
 
-    upside_y = np.append(
+    d_table = (
+        dash_table.DataTable(
+            data=d_table,
+            id="d-table",
+            page_size=50,
+            # page_action='none',
+            style_table={"height": "400px", "overflowY": "auto"},
+            fixed_rows={"headers": True},
+            style_header={"backgroundColor": "rgb(30, 30, 30)", "color": "white"},
+            style_data={"backgroundColor": "rgb(50, 50, 50)", "color": "white"},
+            style_cell_conditional=[
+                {"if": {"column_id": "settings_id"}, "width": "110px"},
+                {"if": {"column_id": "order_id"}, "width": "90px"},
+            ],
+        ),
+    )
+    return d_table
+
+
+def pnl_graph():
+    y_pnl = np.append(
         0,
         order_records["real_pnl"][~np.isnan(order_records["real_pnl"])].cumsum(),
     )
@@ -137,25 +115,24 @@ def update_candles():
     pnl_graph = go.Figure(
         data=[
             go.Scatter(
-                x=np.arange(0, upside_y.size),
-                y=upside_y,
+                x=np.arange(0, y_pnl.size),
+                y=y_pnl,
                 mode="lines+markers",
                 marker=dict(size=6),
                 line=dict(color="blue"),
             ),
         ],
-    ).update_layout(title="PNL Graph", template="plotly_dark")
-    return fig, d_table, pnl_graph
+    ).update_layout(title="PNL Graph")
+
+    return (
+        dcc.Graph(
+            id="pnl-graph",
+            figure=pnl_graph,
+        ),
+    )
 
 
-def plot_trades_all_info(
-    open_prices,
-    high_prices,
-    low_prices,
-    close_prices,
-    index_prices,
-    order_records,
-):
+def plot_trades_all_info():
 
     array_size = open_prices.shape[0]
 
@@ -172,7 +149,7 @@ def plot_trades_all_info(
     temp_trailing_sl = 0
     temp_take_profit = 0
 
-    for i in range(order_records.size):
+    for i in range(array_size):
         if log_counter < order_records.size and order_records["bar"][log_counter] == i:
             if temp_avg_entry != order_records["avg_entry"][log_counter]:
                 temp_avg_entry = order_records["avg_entry"][log_counter]
@@ -307,10 +284,9 @@ def plot_trades_all_info(
                 log_counter += 1
         array_counter += 1
 
-    fig = fig = make_subplots(
+    fig = make_subplots(
         rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.05, row_heights=[0.7, 0.3]
     )
-
     fig.add_traces(
         data=[
             go.Candlestick(
@@ -403,11 +379,7 @@ def plot_trades_all_info(
             ),
             go.Scatter(
                 x=rsi_ind.index.to_list(),
-                y=np.where(
-                    rsi_eval.values,
-                    rsi_ind.values.flatten(),
-                    np.nan,
-                ),
+                y=np.where(rsi_eval.values, rsi_ind.values, np.nan).flatten(),
                 mode="markers",
                 name="Entries",
                 marker=dict(color="darkorange"),
@@ -417,11 +389,9 @@ def plot_trades_all_info(
         rows=2,
         cols=1,
     )
-    fig.update_xaxes(
-        title_text="Trades", row=1, col=1, rangeslider_visible=False
-    )
-    fig.update_layout(height=1000, legend_tracegroupgap=500, template="plotly_dark")
-    
+    fig.update_xaxes(title_text="Trades", row=1, col=1, rangeslider_visible=False)
+    fig.update_layout(height=1000, legend_tracegroupgap=500)
+
     return (
         dcc.Graph(
             id="candles-trades",
@@ -433,27 +403,13 @@ def plot_trades_all_info(
 app.layout = html.Div(
     [
         html.Div(
-            dcc.Graph(
-                id="candles-figure",
-            ),
+            plot_trades_all_info(),
         ),
         html.Div(
-            dcc.Graph(
-                id="pnl-graph",
-            ),
+            pnl_graph(),
         ),
-        dash_table.DataTable(
-            id="d-table",
-            page_size=100,
-            # page_action='none',
-            style_table={"height": "400px", "overflowY": "auto"},
-            fixed_rows={"headers": True},
-            style_header={"backgroundColor": "rgb(30, 30, 30)", "color": "white"},
-            style_data={"backgroundColor": "rgb(50, 50, 50)", "color": "white"},
-            style_cell_conditional=[
-                {"if": {"column_id": "settings_id"}, "width": "110px"},
-                {"if": {"column_id": "order_id"}, "width": "90px"},
-            ],
+        html.Div(
+            d_table_update(),
         ),
     ]
 )
