@@ -2,9 +2,10 @@ Plotly Dash:
     ✔ make it so that trades is the first candle stick chart @done(23-03-28 07:57)
     ✔ create dropdown of all times @done(23-03-28 07:57)
     ✔ create date picker @done(23-03-28 07:57)
-    ☐ cumsum trade pnl chart lines with markers
-    ☐ fix number formating in table
+    ✔ cumsum trade pnl chart lines with markers @done(23-03-28 14:25)
+    ✔ fix number formating in table @done(23-03-28 14:25)
     ☐ change bar in order recoders to date time
+    ☐ create tons of functions for plotly
     
 Currently Working On:
     ☐ check all numba stuff
