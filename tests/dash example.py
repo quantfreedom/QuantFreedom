@@ -3,7 +3,7 @@ import pandas as pd
 from dash import Dash, dcc, html
 from dash.dependencies import Input, Output
 prices = pd.read_csv(
-    'E:/Coding/backtesters/QuantFreedom/tests/data/30min.csv', index_col='time')
+    'data/30min.csv', index_col='time')
 price_index = prices.index.to_list()
 index_list = price_index[1:]
 start_time = price_index[0].split(" ")[1]

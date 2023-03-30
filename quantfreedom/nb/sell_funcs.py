@@ -7,11 +7,12 @@ from quantfreedom.enums.enums import (
     AccountState,
     EntryOrder,
     OrderResult,
+    RejectedOrderError,
+    StaticVariables,
+    
     OrderStatus,
     OrderStatusInfo,
-    RejectedOrderError,
     LeverageMode,
-    StaticVariables,
     SizeType,
 )
 

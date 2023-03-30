@@ -20,7 +20,7 @@ from quantfreedom.enums.enums import (
     EntryOrder,
     OrderResult,
     StopsOrder,
-    StaticVariables,
+    settings_array_dt,
 )
 
 
@@ -128,7 +128,8 @@ def backtest_df_array_only(
     )
 
     sl_to_be_when_pct_from_avg_entry_array = to_1d_array_nb(
-        np.asarray(np.asarray(sl_to_be_when_pct_from_avg_entry) / 100, dtype=np.float_)
+        np.asarray(np.asarray(sl_to_be_when_pct_from_avg_entry) /
+                   100, dtype=np.float_)
     )
 
     sl_to_be_zero_or_entry_array = to_1d_array_nb(
@@ -140,18 +141,21 @@ def backtest_df_array_only(
         np.asarray(np.asarray(tsl_pcts_init) / 100, dtype=np.float_)
     )
 
-    tsl_based_on_array = to_1d_array_nb(np.asarray(tsl_based_on, dtype=np.float_))
+    tsl_based_on_array = to_1d_array_nb(
+        np.asarray(tsl_based_on, dtype=np.float_))
 
     tsl_trail_by_pct_array = to_1d_array_nb(
         np.asarray(np.asarray(tsl_trail_by_pct) / 100, dtype=np.float_)
     )
 
     tsl_when_pct_from_avg_entry_array = to_1d_array_nb(
-        np.asarray(np.asarray(tsl_when_pct_from_avg_entry) / 100, dtype=np.float_)
+        np.asarray(np.asarray(tsl_when_pct_from_avg_entry) /
+                   100, dtype=np.float_)
     )
 
     # Take Profit Arrays
-    risk_rewards_array = to_1d_array_nb(np.asarray(risk_rewards, dtype=np.float_))
+    risk_rewards_array = to_1d_array_nb(
+        np.asarray(risk_rewards, dtype=np.float_))
 
     tp_pcts_array = to_1d_array_nb(
         np.asarray(np.asarray(tp_pcts) / 100, dtype=np.float_)
@@ -181,7 +185,8 @@ def backtest_df_array_only(
         raise ValueError("sl_pcts has to be nan or greater than 0 and not inf")
 
     if np.isinf(tsl_pcts_init_array).any() or tsl_pcts_init_array.any() < 0:
-        raise ValueError("tsl_pcts_init has to be nan or greater than 0 and not inf")
+        raise ValueError(
+            "tsl_pcts_init has to be nan or greater than 0 and not inf")
 
     if np.isinf(tp_pcts_array).any() or tp_pcts_array.any() < 0:
         raise ValueError("tp_pcts has to be nan or greater than 0 and not inf")
@@ -215,13 +220,16 @@ def backtest_df_array_only(
 
     # check if RR has sl pct / price or tsl pct / price
     if not np.isnan(risk_rewards_array).any() and check_sl_tsl_for_nan:
-        raise ValueError("When risk to reward is set you have to have a sl or tsl > 0")
+        raise ValueError(
+            "When risk to reward is set you have to have a sl or tsl > 0")
 
     if risk_rewards_array.any() > 0 and np.isfinite(tp_pcts_array).any():
-        raise ValueError("You can't have take profits set when using Risk to reward")
+        raise ValueError(
+            "You can't have take profits set when using Risk to reward")
 
     if np.isinf(max_equity_risk_pct_array).any() or max_equity_risk_pct_array.any() < 0:
-        raise ValueError("Max equity risk percent has to be greater than 0 or np.nan")
+        raise ValueError(
+            "Max equity risk percent has to be greater than 0 or np.nan")
 
     elif (
         np.isinf(max_equity_risk_value_array).any()
@@ -237,7 +245,8 @@ def backtest_df_array_only(
             "You can't have max risk pct and max risk value both set at the same time."
         )
     if not np.isnan(size_value_array).any() and not np.isnan(size_pct_array).any():
-        raise ValueError("You can't have size and size pct set at the same time.")
+        raise ValueError(
+            "You can't have size and size pct set at the same time.")
 
     # simple check if order size type is valid
     if 0 > order_type > len(OrderType) or not np.isfinite(order_type):
@@ -252,7 +261,8 @@ def backtest_df_array_only(
 
     if size_type == SizeType.PercentOfAccount:
         if np.isnan(size_pct_array).any():
-            raise ValueError("You need size_pct to be > 0 if using percent of account.")
+            raise ValueError(
+                "You need size_pct to be > 0 if using percent of account.")
 
     # checking to see if you set a stop loss for risk based size types
     if (
@@ -297,13 +307,16 @@ def backtest_df_array_only(
         )
 
     if sl_to_be_zero_or_entry_array.any() < 0 or sl_to_be_zero_or_entry_array.any() > 1:
-        raise ValueError("sl_to_be_zero_or_entry needs to be 0 for zero or 1 for entry")
+        raise ValueError(
+            "sl_to_be_zero_or_entry needs to be 0 for zero or 1 for entry")
 
     if sl_to_be == False:
         if np.isfinite(sl_to_be_based_on_array).any():
-            raise ValueError("sl_to_be needs to be True to use sl_to_be_based_on.")
+            raise ValueError(
+                "sl_to_be needs to be True to use sl_to_be_based_on.")
         if sl_to_be_then_trail == True:
-            raise ValueError("sl_to_be needs to be True to use sl_to_be_then_trail.")
+            raise ValueError(
+                "sl_to_be needs to be True to use sl_to_be_then_trail.")
         if np.isfinite(sl_to_be_trail_by_when_pct_from_avg_entry_array).any():
             raise ValueError(
                 "sl_to_be needs to be True to use sl_to_be_trail_by_when_pct_from_avg_entry."
@@ -313,7 +326,8 @@ def backtest_df_array_only(
                 "sl_to_be needs to be True to use sl_to_be_when_pct_from_avg_entry."
             )
         if np.isfinite(sl_to_be_zero_or_entry_array).any():
-            raise ValueError("sl_to_be needs to be True to use sl_to_be_zero_or_entry.")
+            raise ValueError(
+                "sl_to_be needs to be True to use sl_to_be_zero_or_entry.")
 
     if sl_to_be and (
         not np.isfinite(sl_to_be_based_on_array).any()
@@ -352,11 +366,13 @@ def backtest_df_array_only(
         np.isinf(tsl_when_pct_from_avg_entry_array).any()
         or tsl_when_pct_from_avg_entry_array.any() < 0
     ):
-        raise ValueError("You need tsl_when_pct_from_avg_entry to be > 0 or not inf.")
+        raise ValueError(
+            "You need tsl_when_pct_from_avg_entry to be > 0 or not inf.")
 
     if tsl_true_or_false == False:
         if np.isfinite(tsl_based_on_array).any():
-            raise ValueError("tsl_true_or_false needs to be True to use tsl_based_on.")
+            raise ValueError(
+                "tsl_true_or_false needs to be True to use tsl_based_on.")
         if np.isfinite(tsl_trail_by_pct_array).any():
             raise ValueError(
                 "tsl_true_or_false needs to be True to use tsl_trail_by_pct."
@@ -432,7 +448,7 @@ def backtest_df_array_only(
         n *= arrays[k].size
         m = int(n / arrays[k].size)
         for j in range(1, arrays[k].size):
-            out[j * m : (j + 1) * m, k + 1 :] = out[0:m, k + 1 :]
+            out[j * m: (j + 1) * m, k + 1:] = out[0:m, k + 1:]
 
     # # literal unroll
     # counter = 0
@@ -491,6 +507,9 @@ def backtest_df_array_only(
     # Creating strat records
     strat_df_array = np.empty(
         total_indicator_settings * total_order_settings, dtype=strat_df_array_dt
+    )
+    settings_df_array = np.empty(
+        total_indicator_settings * total_order_settings, dtype=settings_array_dt
     )
     strat_arrays_filled = 0
 
@@ -628,7 +647,7 @@ def backtest_df_array_only(
             # Checking if gains
             gains_pct = ((account_state.equity - og_equity) / og_equity) * 100
             if gains_pct > gains_pct_filter:
-                temp_order_records = strat_records[0 : strat_records_filled[0]]
+                temp_order_records = strat_records[0: strat_records_filled[0]]
                 w_l = temp_order_records["real_pnl"][
                     ~np.isnan(temp_order_records["real_pnl"])
                 ]
@@ -686,9 +705,30 @@ def backtest_df_array_only(
                         strat_arrays_filled
                     ] = temp_order_records["equity"][-1]
 
+                    settings_df_array["order_set_id"][strat_arrays_filled] = order_settings_counter
+                    settings_df_array["ind_set_id"][strat_arrays_filled] = indicator_settings_counter
+                    settings_df_array["leverage"][strat_arrays_filled] = entry_order.leverage
+                    settings_df_array["max_equity_risk_pct"][strat_arrays_filled] = entry_order.max_equity_risk_pct * 100
+                    settings_df_array["max_equity_risk_value"][strat_arrays_filled] = entry_order.max_equity_risk_value
+                    settings_df_array["risk_rewards"][strat_arrays_filled] = entry_order.risk_rewards
+                    settings_df_array["size_pct"][strat_arrays_filled] = entry_order.size_pct * 100
+                    settings_df_array["size_value"][strat_arrays_filled] = entry_order.size_value
+                    settings_df_array["sl_pcts"][strat_arrays_filled] = entry_order.sl_pcts * 100
+                    settings_df_array["sl_to_be_based_on"][strat_arrays_filled] = stops_order.sl_to_be_based_on
+                    settings_df_array["sl_to_be_trail_by_when_pct_from_avg_entry"][
+                        strat_arrays_filled] = stops_order.sl_to_be_trail_by_when_pct_from_avg_entry * 100
+                    settings_df_array["sl_to_be_when_pct_from_avg_entry"][
+                        strat_arrays_filled] = stops_order.sl_to_be_when_pct_from_avg_entry * 100
+                    settings_df_array["sl_to_be_zero_or_entry"][strat_arrays_filled] = stops_order.sl_to_be_zero_or_entry
+                    settings_df_array["tp_pcts"][strat_arrays_filled] = entry_order.tp_pcts * 100
+                    settings_df_array["tsl_based_on"][strat_arrays_filled] = stops_order.tsl_based_on
+                    settings_df_array["tsl_pcts_init"][strat_arrays_filled] = entry_order.tsl_pcts_init * 100
+                    settings_df_array["tsl_trail_by_pct"][strat_arrays_filled] = stops_order.tsl_trail_by_pct * 100
+                    settings_df_array["tsl_when_pct_from_avg_entry"][strat_arrays_filled] = stops_order.tsl_when_pct_from_avg_entry * 100
+
                     strat_arrays_filled += 1
 
-    return strat_df_array[:strat_arrays_filled]
+    return strat_df_array[:strat_arrays_filled], settings_df_array[:strat_arrays_filled]
 
 
 @njit(cache=True)
@@ -791,7 +831,8 @@ def simulate_up_to_6(
     )
 
     sl_to_be_when_pct_from_avg_entry_array = to_1d_array_nb(
-        np.asarray(np.asarray(sl_to_be_when_pct_from_avg_entry) / 100, dtype=np.float_)
+        np.asarray(np.asarray(sl_to_be_when_pct_from_avg_entry) /
+                   100, dtype=np.float_)
     )
 
     sl_to_be_zero_or_entry_array = to_1d_array_nb(
@@ -803,18 +844,21 @@ def simulate_up_to_6(
         np.asarray(np.asarray(tsl_pcts_init) / 100, dtype=np.float_)
     )
 
-    tsl_based_on_array = to_1d_array_nb(np.asarray(tsl_based_on, dtype=np.float_))
+    tsl_based_on_array = to_1d_array_nb(
+        np.asarray(tsl_based_on, dtype=np.float_))
 
     tsl_trail_by_pct_array = to_1d_array_nb(
         np.asarray(np.asarray(tsl_trail_by_pct) / 100, dtype=np.float_)
     )
 
     tsl_when_pct_from_avg_entry_array = to_1d_array_nb(
-        np.asarray(np.asarray(tsl_when_pct_from_avg_entry) / 100, dtype=np.float_)
+        np.asarray(np.asarray(tsl_when_pct_from_avg_entry) /
+                   100, dtype=np.float_)
     )
 
     # Take Profit Arrays
-    risk_rewards_array = to_1d_array_nb(np.asarray(risk_rewards, dtype=np.float_))
+    risk_rewards_array = to_1d_array_nb(
+        np.asarray(risk_rewards, dtype=np.float_))
 
     tp_pcts_array = to_1d_array_nb(
         np.asarray(np.asarray(tp_pcts) / 100, dtype=np.float_)
@@ -844,7 +888,8 @@ def simulate_up_to_6(
         raise ValueError("sl_pcts has to be nan or greater than 0 and not inf")
 
     if np.isinf(tsl_pcts_init_array).any() or tsl_pcts_init_array.any() < 0:
-        raise ValueError("tsl_pcts_init has to be nan or greater than 0 and not inf")
+        raise ValueError(
+            "tsl_pcts_init has to be nan or greater than 0 and not inf")
 
     if np.isinf(tp_pcts_array).any() or tp_pcts_array.any() < 0:
         raise ValueError("tp_pcts has to be nan or greater than 0 and not inf")
@@ -878,13 +923,16 @@ def simulate_up_to_6(
 
     # check if RR has sl pct / price or tsl pct / price
     if not np.isnan(risk_rewards_array).any() and check_sl_tsl_for_nan:
-        raise ValueError("When risk to reward is set you have to have a sl or tsl > 0")
+        raise ValueError(
+            "When risk to reward is set you have to have a sl or tsl > 0")
 
     if risk_rewards_array.any() > 0 and np.isfinite(tp_pcts_array).any():
-        raise ValueError("You can't have take profits set when using Risk to reward")
+        raise ValueError(
+            "You can't have take profits set when using Risk to reward")
 
     if np.isinf(max_equity_risk_pct_array).any() or max_equity_risk_pct_array.any() < 0:
-        raise ValueError("Max equity risk percent has to be greater than 0 or np.nan")
+        raise ValueError(
+            "Max equity risk percent has to be greater than 0 or np.nan")
 
     elif (
         np.isinf(max_equity_risk_value_array).any()
@@ -900,7 +948,8 @@ def simulate_up_to_6(
             "You can't have max risk pct and max risk value both set at the same time."
         )
     if not np.isnan(size_value_array).any() and not np.isnan(size_pct_array).any():
-        raise ValueError("You can't have size and size pct set at the same time.")
+        raise ValueError(
+            "You can't have size and size pct set at the same time.")
 
     # Getting the right size for Size Type Amount
     if size_type == SizeType.Amount:
@@ -911,7 +960,8 @@ def simulate_up_to_6(
 
     if size_type == SizeType.PercentOfAccount:
         if np.isnan(size_pct_array).any():
-            raise ValueError("You need size_pct to be > 0 if using percent of account.")
+            raise ValueError(
+                "You need size_pct to be > 0 if using percent of account.")
 
     # checking to see if you set a stop loss for risk based size types
     if (
@@ -956,13 +1006,16 @@ def simulate_up_to_6(
         )
 
     if sl_to_be_zero_or_entry_array.any() < 0 or sl_to_be_zero_or_entry_array.any() > 1:
-        raise ValueError("sl_to_be_zero_or_entry needs to be 0 for zero or 1 for entry")
+        raise ValueError(
+            "sl_to_be_zero_or_entry needs to be 0 for zero or 1 for entry")
 
     if sl_to_be == False:
         if np.isfinite(sl_to_be_based_on_array).any():
-            raise ValueError("sl_to_be needs to be True to use sl_to_be_based_on.")
+            raise ValueError(
+                "sl_to_be needs to be True to use sl_to_be_based_on.")
         if sl_to_be_then_trail == True:
-            raise ValueError("sl_to_be needs to be True to use sl_to_be_then_trail.")
+            raise ValueError(
+                "sl_to_be needs to be True to use sl_to_be_then_trail.")
         if np.isfinite(sl_to_be_trail_by_when_pct_from_avg_entry_array).any():
             raise ValueError(
                 "sl_to_be needs to be True to use sl_to_be_trail_by_when_pct_from_avg_entry."
@@ -972,7 +1025,8 @@ def simulate_up_to_6(
                 "sl_to_be needs to be True to use sl_to_be_when_pct_from_avg_entry."
             )
         if np.isfinite(sl_to_be_zero_or_entry_array).any():
-            raise ValueError("sl_to_be needs to be True to use sl_to_be_zero_or_entry.")
+            raise ValueError(
+                "sl_to_be needs to be True to use sl_to_be_zero_or_entry.")
 
     if sl_to_be and (
         not np.isfinite(sl_to_be_based_on_array).any()
@@ -1011,11 +1065,13 @@ def simulate_up_to_6(
         np.isinf(tsl_when_pct_from_avg_entry_array).any()
         or tsl_when_pct_from_avg_entry_array.any() < 0
     ):
-        raise ValueError("You need tsl_when_pct_from_avg_entry to be > 0 or not inf.")
+        raise ValueError(
+            "You need tsl_when_pct_from_avg_entry to be > 0 or not inf.")
 
     if tsl_true_or_false == False:
         if np.isfinite(tsl_based_on_array).any():
-            raise ValueError("tsl_true_or_false needs to be True to use tsl_based_on.")
+            raise ValueError(
+                "tsl_true_or_false needs to be True to use tsl_based_on.")
         if np.isfinite(tsl_trail_by_pct_array).any():
             raise ValueError(
                 "tsl_true_or_false needs to be True to use tsl_trail_by_pct."
@@ -1085,12 +1141,14 @@ def simulate_up_to_6(
     sl_to_be_when_pct_from_avg_entry_cart_array = np.broadcast_to(
         broad_array[9], biggest
     )
-    sl_to_be_zero_or_entry_cart_array = np.broadcast_to(broad_array[10], biggest)
+    sl_to_be_zero_or_entry_cart_array = np.broadcast_to(
+        broad_array[10], biggest)
     tp_pcts_cart_array = np.broadcast_to(broad_array[11], biggest)
     tsl_based_on_cart_array = np.broadcast_to(broad_array[12], biggest)
     tsl_pcts_init_cart_array = np.broadcast_to(broad_array[13], biggest)
     tsl_trail_by_cart_array = np.broadcast_to(broad_array[14], biggest)
-    tsl_when_pct_from_avg_entry_cart_array = np.broadcast_to(broad_array[15], biggest)
+    tsl_when_pct_from_avg_entry_cart_array = np.broadcast_to(
+        broad_array[15], biggest)
 
     if entries.shape[1] == 1:
         entries = np.broadcast_to(entries, (entries.shape[0], biggest))
@@ -1231,11 +1289,12 @@ def simulate_up_to_6(
                     )
 
         # Checking if gains
-        temp_order_records = order_records[or_filled_start : order_records_id[0]]
+        temp_order_records = order_records[or_filled_start: order_records_id[0]]
         or_filled_start = order_records_id[0]
         gains_pct = ((account_state.equity - og_equity) / og_equity) * 100
 
-        w_l = temp_order_records["real_pnl"][~np.isnan(temp_order_records["real_pnl"])]
+        w_l = temp_order_records["real_pnl"][~np.isnan(
+            temp_order_records["real_pnl"])]
 
         w_l_no_be = w_l[w_l != 0]  # filter out all BE trades
 

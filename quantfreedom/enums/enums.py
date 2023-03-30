@@ -39,6 +39,7 @@ __all__ = [
 
     'or_dt',
     'strat_df_array_dt',
+    'settings_array_dt',
     'final_array_dt',
     'strat_records_dt',
 ]
@@ -199,6 +200,27 @@ final_array_dt = np.dtype([
     ('total_pnl', np.float_),
     ('ending_eq', np.float_),
     ('settings_id', np.int_),
+    ('leverage', np.float_),
+    ('max_equity_risk_pct', np.float_),
+    ('max_equity_risk_value', np.float_),
+    ('risk_rewards', np.float_),
+    ('size_pct', np.float_),
+    ('size_value', np.float_),
+    ('sl_pcts', np.float_),
+    ('sl_to_be_based_on', np.float_),
+    ('sl_to_be_trail_by_when_pct_from_avg_entry', np.float_),
+    ('sl_to_be_when_pct_from_avg_entry', np.float_),
+    ('sl_to_be_zero_or_entry', np.float_),
+    ('tp_pcts', np.float_),
+    ('tsl_based_on', np.float_),
+    ('tsl_pcts_init', np.float_),
+    ('tsl_trail_by_pct', np.float_),
+    ('tsl_when_pct_from_avg_entry', np.float_),
+], align=True)
+
+settings_array_dt = np.dtype([
+    ('order_set_id', np.int_),
+    ('ind_set_id', np.int_),
     ('leverage', np.float_),
     ('max_equity_risk_pct', np.float_),
     ('max_equity_risk_value', np.float_),

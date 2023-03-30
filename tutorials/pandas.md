@@ -10,3 +10,6 @@ concat two dataframes with multindex
     from tuples from array blah blah https://pandas.pydata.org/docs/reference/api/pandas.MultiIndex.from_tuples.html#pandas.MultiIndex.from_tuples
 
 create multindex
+
+get columns by column number 
+rsi_eval.iloc[:, [1]]

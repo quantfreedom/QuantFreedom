@@ -279,7 +279,7 @@ def strat_dashboard(
                 ),
                 go.Scatter(
                     x=talib_ind.index.to_list(),
-                    y=np.where(eval_res.values, talib_ind.values.flatten(), np.nan).flatten(),
+                    y=np.where(eval_res.values.flatten(), talib_ind.values.flatten(), np.nan).flatten(),
                     mode="markers",
                     name="Entries",
                     marker=dict(color="darkorange"),
