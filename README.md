@@ -24,6 +24,7 @@ install gitlens so you can see branches and remotes
 pip install from backtester folder pip install -e "blhablhab"
 you have to make sure you have auto save on if you want to have your commits auto showing up in source control or you have to save the file before it shows up
 make sure you have auto save set to after delay if you want it to auto update
+make sure you are on the dev branch and then fetch the upstream then right click on the dev upstream and merge into current branch ... then sync your changes to update your orgin branch
                                 
 ![env var](docs/docs/assets/env_var.png)
 
