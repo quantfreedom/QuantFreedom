@@ -11,11 +11,14 @@ Also if you have any spaces in the names of your folders make sure you put quote
 
 be sure do download git
 download vscode
+make a folder called coding
+change cmd prompt to default in vscode
+go back one folder after creating cloned repo in terminal cd ..
 clone the repository in the welcmoe or cmd thing for vscode backtester folder
-config temrinal settings to cmd promot as default
+config temrinal settings to cmd promot as default cntl shift p terminal select default profile click on cmd prompt
 change your cd in the cmd promot folder to a folder where you want the venv 
 create venv in folder
-ipython kernel install --user --name=
+ipython kernel install --user --name=qfFree
 activate
 pip install from backtester folder pip install -e "blhablhab"
 you have to make sure you have auto save on if you want to have your commits auto showing up in source control or you have to save the file before it shows up
