@@ -6,19 +6,18 @@ import numpy as np
 from numba import njit
 
 from quantfreedom._typing import Optional
-from quantfreedom.backtester.nb.helper_funcs import fill_order_records_nb, fill_strat_records_nb
-from quantfreedom.backtester.nb.buy_funcs import long_increase_nb, long_decrease_nb
-from quantfreedom.backtester.nb.sell_funcs import short_increase_nb, short_decrease_nb
+from quantfreedom.nb.helper_funcs import fill_order_records_nb, fill_strat_records_nb
+from quantfreedom.nb.buy_funcs import long_increase_nb, long_decrease_nb
+from quantfreedom.nb.sell_funcs import short_increase_nb, short_decrease_nb
 from quantfreedom._typing import (
     RecordArray,
     Array1d,
     Optional,
 )
-from quantfreedom.backtester.enums.enums import (
+from quantfreedom.enums.enums import (
     OrderType,
     SL_BE_or_Trail_BasedOn,
     OrderStatus,
-
     AccountState,
     EntryOrder,
     OrderResult,
@@ -27,22 +26,19 @@ from quantfreedom.backtester.enums.enums import (
 )
 
 
-@ njit(cache=True)
+@njit(cache=True)
 def check_sl_tp_nb(
     high_price: float,
     low_price: float,
     open_price: float,
     close_price: float,
-
     order_settings_counter: int,
-
     entry_type: int,
     fee_pct: float,
     bar: int,
     account_state: AccountState,
     order_result: OrderResult,
     stops_order: StopsOrder,
-
     order_records_id: Optional[Array1d] = None,
     order_records: Optional[RecordArray] = None,
 ):
@@ -88,12 +84,15 @@ def check_sl_tp_nb(
             elif stops_order.sl_to_be_based_on == SL_BE_or_Trail_BasedOn.high_price:
                 sl_be_based_on = high_price
 
-            if (sl_be_based_on - average_entry) / average_entry > stops_order.sl_to_be_when_pct_from_avg_entry:
+            if (
+                sl_be_based_on - average_entry
+            ) / average_entry > stops_order.sl_to_be_when_pct_from_avg_entry:
                 if stops_order.sl_to_be_zero_or_entry == 0:
                     # this formula only works with a 1 because it represents a size val of 1
                     # if i were to use any other value for size i would have to use the solving for tp code
-                    sl_prices_new = (fee_pct * average_entry +
-                                     average_entry) / (1 - fee_pct)
+                    sl_prices_new = (fee_pct * average_entry + average_entry) / (
+                        1 - fee_pct
+                    )
                 else:
                     sl_prices_new = average_entry
                 moved_sl_to_be_new = True
@@ -114,11 +113,13 @@ def check_sl_tp_nb(
                 trail_based_on = close_price
 
             # not going to adjust every candle
-            x = (trail_based_on - average_entry) / \
-                average_entry > stops_order.tsl_when_pct_from_avg_entry
+            x = (
+                trail_based_on - average_entry
+            ) / average_entry > stops_order.tsl_when_pct_from_avg_entry
             if x:
-                temp_tsl_price = trail_based_on - \
-                    trail_based_on * stops_order.tsl_trail_by_pct
+                temp_tsl_price = (
+                    trail_based_on - trail_based_on * stops_order.tsl_trail_by_pct
+                )
                 if temp_tsl_price > tsl_prices_new:
                     tsl_prices_new = temp_tsl_price
                     moved_tsl = True
@@ -159,12 +160,15 @@ def check_sl_tp_nb(
             elif stops_order.sl_to_be_based_on == SL_BE_or_Trail_BasedOn.high_price:
                 sl_be_based_on = high_price
 
-            if (average_entry - sl_be_based_on) / average_entry > stops_order.sl_to_be_when_pct_from_avg_entry:
+            if (
+                average_entry - sl_be_based_on
+            ) / average_entry > stops_order.sl_to_be_when_pct_from_avg_entry:
                 if stops_order.sl_to_be_zero_or_entry == 0:
                     # this formula only works with a 1 because it represents a size val of 1
                     # if i were to use any other value for size i would have to use the solving for tp code
-                    sl_prices_new = (average_entry - fee_pct *
-                                     average_entry) / (1 + fee_pct)
+                    sl_prices_new = (average_entry - fee_pct * average_entry) / (
+                        1 + fee_pct
+                    )
                 else:
                     sl_prices_new = average_entry
                 moved_sl_to_be_new = True
@@ -185,11 +189,13 @@ def check_sl_tp_nb(
                 trail_based_on = low_price
 
             # not going to adjust every candle
-            x = (average_entry - trail_based_on) / \
-                average_entry > stops_order.tsl_when_pct_from_avg_entry
+            x = (
+                average_entry - trail_based_on
+            ) / average_entry > stops_order.tsl_when_pct_from_avg_entry
             if x:
-                temp_tsl_price = trail_based_on + \
-                    trail_based_on * stops_order.tsl_trail_by_pct
+                temp_tsl_price = (
+                    trail_based_on + trail_based_on * stops_order.tsl_trail_by_pct
+                )
                 if temp_tsl_price < tsl_prices_new:
                     tsl_prices_new = temp_tsl_price
                     moved_tsl = True
@@ -225,11 +231,9 @@ def check_sl_tp_nb(
     if order_records is not None and (record_sl_move or moved_tsl):
         fill_order_records_nb(
             bar=bar,
-
             order_records=order_records,
             settings_counter=order_settings_counter,
             order_records_id=order_records_id,
-
             account_state=account_state,
             order_result=order_result_new,
         )
@@ -237,23 +241,19 @@ def check_sl_tp_nb(
     return order_result_new
 
 
-@ njit(cache=True)
+@njit(cache=True)
 def process_order_nb(
     price: float,
     bar: int,
     order_type: int,
-
     indicator_settings_counter: int,
     order_settings_counter: int,
-
     account_state: AccountState,
     entry_order: EntryOrder,
     order_result: OrderResult,
     static_variables: StaticVariables,
-
     order_records: Optional[RecordArray] = None,
     order_records_id: Optional[Array1d] = None,
-
     strat_records: Optional[RecordArray] = None,
     strat_records_filled: Optional[Array1d] = None,
 ):
@@ -289,28 +289,29 @@ def process_order_nb(
         )
         fill_strat = True
 
-    if fill_strat and \
-            strat_records is not None and \
-            order_result_new.order_status == OrderStatus.Filled:
+    if (
+        fill_strat
+        and strat_records is not None
+        and order_result_new.order_status == OrderStatus.Filled
+    ):
         fill_strat_records_nb(
             indicator_settings_counter=indicator_settings_counter,
             order_settings_counter=order_settings_counter,
-
             strat_records=strat_records,
             strat_records_filled=strat_records_filled,
-
             equity=account_state_new.equity,
             pnl=order_result_new.realized_pnl,
         )
 
-    if order_records is not None and order_result_new.order_status == OrderStatus.Filled:
+    if (
+        order_records is not None
+        and order_result_new.order_status == OrderStatus.Filled
+    ):
         fill_order_records_nb(
             bar=bar,
-
             order_records=order_records,
             settings_counter=order_settings_counter,
             order_records_id=order_records_id,
-
             account_state=account_state_new,
             order_result=order_result_new,
         )

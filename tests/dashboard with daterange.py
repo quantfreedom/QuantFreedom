@@ -3,15 +3,15 @@ import sys
 
 sys.dont_write_bytecode = True
 os.environ["NUMBA_DISABLE_JIT"] = "1"
-from quantfreedom.backtester.enums.enums import (
+from quantfreedom.enums.enums import (
     LeverageMode,
     SizeType,
     OrderType,
     SL_BE_or_Trail_BasedOn,
 )
-from quantfreedom.backtester.evaluators.evaluators import eval_is_below
-from quantfreedom.backtester.indicators.talib_ind import from_talib
-from quantfreedom.backtester.nb.simulate import simulate_up_to_6
+from quantfreedom.evaluators.evaluators import eval_is_below
+from quantfreedom.indicators.talib_ind import from_talib
+from quantfreedom.nb.simulate import simulate_up_to_6
 from dash import Dash, dcc, html, Input, Output, dash_table
 from plotly.subplots import make_subplots
 from datetime import date
@@ -130,11 +130,7 @@ def update_candles(
     index_prices = prices.open.loc[start_date_string:end_date_string].index
 
     fig = make_subplots(
-        rows=2,
-        cols=1,
-        shared_xaxes=True,
-        vertical_spacing=0.05,
-        row_heights=[.7,.3]
+        rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.05, row_heights=[0.7, 0.3]
     )
 
     (

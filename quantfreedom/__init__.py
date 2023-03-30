@@ -10,12 +10,13 @@ __version__ = _version
 # Most important classes
 from quantfreedom.utils import *
 from quantfreedom.data import *
-from quantfreedom.backtester import *
-from quantfreedom.backtester.base import *
-from quantfreedom.backtester.enums import *
-from quantfreedom.backtester.nb import *
-from quantfreedom.backtester.indicators import *
-from quantfreedom.backtester.evaluators import *
+from quantfreedom import *
+from quantfreedom.base import *
+from quantfreedom.enums import *
+from quantfreedom.nb import *
+from quantfreedom.indicators import *
+from quantfreedom.evaluators import *
+from quantfreedom.plotting import *
 
 # silence NumbaExperimentalFeatureWarning
 import warnings
