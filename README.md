@@ -20,6 +20,7 @@ change your cd in the cmd promot folder to a folder where you want the venv
 create venv in folder
 ipython kernel install --user --name=qfFree
 activate
+install gitlens so you can see branches and remotes
 pip install from backtester folder pip install -e "blhablhab"
 you have to make sure you have auto save on if you want to have your commits auto showing up in source control or you have to save the file before it shows up
 make sure you have auto save set to after delay if you want it to auto update
