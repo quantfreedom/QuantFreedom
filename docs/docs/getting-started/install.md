@@ -13,6 +13,8 @@ So if you do not need to do any of this then you can move to the next section ..
 
 Then make sure you have git installed ... if you don't go to the git website and download git and install. To the best of my knowledge all you need to do is just hit next for everything but i also suggest at least reading some of the options. https://git-scm.com/downloads
 
+you may run into problems later on with git saying you need to fonfigure your user name and user email ... to check this in the cmd terminal type in git config --global --list ... then you should see your user email and user name ... for github ... if you don't then type git config --global user.name "your_username" git config --global user.email "your_email_address@example.com"
+
 once you have git and python installed we need to check to make sure you were able to add everything to the path properly so press your windows key and type edit the system environment variables then click on environment variables then double click on path and make sure your python 310 scripts and python 310 are at the top then you want your vs code bin below it ... so your order should look something like mine but i think the most important is that the python version you want to use is first
 ![env var](docs/docs/assets/env_var.png)
 

@@ -1,0 +1,1 @@
+logical with np.where((test > 12) & (test < 70), True, False) to fill values and np.where((test > 12) & (test < 70)) to return indexes

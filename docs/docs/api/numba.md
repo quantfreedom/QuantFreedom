@@ -21,7 +21,7 @@ other Numba-compatible types.
     5.657668225467205e-06
     ```
     
-::: quantfreedom.backtester.nb.buy_funcs
-::: quantfreedom.backtester.nb.execute_funcs
-::: quantfreedom.backtester.nb.helper_funcs
-::: quantfreedom.backtester.nb.sell_funcs
+::: quantfreedom.nb.buy_funcs
+::: quantfreedom.nb.execute_funcs
+::: quantfreedom.nb.helper_funcs
+::: quantfreedom.nb.sell_funcs

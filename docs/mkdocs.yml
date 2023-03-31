@@ -106,3 +106,8 @@ nav:
   - API:
       - api/enums.md
       - api/numba.md
+  - Tutorials:
+      - tutorials/index.md
+      - Numpy: 
+          - tutorials/numpy/broadcasting.md
+          - tutorials/numpy/random.md
