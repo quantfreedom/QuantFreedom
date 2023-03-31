@@ -110,5 +110,9 @@ nav:
       - tutorials/index.md
       - Numpy: 
           - tutorials/numpy/broadcasting.md
-          - tutorials/numpy/random.md
           - tutorials/numpy/logical.md
+          - tutorials/numpy/random.md
+      - Pandas Functions:
+          - tutorials/pandas_functions/multiindex.md
+      - Pandas DataFrame:
+          - tutorials/pandas_dataframe/dataframe.md
