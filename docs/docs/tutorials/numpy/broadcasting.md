@@ -1,24 +1,12 @@
 # Broadcasting
 I will be going over all things broadcasting in this section
 
-## numpy.broadcast_to
+## np.broadcast_to
+### Youtube Tutorial
+https://youtu.be/2rZnShOh9as
 ### Offical numpy doc link
+Check offical doc link for proper syntax:
 https://numpy.org/doc/stable/reference/generated/numpy.broadcast_to.html
-
-### Syntax
-```
-Syntax : numpy.broadcast_to(array, shape, subok = False)
-
-Parameters :
-
-array : [array_liket] The array to broadcast.
-
-shape : [tuple] The shape of the desired array.
-
-subok : [bool, optional] If True, then sub-classes will be passed-through, otherwise by default, the returned array will be forced to be a base-class array.
-
-Return : [array] The output array.
-```
 
 ### Example 1
 ```pycon
@@ -31,7 +19,7 @@ array([[2, 3, 4],
 ```
 In the above code, an array 'a' is created with the values [2, 3, 4]. The numpy.broadcast_to() function is then used to create a new array with shape (3, 3) by repeating the values of 'a'. The resulting array has the values [[2, 3, 4], [2, 3, 4], [2, 3, 4]].
 
-![yes](tut_assets/numpy-manipulation-broadcast-to-function-image-1.png)
+![yes](np_assets/numpy-manipulation-broadcast-to-function-image-1.png)
 
 ### Example 2
 another example is if we wanted to take a scaler aka just a number and broadcast it to an array of a specific shape.

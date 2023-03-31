@@ -111,3 +111,4 @@ nav:
       - Numpy: 
           - tutorials/numpy/broadcasting.md
           - tutorials/numpy/random.md
+          - tutorials/numpy/logical.md
