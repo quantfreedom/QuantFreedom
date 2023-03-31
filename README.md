@@ -73,6 +73,6 @@ To install ta lib you need to do the following
 
 - Go to this website https://www.lfd.uci.edu/~gohlke/pythonlibs/#ta-lib 
 - Download the one that has your python version. You can check your python version ( i run python 3.10.10 on a 64bit windows machine so i am going to choose cp310 ) ... if you don't know your python version in the terminal type python --version.
-![talib](../assets/talib.png)
+![talib](docs/docs/assets/talib.png)
 - Once you downloaded the file you need to change your folder path in the terminal by doing cd (download location of folder)
 - Once there type in pip install ( full file name of the talib wheel you downloaded)
