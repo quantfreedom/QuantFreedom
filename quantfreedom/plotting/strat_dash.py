@@ -20,8 +20,6 @@ app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
 bg_color = "#0b0b18"
 
 
-
-
 def strat_dashboard(
     prices,
     eval_results,
@@ -37,7 +35,6 @@ def strat_dashboard(
     talib_ind = talib_indicator
     or_rec = order_records
     eval_res = eval_results
-
 
     def plot_trades_all_info():
 
@@ -279,7 +276,8 @@ def strat_dashboard(
                 ),
                 go.Scatter(
                     x=talib_ind.index.to_list(),
-                    y=np.where(eval_res.values.flatten(), talib_ind.values.flatten(), np.nan).flatten(),
+                    y=np.where(eval_res.values.flatten(),
+                               talib_ind.values.flatten(), np.nan).flatten(),
                     mode="markers",
                     name="Entries",
                     marker=dict(color="darkorange"),
@@ -290,6 +288,7 @@ def strat_dashboard(
             cols=1,
         )
         fig.update_xaxes(row=1, col=1, rangeslider_visible=False)
+        fig.update_yaxes(row=1, col=1, tickprefix="$")
         fig.update_layout(
             height=1000,
             legend_tracegroupgap=500,
@@ -313,7 +312,6 @@ def strat_dashboard(
             ),
         )
 
-
     def pnl_graph():
         y_pnl = np.append(
             0,
@@ -334,6 +332,7 @@ def strat_dashboard(
             paper_bgcolor=bg_color,
             plot_bgcolor=bg_color,
         )
+        pnl_graph.update_yaxes(tickprefix="$"),
 
         return (
             html.H1(
@@ -349,11 +348,11 @@ def strat_dashboard(
             ),
         )
 
-
     def d_table_update():
         d_table = pd.DataFrame(or_rec)
         for i in range(len(OrderType._fields)):
-            d_table.replace({"order_type": {i: OrderType._fields[i]}}, inplace=True)
+            d_table.replace(
+                {"order_type": {i: OrderType._fields[i]}}, inplace=True)
 
         for col in d_table:
             if d_table[col].dtype == "float64":
@@ -375,8 +374,10 @@ def strat_dashboard(
                 # page_action='none',
                 style_table={"height": "400px", "overflowY": "auto"},
                 fixed_rows={"headers": True},
-                style_header={"backgroundColor": "rgb(30, 30, 30)", "color": "white"},
-                style_data={"backgroundColor": "rgb(50, 50, 50)", "color": "white"},
+                style_header={
+                    "backgroundColor": "rgb(30, 30, 30)", "color": "white"},
+                style_data={
+                    "backgroundColor": "rgb(50, 50, 50)", "color": "white"},
                 style_cell_conditional=[
                     {"if": {"column_id": "settings_id"}, "width": "110px"},
                     {"if": {"column_id": "order_id"}, "width": "90px"},
@@ -384,7 +385,6 @@ def strat_dashboard(
             ),
         )
         return d_table
-
 
     app.layout = html.Div(
         [

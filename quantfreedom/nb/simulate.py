@@ -705,7 +705,6 @@ def backtest_df_array_only(
                         strat_arrays_filled
                     ] = temp_order_records["equity"][-1]
 
-                    settings_df_array["order_set_id"][strat_arrays_filled] = order_settings_counter
                     settings_df_array["ind_set_id"][strat_arrays_filled] = indicator_settings_counter
                     settings_df_array["leverage"][strat_arrays_filled] = entry_order.leverage
                     settings_df_array["max_equity_risk_pct"][strat_arrays_filled] = entry_order.max_equity_risk_pct * 100
