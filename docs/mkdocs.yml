@@ -5,6 +5,7 @@ repo_name: Quant Freedom
 
 theme:
   name: material
+  # @ts-ignore
   include_search_page: false
   search_index_only: true
   language: en
@@ -93,6 +94,7 @@ plugins:
             separate_signature: true
             docstring_section_style: list
   - search
+  - open-in-new-tab
   - autorefs
   - tags
   - minify:
@@ -112,7 +114,8 @@ nav:
           - tutorials/numpy/broadcasting.md
           - tutorials/numpy/logical.md
           - tutorials/numpy/random.md
-      - Pandas Functions:
-          - tutorials/pandas_functions/multiindex.md
       - Pandas DataFrame:
           - tutorials/pandas_dataframe/dataframe.md
+      - Pandas Functions:
+          - tutorials/pandas_functions/multiindex.md
+          - tutorials/pandas_functions/indexing.md

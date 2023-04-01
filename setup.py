@@ -49,6 +49,7 @@ setup(
             'mkdocs-material',
             'mkdocs-material-extensions',
             'mkdocs-minify-plugin',
+            'mkdocs-open-in-new-tab',
             'mkdocs-section-index',
             'mkdocs-video',
             'mkdocstrings',
