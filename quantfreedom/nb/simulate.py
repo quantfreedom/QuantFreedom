@@ -44,11 +44,11 @@ def backtest_df_array_only(
     leverage: PossibleArray = np.nan,
     max_equity_risk_pct: PossibleArray = np.nan,
     max_equity_risk_value: PossibleArray = np.nan,
-    max_lev: float = 100.0,
     max_order_size_pct: float = 100.0,
     min_order_size_pct: float = 0.01,
     max_order_size_value: float = np.inf,
     min_order_size_value: float = 1.0,
+    max_lev: float = 100.0,
     size_pct: PossibleArray = np.nan,
     size_value: PossibleArray = np.nan,
     # Stop Losses

@@ -16,6 +16,58 @@ from quantfreedom.enums import (
 )
 
 
+
+
+@njit(cache=True)
+def variable_checker(
+        # entry info
+    entries: PossibleArray,
+    open_prices: PossibleArray,
+    high_prices: PossibleArray,
+    low_prices: PossibleArray,
+    close_prices: PossibleArray,
+    # required account info
+    equity: float,
+    fee_pct: float,
+    mmr: float,
+    # required order
+    lev_mode: int,
+    order_type: int,
+    size_type: int,
+    # Order Params
+    leverage: PossibleArray = np.nan,
+    max_equity_risk_pct: PossibleArray = np.nan,
+    max_equity_risk_value: PossibleArray = np.nan,
+    max_order_size_pct: float = 100.0,
+    min_order_size_pct: float = 0.01,
+    max_order_size_value: float = np.inf,
+    min_order_size_value: float = 1.0,
+    max_lev: float = 100.0,
+    size_pct: PossibleArray = np.nan,
+    size_value: PossibleArray = np.nan,
+    # Stop Losses
+    sl_pcts: PossibleArray = np.nan,
+    sl_to_be: bool = False,
+    sl_to_be_based_on: PossibleArray = np.nan,
+    sl_to_be_when_pct_from_avg_entry: PossibleArray = np.nan,
+    sl_to_be_zero_or_entry: PossibleArray = np.nan,
+    sl_to_be_then_trail: bool = False,
+    sl_to_be_trail_by_when_pct_from_avg_entry: PossibleArray = np.nan,
+    # Trailing Stop Loss Params
+    tsl_pcts_init: PossibleArray = np.nan,
+    tsl_true_or_false: bool = False,
+    tsl_based_on: PossibleArray = np.nan,
+    tsl_trail_by_pct: PossibleArray = np.nan,
+    tsl_when_pct_from_avg_entry: PossibleArray = np.nan,
+    # Take Profit Params
+    risk_rewards: PossibleArray = np.nan,
+    tp_pcts: PossibleArray = np.nan,
+    # Results Filters
+    gains_pct_filter: float = -np.inf,
+    total_trade_filter: int = 0,
+):
+    pass
+
 @njit(cache=True)
 def static_var_checker(
     equity: float,
