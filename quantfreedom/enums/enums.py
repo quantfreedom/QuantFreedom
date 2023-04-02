@@ -24,36 +24,36 @@ import numpy as np
 from quantfreedom import _typing as tp
 
 __all__ = [
-    'AccountState',
-    'OrderStatusInfo',
-    'OrderStatus',
-    'OrderResult',
-    'OrderType',
-    'RejectedOrderError',
-    'SL_BE_or_Trail_BasedOn',
-    'LeverageMode',
-    'SizeType',
-    'EntryOrder',
-    'StopsOrder',
-    'StaticVariables',
-
-    'or_dt',
-    'strat_df_array_dt',
-    'settings_array_dt',
-    'final_array_dt',
-    'strat_records_dt',
+    "AccountState",
+    "OrderStatusInfo",
+    "OrderStatus",
+    "OrderResult",
+    "OrderType",
+    "RejectedOrderError",
+    "SL_BE_or_Trail_BasedOn",
+    "LeverageMode",
+    "SizeType",
+    "EntryOrder",
+    "StopsOrder",
+    "StaticVariables",
+    "Arrays1dTuple",
+    "or_dt",
+    "strat_df_array_dt",
+    "settings_array_dt",
+    "final_array_dt",
+    "strat_records_dt",
 ]
 
 
 class AccountState(tp.NamedTuple):
-    available_balance: float = 0.
-    cash_borrowed: float = 0.
-    cash_used: float = 0.
-    equity: float = 0.
+    available_balance: float = 0.0
+    cash_borrowed: float = 0.0
+    cash_used: float = 0.0
+    equity: float = 0.0
 
 
 class EntryOrder(tp.NamedTuple):
-    leverage: float = 0.
+    leverage: float = 0.0
     max_equity_risk_pct: float = np.nan
     max_equity_risk_value: float = np.nan
     order_type: int = 0
@@ -65,38 +65,61 @@ class EntryOrder(tp.NamedTuple):
     tsl_pcts_init: float = np.nan
 
 
+class Arrays1dTuple(tp.NamedTuple):
+    leverage_array: float
+    max_equity_risk_pct_array: float
+    max_equity_risk_value_array: float
+    risk_rewards_array: float
+    size_pct_array: float
+    size_value_array: float
+    sl_pcts_array: float
+    sl_to_be_based_on_array: float
+    sl_to_be_trail_by_when_pct_from_avg_entry_array: float
+    sl_to_be_when_pct_from_avg_entry_array: float
+    sl_to_be_zero_or_entry_array: float
+    tp_pcts_array: float
+    tsl_based_on_array: float
+    tsl_pcts_init_array: float
+    tsl_trail_by_pct_array: float
+    tsl_when_pct_from_avg_entry_array: float
+
+
 class OrderResult(tp.NamedTuple):
-    average_entry: float = 0.
-    fees_paid: float = 0.
-    leverage: float = 0.
+    average_entry: float = 0.0
+    fees_paid: float = 0.0
+    leverage: float = 0.0
     liq_price: float = np.nan
     moved_sl_to_be: bool = False
     order_status: int = 0
     order_status_info: int = 0
     order_type: int = 0
-    pct_chg_trade: float = 0.
-    position: float = 0.
-    price: float = 0.
-    realized_pnl: float = 0.
-    size_value: float = 0.
-    sl_pcts: float = 0.
-    sl_prices: float = 0.
-    tp_pcts: float = 0.
-    tp_prices: float = 0.
-    tsl_pcts_init: float = 0.
-    tsl_prices: float = 0.
+    pct_chg_trade: float = 0.0
+    position: float = 0.0
+    price: float = 0.0
+    realized_pnl: float = 0.0
+    size_value: float = 0.0
+    sl_pcts: float = 0.0
+    sl_prices: float = 0.0
+    tp_pcts: float = 0.0
+    tp_prices: float = 0.0
+    tsl_pcts_init: float = 0.0
+    tsl_prices: float = 0.0
 
 
 class StaticVariables(tp.NamedTuple):
+    fee_pct: float
     lev_mode: int
+    max_lev: float
+    max_order_size_pct: float
+    max_order_size_value: float
+    min_order_size_pct: float
+    min_order_size_value: float
+    mmr: float
+    order_type: int
     size_type: int
-    fee_pct: float = .0006
-    max_lev: float = 100.
-    max_order_size_pct: float = 1.
-    min_order_size_pct: float = .0001
-    max_order_size_value: float = np.inf
-    min_order_size_value: float = 1.
-    mmr: float = .005
+    sl_to_be_then_trail: bool
+    sl_to_be: bool
+    tsl_true_or_false: bool
 
 
 class StopsOrder(tp.NamedTuple):
@@ -180,91 +203,107 @@ SizeType = SizeTypeT()
 
 # ############# Records ############# #
 
-strat_df_array_dt = np.dtype([
-    ('or_set', np.int_),
-    ('ind_set', np.int_),
-    ('total_trades', np.float_),
-    ('gains_pct', np.float_),
-    ('win_rate', np.float_),
-    ('to_the_upside', np.float_),
-    ('total_pnl', np.float_),
-    ('ending_eq', np.float_),
-], align=True)
+strat_df_array_dt = np.dtype(
+    [
+        ("or_set", np.int_),
+        ("ind_set", np.int_),
+        ("total_trades", np.float_),
+        ("gains_pct", np.float_),
+        ("win_rate", np.float_),
+        ("to_the_upside", np.float_),
+        ("total_pnl", np.float_),
+        ("ending_eq", np.float_),
+    ],
+    align=True,
+)
 
 
-final_array_dt = np.dtype([
-    ('total_trades', np.float_),
-    ('gains_pct', np.float_),
-    ('win_rate', np.float_),
-    ('to_the_upside', np.float_),
-    ('total_pnl', np.float_),
-    ('ending_eq', np.float_),
-    ('settings_id', np.int_),
-    ('leverage', np.float_),
-    ('max_equity_risk_pct', np.float_),
-    ('max_equity_risk_value', np.float_),
-    ('risk_rewards', np.float_),
-    ('size_pct', np.float_),
-    ('size_value', np.float_),
-    ('sl_pcts', np.float_),
-    ('sl_to_be_based_on', np.float_),
-    ('sl_to_be_trail_by_when_pct_from_avg_entry', np.float_),
-    ('sl_to_be_when_pct_from_avg_entry', np.float_),
-    ('sl_to_be_zero_or_entry', np.float_),
-    ('tp_pcts', np.float_),
-    ('tsl_based_on', np.float_),
-    ('tsl_pcts_init', np.float_),
-    ('tsl_trail_by_pct', np.float_),
-    ('tsl_when_pct_from_avg_entry', np.float_),
-], align=True)
+final_array_dt = np.dtype(
+    [
+        ("total_trades", np.float_),
+        ("gains_pct", np.float_),
+        ("win_rate", np.float_),
+        ("to_the_upside", np.float_),
+        ("total_pnl", np.float_),
+        ("ending_eq", np.float_),
+        ("settings_id", np.int_),
+        ("leverage", np.float_),
+        ("max_equity_risk_pct", np.float_),
+        ("max_equity_risk_value", np.float_),
+        ("risk_rewards", np.float_),
+        ("size_pct", np.float_),
+        ("size_value", np.float_),
+        ("sl_pcts", np.float_),
+        ("sl_to_be_based_on", np.float_),
+        ("sl_to_be_trail_by_when_pct_from_avg_entry", np.float_),
+        ("sl_to_be_when_pct_from_avg_entry", np.float_),
+        ("sl_to_be_zero_or_entry", np.float_),
+        ("tp_pcts", np.float_),
+        ("tsl_based_on", np.float_),
+        ("tsl_pcts_init", np.float_),
+        ("tsl_trail_by_pct", np.float_),
+        ("tsl_when_pct_from_avg_entry", np.float_),
+    ],
+    align=True,
+)
 
-settings_array_dt = np.dtype([
-    ('ind_set_id', np.int_),
-    ('leverage', np.float_),
-    ('max_equity_risk_pct', np.float_),
-    ('max_equity_risk_value', np.float_),
-    ('risk_rewards', np.float_),
-    ('size_pct', np.float_),
-    ('size_value', np.float_),
-    ('sl_pcts', np.float_),
-    ('sl_to_be_based_on', np.float_),
-    ('sl_to_be_trail_by_when_pct_from_avg_entry', np.float_),
-    ('sl_to_be_when_pct_from_avg_entry', np.float_),
-    ('sl_to_be_zero_or_entry', np.float_),
-    ('tp_pcts', np.float_),
-    ('tsl_based_on', np.float_),
-    ('tsl_pcts_init', np.float_),
-    ('tsl_trail_by_pct', np.float_),
-    ('tsl_when_pct_from_avg_entry', np.float_),
-], align=True)
+settings_array_dt = np.dtype(
+    [
+        ("ind_set_id", np.int_),
+        ("leverage", np.float_),
+        ("max_equity_risk_pct", np.float_),
+        ("max_equity_risk_value", np.float_),
+        ("risk_rewards", np.float_),
+        ("size_pct", np.float_),
+        ("size_value", np.float_),
+        ("sl_pcts", np.float_),
+        ("sl_to_be_based_on", np.float_),
+        ("sl_to_be_trail_by_when_pct_from_avg_entry", np.float_),
+        ("sl_to_be_when_pct_from_avg_entry", np.float_),
+        ("sl_to_be_zero_or_entry", np.float_),
+        ("tp_pcts", np.float_),
+        ("tsl_based_on", np.float_),
+        ("tsl_pcts_init", np.float_),
+        ("tsl_trail_by_pct", np.float_),
+        ("tsl_when_pct_from_avg_entry", np.float_),
+    ],
+    align=True,
+)
 """
 A numpy array with specific data types that allow you to store specific information about your order result
 """
 
-strat_records_dt = np.dtype([
-    ('or_set', np.int_),
-    ('ind_set', np.int_),
-    ('real_pnl', np.float_),
-    ('equity', np.float_),
-], align=True)
+strat_records_dt = np.dtype(
+    [
+        ("or_set", np.int_),
+        ("ind_set", np.int_),
+        ("real_pnl", np.float_),
+        ("equity", np.float_),
+    ],
+    align=True,
+)
 
-or_dt = np.dtype([
-    ('order_id', np.int_),
-    ('settings_id', np.int_),
-    ('bar', np.int_),
-    ('size_value', np.float_),
-    ('price', np.float_),
-    ('avg_entry', np.float_),
-    ('fees_paid', np.float_),
-    ('order_type', np.float_),
-    ('real_pnl', np.float_),
-    ('equity', np.float_),
-    ('sl_prices', np.float_),
-    ('tsl_prices', np.float_),
-    ('tp_prices', np.float_),
-], align=True)
+or_dt = np.dtype(
+    [
+        ("order_id", np.int_),
+        ("settings_id", np.int_),
+        ("bar", np.int_),
+        ("size_value", np.float_),
+        ("price", np.float_),
+        ("avg_entry", np.float_),
+        ("fees_paid", np.float_),
+        ("order_type", np.float_),
+        ("real_pnl", np.float_),
+        ("equity", np.float_),
+        ("sl_prices", np.float_),
+        ("tsl_prices", np.float_),
+        ("tp_prices", np.float_),
+    ],
+    align=True,
+)
 
 
 class RejectedOrderError(Exception):
     """Rejected order error."""
+
     pass

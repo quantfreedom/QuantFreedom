@@ -1,27 +1,22 @@
-Plotly Dash:
-    ✔ make it so that trades is the first candle stick chart @done(23-03-28 07:57)
-    ✔ create dropdown of all times @done(23-03-28 07:57)
-    ✔ create date picker @done(23-03-28 07:57)
-    ✔ cumsum trade pnl chart lines with markers @done(23-03-28 14:25)
-    ✔ fix number formating in table @done(23-03-28 14:25)
-    ☐ change bar in order recoders to date time
-    ☐ create tons of functions for plotly
-    
+
 Currently Working On:
-    ☐ check all numba stuff
+    ☐ cretea functions for simulate up to 6
     ☐ do a check to make sure user isn't sending prices or price if they are sending user in df
     ☐ instead of doing logical and you can do np.where((test > 12) & (test < 70)) to get index or np.where((test > 12) & (test < 70), True, False) to fill values
-    ☐ add order order records based on clicking tab of settings 1 2 or 3
-    ☐ be able to select a specific date range 
     ☐ do enumerate where nececarry for count, value in enumerate(list(rsi_ind.columns)):
     ☐ make sure all values in cart are unique
     ☐ allow for there to be the ability to send the eval in the from talib so that it can do it all at once
     ☐ for prices code check if list of lists or if only string req check if list
-    ☐ figure out how to share results
+    
+Plotly Dash:
+    ☐ change bar in order recoders to date time
+    ☐ create tons of functions for plotly
+    ☐ add order order records based on clicking tab of settings 1 2 or 3
+    ☐ figure out how to share results like a screen shot of your dashboard
 
 Next Verson:
     ☐ create cart calc where the person can just copy paste their settings and get the number back as well as the number of cart times the number of ind settings ... then also include a number for total bars tested times number of order settings times number of ind settings make it a helper function because it will just print the results as the return
-    ☐ create base func that takes 1 set of settings and reutnrs the order record infor necessary to make an octobot like report in a new window https://raw.githubusercontent.com/Drakkar-Software/OctoBot-Pro/assets/images/report_1.jpg
+    ☐ create base func that takes 1 set of settings and returns the order record infor necessary to make an octobot like report in a new window https://raw.githubusercontent.com/Drakkar-Software/OctoBot-Pro/assets/images/report_1.jpg
     ☐ create base that returns entry settings using vbt indicator creation thing
     ☐ once new window then make it so you can select from a max of 5 or 10 different reports
 
@@ -53,6 +48,18 @@ Would Be Nice:
     ☐ send pct change of position in order result when decreasing or increaseing position size
 
 Archive:
+  ✔ make a variable checker function @done(23-04-02 09:48)
+  ✔ make fill strat result func @done(23-04-02 09:48)
+  ✔ make fill setting results func @done(23-04-02 09:48)
+  ✔ make create cart product func @done(23-04-02 09:48)
+  ✔ make check 1d array func @done(23-04-02 09:48)
+  ✔ make create 1d array func @done(23-04-02 09:48)
+  ✔ check all numba stuff @done(23-04-02 07:19)
+  ✔ fix number formating in table @done(23-03-28 14:25)
+  ✔ make it so that trades is the first candle stick chart @done(23-03-28 07:57)
+  ✔ create dropdown of all times @done(23-03-28 07:57)
+  ✔ create date picker @done(23-03-28 07:57)
+  ✔ cumsum trade pnl chart lines with markers @done(23-03-28 14:25)
   ✔ make it so that table header is frozen @done(23-03-27 20:25)
   ✔ check order records because there is tons of zeros that show up at the end @done(23-03-25 20:01)
   ✔ make it so that talib can take in atr data and process it with combos @done(23-03-26 13:53)

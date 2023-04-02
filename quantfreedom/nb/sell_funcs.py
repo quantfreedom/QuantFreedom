@@ -24,7 +24,7 @@ def short_increase_nb(
     account_state: AccountState,
     entry_order: EntryOrder,
     order_result: OrderResult,
-    static_variables: StaticVariables,
+    static_variables_tuple: StaticVariables,
 ) -> Tuple[AccountState, OrderResult]:
 
     # new cash borrowed needs to be returned
@@ -48,15 +48,15 @@ def short_increase_nb(
     tp_prices_new = np.nan
 
     if (
-        static_variables.size_type != SizeType.Amount
-        and static_variables.size_type != SizeType.PercentOfAccount
+        static_variables_tuple.size_type != SizeType.Amount
+        and static_variables_tuple.size_type != SizeType.PercentOfAccount
     ):
 
         if np.isfinite(sl_pcts_new):
-            if static_variables.size_type == SizeType.RiskPercentOfAccount:
+            if static_variables_tuple.size_type == SizeType.RiskPercentOfAccount:
                 size_value = account_state.equity * entry_order.size_pct / sl_pcts_new
 
-            elif static_variables.size_type == SizeType.RiskAmount:
+            elif static_variables_tuple.size_type == SizeType.RiskAmount:
                 size_value = entry_order.size_value / sl_pcts_new
                 if size_value < 1:
                     raise ValueError(
@@ -68,17 +68,17 @@ def short_increase_nb(
             size_value = -possible_loss / (
                 1
                 - temp_sl_price / price
-                - static_variables.fee_pct
-                - temp_sl_price * static_variables.fee_pct / price
+                - static_variables_tuple.fee_pct
+                - temp_sl_price * static_variables_tuple.fee_pct / price
             )
 
         elif np.isfinite(tsl_pcts_init_new):
-            if static_variables.size_type == SizeType.RiskPercentOfAccount:
+            if static_variables_tuple.size_type == SizeType.RiskPercentOfAccount:
                 size_value = (
                     account_state.equity * entry_order.size_pct / tsl_pcts_init_new
                 )
 
-            elif static_variables.size_type == SizeType.RiskAmount:
+            elif static_variables_tuple.size_type == SizeType.RiskAmount:
                 size_value = entry_order.size_value / tsl_pcts_init_new
                 if size_value < 1:
                     raise ValueError(
@@ -90,19 +90,19 @@ def short_increase_nb(
             size_value = -possible_loss / (
                 1
                 - temp_tsl_price / price
-                - static_variables.fee_pct
-                - temp_tsl_price * static_variables.fee_pct / price
+                - static_variables_tuple.fee_pct
+                - temp_tsl_price * static_variables_tuple.fee_pct / price
             )
 
-    elif static_variables.size_type == SizeType.Amount:
+    elif static_variables_tuple.size_type == SizeType.Amount:
         size_value = entry_order.size_value
-        if size_value > static_variables.max_order_size_value:
-            size_value = static_variables.max_order_size_value
+        if size_value > static_variables_tuple.max_order_size_value:
+            size_value = static_variables_tuple.max_order_size_value
         elif size_value == np.inf:
             size_value = order_result.position
 
     # getting size_value for percent of account
-    elif static_variables.size_type == SizeType.PercentOfAccount:
+    elif static_variables_tuple.size_type == SizeType.PercentOfAccount:
         size_value = account_state.equity * entry_order.size_pct  # math checked
 
     else:
@@ -117,21 +117,21 @@ def short_increase_nb(
     #     possible_loss = size_value * sl_pcts_new
 
     #     size_value = -possible_loss / \
-    #         ((sl_prices_new/price - 1) - static_variables.fee_pct -
-    #             (sl_prices_new * static_variables.fee_pct / price))
+    #         ((sl_prices_new/price - 1) - static_variables_tuple.fee_pct -
+    #             (sl_prices_new * static_variables_tuple.fee_pct / price))
 
     # elif np.isfinite(tsl_prices_new):
     #     tsl_pcts_init_new = (price - tsl_prices_new) / price
     #     possible_loss = size_value * tsl_pcts_init_new
 
     #     size_value = -possible_loss / \
-    #         ((tsl_prices_new/price - 1) - static_variables.fee_pct -
-    #             (tsl_prices_new * static_variables.fee_pct / price))
+    #         ((tsl_prices_new/price - 1) - static_variables_tuple.fee_pct -
+    #             (tsl_prices_new * static_variables_tuple.fee_pct / price))
 
     if (
         size_value < 1
-        or size_value > static_variables.max_order_size_value
-        or size_value < static_variables.min_order_size_value
+        or size_value > static_variables_tuple.max_order_size_value
+        or size_value < static_variables_tuple.min_order_size_value
     ):
         raise RejectedOrderError(
             "Long Increase - Size Value is either to big or too small"
@@ -194,10 +194,10 @@ def short_increase_nb(
         pnl_no_fees = coin_size * (average_entry_new - temp_price)  # math checked
 
         open_fee = (
-            coin_size * average_entry_new * static_variables.fee_pct
+            coin_size * average_entry_new * static_variables_tuple.fee_pct
         )  # math checked
 
-        close_fee = coin_size * temp_price * static_variables.fee_pct  # math checked
+        close_fee = coin_size * temp_price * static_variables_tuple.fee_pct  # math checked
 
         possible_loss = -(pnl_no_fees - open_fee - close_fee)  # math checked
 
@@ -237,7 +237,7 @@ def short_increase_nb(
 
     # check if leverage_new amount is possible with size_value and free cash
     # TODO add in info for leverage iso
-    if static_variables.lev_mode == LeverageMode.LeastFreeCashUsed:
+    if static_variables_tuple.lev_mode == LeverageMode.LeastFreeCashUsed:
         # create leverage_new for sl
         if not np.isnan(sl_prices_new):
             temp_price = sl_prices_new
@@ -248,11 +248,11 @@ def short_increase_nb(
             temp_price
             + temp_price * 0.002
             - average_entry_new  # TODO .2 is percent padding user wants
-            + static_variables.mmr * average_entry_new
+            + static_variables_tuple.mmr * average_entry_new
         )  # math checked
 
-        if leverage_new > static_variables.max_lev:
-            leverage_new = static_variables.max_lev
+        if leverage_new > static_variables_tuple.max_lev:
+            leverage_new = static_variables_tuple.max_lev
     else:
         raise RejectedOrderError(
             "Long Increase - Either lev mode is nan or something is wrong with the leverage_new or leverage_new mode"
@@ -261,10 +261,10 @@ def short_increase_nb(
     # Getting Order Cost
     # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001064&language=en_US
     initial_margin = size_value / leverage_new
-    fee_to_open = size_value * static_variables.fee_pct  # math checked
+    fee_to_open = size_value * static_variables_tuple.fee_pct  # math checked
 
     possible_bankruptcy_fee = (
-        size_value * (leverage_new + 1) / leverage_new * static_variables.fee_pct
+        size_value * (leverage_new + 1) / leverage_new * static_variables_tuple.fee_pct
     )
 
     cash_used_new = (
@@ -289,7 +289,7 @@ def short_increase_nb(
         cash_borrowed_new = account_state.cash_borrowed + size_value - cash_used_new
 
         liq_price_new = average_entry_new * (
-            1 + (1 / leverage_new) - static_variables.mmr
+            1 + (1 / leverage_new) - static_variables_tuple.mmr
         )  # math checked
 
     # Create take profits if requested
@@ -303,17 +303,17 @@ def short_increase_nb(
 
         loss_no_fees = coin_size * (average_entry_new - sl_or_tsl_prices)
 
-        fee_open = coin_size * average_entry_new * static_variables.fee_pct
+        fee_open = coin_size * average_entry_new * static_variables_tuple.fee_pct
 
-        fee_close = coin_size * sl_or_tsl_prices * static_variables.fee_pct
+        fee_close = coin_size * sl_or_tsl_prices * static_variables_tuple.fee_pct
 
         loss = loss_no_fees - fee_open - fee_close
 
         profit = -loss * entry_order.risk_rewards
 
         tp_prices_new = -(
-            (profit - size_value + size_value * static_variables.fee_pct)
-            * (average_entry_new / (size_value + size_value * static_variables.fee_pct))
+            (profit - size_value + size_value * static_variables_tuple.fee_pct)
+            * (average_entry_new / (size_value + size_value * static_variables_tuple.fee_pct))
         )  # math checked
 
         tp_pcts_new = (

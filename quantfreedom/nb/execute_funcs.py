@@ -251,7 +251,7 @@ def process_order_nb(
     account_state: AccountState,
     entry_order: EntryOrder,
     order_result: OrderResult,
-    static_variables: StaticVariables,
+    static_variables_tuple: StaticVariables,
     order_records: Optional[RecordArray] = None,
     order_records_id: Optional[Array1d] = None,
     strat_records: Optional[RecordArray] = None,
@@ -264,7 +264,7 @@ def process_order_nb(
             entry_order=entry_order,
             order_result=order_result,
             account_state=account_state,
-            static_variables=static_variables,
+            static_variables_tuple=static_variables_tuple,
         )
     elif order_type == OrderType.ShortEntry:
         account_state_new, order_result_new = short_increase_nb(
@@ -272,20 +272,20 @@ def process_order_nb(
             entry_order=entry_order,
             order_result=order_result,
             account_state=account_state,
-            static_variables=static_variables,
+            static_variables_tuple=static_variables_tuple,
         )
     elif OrderType.LongLiq <= order_type <= OrderType.LongTSL:
         account_state_new, order_result_new = long_decrease_nb(
             order_result=order_result,
             account_state=account_state,
-            fee_pct=static_variables.fee_pct,
+            fee_pct=static_variables_tuple.fee_pct,
         )
         fill_strat = True
     elif OrderType.ShortLiq <= order_type <= OrderType.ShortTSL:
         account_state_new, order_result_new = short_decrease_nb(
             order_result=order_result,
             account_state=account_state,
-            fee_pct=static_variables.fee_pct,
+            fee_pct=static_variables_tuple.fee_pct,
         )
         fill_strat = True
 
