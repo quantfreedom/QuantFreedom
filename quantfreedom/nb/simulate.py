@@ -149,6 +149,8 @@ def backtest_df_array_only_nb(
     ) = create_cart_product_nb(
         arrays_1d_tuple=arrays_1d_tuple,
     )
+    
+    arrays_1d_tuple = 0
 
     # Creating Settings Vars
     total_order_settings = sl_pcts_cart_array.shape[0]
@@ -333,7 +335,7 @@ def backtest_df_array_only_nb(
 
 
 @njit(cache=True)
-def simulate_up_to_6(
+def simulate_up_to_6_nb(
     # entry info
     entries: PossibleArray,
     open_prices: PossibleArray,
@@ -378,7 +380,7 @@ def simulate_up_to_6(
     tp_pcts: PossibleArray = np.nan,
 ) -> tuple[Array1d, Array1d, Array1d]:
 
-    # Static checks & create
+    # Static checks
     static_variables_tuple = static_var_checker_nb(
         equity=equity,
         fee_pct=fee_pct,
@@ -394,344 +396,79 @@ def simulate_up_to_6(
         sl_to_be=sl_to_be,
         sl_to_be_then_trail=sl_to_be_then_trail,
         tsl_true_or_false=tsl_true_or_false,
-        gains_pct_filter=0.0,
+        gains_pct_filter=-np.inf,
         total_trade_filter=0,
     )
+
     og_equity = equity
 
-    # Order Arrays
-    leverage_array = to_1d_array_nb(np.asarray(leverage, dtype=np.float_))
-
-    max_equity_risk_pct_array = to_1d_array_nb(
-        np.asarray(np.asarray(max_equity_risk_pct) / 100, dtype=np.float_)
-    )
-
-    max_equity_risk_value_array = to_1d_array_nb(
-        np.asarray(max_equity_risk_value, dtype=np.float_)
-    )
-
-    size_pct_array = to_1d_array_nb(
-        np.asarray(np.asarray(size_pct) / 100, dtype=np.float_)
-    )
-
-    size_value_array = to_1d_array_nb(np.asarray(size_value, dtype=np.float_))
-
-    # Stop Loss Arrays
-    sl_pcts_array = to_1d_array_nb(
-        np.asarray(np.asarray(sl_pcts) / 100, dtype=np.float_)
-    )
-
-    sl_to_be_based_on_array = to_1d_array_nb(
-        np.asarray(sl_to_be_based_on, dtype=np.float_)
-    )
-
-    sl_to_be_trail_by_when_pct_from_avg_entry_array = to_1d_array_nb(
-        np.asarray(
-            np.asarray(sl_to_be_trail_by_when_pct_from_avg_entry) / 100, dtype=np.float_
-        )
-    )
-
-    sl_to_be_when_pct_from_avg_entry_array = to_1d_array_nb(
-        np.asarray(np.asarray(sl_to_be_when_pct_from_avg_entry) / 100, dtype=np.float_)
-    )
-
-    sl_to_be_zero_or_entry_array = to_1d_array_nb(
-        np.asarray(sl_to_be_zero_or_entry, dtype=np.float_)
-    )
-
-    # Trailing Stop Loss Arrays
-    tsl_pcts_init_array = to_1d_array_nb(
-        np.asarray(np.asarray(tsl_pcts_init) / 100, dtype=np.float_)
-    )
-
-    tsl_based_on_array = to_1d_array_nb(np.asarray(tsl_based_on, dtype=np.float_))
-
-    tsl_trail_by_pct_array = to_1d_array_nb(
-        np.asarray(np.asarray(tsl_trail_by_pct) / 100, dtype=np.float_)
-    )
-
-    tsl_when_pct_from_avg_entry_array = to_1d_array_nb(
-        np.asarray(np.asarray(tsl_when_pct_from_avg_entry) / 100, dtype=np.float_)
-    )
-
-    # Take Profit Arrays
-    risk_rewards_array = to_1d_array_nb(np.asarray(risk_rewards, dtype=np.float_))
-
-    tp_pcts_array = to_1d_array_nb(
-        np.asarray(np.asarray(tp_pcts) / 100, dtype=np.float_)
+    # Create 1d Arrays
+    arrays_1d_tuple = create_1d_arrays_nb(
+        leverage=leverage,
+        max_equity_risk_pct=max_equity_risk_pct,
+        max_equity_risk_value=max_equity_risk_value,
+        risk_rewards=risk_rewards,
+        size_pct=size_pct,
+        size_value=size_value,
+        sl_pcts=sl_pcts,
+        sl_to_be_based_on=sl_to_be_based_on,
+        sl_to_be_trail_by_when_pct_from_avg_entry=sl_to_be_trail_by_when_pct_from_avg_entry,
+        sl_to_be_when_pct_from_avg_entry=sl_to_be_when_pct_from_avg_entry,
+        sl_to_be_zero_or_entry=sl_to_be_zero_or_entry,
+        tp_pcts=tp_pcts,
+        tsl_based_on=tsl_based_on,
+        tsl_pcts_init=tsl_pcts_init,
+        tsl_trail_by_pct=tsl_trail_by_pct,
+        tsl_when_pct_from_avg_entry=tsl_when_pct_from_avg_entry,
     )
 
     # Checking all new arrays
-    if np.isfinite(size_value_array).all():
-        if size_value_array.any() < 1:
-            raise ValueError("size_value must be greater than 1.")
-        if size_value_array.any() > max_order_size_value:
-            raise ValueError("size_value is greater than max_order_size_value")
-
-        if size_value_array.any() < min_order_size_value:
-            raise ValueError("size_value is greater than max_order_size_value")
-
-    if not np.isfinite(size_pct_array).all():
-        if size_pct_array.any() < 1:
-            raise ValueError("size_pct must be greater than 1.")
-
-        if size_pct_array.any() > max_order_size_pct:
-            raise ValueError("size_pct is greater than max_order_size_pct")
-
-        if size_pct_array.any() < min_order_size_pct:
-            raise ValueError("size_pct is greater than max_order_size_pct")
-
-    if np.isinf(sl_pcts_array).any() or sl_pcts_array.any() < 0:
-        raise ValueError("sl_pcts has to be nan or greater than 0 and not inf")
-
-    if np.isinf(tsl_pcts_init_array).any() or tsl_pcts_init_array.any() < 0:
-        raise ValueError("tsl_pcts_init has to be nan or greater than 0 and not inf")
-
-    if np.isinf(tp_pcts_array).any() or tp_pcts_array.any() < 0:
-        raise ValueError("tp_pcts has to be nan or greater than 0 and not inf")
-
-    if (0 > lev_mode > len(LeverageMode)) or not np.isfinite(lev_mode):
-        raise ValueError("leverage mode is out of range or not finite")
-
-    check_sl_tsl_for_nan = (
-        np.isnan(sl_pcts_array).any() and np.isnan(tsl_pcts_init_array).any()
-    )
-
-    # if leverage is too big or too small
-    if lev_mode == LeverageMode.Isolated:
-        if not np.isfinite(leverage_array).any() or (
-            leverage_array.any() > max_lev or leverage_array.any() < 0
-        ):
-            raise ValueError("leverage needs to be between 1 and max lev")
-    if lev_mode == LeverageMode.LeastFreeCashUsed:
-        if check_sl_tsl_for_nan:
-            raise ValueError(
-                "When using Least Free Cash Used set a proper sl or tsl > 0"
-            )
-        if np.isfinite(leverage_array).any():
-            raise ValueError(
-                "When using Least Free Cash Used leverage iso must be np.nan"
-            )
-
-    # making sure we have a number greater than 0 for rr
-    if np.isinf(risk_rewards_array).any() or risk_rewards_array.any() < 0:
-        raise ValueError("Risk Rewards has to be greater than 0 or np.nan")
-
-    # check if RR has sl pct / price or tsl pct / price
-    if not np.isnan(risk_rewards_array).any() and check_sl_tsl_for_nan:
-        raise ValueError("When risk to reward is set you have to have a sl or tsl > 0")
-
-    if risk_rewards_array.any() > 0 and np.isfinite(tp_pcts_array).any():
-        raise ValueError("You can't have take profits set when using Risk to reward")
-
-    if np.isinf(max_equity_risk_pct_array).any() or max_equity_risk_pct_array.any() < 0:
-        raise ValueError("Max equity risk percent has to be greater than 0 or np.nan")
-
-    elif (
-        np.isinf(max_equity_risk_value_array).any()
-        or max_equity_risk_value_array.any() < 0
-    ):
-        raise ValueError("Max equity risk has to be greater than 0 or np.nan")
-
-    if (
-        not np.isnan(max_equity_risk_pct_array).any()
-        and not np.isnan(max_equity_risk_value_array).any()
-    ):
-        raise ValueError(
-            "You can't have max risk pct and max risk value both set at the same time."
-        )
-    if not np.isnan(size_value_array).any() and not np.isnan(size_pct_array).any():
-        raise ValueError("You can't have size and size pct set at the same time.")
-
-    # Getting the right size for Size Type Amount
-    if size_type == SizeType.Amount:
-        if np.isnan(size_value_array).any() or size_value_array.any() < 1:
-            raise ValueError(
-                "With SizeType as amount, size_value must be 1 or greater."
-            )
-
-    if size_type == SizeType.PercentOfAccount:
-        if np.isnan(size_pct_array).any():
-            raise ValueError("You need size_pct to be > 0 if using percent of account.")
-
-    # checking to see if you set a stop loss for risk based size types
-    if (
-        size_type == SizeType.RiskAmount
-        or (size_type == SizeType.RiskPercentOfAccount)
-        and check_sl_tsl_for_nan
-    ):
-        raise ValueError(
-            "When using Risk Amount or Risk Percent of Account set a proper sl pct or tsl pct > 0"
-        )
-
-    # setting risk percent size
-    if size_type == SizeType.RiskPercentOfAccount:
-        if np.isnan(size_pct_array).any():
-            raise ValueError(
-                "You need size_pct to be > 0 if using risk percent of account."
-            )
-
-    # stop loss break even checks
-    if np.isfinite(sl_to_be_based_on_array).any() and (
-        sl_to_be_based_on_array.any() < SL_BE_or_Trail_BasedOn.open_price
-        or sl_to_be_based_on_array.any() > SL_BE_or_Trail_BasedOn.close_price
-    ):
-        raise ValueError(
-            "You need sl_to_be_based_on to be be either 0 1 2 or 3. look up SL_BE_or_Trail_BasedOn enums"
-        )
-
-    if (
-        np.isinf(sl_to_be_trail_by_when_pct_from_avg_entry_array).any()
-        or sl_to_be_trail_by_when_pct_from_avg_entry_array.any() < 0
-    ):
-        raise ValueError(
-            "You need sl_to_be_trail_by_when_pct_from_avg_entry to be > 0 or not inf."
-        )
-
-    if (
-        np.isinf(sl_to_be_when_pct_from_avg_entry_array).any()
-        or sl_to_be_when_pct_from_avg_entry_array.any() < 0
-    ):
-        raise ValueError(
-            "You need sl_to_be_when_pct_from_avg_entry to be > 0 or not inf."
-        )
-
-    if sl_to_be_zero_or_entry_array.any() < 0 or sl_to_be_zero_or_entry_array.any() > 1:
-        raise ValueError("sl_to_be_zero_or_entry needs to be 0 for zero or 1 for entry")
-
-    if sl_to_be == False:
-        if np.isfinite(sl_to_be_based_on_array).any():
-            raise ValueError("sl_to_be needs to be True to use sl_to_be_based_on.")
-        if sl_to_be_then_trail == True:
-            raise ValueError("sl_to_be needs to be True to use sl_to_be_then_trail.")
-        if np.isfinite(sl_to_be_trail_by_when_pct_from_avg_entry_array).any():
-            raise ValueError(
-                "sl_to_be needs to be True to use sl_to_be_trail_by_when_pct_from_avg_entry."
-            )
-        if np.isfinite(sl_to_be_when_pct_from_avg_entry_array).any():
-            raise ValueError(
-                "sl_to_be needs to be True to use sl_to_be_when_pct_from_avg_entry."
-            )
-        if np.isfinite(sl_to_be_zero_or_entry_array).any():
-            raise ValueError("sl_to_be needs to be True to use sl_to_be_zero_or_entry.")
-
-    if sl_to_be and (
-        not np.isfinite(sl_to_be_based_on_array).any()
-        or not np.isfinite(sl_to_be_when_pct_from_avg_entry_array).any()
-        or not np.isfinite(sl_to_be_zero_or_entry_array).any()
-        or not np.isfinite(sl_pcts_array).any()
-    ):
-        raise ValueError(
-            "If you have sl_to_be set to true then you must provide the other params like sl_pcts etc"
-        )
-
-    if (sl_to_be and sl_to_be_then_trail) and (
-        not np.isfinite(sl_to_be_based_on_array).any()
-        or not np.isfinite(sl_to_be_when_pct_from_avg_entry_array).any()
-        or not np.isfinite(sl_to_be_zero_or_entry_array).any()
-        or not np.isfinite(sl_to_be_trail_by_when_pct_from_avg_entry_array).any()
-        or not np.isfinite(sl_pcts_array).any()
-    ):
-        raise ValueError(
-            "If you have sl_to_be set to true then you must provide the other params like sl_pcts etc"
-        )
-
-    # tsl Checks
-    if np.isfinite(tsl_based_on_array).any() and (
-        tsl_based_on_array.any() < SL_BE_or_Trail_BasedOn.open_price
-        or tsl_based_on_array.any() > SL_BE_or_Trail_BasedOn.close_price
-    ):
-        raise ValueError(
-            "You need tsl_to_be_based_on to be be either 0 1 2 or 3. look up SL_BE_or_Trail_BasedOn enums"
-        )
-
-    if np.isinf(tsl_trail_by_pct_array).any() or tsl_trail_by_pct_array.any() < 0:
-        raise ValueError("You need tsl_trail_by_pct to be > 0 or not inf.")
-
-    if (
-        np.isinf(tsl_when_pct_from_avg_entry_array).any()
-        or tsl_when_pct_from_avg_entry_array.any() < 0
-    ):
-        raise ValueError("You need tsl_when_pct_from_avg_entry to be > 0 or not inf.")
-
-    if tsl_true_or_false == False:
-        if np.isfinite(tsl_based_on_array).any():
-            raise ValueError("tsl_true_or_false needs to be True to use tsl_based_on.")
-        if np.isfinite(tsl_trail_by_pct_array).any():
-            raise ValueError(
-                "tsl_true_or_false needs to be True to use tsl_trail_by_pct."
-            )
-        if np.isfinite(tsl_when_pct_from_avg_entry_array).any():
-            raise ValueError(
-                "tsl_true_or_false needs to be True to use tsl_when_pct_from_avg_entry."
-            )
-
-    if tsl_true_or_false and (
-        not np.isfinite(tsl_based_on_array).any()
-        or not np.isfinite(tsl_trail_by_pct_array).any()
-        or not np.isfinite(tsl_when_pct_from_avg_entry_array).any()
-        or not np.isfinite(tsl_pcts_init_array).any()
-    ):
-        raise ValueError(
-            "If you have tsl_true_or_false set to true then you must provide the other params like tsl_pcts_init etc"
-        )
-
-    # Cart of new arrays
-    broad_array = (
-        leverage_array,
-        max_equity_risk_pct_array,
-        max_equity_risk_value_array,
-        risk_rewards_array,
-        size_pct_array,
-        size_value_array,
-        sl_pcts_array,
-        sl_to_be_based_on_array,
-        sl_to_be_trail_by_when_pct_from_avg_entry_array,
-        sl_to_be_when_pct_from_avg_entry_array,
-        sl_to_be_zero_or_entry_array,
-        tp_pcts_array,
-        tsl_based_on_array,
-        tsl_pcts_init_array,
-        tsl_trail_by_pct_array,
-        tsl_when_pct_from_avg_entry_array,
+    check_1d_arrays_nb(
+        static_variables_tuple=static_variables_tuple,
+        arrays_1d_tuple=arrays_1d_tuple,
     )
 
     x = 0
     biggest = 1
     while x < 7:
-        if broad_array[x].size > 1:
-            biggest = broad_array[x].size
+        if arrays_1d_tuple[x].size > 1:
+            biggest = arrays_1d_tuple[x].size
+            x += 1
             break
         x += 1
 
     while x < 7:
-        if broad_array[x].size > 1 and broad_array[x].size != biggest:
+        if arrays_1d_tuple[x].size > 1 and arrays_1d_tuple[x].size != biggest:
             raise ValueError("Size mismatch")
         x += 1
-    if biggest >= 6:
+    if biggest > 6:
         raise ValueError("Total amount of tests must be <= 6")
 
     # Setting variable arrys from cart arrays
-    leverage_cart_array = np.broadcast_to(broad_array[0], biggest)
-    max_equity_risk_pct_cart_array = np.broadcast_to(broad_array[1], biggest)
-    max_equity_risk_value_cart_array = np.broadcast_to(broad_array[2], biggest)
-    risk_rewards_cart_array = np.broadcast_to(broad_array[3], biggest)
-    size_pct_cart_array = np.broadcast_to(broad_array[4], biggest)
-    size_value_cart_array = np.broadcast_to(broad_array[5], biggest)
-    sl_pcts_cart_array = np.broadcast_to(broad_array[6], biggest)
-    sl_to_be_based_on_cart_array = np.broadcast_to(broad_array[7], biggest)
-    sl_to_be_trail_by_when_pct_from_avg_entry_cart_array = np.broadcast_to(
-        broad_array[8], biggest
+    leverage_broadcast_array = np.broadcast_to(arrays_1d_tuple[0], biggest)
+    max_equity_risk_pct_broadcast_array = np.broadcast_to(arrays_1d_tuple[1], biggest)
+    max_equity_risk_value_broadcast_array = np.broadcast_to(arrays_1d_tuple[2], biggest)
+    risk_rewards_broadcast_array = np.broadcast_to(arrays_1d_tuple[3], biggest)
+    size_pct_broadcast_array = np.broadcast_to(arrays_1d_tuple[4], biggest)
+    size_value_broadcast_array = np.broadcast_to(arrays_1d_tuple[5], biggest)
+    sl_pcts_broadcast_array = np.broadcast_to(arrays_1d_tuple[6], biggest)
+    sl_to_be_based_on_broadcast_array = np.broadcast_to(arrays_1d_tuple[7], biggest)
+    sl_to_be_trail_by_when_pct_from_avg_entry_broadcast_array = np.broadcast_to(
+        arrays_1d_tuple[8], biggest
     )
-    sl_to_be_when_pct_from_avg_entry_cart_array = np.broadcast_to(
-        broad_array[9], biggest
+    sl_to_be_when_pct_from_avg_entry_broadcast_array = np.broadcast_to(
+        arrays_1d_tuple[9], biggest
     )
-    sl_to_be_zero_or_entry_cart_array = np.broadcast_to(broad_array[10], biggest)
-    tp_pcts_cart_array = np.broadcast_to(broad_array[11], biggest)
-    tsl_based_on_cart_array = np.broadcast_to(broad_array[12], biggest)
-    tsl_pcts_init_cart_array = np.broadcast_to(broad_array[13], biggest)
-    tsl_trail_by_pct_cart_array = np.broadcast_to(broad_array[14], biggest)
-    tsl_when_pct_from_avg_entry_cart_array = np.broadcast_to(broad_array[15], biggest)
+    sl_to_be_zero_or_entry_broadcast_array = np.broadcast_to(
+        arrays_1d_tuple[10], biggest
+    )
+    tp_pcts_broadcast_array = np.broadcast_to(arrays_1d_tuple[11], biggest)
+    tsl_based_on_broadcast_array = np.broadcast_to(arrays_1d_tuple[12], biggest)
+    tsl_pcts_init_broadcast_array = np.broadcast_to(arrays_1d_tuple[13], biggest)
+    tsl_trail_by_pct_broadcast_array = np.broadcast_to(arrays_1d_tuple[14], biggest)
+    tsl_when_pct_from_avg_entry_broadcast_array = np.broadcast_to(
+        arrays_1d_tuple[15], biggest
+    )
 
     if entries.shape[1] == 1:
         entries = np.broadcast_to(entries, (entries.shape[0], biggest))
@@ -740,7 +477,7 @@ def simulate_up_to_6(
 
     total_bars = open_prices.shape[0]
 
-    broad_array = 0
+    arrays_1d_tuple = 0
 
     # Record Arrays
     final_array = np.empty(biggest, dtype=final_array_dt)
@@ -753,32 +490,36 @@ def simulate_up_to_6(
     # order settings loops
     for settings_counter in range(biggest):
         entry_order = EntryOrder(
-            leverage=leverage_cart_array[settings_counter],
-            max_equity_risk_pct=max_equity_risk_pct_cart_array[settings_counter],
-            max_equity_risk_value=max_equity_risk_value_cart_array[settings_counter],
+            leverage=leverage_broadcast_array[settings_counter],
+            max_equity_risk_pct=max_equity_risk_pct_broadcast_array[settings_counter],
+            max_equity_risk_value=max_equity_risk_value_broadcast_array[
+                settings_counter
+            ],
             order_type=order_type,
-            risk_rewards=risk_rewards_cart_array[settings_counter],
-            size_pct=size_pct_cart_array[settings_counter],
-            size_value=size_value_cart_array[settings_counter],
-            sl_pcts=sl_pcts_cart_array[settings_counter],
-            tp_pcts=tp_pcts_cart_array[settings_counter],
-            tsl_pcts_init=tsl_pcts_init_cart_array[settings_counter],
+            risk_rewards=risk_rewards_broadcast_array[settings_counter],
+            size_pct=size_pct_broadcast_array[settings_counter],
+            size_value=size_value_broadcast_array[settings_counter],
+            sl_pcts=sl_pcts_broadcast_array[settings_counter],
+            tp_pcts=tp_pcts_broadcast_array[settings_counter],
+            tsl_pcts_init=tsl_pcts_init_broadcast_array[settings_counter],
         )
         stops_order = StopsOrder(
             sl_to_be=sl_to_be,
-            sl_to_be_based_on=sl_to_be_based_on_cart_array[settings_counter],
+            sl_to_be_based_on=sl_to_be_based_on_broadcast_array[settings_counter],
             sl_to_be_then_trail=sl_to_be_then_trail,
-            sl_to_be_trail_by_when_pct_from_avg_entry=sl_to_be_trail_by_when_pct_from_avg_entry_cart_array[
+            sl_to_be_trail_by_when_pct_from_avg_entry=sl_to_be_trail_by_when_pct_from_avg_entry_broadcast_array[
                 settings_counter
             ],
-            sl_to_be_when_pct_from_avg_entry=sl_to_be_when_pct_from_avg_entry_cart_array[
+            sl_to_be_when_pct_from_avg_entry=sl_to_be_when_pct_from_avg_entry_broadcast_array[
                 settings_counter
             ],
-            sl_to_be_zero_or_entry=sl_to_be_zero_or_entry_cart_array[settings_counter],
-            tsl_based_on=tsl_based_on_cart_array[settings_counter],
-            tsl_trail_by_pct=tsl_trail_by_pct_cart_array[settings_counter],
+            sl_to_be_zero_or_entry=sl_to_be_zero_or_entry_broadcast_array[
+                settings_counter
+            ],
+            tsl_based_on=tsl_based_on_broadcast_array[settings_counter],
+            tsl_trail_by_pct=tsl_trail_by_pct_broadcast_array[settings_counter],
             tsl_true_or_false=tsl_true_or_false,
-            tsl_when_pct_from_avg_entry=tsl_when_pct_from_avg_entry_cart_array[
+            tsl_when_pct_from_avg_entry=tsl_when_pct_from_avg_entry_broadcast_array[
                 settings_counter
             ],
         )
@@ -919,56 +660,58 @@ def simulate_up_to_6(
         final_array["total_pnl"][final_array_counter] = total_pnl
         final_array["ending_eq"][final_array_counter] = temp_order_records["equity"][-1]
         final_array["settings_id"][final_array_counter] = final_array_counter
-        final_array["leverage"][final_array_counter] = leverage_cart_array[
+        final_array["leverage"][final_array_counter] = leverage_broadcast_array[
             final_array_counter
         ]
         final_array["max_equity_risk_pct"][final_array_counter] = (
-            max_equity_risk_pct_cart_array[final_array_counter] * 100
+            max_equity_risk_pct_broadcast_array[final_array_counter] * 100
         )
         final_array["max_equity_risk_value"][
             final_array_counter
-        ] = max_equity_risk_value_cart_array[final_array_counter]
-        final_array["risk_rewards"][final_array_counter] = risk_rewards_cart_array[
+        ] = max_equity_risk_value_broadcast_array[final_array_counter]
+        final_array["risk_rewards"][final_array_counter] = risk_rewards_broadcast_array[
             final_array_counter
         ]
         final_array["size_pct"][final_array_counter] = (
-            size_pct_cart_array[final_array_counter] * 100
+            size_pct_broadcast_array[final_array_counter] * 100
         )
-        final_array["size_value"][final_array_counter] = size_value_cart_array[
+        final_array["size_value"][final_array_counter] = size_value_broadcast_array[
             final_array_counter
         ]
         final_array["sl_pcts"][final_array_counter] = (
-            sl_pcts_cart_array[final_array_counter] * 100
+            sl_pcts_broadcast_array[final_array_counter] * 100
         )
         final_array["sl_to_be_based_on"][
             final_array_counter
-        ] = sl_to_be_based_on_cart_array[final_array_counter]
+        ] = sl_to_be_based_on_broadcast_array[final_array_counter]
         final_array["sl_to_be_trail_by_when_pct_from_avg_entry"][
             final_array_counter
         ] = (
-            sl_to_be_trail_by_when_pct_from_avg_entry_cart_array[final_array_counter]
+            sl_to_be_trail_by_when_pct_from_avg_entry_broadcast_array[
+                final_array_counter
+            ]
             * 100
         )
         final_array["sl_to_be_when_pct_from_avg_entry"][final_array_counter] = (
-            sl_to_be_when_pct_from_avg_entry_cart_array[final_array_counter] * 100
+            sl_to_be_when_pct_from_avg_entry_broadcast_array[final_array_counter] * 100
         )
         final_array["sl_to_be_zero_or_entry"][
             final_array_counter
-        ] = sl_to_be_zero_or_entry_cart_array[final_array_counter]
+        ] = sl_to_be_zero_or_entry_broadcast_array[final_array_counter]
         final_array["tp_pcts"][final_array_counter] = (
-            tp_pcts_cart_array[final_array_counter] * 100
+            tp_pcts_broadcast_array[final_array_counter] * 100
         )
-        final_array["tsl_based_on"][final_array_counter] = tsl_based_on_cart_array[
+        final_array["tsl_based_on"][final_array_counter] = tsl_based_on_broadcast_array[
             final_array_counter
         ]
         final_array["tsl_pcts_init"][final_array_counter] = (
-            tsl_pcts_init_cart_array[final_array_counter] * 100
+            tsl_pcts_init_broadcast_array[final_array_counter] * 100
         )
         final_array["tsl_trail_by_pct"][final_array_counter] = (
-            tsl_trail_by_pct_cart_array[final_array_counter] * 100
+            tsl_trail_by_pct_broadcast_array[final_array_counter] * 100
         )
         final_array["tsl_when_pct_from_avg_entry"][final_array_counter] = (
-            tsl_when_pct_from_avg_entry_cart_array[final_array_counter] * 100
+            tsl_when_pct_from_avg_entry_broadcast_array[final_array_counter] * 100
         )
 
         final_array_counter += 1

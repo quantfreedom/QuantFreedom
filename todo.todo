@@ -1,6 +1,7 @@
 
 Currently Working On:
-    ☐ cretea functions for simulate up to 6
+    ✔ create an all links account @done(23-04-02 13:23)
+    ✔ crete a functions for simulate up to 6 @done(23-04-02 13:35)
     ☐ do a check to make sure user isn't sending prices or price if they are sending user in df
     ☐ instead of doing logical and you can do np.where((test > 12) & (test < 70)) to get index or np.where((test > 12) & (test < 70), True, False) to fill values
     ☐ do enumerate where nececarry for count, value in enumerate(list(rsi_ind.columns)):
@@ -9,6 +10,14 @@ Currently Working On:
     ☐ for prices code check if list of lists or if only string req check if list
     
 Plotly Dash:
+    ☐ update plotly dash to have the ability to send any amount of indicators
+    ☐ create the candle function
+    ☐ create the pnl function
+    ☐ create the datatable function 
+    ✔ create get_candle_trace_data @done(23-04-02 15:02)
+    ✔ create fill_candle_trace_trades @done(23-04-02 15:02)
+    ☐ create functions for adding to candle trace data chart
+    ☐ create indicator trace data function
     ☐ change bar in order recoders to date time
     ☐ create tons of functions for plotly
     ☐ add order order records based on clicking tab of settings 1 2 or 3
