@@ -10,17 +10,13 @@ Currently Working On:
     ☐ for prices code check if list of lists or if only string req check if list
     
 Plotly Dash:
-    ☐ update plotly dash to have the ability to send any amount of indicators
-    ☐ create the candle function
-    ☐ create the pnl function
-    ☐ create the datatable function 
+    ✔ update plotly dash to have the ability to send any amount of indicators @done(23-04-03 06:55)
     ✔ create get_candle_trace_data @done(23-04-02 15:02)
     ✔ create fill_candle_trace_trades @done(23-04-02 15:02)
-    ☐ create functions for adding to candle trace data chart
-    ☐ create indicator trace data function
-    ☐ change bar in order recoders to date time
-    ☐ create tons of functions for plotly
-    ☐ add order order records based on clicking tab of settings 1 2 or 3
+    ✔ create functions for adding to candle trace data chart @done(23-04-03 06:56)
+    ✔ create indicator trace data function @done(23-04-03 06:56)
+    ✔ create tons of functions for plotly @done(23-04-03 06:57)
+    ☐ add order records based on clicking tab of settings 1 2 or 3
     ☐ figure out how to share results like a screen shot of your dashboard
 
 Next Verson:

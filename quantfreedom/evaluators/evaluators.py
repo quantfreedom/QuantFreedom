@@ -43,7 +43,7 @@ def combine_evals(
 def eval_is_below(
     ind_data: pdFrame,
     user_args: Optional[Union[list[int, float], int, float, Array1d]] = None,
-    ind_results: Optional[Union[pdFrame, pdSeries]] = None,
+    ind_results: Optional[pdFrame] = None,
     df_prices: Optional[pdFrame] = None,
     cand_ohlc: Optional[str] = None,
 ) -> pdFrame:
@@ -84,7 +84,7 @@ def eval_is_below(
             )
 
     elif isinstance(df_prices, pdFrame):
-        eval_array = np.empty(ind_data, dtype=np.bool_)
+        eval_array = np.empty_like(ind_data, dtype=np.bool_)
         if cand_ohlc == None or cand_ohlc.lower() not in (
             "open",
             "high",
@@ -103,25 +103,41 @@ def eval_is_below(
             )
 
             pd_multind_tuples = pd_multind_tuples + (
-                ind_data.columns[col] + (cand_ohlc,),
+                ind_data.columns[col] + (cand_ohlc + "_price",),
             )
 
-    elif isinstance(ind_results, pdSeries):
-        eval_array = np.empty_like(ind_data, dtype=np.bool_)
-        price_values = ind_results.values
-        if not all(isinstance(x, (np.int_, np.float_)) for x in price_values):
-            raise ValueError("price data must be ints or floats")
-        for col in range(ind_data.shape[1]):
-            eval_array[:, col] = np.where(
-                ind_data_values[:, col] > price_values, True, False
-            )
+    elif isinstance(ind_results, pdFrame):
+        eval_array = np.empty(
+            (ind_data.shape[0], ind_data.shape[1] * ind_results.shape[1]),
+            dtype=np.bool_,
+        )
+        eval_array_col = 0
+        ind_results_values = ind_results.values
+        ind_results_name = ind_results.columns.names[1].split('_')[1]
+        ind_data_name = ind_data.columns.names[0].split("_")[0]
+        pd_col_names = list(ind_results.columns.names) + [ind_data_name
+             + "_is_below"
+        ]
+        results_loop_len = ind_results_values[ind_results_values.columns[0][0]].shape[1]
+        for data_col in range(ind_data.shape[1]):
+            temp_data_array = ind_data_values[:, data_col]
+            for results_col in range(results_loop_len):
+                temp_results_array = ind_results_values[:, results_col]
+                if not all(
+                    isinstance(x, (np.int_, np.float_)) for x in temp_results_array
+                ):
+                    raise ValueError("indicator results data must be ints or floats")
+                eval_array[:, eval_array_col] = np.where(
+                    temp_data_array < temp_results_array, True, False
+                )
 
-            pd_multind_tuples = pd_multind_tuples + (
-                ind_data.columns[col] + ("something",),
-            )
+                pd_multind_tuples = pd_multind_tuples + (
+                    ind_results.columns[data_col] + (ind_results_name,),
+                )
+                eval_array_col += 1
     else:
         raise ValueError(
-            "user_args must be a list of ints or floats or int or float or you need to send price data"
+            "something is wrong with what you sent please make sure the type of variable you are sending matches with the type required"
         )
 
     return pd.DataFrame(
@@ -137,7 +153,7 @@ def eval_is_below(
 def eval_is_above(
     ind_data: pdFrame,
     user_args: Optional[Union[list[int, float], int, float, Array1d]] = None,
-    ind_results: Optional[Union[pdFrame, pdSeries]] = None,
+    ind_results: Optional[pdFrame] = None,
     df_prices: Optional[pdFrame] = None,
     cand_ohlc: Optional[str] = None,
 ) -> pdFrame:
@@ -196,22 +212,28 @@ def eval_is_above(
             )
 
             pd_multind_tuples = pd_multind_tuples + (
-                ind_data.columns[col] + (cand_ohlc,),
+                ind_data.columns[col] + (cand_ohlc + "_price",),
             )
 
-    elif isinstance(ind_results, pdSeries):
+    elif isinstance(ind_results, pdFrame):
         eval_array = np.empty_like(ind_data, dtype=np.bool_)
-        price_values = ind_results.values
-        if not all(isinstance(x, (np.int_, np.float_)) for x in price_values):
-            raise ValueError("price data must be ints or floats")
-        for col in range(ind_data.shape[1]):
-            eval_array[:, col] = np.where(
-                ind_data_values[:, col] > price_values, True, False
-            )
+        ind_results_values = ind_results.values
+        ind_results_name = list(ind_results.columns.names)[0].split("_")[0]
+        for data_col in range(ind_data.shape[1]):
+            temp_data_array = ind_data_values[:, data_col]
+            for results_col in range(ind_results_values.shape[1]):
+                temp_results_array = ind_results_values[:, results_col]
+                if not all(
+                    isinstance(x, (np.int_, np.float_)) for x in temp_results_array
+                ):
+                    raise ValueError("indicator results data must be ints or floats")
+                eval_array[:, col] = np.where(
+                    temp_data_array > temp_results_array, True, False
+                )
 
-            pd_multind_tuples = pd_multind_tuples + (
-                ind_data.columns[col] + ("something",),
-            )
+                pd_multind_tuples = pd_multind_tuples + (
+                    ind_data.columns[col] + (ind_results_name,),
+                )
 
     else:
         raise ValueError(

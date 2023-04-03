@@ -179,7 +179,6 @@ def from_talib(
     ind_settings_tup = ()
     pd_multind_tuples = ()
     ind_setings_len = final_user_args[0].size
-    param_keys = [ind_name + "_" + x for x in ind_params]
     output_names_len = len(output_names)
 
     # sending indicator data as the data you want to work with
@@ -188,6 +187,8 @@ def from_talib(
         user_ind_settings = tuple(user_ind_df.columns)
         user_ind_values = user_ind_df.values
         user_ind_names = list(user_ind_df.columns.names)
+        user_ind_name = user_ind_names[0].split("_")[0]
+        param_keys = [user_ind_name + "_" + ind_name + "_" + x for x in ind_params]
         # param_keys = param_keys + user_ind_names
         param_keys = user_ind_names + param_keys
         final_array = np.empty(
@@ -246,6 +247,7 @@ def from_talib(
 
     # sending price data as your data to work with
     else:
+        param_keys = [ind_name + "_" + x for x in ind_params]
         final_array = np.empty((df_prices.shape[0], ind_setings_len * output_names_len))
         if output_names_len > 1:
             param_keys = [ind_name + "_output_names"] + param_keys

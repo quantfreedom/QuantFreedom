@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 
-from quantfreedom._typing import pdFrame, RecordArray
 from quantfreedom.enums.enums import OrderType
 from quantfreedom.plotting.plot_helper_functions import (
     get_candle_trace_data,
@@ -26,8 +25,8 @@ app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
 bg_color = "#0b0b18"
 
 
-def testing_strat_dashboard(
-        indicator_dict: dict,
+def strat_dashboard(
+    indicator_dict: dict,
     prices,
     order_records,
 ):
@@ -98,10 +97,9 @@ def testing_strat_dashboard(
     fig.update_xaxes(row=1, col=1, rangeslider_visible=False)
     fig.update_yaxes(row=1, col=1, tickprefix="$")
     fig.update_layout(
-        height=1000,
-        legend_tracegroupgap=500,
+        height=layout_height,
         paper_bgcolor=bg_color,
-        plot_bgcolor=bg_color,
+        plot_bgcolor=bg_color,        
     )
     candle_trades_and_ind = (
         html.H1(

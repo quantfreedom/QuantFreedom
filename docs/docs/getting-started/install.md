@@ -38,10 +38,18 @@ before we create the virtual env you have to make sure you are using the cmd pro
 
 if you are in the cmd prompt then make sure the folder location for the cmd prompt is the coding folder ... if it isn't use cd and type in the location of the coding folder like cd "C:\users\my stuff\coding" ... make sure you use quotes because if you have spaces in some of your folder names you have to have quotes
 
-now that you are in the right folder we want to type python -m venv qfFree ... this will create a virtual env named qfFree
+now that you are in the right folder we want to type 
+```
+python -m venv qfFree
+```
+this will create a virtual env named qfFree
 
-next we want to type qfFree\Scripts\activate to activate the virtual env ... this will make sure anything we install is in the virtual env and not on our global python which is super extra important
+next we want to type 
+```
+qfFree\Scripts\activate```
+ to activate the virtual env ... this will make sure anything we install is in the virtual env and not on our global python which is super extra important
 
+if you are using 
 now we need to create a jupyter notebook kernel by typing this ipython kernel install --user --name=qfFree
 
 if you want to install the dev env then you have to type pip install -e then the location of your cloned repo like "C:\user\mystuff\coding\QuantFreedom" this will then install the backtester
