@@ -1,5 +1,5 @@
 from quantfreedom.data import *
-from quantfreedom.data.custom import CCXTData
+from quantfreedom.data.ccxtdata import CCXTData
 
 __all__ = [
     'CCXTData',

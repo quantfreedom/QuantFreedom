@@ -1,6 +1,11 @@
 currently working on:
-    ☐ make it so user can download mutliple coins
+    ✔ make it so user can download mutliple coins @done(23-04-04 09:25)
+    ☐ add progress bar to downloading data
     ☐ learn to save file as hd5 or pickle file
+    ☐ edit from talib to be able to handle mutliple coins
+    ☐ edit eval to be able to have mutliple coins
+    ☐ edit comb to have mutliple coins
+    ☐ look into simulate to deal with mutliple coins
 
 documentation:
     ☐ learn how to make it so that there are blocks of text that look like the python file in markdown text

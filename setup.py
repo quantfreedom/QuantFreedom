@@ -22,6 +22,7 @@ setup(
         'ccxt',
         'dash',
         'dash_bootstrap_templates',
+        'h5py',
         'ipywidgets==7.7.2',
         'jupyter-dash',
         'jupyterlab-widgets==1.1.1',
@@ -35,6 +36,7 @@ setup(
         'polars',
         'pyarrow',
         'pybit',
+        'tables',
         'typing_extensions; python_version < "3.8"',
     ],
     extras_require={
