@@ -41,30 +41,30 @@ def combine_evals(
 
 
 def eval_is_below(
-    ind_data: pdFrame,
+    want_to_evaluate: pdFrame,
     user_args: Optional[Union[list[int, float], int, float, Array1d]] = None,
-    ind_results: Optional[pdFrame] = None,
+    indicator_data: Optional[pdFrame] = None,
     df_prices: Optional[pdFrame] = None,
     cand_ohlc: Optional[str] = None,
 ) -> pdFrame:
-    if not isinstance(ind_data, pdFrame):
+    if not isinstance(want_to_evaluate, pdFrame):
         raise ValueError("Data must be a dataframe with multindex")
 
-    ind_data_values = ind_data.values
-    pd_col_names = list(ind_data.columns.names) + [
-        ind_data.columns.names[0].split("_")[0] + "_is_below"
+    want_to_evaluate_values = want_to_evaluate.values
+    pd_col_names = list(want_to_evaluate.columns.names) + [
+        want_to_evaluate.columns.names[0].split("_")[0] + "_is_below"
     ]
     pd_multind_tuples = ()
 
     if isinstance(user_args, (list, Array1d)):
         eval_array = np.empty(
-            (ind_data.shape[0], ind_data.shape[1] * len(user_args)), dtype=np.bool_
+            (want_to_evaluate.shape[0], want_to_evaluate.shape[1] * len(user_args)), dtype=np.bool_
         )
         if not all(isinstance(x, (int, float, np.int_, np.float_)) for x in user_args):
             raise ValueError("user_args must be a list of ints or floats")
         eval_array_counter = 0
-        for col in range(ind_data.shape[1]):
-            temp_array = ind_data_values[:, col]
+        for col in range(want_to_evaluate.shape[1]):
+            temp_array = want_to_evaluate_values[:, col]
             for eval_col in range(user_args.size):
                 eval_array[:, eval_array_counter] = np.where(
                     temp_array < user_args[eval_col], True, False
@@ -72,19 +72,19 @@ def eval_is_below(
                 eval_array_counter += 1
 
                 pd_multind_tuples = pd_multind_tuples + (
-                    ind_data.columns[col] + (user_args[eval_col],),
+                    want_to_evaluate.columns[col] + (user_args[eval_col],),
                 )
 
     elif isinstance(user_args, (int, float)):
-        eval_array = np.where(ind_data_values < user_args, True, False)
+        eval_array = np.where(want_to_evaluate_values < user_args, True, False)
 
-        for col in range(ind_data.shape[1]):
+        for col in range(want_to_evaluate.shape[1]):
             pd_multind_tuples = pd_multind_tuples + (
-                ind_data.columns[col] + (user_args,),
+                want_to_evaluate.columns[col] + (user_args,),
             )
 
     elif isinstance(df_prices, pdFrame):
-        eval_array = np.empty_like(ind_data, dtype=np.bool_)
+        eval_array = np.empty_like(want_to_evaluate, dtype=np.bool_)
         if cand_ohlc == None or cand_ohlc.lower() not in (
             "open",
             "high",
@@ -97,44 +97,44 @@ def eval_is_below(
         price_values = getattr(df_prices, cand_ohlc).values
         if not all(isinstance(x, (np.int_, np.float_)) for x in price_values):
             raise ValueError("price data must be ints or floats")
-        for col in range(ind_data.shape[1]):
+        for col in range(want_to_evaluate.shape[1]):
             eval_array[:, col] = np.where(
-                ind_data_values[:, col] < price_values, True, False
+                want_to_evaluate_values[:, col] < price_values, True, False
             )
 
             pd_multind_tuples = pd_multind_tuples + (
-                ind_data.columns[col] + (cand_ohlc + "_price",),
+                want_to_evaluate.columns[col] + (cand_ohlc + "_price",),
             )
 
-    elif isinstance(ind_results, pdFrame):
+    elif isinstance(indicator_data, pdFrame):
+        want_to_evaluate_name = want_to_evaluate.columns.names[-1].split("_")[1]
+        indicator_data_name = indicator_data.columns.names[0].split("_")[0]
+
+        pd_col_names = list(want_to_evaluate.columns.names) + [
+            want_to_evaluate_name + "_is_below"
+        ]
+
+        want_to_evaluate_settings_tuple_list = want_to_evaluate.columns.to_list()
+
         eval_array = np.empty(
-            (ind_data.shape[0], ind_data.shape[1] * ind_results.shape[1]),
+            (want_to_evaluate.shape[0], len(want_to_evaluate_settings_tuple_list)),
             dtype=np.bool_,
         )
-        eval_array_col = 0
-        ind_results_values = ind_results.values
-        ind_results_name = ind_results.columns.names[1].split('_')[1]
-        ind_data_name = ind_data.columns.names[0].split("_")[0]
-        pd_col_names = list(ind_results.columns.names) + [ind_data_name
-             + "_is_below"
-        ]
-        results_loop_len = ind_results_values[ind_results_values.columns[0][0]].shape[1]
-        for data_col in range(ind_data.shape[1]):
-            temp_data_array = ind_data_values[:, data_col]
-            for results_col in range(results_loop_len):
-                temp_results_array = ind_results_values[:, results_col]
-                if not all(
-                    isinstance(x, (np.int_, np.float_)) for x in temp_results_array
-                ):
-                    raise ValueError("indicator results data must be ints or floats")
-                eval_array[:, eval_array_col] = np.where(
-                    temp_data_array < temp_results_array, True, False
-                )
+        pd_multind_tuples = ()
+        for count, value in enumerate(want_to_evaluate_settings_tuple_list):
+            temp_evaluate_values = want_to_evaluate[value].values
+            temp_indicator_values = indicator_data[value[0]].values.flatten()
+            if not all(
+                isinstance(x, (np.int_, np.float_)) for x in temp_evaluate_values
+            ) and not all(isinstance(x, (np.int_, np.float_)) for x in temp_indicator_values):
+                raise ValueError("want to eval or indicator data must be ints or floats")
+            eval_array[:, count] = np.where(
+                temp_evaluate_values < temp_indicator_values,
+                True,
+                False,
+            )
+            pd_multind_tuples = pd_multind_tuples + (value + (indicator_data_name,),)
 
-                pd_multind_tuples = pd_multind_tuples + (
-                    ind_results.columns[data_col] + (ind_results_name,),
-                )
-                eval_array_col += 1
     else:
         raise ValueError(
             "something is wrong with what you sent please make sure the type of variable you are sending matches with the type required"
@@ -142,7 +142,7 @@ def eval_is_below(
 
     return pd.DataFrame(
         eval_array,
-        index=ind_data.index,
+        index=want_to_evaluate.index,
         columns=pd.MultiIndex.from_tuples(
             tuples=list(pd_multind_tuples),
             names=pd_col_names,
@@ -151,49 +151,49 @@ def eval_is_below(
 
 
 def eval_is_above(
-    ind_data: pdFrame,
+    want_to_evaluate: pdFrame,
     user_args: Optional[Union[list[int, float], int, float, Array1d]] = None,
-    ind_results: Optional[pdFrame] = None,
+    indicator_data: Optional[pdFrame] = None,
     df_prices: Optional[pdFrame] = None,
     cand_ohlc: Optional[str] = None,
 ) -> pdFrame:
-    if not isinstance(ind_data, pdFrame):
+    if not isinstance(want_to_evaluate, pdFrame):
         raise ValueError("Data must be a dataframe with multindex")
 
-    ind_data_values = ind_data.values
-    pd_col_names = list(ind_data.columns.names) + [
-        ind_data.columns.names[0].split("_")[0] + "_is_above"
+    want_to_evaluate_values = want_to_evaluate.values
+    pd_col_names = list(want_to_evaluate.columns.names) + [
+        want_to_evaluate.columns.names[0].split("_")[0] + "_is_above"
     ]
     pd_multind_tuples = ()
 
     if isinstance(user_args, (list, Array1d)):
         eval_array = np.empty(
-            (ind_data.shape[0], ind_data.shape[1] * len(user_args)), dtype=np.bool_
+            (want_to_evaluate.shape[0], want_to_evaluate.shape[1] * len(user_args)), dtype=np.bool_
         )
         if not all(isinstance(x, (int, float, np.int_, np.float_)) for x in user_args):
             raise ValueError("user_args must be a list of ints or floats")
         eval_array_counter = 0
-        for col in range(ind_data.shape[1]):
-            temp_array = ind_data_values[:, col]
+        for col in range(want_to_evaluate.shape[1]):
+            temp_array = want_to_evaluate_values[:, col]
             for eval_col in range(user_args.size):
                 eval_array[:, eval_array_counter] = np.where(
                     temp_array > user_args[eval_col], True, False
                 )
                 eval_array_counter += 1
                 pd_multind_tuples = pd_multind_tuples + (
-                    ind_data.columns[col] + (user_args[eval_col],),
+                    want_to_evaluate.columns[col] + (user_args[eval_col],),
                 )
 
     elif isinstance(user_args, (int, float)):
-        eval_array = np.where(ind_data_values > user_args, True, False)
+        eval_array = np.where(want_to_evaluate_values > user_args, True, False)
 
-        for col in range(ind_data.shape[1]):
+        for col in range(want_to_evaluate.shape[1]):
             pd_multind_tuples = pd_multind_tuples + (
-                ind_data.columns[col] + (user_args,),
+                want_to_evaluate.columns[col] + (user_args,),
             )
 
     elif isinstance(df_prices, pdFrame):
-        eval_array = np.empty_like(ind_data, dtype=np.bool_)
+        eval_array = np.empty_like(want_to_evaluate, dtype=np.bool_)
         if cand_ohlc == None or cand_ohlc.lower() not in (
             "open",
             "high",
@@ -206,34 +206,43 @@ def eval_is_above(
         price_values = getattr(df_prices, cand_ohlc).values
         if not all(isinstance(x, (np.int_, np.float_)) for x in price_values):
             raise ValueError("price data must be ints or floats")
-        for col in range(ind_data.shape[1]):
+        for col in range(want_to_evaluate.shape[1]):
             eval_array[:, col] = np.where(
-                ind_data_values[:, col] > price_values, True, False
+                want_to_evaluate_values[:, col] > price_values, True, False
             )
 
             pd_multind_tuples = pd_multind_tuples + (
-                ind_data.columns[col] + (cand_ohlc + "_price",),
+                want_to_evaluate.columns[col] + (cand_ohlc + "_price",),
             )
 
-    elif isinstance(ind_results, pdFrame):
-        eval_array = np.empty_like(ind_data, dtype=np.bool_)
-        ind_results_values = ind_results.values
-        ind_results_name = list(ind_results.columns.names)[0].split("_")[0]
-        for data_col in range(ind_data.shape[1]):
-            temp_data_array = ind_data_values[:, data_col]
-            for results_col in range(ind_results_values.shape[1]):
-                temp_results_array = ind_results_values[:, results_col]
-                if not all(
-                    isinstance(x, (np.int_, np.float_)) for x in temp_results_array
-                ):
-                    raise ValueError("indicator results data must be ints or floats")
-                eval_array[:, col] = np.where(
-                    temp_data_array > temp_results_array, True, False
-                )
+    elif isinstance(indicator_data, pdFrame):
+        want_to_evaluate_name = want_to_evaluate.columns.names[-1].split("_")[1]
+        indicator_data_name = indicator_data.columns.names[0].split("_")[0]
 
-                pd_multind_tuples = pd_multind_tuples + (
-                    ind_data.columns[col] + (ind_results_name,),
-                )
+        pd_col_names = list(want_to_evaluate.columns.names) + [
+            want_to_evaluate_name + "_is_above"
+        ]
+
+        want_to_evaluate_settings_tuple_list = want_to_evaluate.columns.to_list()
+
+        eval_array = np.empty(
+            (want_to_evaluate.shape[0], len(want_to_evaluate_settings_tuple_list)),
+            dtype=np.bool_,
+        )
+        pd_multind_tuples = ()
+        for count, value in enumerate(want_to_evaluate_settings_tuple_list):
+            temp_evaluate_values = want_to_evaluate[value].values
+            temp_indicator_values = indicator_data[value[0]].values.flatten()
+            if not all(
+                isinstance(x, (np.int_, np.float_)) for x in temp_evaluate_values
+            ) and not all(isinstance(x, (np.int_, np.float_)) for x in temp_indicator_values):
+                raise ValueError("want to eval or indicator data must be ints or floats")
+            eval_array[:, count] = np.where(
+                temp_evaluate_values > temp_indicator_values,
+                True,
+                False,
+            )
+            pd_multind_tuples = pd_multind_tuples + (value + (indicator_data_name,),)
 
     else:
         raise ValueError(
@@ -242,7 +251,7 @@ def eval_is_above(
 
     return pd.DataFrame(
         eval_array,
-        index=ind_data.index,
+        index=want_to_evaluate.index,
         columns=pd.MultiIndex.from_tuples(
             tuples=list(pd_multind_tuples),
             names=pd_col_names,

@@ -1,27 +1,15 @@
+currently working on:
+    ☐ make it so user can download mutliple coins
+    ☐ learn to save file as hd5 or pickle file
 
-Currently Working On:
-    ✔ create an all links account @done(23-04-02 13:23)
-    ✔ crete a functions for simulate up to 6 @done(23-04-02 13:35)
-    ☐ do a check to make sure user isn't sending prices or price if they are sending user in df
-    ☐ instead of doing logical and you can do np.where((test > 12) & (test < 70)) to get index or np.where((test > 12) & (test < 70), True, False) to fill values
-    ☐ do enumerate where nececarry for count, value in enumerate(list(rsi_ind.columns)):
-    ☐ make sure all values in cart are unique
-    ☐ allow for there to be the ability to send the eval in the from talib so that it can do it all at once
-    ☐ for prices code check if list of lists or if only string req check if list
-    
-Plotly Dash:
-    ✔ update plotly dash to have the ability to send any amount of indicators @done(23-04-03 06:55)
-    ✔ create get_candle_trace_data @done(23-04-02 15:02)
-    ✔ create fill_candle_trace_trades @done(23-04-02 15:02)
-    ✔ create functions for adding to candle trace data chart @done(23-04-03 06:56)
-    ✔ create indicator trace data function @done(23-04-03 06:56)
-    ✔ create tons of functions for plotly @done(23-04-03 06:57)
-    ☐ add order records based on clicking tab of settings 1 2 or 3
-    ☐ figure out how to share results like a screen shot of your dashboard
-
+documentation:
+    ☐ learn how to make it so that there are blocks of text that look like the python file in markdown text
+     
 Next Verson:
+    ☐ create tabs in dashboard for multiple settings to look at
+    ☐ figure out how to share results like a screen shot of your dashboard
+    ☐ allow for there to be the ability to send the eval in the from talib so that it can do it all at once
     ☐ create cart calc where the person can just copy paste their settings and get the number back as well as the number of cart times the number of ind settings ... then also include a number for total bars tested times number of order settings times number of ind settings make it a helper function because it will just print the results as the return
-    ☐ create base func that takes 1 set of settings and returns the order record infor necessary to make an octobot like report in a new window https://raw.githubusercontent.com/Drakkar-Software/OctoBot-Pro/assets/images/report_1.jpg
     ☐ create base that returns entry settings using vbt indicator creation thing
     ☐ once new window then make it so you can select from a max of 5 or 10 different reports
 
@@ -53,6 +41,18 @@ Would Be Nice:
     ☐ send pct change of position in order result when decreasing or increaseing position size
 
 Archive:
+  ✔ do a check to make sure user isn't sending prices or price if they are sending user in df @done(23-04-03 19:47)
+  ✔ update plotly dash to have the ability to send any amount of indicators @done(23-04-03 06:55)
+  ✔ fix eval is below sending indicator data @done(23-04-03 19:45)
+  ✔ fix eval is above sending indicator data @done(23-04-03 19:45)
+  ✔ create tons of functions for plotly @done(23-04-03 06:57)
+  ✔ create base func that takes 1 set of settings and returns the order record infor necessary to make an octobot like report in a new window https://raw.githubusercontent.com/Drakkar-Software/OctoBot-Pro/assets/images/report_1.jpg @done(23-04-03 19:47)
+  ✔ create functions for adding to candle trace data chart @done(23-04-03 06:56)
+  ✔ create indicator trace data function @done(23-04-03 06:56)
+  ✔ create get_candle_trace_data @done(23-04-02 15:02)
+  ✔ create fill_candle_trace_trades @done(23-04-02 15:02)
+  ✔ create an all links account @done(23-04-02 13:23)
+  ✔ crete a functions for simulate up to 6 @done(23-04-02 13:35)
   ✔ make a variable checker function @done(23-04-02 09:48)
   ✔ make fill strat result func @done(23-04-02 09:48)
   ✔ make fill setting results func @done(23-04-02 09:48)
