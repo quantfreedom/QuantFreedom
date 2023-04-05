@@ -8,6 +8,7 @@ __version__ = _version
 
 
 # Most important classes
+from quantfreedom.testing import *
 from quantfreedom.utils import *
 from quantfreedom.data import *
 from quantfreedom import *

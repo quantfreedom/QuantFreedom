@@ -356,15 +356,3 @@ def testing_from_talib(
             names=param_keys,
         ),
     )
-
-
-def talib_ind_info(func_name: str):
-    return Function(func_name).info
-
-
-def talib_func_list_website_link():
-    print("https://ta-lib.github.io/ta-lib-python/funcs.html")
-
-
-def talib_list_of_indicators():
-    return get_functions()

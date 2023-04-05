@@ -1,6 +1,10 @@
 currently working on:
     ✔ edit from talib to be able to handle mutliple coins @done(23-04-05 08:52)
-    ☐ edit from talib to be able to handle indicators with symbol columns
+    ✔ change all talib to be getatr talib instead of function @done(23-04-05 13:19)
+    ✔ edit from talib to be able to handle indicators with symbol columns @done(23-04-05 13:37)
+    ☐ work on eval is below and above with multiple coins
+    ☐ work on comine evals with multiple coins
+    ☐ make it so that the simulator df can work with mutliple coins
     ☐ make it so you have a true false variable for plotting in eval below but you can only plot the first column
     ☐ edit eval to be able to have mutliple coins
     ☐ edit comb to have mutliple coins
