@@ -1,7 +1,8 @@
 currently working on:
-    ✔ make it so user can download mutliple coins @done(23-04-04 09:25)
-    ☐ add progress bar to downloading data
-    ☐ learn to save file as hd5 or pickle file
+    ✔ make it so user can download mutliple coins @done(23-04-04 15:01)
+    ✔ learn to save file as hd5 @done(23-04-04 10:19)
+    ✔ add progress bar to downloading data @done(23-04-04 14:51)
+    ✔ make it so the progress bar can figure out how many loops you will have to do and report that @done(23-04-04 21:11)
     ☐ edit from talib to be able to handle mutliple coins
     ☐ edit eval to be able to have mutliple coins
     ☐ edit comb to have mutliple coins
@@ -28,6 +29,7 @@ Numba:
 
 TODOs:
     ☐ make replay_trade_plotter work with order records
+    ☐ make dl bar more accurate by doing math to figure out how many candles are within the amount of time we are trying to download
     ☐ make it so leverage goes to 100 when sl or tsl moves past entry and liq price is maxed out
     ☐ figure out a way to filter the true and false for stops and trails
     ☐ allow for different fees for different coins
