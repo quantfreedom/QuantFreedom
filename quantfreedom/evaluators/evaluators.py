@@ -47,6 +47,27 @@ def eval_is_below(
     df_prices: Optional[pdFrame] = None,
     cand_ohlc: Optional[str] = None,
 ) -> pdFrame:
+    """eval_is_below _summary_
+
+    _extended_summary_
+
+    Parameters
+    ----------
+    want_to_evaluate : pdFrame
+        I think of this like I want to evaluate if the thing i am sending like EMA is below the price or is below the indicator data which could be rsi. So it would be i want to evalute if the EMA is below the RSI.
+    user_args : Optional[Union[list[int, float], int, float, Array1d]], optional
+        _description_, by default None
+    indicator_data : Optional[pdFrame], optional
+        _description_, by default None
+    df_prices : Optional[pdFrame], optional
+        _description_, by default None
+    cand_ohlc : Optional[str], optional
+        _description_, by default None
+
+    Returns
+    -------
+    pdFrame
+    """
     if not isinstance(want_to_evaluate, pdFrame):
         raise ValueError("Data must be a dataframe with multindex")
 

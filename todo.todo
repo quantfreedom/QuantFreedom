@@ -1,9 +1,6 @@
 currently working on:
-    ✔ make it so user can download mutliple coins @done(23-04-04 15:01)
-    ✔ learn to save file as hd5 @done(23-04-04 10:19)
-    ✔ add progress bar to downloading data @done(23-04-04 14:51)
-    ✔ make it so the progress bar can figure out how many loops you will have to do and report that @done(23-04-04 21:11)
-    ☐ edit from talib to be able to handle mutliple coins
+    ✔ edit from talib to be able to handle mutliple coins @done(23-04-05 08:52)
+    ☐ edit from talib to be able to handle indicators with symbol columns
     ☐ edit eval to be able to have mutliple coins
     ☐ edit comb to have mutliple coins
     ☐ look into simulate to deal with mutliple coins
@@ -48,6 +45,10 @@ Would Be Nice:
     ☐ send pct change of position in order result when decreasing or increaseing position size
 
 Archive:
+  ✔ make it so user can download mutliple coins @done(23-04-04 15:01)
+  ✔ learn to save file as hd5 @done(23-04-04 10:19)
+  ✔ add progress bar to downloading data @done(23-04-04 14:51)
+  ✔ make it so the progress bar can figure out how many loops you will have to do and report that @done(23-04-04 21:11)
   ✔ do a check to make sure user isn't sending prices or price if they are sending user in df @done(23-04-03 19:47)
   ✔ update plotly dash to have the ability to send any amount of indicators @done(23-04-03 06:55)
   ✔ fix eval is below sending indicator data @done(23-04-03 19:45)
