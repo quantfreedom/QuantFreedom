@@ -1,358 +1,140 @@
 # https://ta-lib.github.io/ta-lib-python/index.html
 import pandas as pd
 import numpy as np
-import talib
-from talib.abstract import Function
-from talib import get_functions
-from itertools import product
-from quantfreedom._typing import pdFrame, Optional, pdSeries, Array1d
+from quantfreedom._typing import pdFrame, Optional, Array1d, Union
 
 
-def testing_from_talib(
-    func_name: str,
-    cart_product: bool,
-    combos: bool,
+def testing_eval_is_below(
+    want_to_evaluate: pdFrame,
+    user_args: Optional[Union[list[int, float], int, float, Array1d]] = None,
+    indicator_data: Optional[pdFrame] = None,
     df_prices: Optional[pdFrame] = None,
-    user_ind_df: Optional[pdFrame] = None,
-    **kwargs,
+    cand_ohlc: Optional[str] = None,
 ) -> pdFrame:
+    """eval_is_below _summary_
 
-    if all(x is None for x in (df_prices, user_ind_df)):
-        raise ValueError(
-            f"You need to send either a dataframe of prices 'df_prices' or a dataframe with multindexed values 'user_ind_df'"
+    _extended_summary_
+
+    Parameters
+    ----------
+    want_to_evaluate : pdFrame
+        I think of this like I want to evaluate if the thing i am sending like EMA is below the price or is below the indicator data which could be rsi. So it would be i want to evalute if the EMA is below the RSI.
+    user_args : Optional[Union[list[int, float], int, float, Array1d]], optional
+        _description_, by default None
+    indicator_data : Optional[pdFrame], optional
+        _description_, by default None
+    df_prices : Optional[pdFrame], optional
+        _description_, by default None
+    cand_ohlc : Optional[str], optional
+        _description_, by default None
+
+    Returns
+    -------
+    pdFrame
+    """
+    if not isinstance(want_to_evaluate, pdFrame):
+        raise ValueError("Data must be a dataframe with multindex")
+
+    # want_to_evaluate_values = want_to_evaluate.values
+    # pd_col_names = list(want_to_evaluate.columns.names) + [
+    #     want_to_evaluate.columns.names[0].split("_")[0] + "_is_below"
+    # ]
+    # pd_multind_tuples = ()
+
+    if isinstance(user_args, (list, Array1d)):
+        eval_array = np.empty(
+            (want_to_evaluate.shape[0], want_to_evaluate.shape[1] * len(user_args)), dtype=np.bool_
         )
-    elif all(x is not None for x in (df_prices, user_ind_df)):
-        raise ValueError(
-            f"You can't send both prices and values ... please pick one or the other"
-        )
-    elif (
-        not isinstance(user_ind_df, pdFrame)
-        and user_ind_df is not None
-        or not isinstance(df_prices, pdFrame)
-        and df_prices is not None
-    ):
-        raise ValueError(f"You must send this as a pandas dataframe")
-    elif isinstance(user_ind_df, pdFrame):
-        pd_index = user_ind_df.index
+        if not all(isinstance(x, (int, float, np.int_, np.float_)) for x in user_args):
+            raise ValueError("user_args must be a list of ints or floats")
+        eval_array_counter = 0
+        for col in range(want_to_evaluate.shape[1]):
+            temp_array = want_to_evaluate_values[:, col]
+            for eval_col in range(user_args.size):
+                eval_array[:, eval_array_counter] = np.where(
+                    temp_array < user_args[eval_col], True, False
+                )
+                eval_array_counter += 1
+
+                pd_multind_tuples = pd_multind_tuples + (
+                    want_to_evaluate.columns[col] + (user_args[eval_col],),
+                )
+
+    elif isinstance(user_args, (int, float)):
+        eval_array = np.where(want_to_evaluate_values < user_args, True, False)
+
+        for col in range(want_to_evaluate.shape[1]):
+            pd_multind_tuples = pd_multind_tuples + (
+                want_to_evaluate.columns[col] + (user_args,),
+            )
+
     elif isinstance(df_prices, pdFrame):
-        pd_index = df_prices.index
-
-    users_args_list = []
-    biggest = 1
-    indicator_info = Function(func_name).info
-    in_names_key = ""
-    output_names = indicator_info["output_names"]
-    ind_params = list(indicator_info["parameters"].keys())
-    ind_name = indicator_info["name"]
-
-    if cart_product and combos:
-        raise ValueError(
-            f"you can't have cart product and combos both be true")
-    if len(ind_params) == 1 and (cart_product or combos):
-        raise ValueError(
-            f"This indicator only has one paramater which is {ind_params[0]} therefore can't do combos or cart product."
-        )
-
-    for in_names_key, in_names_values in indicator_info["input_names"].items():
-        filled = False
-        if isinstance(in_names_values, list):
-            for kwarg_keys, kwarg_values in kwargs.items():
-                if in_names_key == kwarg_keys:
-                    if not isinstance(kwarg_values, list):
-                        raise ValueError(
-                            f"{in_names_key} must be a list of strings")
-
-                    if isinstance(kwarg_values, list):
-                        if not all(isinstance(x, str) for x in kwarg_values):
-                            raise ValueError(
-                                f"{in_names_key} your list has to be made up of strings"
-                            )
-
-                        if len(kwarg_values) == 1:
-                            raise ValueError(
-                                f"{in_names_key} your list length must be greater than 1"
-                            )
-
-                        if len(kwarg_values) != len(in_names_values):
-                            raise ValueError(
-                                f"your list of {in_names_key} must be exactly {len(in_names_values)}"
-                            )
-
-                    input_names = kwarg_values
-                    filled = True
-                    break
-                elif in_names_key == "prices" and kwarg_keys == "price":
-                    raise ValueError(
-                        f"You need to provide prices= instead of price=")
-
-            if not filled:
-                input_names = in_names_values
-
-        elif isinstance(in_names_values, str):
-            for kwarg_keys, kwarg_values in kwargs.items():
-                if in_names_key == kwarg_keys:
-                    if not isinstance(kwarg_values, str):
-                        raise ValueError(
-                            f"{in_names_key} must be a string and not a list of strings"
-                        )
-
-                    input_names = [kwarg_values]
-                    filled = True
-                    break
-                elif in_names_key == "price" and kwarg_keys == "prices":
-                    raise ValueError(
-                        f"You need to provide price= instead of prices=")
-
-            if not filled:
-                input_names = [in_names_values]
-
-    if bool(indicator_info["parameters"]):
-        param_dict = {}
-        for param_names_key, param_names_values in indicator_info["parameters"].items():
-            filled = False
-            for kwarg_keys, kwarg_values in kwargs.items():
-                if param_names_key == kwarg_keys:
-                    if not isinstance(kwarg_values, (int, float, list, Array1d)):
-                        raise ValueError(
-                            f"{param_names_key} must be a int float or a list or np.array of ints or floats"
-                        )
-
-                    if isinstance(kwarg_values, (int, float)):
-                        users_args_list.append(np.asarray([kwarg_values]))
-
-                    elif isinstance(kwarg_values, (list, Array1d)):
-                        if (
-                            cart_product == False
-                            and combos == False
-                            and len(indicator_info["parameters"]) > 1
-                        ):
-                            raise ValueError(
-                                f"you can't have list(s) as args when the {func_name} has mutiple params without doing a combo or cart product"
-                            )
-                        if not all(isinstance(x, (int, float, np.int_, np.float_)) for x in kwarg_values):
-                            raise ValueError(
-                                f"{param_names_key} your list has to be filled with ints or floats"
-                            )
-                        if len(kwarg_values) == 1:
-                            raise ValueError(
-                                f"{param_names_key} your list or array length must be greater than 1"
-                            )
-                        if combos or cart_product:
-                            if biggest == 1 and len(kwarg_values) > 1:
-                                biggest = len(kwarg_values)
-                            if biggest != len(kwarg_values) and combos:
-                                raise ValueError(
-                                    f"{param_names_key} when using combos, all listed items must be same length"
-                                )
-
-                        users_args_list.append(np.asarray(kwarg_values))
-                    param_dict[param_names_key] = kwarg_values
-                    filled = True
-                    break
-
-            if not filled:
-                param_dict[param_names_key] = param_names_values
-                users_args_list.append(np.asarray([param_names_values]))
-    else:
-        param_dict = ()
-
-    if biggest == 1 and (combos or cart_product):
-        raise ValueError(
-            f"You have to have a list for paramaters for {ind_params} to use cart product or combos"
-        )
-
-    elif combos:
-        final_user_args = []
-        for x in users_args_list:
-            if x.size == 1:
-                final_user_args.append(np.broadcast_to(x, biggest))
-            else:
-                final_user_args.append(x)
-        final_user_args = tuple(final_user_args)
-
-    elif cart_product:
-        final_user_args = np.array(list(product(*users_args_list))).T
-
-    else:
-        final_user_args = tuple(users_args_list)
-
-    ind_settings_tup = ()
-    pd_multind_tuples = ()
-    ind_setings_len = final_user_args[0].size
-    output_names_len = len(output_names)
-
-    # sending price data as your data to work with
-    if df_prices is not None:
-        symbols = list(df_prices.columns.levels[0])
-        num_of_symbols = len(symbols)
-        final_array = np.empty(
-            (df_prices.shape[0], ind_setings_len * output_names_len * num_of_symbols))
-        counter = 0
-
-        if output_names_len == 1:
-            param_keys = [list(df_prices.columns.names)[0]] + \
-                [ind_name + "_" + x for x in ind_params]
-
-            for symbol in symbols:
-                temp_df_prices_tuple = ()
-
-                for input_name in input_names:
-                    temp_df_prices_tuple = temp_df_prices_tuple + \
-                        (df_prices[symbol][input_name].values,)
-                current_symbol_tuple = (symbol,)
-
-                for c in range(ind_setings_len):
-
-                    # x is the array object in the tuple (x,x)
-                    for x in final_user_args:
-                        if type(x[c]) == np.int_:
-                            ind_settings_tup = ind_settings_tup + (int(x[c]),)
-                        if type(x[c]) == np.float_:
-                            ind_settings_tup = ind_settings_tup + \
-                                (float(x[c]),)
-
-                    final_array[:, counter] = getattr(talib, func_name.upper())(
-                        *temp_df_prices_tuple,
-                        *ind_settings_tup,
-                    )
-
-                    pd_multind_tuples = pd_multind_tuples + \
-                        (current_symbol_tuple + ind_settings_tup,)
-
-                    ind_settings_tup = ()
-                    counter += 1
-
-        elif output_names_len > 1:
-            param_keys = [list(df_prices.columns.names)[
-                0]] + [ind_name + "_output_names"] + [ind_name + "_" + x for x in ind_params]
-
-            for symbol in symbols:
-                temp_df_prices_tuple = ()
-
-                for input_name in input_names:
-                    temp_df_prices_tuple = temp_df_prices_tuple + \
-                        (df_prices[symbol][input_name].values,)
-                current_symbol_tuple = (symbol,)
-
-                # these are the names called by the fun like talib('rsi').real - real is the output name
-                for out_name_count, out_name in enumerate(output_names):
-
-                    # c is the indicator result of the array within the tuple (array[x], array[x])
-                    for c in range(ind_setings_len):
-
-                        # x is the array object in the tuple (x,x)
-                        for x in final_user_args:
-                            if type(x[c]) == np.int_:
-                                ind_settings_tup = ind_settings_tup + \
-                                    (int(x[c]),)
-                            if type(x[c]) == np.float_:
-                                ind_settings_tup = ind_settings_tup + \
-                                    (float(x[c]),)
-
-                        final_array[:, counter] = getattr(talib, func_name.upper())(
-                            *temp_df_prices_tuple,
-                            *ind_settings_tup,
-                        )[out_name_count]
-
-                        pd_multind_tuples = pd_multind_tuples + (
-                            current_symbol_tuple +
-                            (out_name,) + ind_settings_tup,
-                        )
-
-                        ind_settings_tup = ()
-                        counter += 1
-
-        else:
-            raise ValueError("Something is wrong with the output name length")
-
-    # sending indicator data as the data you want to work with
-    elif user_ind_df is not None:
-        counter = 0
-        user_ind_settings = tuple(user_ind_df.columns)
-        user_ind_values = user_ind_df.values
-        user_ind_names = list(user_ind_df.columns.names)
-        user_ind_name = user_ind_names[1].split("_")[0]
-        param_keys = [user_ind_name + "_" +
-                      ind_name + "_" + x for x in ind_params]
-        param_keys = user_ind_names + param_keys
-        final_array = np.empty(
-            (
-                user_ind_df.shape[0],
-                ind_setings_len * output_names_len * user_ind_df.shape[1],
-            )
-        )
-        if output_names_len == 1:
-            for col in range(user_ind_values.shape[1]):
-
-                # c is the indicator result of the array within the tuple (array[x], array[x])
-                for c in range(ind_setings_len):
-
-                    # x is the array object in the tuple (x,x)
-                    for x in final_user_args:
-                        if type(x[c]) == np.int_:
-                            ind_settings_tup = ind_settings_tup + (int(x[c]),)
-                        if type(x[c]) == np.float_:
-                            ind_settings_tup = ind_settings_tup + \
-                                (float(x[c]),)
-                    final_array[:, counter] = getattr(talib, func_name.upper())(
-                        user_ind_values[:, col],
-                        *ind_settings_tup,
-                    )
-
-                    pd_multind_tuples = pd_multind_tuples + (
-                        user_ind_settings[col] + ind_settings_tup,
-                    )
-
-                    counter += 1
-                    ind_settings_tup = ()
-
-        elif output_names_len > 1:
-            user_ind_col_names = []
-            for col_name in list(user_ind_df.columns.names):
-                user_ind_col_names.append(col_name)
-            param_keys = user_ind_col_names + [ind_name + "_output_names"] + [ind_name + "_" + x for x in ind_params]
-
-            # these are the names called by the fun like talib('rsi').real - real is the output name
-            for col in range(user_ind_values.shape[1]):
-                for out_name_count, out_name in enumerate(output_names):
-
-                    # c is the indicator result of the array within the tuple (array[x], array[x])
-                    for c in range(ind_setings_len):
-
-                        # x is the array object in the tuple (x,x)
-                        for x in final_user_args:
-                            if type(x[c]) == np.int_:
-                                ind_settings_tup = ind_settings_tup + \
-                                    (int(x[c]),)
-                            if type(x[c]) == np.float_:
-                                ind_settings_tup = ind_settings_tup + \
-                                    (float(x[c]),)
-
-                        final_array[:, counter] = getattr(talib, func_name.upper())(
-                            user_ind_values[:, col],
-                            *ind_settings_tup,
-                        )[out_name_count]
-
-                        pd_multind_tuples = pd_multind_tuples + (
-                            user_ind_settings[col] +
-                            (out_name,) + ind_settings_tup,
-                        )
-
-                        counter += 1
-                        ind_settings_tup = ()
-
-        else:
+        symbols = list(want_to_evaluate.columns.levels[0])
+        eval_array = np.empty_like(want_to_evaluate, dtype=np.bool_)
+        if cand_ohlc == None or cand_ohlc.lower() not in (
+            "open",
+            "high",
+            "low",
+            "close",
+        ):
             raise ValueError(
-                "Something is wrong with the output name length for user ind data"
+                "cand_ohlc must be open, high, low or close when sending price data"
             )
+        price_values = getattr(df_prices, cand_ohlc).values
+        if not all(isinstance(x, (np.int_, np.float_)) for x in price_values):
+            raise ValueError("price data must be ints or floats")
+        for col in range(want_to_evaluate.shape[1]):
+            eval_array[:, col] = np.where(
+                want_to_evaluate_values[:, col] < price_values, True, False
+            )
+
+            pd_multind_tuples = pd_multind_tuples + (
+                want_to_evaluate.columns[col] + (cand_ohlc + "_price",),
+            )
+
+    elif isinstance(indicator_data, pdFrame):
+        want_to_evaluate_name = want_to_evaluate.columns.names[-1].split("_")[
+            1]
+        indicator_data_name = indicator_data.columns.names[0].split("_")[0]
+
+        pd_col_names = list(want_to_evaluate.columns.names) + [
+            want_to_evaluate_name + "_is_below"
+        ]
+
+        want_to_evaluate_settings_tuple_list = want_to_evaluate.columns.to_list()
+
+        eval_array = np.empty(
+            (want_to_evaluate.shape[0], len(
+                want_to_evaluate_settings_tuple_list)),
+            dtype=np.bool_,
+        )
+        pd_multind_tuples = ()
+        for count, value in enumerate(want_to_evaluate_settings_tuple_list):
+            temp_evaluate_values = want_to_evaluate[value].values
+            temp_indicator_values = indicator_data[value[0]].values.flatten()
+            if not all(
+                isinstance(x, (np.int_, np.float_)) for x in temp_evaluate_values
+            ) and not all(isinstance(x, (np.int_, np.float_)) for x in temp_indicator_values):
+                raise ValueError(
+                    "want to eval or indicator data must be ints or floats")
+            eval_array[:, count] = np.where(
+                temp_evaluate_values < temp_indicator_values,
+                True,
+                False,
+            )
+            pd_multind_tuples = pd_multind_tuples + \
+                (value + (indicator_data_name,),)
+
     else:
         raise ValueError(
-            "Something is wrong with either df prices or user indicator")
+            "something is wrong with what you sent please make sure the type of variable you are sending matches with the type required"
+        )
+
     return pd.DataFrame(
-        final_array,
-        index=pd_index,
+        eval_array,
+        index=want_to_evaluate.index,
         columns=pd.MultiIndex.from_tuples(
             tuples=list(pd_multind_tuples),
-            names=param_keys,
+            names=pd_col_names,
         ),
     )

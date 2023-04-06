@@ -8,7 +8,7 @@ from itertools import product
 from quantfreedom._typing import pdFrame, Optional, pdSeries, Array1d
 
 
-def testing_from_talib(
+def from_talib(
     func_name: str,
     cart_product: bool,
     combos: bool,
@@ -199,7 +199,6 @@ def testing_from_talib(
                 for input_name in input_names:
                     temp_df_prices_tuple = temp_df_prices_tuple + \
                         (df_prices[symbol][input_name].values,)
-                current_symbol_tuple = (symbol,)
 
                 for c in range(ind_setings_len):
 
@@ -217,7 +216,7 @@ def testing_from_talib(
                     )
 
                     pd_multind_tuples = pd_multind_tuples + \
-                        (current_symbol_tuple + ind_settings_tup,)
+                        ((symbol,) + ind_settings_tup,)
 
                     ind_settings_tup = ()
                     counter += 1
@@ -232,7 +231,6 @@ def testing_from_talib(
                 for input_name in input_names:
                     temp_df_prices_tuple = temp_df_prices_tuple + \
                         (df_prices[symbol][input_name].values,)
-                current_symbol_tuple = (symbol,)
 
                 # these are the names called by the fun like talib('rsi').real - real is the output name
                 for out_name_count, out_name in enumerate(output_names):
@@ -255,8 +253,7 @@ def testing_from_talib(
                         )[out_name_count]
 
                         pd_multind_tuples = pd_multind_tuples + (
-                            current_symbol_tuple +
-                            (out_name,) + ind_settings_tup,
+                            (symbol,) + (out_name,) + ind_settings_tup,
                         )
 
                         ind_settings_tup = ()
