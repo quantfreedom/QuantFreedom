@@ -12,30 +12,30 @@ def from_talib(
     func_name: str,
     cart_product: bool,
     combos: bool,
-    df_prices: Optional[pdFrame] = None,
-    user_ind_df: Optional[pdFrame] = None,
+    prices: Optional[pdFrame] = None,
+    indicator_data: Optional[pdFrame] = None,
     **kwargs,
 ) -> pdFrame:
 
-    if all(x is None for x in (df_prices, user_ind_df)):
+    if all(x is None for x in (prices, indicator_data)):
         raise ValueError(
-            f"You need to send either a dataframe of prices 'df_prices' or a dataframe with multindexed values 'user_ind_df'"
+            f"You need to send either a dataframe of prices 'prices' or a dataframe with multindexed values 'indicator_data'"
         )
-    elif all(x is not None for x in (df_prices, user_ind_df)):
+    elif all(x is not None for x in (prices, indicator_data)):
         raise ValueError(
             f"You can't send both prices and values ... please pick one or the other"
         )
     elif (
-        not isinstance(user_ind_df, pdFrame)
-        and user_ind_df is not None
-        or not isinstance(df_prices, pdFrame)
-        and df_prices is not None
+        not isinstance(indicator_data, pdFrame)
+        and indicator_data is not None
+        or not isinstance(prices, pdFrame)
+        and prices is not None
     ):
         raise ValueError(f"You must send this as a pandas dataframe")
-    elif isinstance(user_ind_df, pdFrame):
-        pd_index = user_ind_df.index
-    elif isinstance(df_prices, pdFrame):
-        pd_index = df_prices.index
+    elif isinstance(indicator_data, pdFrame):
+        pd_index = indicator_data.index
+    elif isinstance(prices, pdFrame):
+        pd_index = prices.index
 
     users_args_list = []
     biggest = 1
@@ -182,23 +182,23 @@ def from_talib(
     output_names_len = len(output_names)
 
     # sending price data as your data to work with
-    if df_prices is not None:
-        symbols = list(df_prices.columns.levels[0])
+    if prices is not None:
+        symbols = list(prices.columns.levels[0])
         num_of_symbols = len(symbols)
         final_array = np.empty(
-            (df_prices.shape[0], ind_setings_len * output_names_len * num_of_symbols))
+            (prices.shape[0], ind_setings_len * output_names_len * num_of_symbols))
         counter = 0
 
         if output_names_len == 1:
-            param_keys = [list(df_prices.columns.names)[0]] + \
+            param_keys = [list(prices.columns.names)[0]] + \
                 [ind_name + "_" + x for x in ind_params]
 
             for symbol in symbols:
-                temp_df_prices_tuple = ()
+                temp_prices_tuple = ()
 
                 for input_name in input_names:
-                    temp_df_prices_tuple = temp_df_prices_tuple + \
-                        (df_prices[symbol][input_name].values,)
+                    temp_prices_tuple = temp_prices_tuple + \
+                        (prices[symbol][input_name].values,)
 
                 for c in range(ind_setings_len):
 
@@ -211,7 +211,7 @@ def from_talib(
                                 (float(x[c]),)
 
                     final_array[:, counter] = getattr(talib, func_name.upper())(
-                        *temp_df_prices_tuple,
+                        *temp_prices_tuple,
                         *ind_settings_tup,
                     )
 
@@ -222,15 +222,15 @@ def from_talib(
                     counter += 1
 
         elif output_names_len > 1:
-            param_keys = [list(df_prices.columns.names)[
+            param_keys = [list(prices.columns.names)[
                 0]] + [ind_name + "_output_names"] + [ind_name + "_" + x for x in ind_params]
 
             for symbol in symbols:
-                temp_df_prices_tuple = ()
+                temp_prices_tuple = ()
 
                 for input_name in input_names:
-                    temp_df_prices_tuple = temp_df_prices_tuple + \
-                        (df_prices[symbol][input_name].values,)
+                    temp_prices_tuple = temp_prices_tuple + \
+                        (prices[symbol][input_name].values,)
 
                 # these are the names called by the fun like talib('rsi').real - real is the output name
                 for out_name_count, out_name in enumerate(output_names):
@@ -248,7 +248,7 @@ def from_talib(
                                     (float(x[c]),)
 
                         final_array[:, counter] = getattr(talib, func_name.upper())(
-                            *temp_df_prices_tuple,
+                            *temp_prices_tuple,
                             *ind_settings_tup,
                         )[out_name_count]
 
@@ -263,19 +263,19 @@ def from_talib(
             raise ValueError("Something is wrong with the output name length")
 
     # sending indicator data as the data you want to work with
-    elif user_ind_df is not None:
+    elif indicator_data is not None:
         counter = 0
-        user_ind_settings = tuple(user_ind_df.columns)
-        user_ind_values = user_ind_df.values
-        user_ind_names = list(user_ind_df.columns.names)
+        user_ind_settings = tuple(indicator_data.columns)
+        user_ind_values = indicator_data.values
+        user_ind_names = list(indicator_data.columns.names)
         user_ind_name = user_ind_names[1].split("_")[0]
         param_keys = [user_ind_name + "_" +
                       ind_name + "_" + x for x in ind_params]
         param_keys = user_ind_names + param_keys
         final_array = np.empty(
             (
-                user_ind_df.shape[0],
-                ind_setings_len * output_names_len * user_ind_df.shape[1],
+                indicator_data.shape[0],
+                ind_setings_len * output_names_len * indicator_data.shape[1],
             )
         )
         if output_names_len == 1:
@@ -305,7 +305,7 @@ def from_talib(
 
         elif output_names_len > 1:
             user_ind_col_names = []
-            for col_name in list(user_ind_df.columns.names):
+            for col_name in list(indicator_data.columns.names):
                 user_ind_col_names.append(col_name)
             param_keys = user_ind_col_names + [ind_name + "_output_names"] + [ind_name + "_" + x for x in ind_params]
 

@@ -1,13 +1,1 @@
-list len of things being returned
-    for x in list length
-        x[0] = pd.Dataframe()
-
-for asdf the len of things being returned 
-    temp_def = getattrib(Function, thing returned[0])
-    temp_df.columns = pd.MultiIndex.from_product(
-                list(ind_settings_tup),
-                names=list(info['parameters'].keys())
-            )
-    concat(x[asdf], temp_def)
-
-create dictionary with keys and dataframe as values
+need to match the column index names until they don't match and append to a tuple or list

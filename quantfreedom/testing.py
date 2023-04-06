@@ -1,138 +1,115 @@
 # https://ta-lib.github.io/ta-lib-python/index.html
 import pandas as pd
 import numpy as np
+from itertools import product
+import plotly.graph_objects as go
 from quantfreedom._typing import pdFrame, Optional, Array1d, Union
 
 
-def testing_eval_is_below(
-    want_to_evaluate: pdFrame,
-    user_args: Optional[Union[list[int, float], int, float, Array1d]] = None,
-    indicator_data: Optional[pdFrame] = None,
-    df_prices: Optional[pdFrame] = None,
-    cand_ohlc: Optional[str] = None,
-) -> pdFrame:
-    """eval_is_below _summary_
+def testing_combine_evals(
+    first_data: pdFrame,
+    second_data: pdFrame,
+    plot_results: bool = False,
+    first_data_needs_prices: bool = False,
+    prices: Optional[pdFrame] = None
+):
+    if len(first_data.columns.levels) < len(second_data.columns.levels):
+        temp = len(first_data.columns.levels)
+    else:
+        temp = len(second_data.columns.levels)
 
-    _extended_summary_
+    list_for_product = []
+    pd_col_names = []
+    for x in range(temp):
+        if list(first_data.columns.levels[x]) == list(second_data.columns.levels[x]):
+            list_for_product.append(list(first_data.columns.levels[x]))
+            pd_col_names.append(first_data.columns.names[x])
+    levels = list(product(*list_for_product))
 
-    Parameters
-    ----------
-    want_to_evaluate : pdFrame
-        I think of this like I want to evaluate if the thing i am sending like EMA is below the price or is below the indicator data which could be rsi. So it would be i want to evalute if the EMA is below the RSI.
-    user_args : Optional[Union[list[int, float], int, float, Array1d]], optional
-        _description_, by default None
-    indicator_data : Optional[pdFrame], optional
-        _description_, by default None
-    df_prices : Optional[pdFrame], optional
-        _description_, by default None
-    cand_ohlc : Optional[str], optional
-        _description_, by default None
+    pd_col_names = pd_col_names + list(first_data.droplevel(pd_col_names, axis=1).columns.names) + \
+        list(second_data.droplevel(pd_col_names, axis=1).columns.names)
 
-    Returns
-    -------
-    pdFrame
-    """
-    if not isinstance(want_to_evaluate, pdFrame):
-        raise ValueError("Data must be a dataframe with multindex")
+    combine_array = np.empty(
+        (first_data.shape[0], second_data[levels[0]].shape[1] * first_data[levels[0]].shape[1] * len(levels)), dtype=np.bool_
+    )
+    
+    try :
+        second_data[levels[0]].columns[0][0]
+        temp_smaller_def_columns = list(second_data[levels[0]].columns)
+    except:
+        temp_smaller_def_columns = []
+        for value in list(second_data[levels[0]].columns):
+            temp_smaller_def_columns.append((value,))
+    
+    try :
+        first_data[levels[0]].columns[0][0]
+        temp_big_def_columns = list(first_data[levels[0]].columns)
+    except:
+        temp_big_def_columns = []
+        for value in list(first_data[levels[0]].columns):
+            temp_big_def_columns.append((value,))
 
-    # want_to_evaluate_values = want_to_evaluate.values
-    # pd_col_names = list(want_to_evaluate.columns.names) + [
-    #     want_to_evaluate.columns.names[0].split("_")[0] + "_is_below"
-    # ]
-    # pd_multind_tuples = ()
+    comb_counter = 0
+    pd_multind_tuples = ()
+    for level in levels:
+        temp_big_df = first_data[level]
+        temp_small_df = second_data[level]
+        for big_count, big_values in enumerate(temp_big_df.values.T):
 
-    if isinstance(user_args, (list, Array1d)):
-        eval_array = np.empty(
-            (want_to_evaluate.shape[0], want_to_evaluate.shape[1] * len(user_args)), dtype=np.bool_
-        )
-        if not all(isinstance(x, (int, float, np.int_, np.float_)) for x in user_args):
-            raise ValueError("user_args must be a list of ints or floats")
-        eval_array_counter = 0
-        for col in range(want_to_evaluate.shape[1]):
-            temp_array = want_to_evaluate_values[:, col]
-            for eval_col in range(user_args.size):
-                eval_array[:, eval_array_counter] = np.where(
-                    temp_array < user_args[eval_col], True, False
+            for small_count, small_values in enumerate(temp_small_df.values.T):
+
+                combine_array[:, comb_counter] = np.logical_and(
+                    big_values == True, small_values == True
                 )
-                eval_array_counter += 1
 
                 pd_multind_tuples = pd_multind_tuples + (
-                    want_to_evaluate.columns[col] + (user_args[eval_col],),
+                    level + temp_big_def_columns[big_count] +
+                    temp_smaller_def_columns[small_count],
                 )
 
-    elif isinstance(user_args, (int, float)):
-        eval_array = np.where(want_to_evaluate_values < user_args, True, False)
+                comb_counter += 1
 
-        for col in range(want_to_evaluate.shape[1]):
-            pd_multind_tuples = pd_multind_tuples + (
-                want_to_evaluate.columns[col] + (user_args,),
-            )
+    if plot_results and prices is not None:
+        temp_first_data_values = first_data.iloc[:-1]
+        plot_index = second_data.index
 
-    elif isinstance(df_prices, pdFrame):
-        symbols = list(want_to_evaluate.columns.levels[0])
-        eval_array = np.empty_like(want_to_evaluate, dtype=np.bool_)
-        if cand_ohlc == None or cand_ohlc.lower() not in (
-            "open",
-            "high",
-            "low",
-            "close",
-        ):
-            raise ValueError(
-                "cand_ohlc must be open, high, low or close when sending price data"
-            )
-        price_values = getattr(df_prices, cand_ohlc).values
-        if not all(isinstance(x, (np.int_, np.float_)) for x in price_values):
-            raise ValueError("price data must be ints or floats")
-        for col in range(want_to_evaluate.shape[1]):
-            eval_array[:, col] = np.where(
-                want_to_evaluate_values[:, col] < price_values, True, False
-            )
-
-            pd_multind_tuples = pd_multind_tuples + (
-                want_to_evaluate.columns[col] + (cand_ohlc + "_price",),
-            )
-
-    elif isinstance(indicator_data, pdFrame):
-        want_to_evaluate_name = want_to_evaluate.columns.names[-1].split("_")[
-            1]
-        indicator_data_name = indicator_data.columns.names[0].split("_")[0]
-
-        pd_col_names = list(want_to_evaluate.columns.names) + [
-            want_to_evaluate_name + "_is_below"
-        ]
-
-        want_to_evaluate_settings_tuple_list = want_to_evaluate.columns.to_list()
-
-        eval_array = np.empty(
-            (want_to_evaluate.shape[0], len(
-                want_to_evaluate_settings_tuple_list)),
-            dtype=np.bool_,
+        fig = go.Figure(
+            data=[
+                go.Candlestick(
+                    x=plot_index,
+                    open=prices.open,
+                    high=prices.high,
+                    low=prices.low,
+                    close=prices.close,
+                    name="Candles",
+                ),
+                go.Scatter(
+                    x=plot_index,
+                    y=temp_first_data_values,
+                    mode="lines",
+                    line=dict(width=4, color='lightblue'),
+                    name="Name",
+                ),
+                go.Scatter(
+                    x=plot_index,
+                    y=np.where(
+                        combine_array[:, -1],
+                        temp_first_data_values,
+                        np.nan,
+                    ),
+                    mode="markers",
+                    marker=dict(size=3, color='yellow'),
+                    name="Signals",
+                ),
+            ]
         )
-        pd_multind_tuples = ()
-        for count, value in enumerate(want_to_evaluate_settings_tuple_list):
-            temp_evaluate_values = want_to_evaluate[value].values
-            temp_indicator_values = indicator_data[value[0]].values.flatten()
-            if not all(
-                isinstance(x, (np.int_, np.float_)) for x in temp_evaluate_values
-            ) and not all(isinstance(x, (np.int_, np.float_)) for x in temp_indicator_values):
-                raise ValueError(
-                    "want to eval or indicator data must be ints or floats")
-            eval_array[:, count] = np.where(
-                temp_evaluate_values < temp_indicator_values,
-                True,
-                False,
-            )
-            pd_multind_tuples = pd_multind_tuples + \
-                (value + (indicator_data_name,),)
-
-    else:
-        raise ValueError(
-            "something is wrong with what you sent please make sure the type of variable you are sending matches with the type required"
-        )
+        fig.update_xaxes(rangeslider_visible=False)
+        fig.update_layout(height=500, title="Last Column of the Results")
+        fig.show()
 
     return pd.DataFrame(
-        eval_array,
-        index=want_to_evaluate.index,
+        combine_array,
+        index=second_data.index,
         columns=pd.MultiIndex.from_tuples(
             tuples=list(pd_multind_tuples),
             names=pd_col_names,
