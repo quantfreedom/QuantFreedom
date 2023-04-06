@@ -205,8 +205,9 @@ SizeType = SizeTypeT()
 
 strat_df_array_dt = np.dtype(
     [
-        ("or_set", np.int_),
+        ("symbol", np.int_),
         ("ind_set", np.int_),
+        ("or_set", np.int_),
         ("total_trades", np.float_),
         ("gains_pct", np.float_),
         ("win_rate", np.float_),
@@ -226,6 +227,7 @@ final_array_dt = np.dtype(
         ("to_the_upside", np.float_),
         ("total_pnl", np.float_),
         ("ending_eq", np.float_),
+        ("symbol", np.int_),
         ("settings_id", np.int_),
         ("leverage", np.float_),
         ("max_equity_risk_pct", np.float_),
@@ -249,6 +251,7 @@ final_array_dt = np.dtype(
 
 settings_array_dt = np.dtype(
     [
+        ("symbol", np.int_),
         ("ind_set_id", np.int_),
         ("leverage", np.float_),
         ("max_equity_risk_pct", np.float_),
@@ -275,8 +278,9 @@ A numpy array with specific data types that allow you to store specific informat
 
 strat_records_dt = np.dtype(
     [
-        ("or_set", np.int_),
+        ("symbol", np.int_),
         ("ind_set", np.int_),
+        ("or_set", np.int_),
         ("real_pnl", np.float_),
         ("equity", np.float_),
     ],

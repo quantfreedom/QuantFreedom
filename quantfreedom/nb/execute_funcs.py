@@ -248,6 +248,7 @@ def process_order_nb(
     order_type: int,
     indicator_settings_counter: int,
     order_settings_counter: int,
+    symbol_counter: int,
     account_state: AccountState,
     entry_order: EntryOrder,
     order_result: OrderResult,
@@ -297,6 +298,7 @@ def process_order_nb(
         fill_strat_records_nb(
             indicator_settings_counter=indicator_settings_counter,
             order_settings_counter=order_settings_counter,
+            symbol_counter=symbol_counter,
             strat_records=strat_records,
             strat_records_filled=strat_records_filled,
             equity=account_state_new.equity,
@@ -310,7 +312,7 @@ def process_order_nb(
         fill_order_records_nb(
             bar=bar,
             order_records=order_records,
-            settings_counter=order_settings_counter,
+            order_settings_counter=order_settings_counter,
             order_records_id=order_records_id,
             account_state=account_state_new,
             order_result=order_result_new,

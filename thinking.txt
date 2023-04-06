@@ -1,1 +1,1 @@
-need to match the column index names until they don't match and append to a tuple or list
+4 columns ohlc 3 coins 
