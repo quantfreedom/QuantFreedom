@@ -5,21 +5,21 @@ import talib
 from talib.abstract import Function
 from talib import get_functions
 from itertools import product
-from quantfreedom._typing import pdFrame, Optional, pdSeries, Array1d
+from quantfreedom._typing import pdFrame, Array1d
 
 
 def from_talib(
     func_name: str,
     cart_product: bool,
     combos: bool,
-    prices: Optional[pdFrame] = None,
-    indicator_data: Optional[pdFrame] = None,
+    prices: pdFrame = None,
+    indicator_data: pdFrame = None,
     **kwargs,
 ) -> pdFrame:
 
     if all(x is None for x in (prices, indicator_data)):
         raise ValueError(
-            f"You need to send either a dataframe of prices 'prices' or a dataframe with multindexed values 'indicator_data'"
+            f"You need to send either prices = pdFrame or indicator_data = pdFrame"
         )
     elif all(x is not None for x in (prices, indicator_data)):
         raise ValueError(
