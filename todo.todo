@@ -6,7 +6,7 @@ currently working on:
     ✔ work on eval is below and above with multiple coins @done(23-04-06 10:05)
     ✔ make eval grpahable @done(23-04-06 10:05)
     ✔ work on combine evals with multiple coins @done(23-04-06 10:05)
-    ☐ make combine graphable
+    ✔ make combine graphable @done(23-04-06 12:30)
     ☐ make it so that the simulator df can work with mutliple coins
     ☐ make it so you have a true false variable for plotting in eval below but you can only plot the first column
 
