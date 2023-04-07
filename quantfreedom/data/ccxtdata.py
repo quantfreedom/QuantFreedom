@@ -16,7 +16,8 @@ class CCXTData:
         symbols: Union[str, list],
         timeframe: str,
         drop_volume: bool = True,
-        limit: int = 200,
+        remove_rate_limit: bool = False,
+        bars_per_loop: int = 200,
     ):
         """
         data_download Download Data using CCXT
@@ -54,24 +55,16 @@ class CCXTData:
         -------
         Pandas dataframe
         """
-        exchange = getattr(ccxt, exchange)()
+        if remove_rate_limit:
+            exchange = getattr(ccxt, exchange)()
+        else:
+            exchange = getattr(ccxt, exchange)({"enableRateLimit": True})
         print("Loading exchange data")
         exchange.load_markets()
         # exchange.verbose = True  # uncomment for debugging purposes if necessary
         start = exchange.parse8601(start)
         end = exchange.parse8601(end)
         timeframe = timeframe.lower()
-        final_df = pd.DataFrame(
-            columns=pd.MultiIndex.from_tuples(
-                tuples=[],
-                name=["symbol", "candle_info"],
-            ),
-            index=pd.Index(
-                data=[],
-                name="open_time",
-            ),
-        )
-
         if not isinstance(symbols, list):
             symbols = [symbols]
         if not all(isinstance(x, str) for x in symbols):
@@ -93,6 +86,22 @@ class CCXTData:
         else:
             raise ValueError("something wrong with your timeframe")
 
+        x = start
+        timelist = [x]
+        while x < end:
+            x += time_in * timeframe_int
+            timelist.append(x)
+
+        final_df = pd.DataFrame(
+            columns=pd.MultiIndex.from_tuples(
+                tuples=[],
+                name=["symbol", "candle_info"],
+            ),
+            index=pd.Index(
+                data=pd.to_datetime(timelist, unit="ms"),
+                name="open_time",
+            ),
+        )
         # Example if you selected your timeframe as 30 minute candles
 
         # Get the distance between the end date and start date in miliseconds
@@ -104,11 +113,12 @@ class CCXTData:
         # Then last we do + len of symbols because we will do an extra pbar update after we create the dataframe
         num_candles_per_coin = ((end - start) / time_in) / timeframe_int
         total_tqdm = (
-            (int(num_candles_per_coin / limit) + 1) * len_symbols
+            (int(num_candles_per_coin / bars_per_loop) + 1) * len_symbols
         ) + len_symbols
         print(
-            f"Total rows of data to be download: {int(num_candles_per_coin)}\n"
-            f"Total candles to be download: {int(num_candles_per_coin) * len_symbols}"
+            f"Total possible rows of data to be download: {int(num_candles_per_coin)}\n"
+            f"Total possible candles to be download: {int(num_candles_per_coin) * len_symbols}\n"
+            f"It could finish earlier than expected because maybe not all coins have data starting from the start date selected."
         )
         with tqdm(total=total_tqdm) as pbar:
             # with tqdm(total=96*2) as pbar:
@@ -122,7 +132,7 @@ class CCXTData:
                             symbol=symbol,
                             timeframe=timeframe,
                             since=start,
-                            limit=limit,
+                            limit=bars_per_loop,
                             params={"end": temp_end},
                         )
                         all_ohlcvs += ohlcvs
@@ -158,8 +168,9 @@ class CCXTData:
                     )
                     if drop_volume:
                         data.drop(columns=(symbol, "volume"), inplace=True, axis=1)
-                    final_df = final_df.join(data, how="right")
+                    final_df = final_df.join(data)
                 pbar.update(1)
         final_df.sort_index(ascending=True, inplace=True)
-        final_df.drop(data.tail(1).index, inplace=True)
+        final_df.dropna(how='all', inplace=True)
+        final_df.drop(final_df.tail(1).index, inplace=True)
         return final_df

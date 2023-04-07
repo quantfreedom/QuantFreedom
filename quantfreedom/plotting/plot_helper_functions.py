@@ -279,7 +279,7 @@ def append_to_trace_data_list(
 ):
     if "values" in dict_key:
         temp_ind_vals[0] = dict_value.values.flatten()
-        ind_name = list(dict_value.columns.names)[0].split("_")[0]
+        ind_name = list(dict_value.columns.names)[1].split("_")[0]
         ind_value = str(list(dict_value.columns)[0][0])
         trace_data_list.append(
             go.Scatter(

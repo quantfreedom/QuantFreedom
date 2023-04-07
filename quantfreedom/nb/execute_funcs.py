@@ -232,7 +232,7 @@ def check_sl_tp_nb(
         fill_order_records_nb(
             bar=bar,
             order_records=order_records,
-            settings_counter=order_settings_counter,
+            order_settings_counter=order_settings_counter,
             order_records_id=order_records_id,
             account_state=account_state,
             order_result=order_result_new,
@@ -246,7 +246,7 @@ def process_order_nb(
     price: float,
     bar: int,
     order_type: int,
-    indicator_settings_counter: int,
+    entries_col: int,
     order_settings_counter: int,
     symbol_counter: int,
     account_state: AccountState,
@@ -296,7 +296,7 @@ def process_order_nb(
         and order_result_new.order_status == OrderStatus.Filled
     ):
         fill_strat_records_nb(
-            indicator_settings_counter=indicator_settings_counter,
+            entries_col=entries_col,
             order_settings_counter=order_settings_counter,
             symbol_counter=symbol_counter,
             strat_records=strat_records,

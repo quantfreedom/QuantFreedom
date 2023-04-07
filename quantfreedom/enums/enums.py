@@ -206,7 +206,7 @@ SizeType = SizeTypeT()
 strat_df_array_dt = np.dtype(
     [
         ("symbol", np.int_),
-        ("ind_set", np.int_),
+        ("entries_col", np.int_),
         ("or_set", np.int_),
         ("total_trades", np.float_),
         ("gains_pct", np.float_),
@@ -218,6 +218,40 @@ strat_df_array_dt = np.dtype(
     align=True,
 )
 
+settings_array_dt = np.dtype(
+    [
+        ("symbol", np.int_),
+        ("entries_col", np.int_),
+        ("leverage", np.float_),
+        ("max_equity_risk_pct", np.float_),
+        ("max_equity_risk_value", np.float_),
+        ("risk_rewards", np.float_),
+        ("size_pct", np.float_),
+        ("size_value", np.float_),
+        ("sl_pcts", np.float_),
+        ("sl_to_be_based_on", np.float_),
+        ("sl_to_be_trail_by_when_pct_from_avg_entry", np.float_),
+        ("sl_to_be_when_pct_from_avg_entry", np.float_),
+        ("sl_to_be_zero_or_entry", np.float_),
+        ("tp_pcts", np.float_),
+        ("tsl_based_on", np.float_),
+        ("tsl_pcts_init", np.float_),
+        ("tsl_trail_by_pct", np.float_),
+        ("tsl_when_pct_from_avg_entry", np.float_),
+    ],
+    align=True,
+)
+
+strat_records_dt = np.dtype(
+    [
+        ("symbol", np.int_),
+        ("entries_col", np.int_),
+        ("or_set", np.int_),
+        ("real_pnl", np.float_),
+        ("equity", np.float_),
+    ],
+    align=True,
+)
 
 final_array_dt = np.dtype(
     [
@@ -249,48 +283,11 @@ final_array_dt = np.dtype(
     align=True,
 )
 
-settings_array_dt = np.dtype(
-    [
-        ("symbol", np.int_),
-        ("ind_set_id", np.int_),
-        ("leverage", np.float_),
-        ("max_equity_risk_pct", np.float_),
-        ("max_equity_risk_value", np.float_),
-        ("risk_rewards", np.float_),
-        ("size_pct", np.float_),
-        ("size_value", np.float_),
-        ("sl_pcts", np.float_),
-        ("sl_to_be_based_on", np.float_),
-        ("sl_to_be_trail_by_when_pct_from_avg_entry", np.float_),
-        ("sl_to_be_when_pct_from_avg_entry", np.float_),
-        ("sl_to_be_zero_or_entry", np.float_),
-        ("tp_pcts", np.float_),
-        ("tsl_based_on", np.float_),
-        ("tsl_pcts_init", np.float_),
-        ("tsl_trail_by_pct", np.float_),
-        ("tsl_when_pct_from_avg_entry", np.float_),
-    ],
-    align=True,
-)
-"""
-A numpy array with specific data types that allow you to store specific information about your order result
-"""
-
-strat_records_dt = np.dtype(
-    [
-        ("symbol", np.int_),
-        ("ind_set", np.int_),
-        ("or_set", np.int_),
-        ("real_pnl", np.float_),
-        ("equity", np.float_),
-    ],
-    align=True,
-)
 
 or_dt = np.dtype(
     [
         ("order_id", np.int_),
-        ("settings_id", np.int_),
+        ("order_set_id", np.int_),
         ("bar", np.int_),
         ("size_value", np.float_),
         ("price", np.float_),

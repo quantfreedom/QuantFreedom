@@ -75,7 +75,11 @@ def strat_dashboard(
         rows=1,
         cols=1,
     )
-    del indicator_dict["candle_chart"]
+    try:
+        del indicator_dict["candle_chart"]
+    except:
+        pass
+    
     row_count = 2
     for indicator_dict_value in indicator_dict.values():
         trace_data_list = []

@@ -1,12 +1,133 @@
 import numpy as np
 import plotly.graph_objects as go
-import talib
 import numpy as np
 import pandas as pd
-import polars as pl
 
-from quantfreedom._typing import plSeries, List, plFrame, RecordArray
-from quantfreedom.enums.enums import OrderType
+from quantfreedom.nb.simulate import backtest_df_array_only_nb
+from quantfreedom._typing import (
+    plSeries,
+    pdFrame,
+    RecordArray,
+    PossibleArray,
+)
+from quantfreedom.enums.enums import OrderType, SL_BE_or_Trail_BasedOn
+
+
+def backtest_df_only(
+    # entry info
+    entries: pdFrame,
+    prices: pdFrame,
+    # required account info
+    equity: float,
+    fee_pct: float,
+    mmr: float,
+    # required order
+    lev_mode: int,
+    order_type: int,
+    size_type: int,
+    # Order Params
+    leverage: PossibleArray = np.nan,
+    max_equity_risk_pct: PossibleArray = np.nan,
+    max_equity_risk_value: PossibleArray = np.nan,
+    max_order_size_pct: float = 100.0,
+    min_order_size_pct: float = 0.01,
+    max_order_size_value: float = np.inf,
+    min_order_size_value: float = 1.0,
+    max_lev: float = 100.0,
+    size_pct: PossibleArray = np.nan,
+    size_value: PossibleArray = np.nan,
+    # Stop Losses
+    sl_pcts: PossibleArray = np.nan,
+    sl_to_be: bool = False,
+    sl_to_be_based_on: PossibleArray = np.nan,
+    sl_to_be_when_pct_from_avg_entry: PossibleArray = np.nan,
+    sl_to_be_zero_or_entry: PossibleArray = np.nan,
+    sl_to_be_then_trail: bool = False,
+    sl_to_be_trail_by_when_pct_from_avg_entry: PossibleArray = np.nan,
+    # Trailing Stop Loss Params
+    tsl_pcts_init: PossibleArray = np.nan,
+    tsl_true_or_false: bool = False,
+    tsl_based_on: PossibleArray = np.nan,
+    tsl_trail_by_pct: PossibleArray = np.nan,
+    tsl_when_pct_from_avg_entry: PossibleArray = np.nan,
+    # Take Profit Params
+    risk_rewards: PossibleArray = np.nan,
+    tp_pcts: PossibleArray = np.nan,
+    # Results Filters
+    gains_pct_filter: float = -np.inf,
+    total_trade_filter: int = 0,
+):
+    strat_array, settings_array = backtest_df_array_only_nb(
+        num_of_symbols=len(prices.columns.levels[0]),
+        # entry info
+        entries=entries.values,
+        prices=prices.values,
+        # required account info
+        equity=equity,
+        fee_pct=fee_pct,
+        mmr=mmr,
+        # required order
+        lev_mode=lev_mode,
+        order_type=order_type,
+        size_type=size_type,
+        # Order Params
+        leverage=leverage,
+        max_equity_risk_pct=max_equity_risk_pct,
+        max_equity_risk_value=max_equity_risk_value,
+        max_order_size_pct=max_order_size_pct,
+        min_order_size_pct=min_order_size_pct,
+        max_order_size_value=max_order_size_value,
+        min_order_size_value=min_order_size_value,
+        max_lev=max_lev,
+        size_pct=size_pct,
+        size_value=size_value,
+        # Stop Losses
+        sl_pcts=sl_pcts,
+        sl_to_be=sl_to_be,
+        sl_to_be_based_on=sl_to_be_based_on,
+        sl_to_be_when_pct_from_avg_entry=sl_to_be_when_pct_from_avg_entry,
+        sl_to_be_zero_or_entry=sl_to_be_zero_or_entry,
+        sl_to_be_then_trail=sl_to_be_then_trail,
+        sl_to_be_trail_by_when_pct_from_avg_entry=sl_to_be_trail_by_when_pct_from_avg_entry,
+        # Trailing Stop Loss Params
+        tsl_pcts_init=tsl_pcts_init,
+        tsl_true_or_false=tsl_true_or_false,
+        tsl_based_on=tsl_based_on,
+        tsl_trail_by_pct=tsl_trail_by_pct,
+        tsl_when_pct_from_avg_entry=tsl_when_pct_from_avg_entry,
+        # Take Profit Params
+        risk_rewards=risk_rewards,
+        tp_pcts=tp_pcts,
+        # Results Filters
+        gains_pct_filter=gains_pct_filter,
+        total_trade_filter=total_trade_filter,
+    )
+
+    strat_results_df = pd.DataFrame(strat_array).sort_values(
+        by=["to_the_upside", "gains_pct"], ascending=False
+    )
+
+    symbols = list(prices.columns.levels[0])
+
+    for i in range(len(symbols)):
+        strat_results_df.replace({"symbol": {i: symbols[i]}}, inplace=True)
+
+    symbols = list(entries.columns.levels[0])
+    setting_results_df = pd.DataFrame(settings_array).dropna(axis="columns", thresh=1)
+
+    for i in range(len(SL_BE_or_Trail_BasedOn._fields)):
+        setting_results_df.replace(
+            {"tsl_based_on": {i: SL_BE_or_Trail_BasedOn._fields[i]}}, inplace=True
+        )
+        setting_results_df.replace(
+            {"sl_to_be_based_on": {i: SL_BE_or_Trail_BasedOn._fields[i]}}, inplace=True
+        )
+    for i in range(len(symbols)):
+        setting_results_df.replace({"symbol": {i: symbols[i]}}, inplace=True)
+
+    setting_results_df = setting_results_df.T
+
+    return strat_results_df, setting_results_df
 
 
 def plot_trades_all_info(
@@ -16,7 +137,6 @@ def plot_trades_all_info(
     close_prices: plSeries,
     order_records: RecordArray,
 ):
-
     start = order_records["bar"].min() - 2
     end = order_records["bar"].max() + 3
 
@@ -74,7 +194,6 @@ def plot_trades_all_info(
                 order_records["order_type"][log_counter] == OrderType.LongTP
                 or order_records["order_type"][log_counter] == OrderType.ShortTP
             ):
-
                 order_price[array_counter] = np.nan
                 avg_entry[array_counter] = np.nan
                 stop_loss[array_counter] = np.nan
@@ -85,7 +204,6 @@ def plot_trades_all_info(
                 order_records["order_type"][log_counter] == OrderType.LongTSL
                 or order_records["order_type"][log_counter] == OrderType.ShortTSL
             ):
-
                 order_price[array_counter] = np.nan
                 avg_entry[array_counter] = np.nan
                 stop_loss[array_counter] = np.nan
@@ -140,7 +258,6 @@ def plot_trades_all_info(
                     order_records["order_type"][log_counter] == OrderType.LongTP
                     or order_records["order_type"][log_counter] == OrderType.ShortTP
                 ):
-
                     order_price[array_counter] = np.nan
                     avg_entry[array_counter] = np.nan
                     stop_loss[array_counter] = np.nan
@@ -151,7 +268,6 @@ def plot_trades_all_info(
                     order_records["order_type"][log_counter] == OrderType.LongTSL
                     or order_records["order_type"][log_counter] == OrderType.ShortTSL
                 ):
-
                     order_price[array_counter] = np.nan
                     avg_entry[array_counter] = np.nan
                     stop_loss[array_counter] = np.nan
@@ -272,7 +388,6 @@ def replay_trade_plotter(
     close_prices,
     order_records,
 ):
-
     start = order_records["bar"].min() - 2
     end = order_records["bar"].max() + 3
 
@@ -331,7 +446,6 @@ def replay_trade_plotter(
                 order_records["order_type"][log_counter] == OrderType.LongTP
                 or order_records["order_type"][log_counter] == OrderType.ShortTP
             ):
-
                 order_price[array_counter] = np.nan
                 avg_entry[array_counter] = temp_avg_entry
                 stop_loss[array_counter] = temp_stop_loss
@@ -342,7 +456,6 @@ def replay_trade_plotter(
                 order_records["order_type"][log_counter] == OrderType.LongTSL
                 or order_records["order_type"][log_counter] == OrderType.ShortTSL
             ):
-
                 order_price[array_counter] = np.nan
                 avg_entry[array_counter] = temp_avg_entry
                 stop_loss[array_counter] = temp_stop_loss
@@ -396,7 +509,6 @@ def replay_trade_plotter(
                     order_records["order_type"][log_counter] == OrderType.LongTP
                     or order_records["order_type"][log_counter] == OrderType.ShortTP
                 ):
-
                     order_price[array_counter] = np.nan
                     avg_entry[array_counter] = temp_avg_entry
                     stop_loss[array_counter] = temp_stop_loss
@@ -407,7 +519,6 @@ def replay_trade_plotter(
                     order_records["order_type"][log_counter] == OrderType.LongTSL
                     or order_records["order_type"][log_counter] == OrderType.ShortTSL
                 ):
-
                     order_price[array_counter] = np.nan
                     avg_entry[array_counter] = temp_avg_entry
                     stop_loss[array_counter] = temp_stop_loss

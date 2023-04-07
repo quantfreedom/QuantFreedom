@@ -1,14 +1,9 @@
 currently working on:
-    ✔ edit from talib to be able to handle mutliple coins @done(23-04-05 08:52)
-    ✔ change all talib to be getatr talib instead of function @done(23-04-05 13:19)
-    ✔ edit from talib to be able to handle indicators with symbol columns @done(23-04-05 13:37)
-    ✔ create stable branch @done(23-04-05 13:45)
-    ✔ work on eval is below and above with multiple coins @done(23-04-06 10:05)
-    ✔ make eval grpahable @done(23-04-06 10:05)
-    ✔ work on combine evals with multiple coins @done(23-04-06 10:05)
-    ✔ make combine graphable @done(23-04-06 12:30)
-    ☐ simulate df works with multiple coins
-    ☐ make it so that the simulator 6 can work with mutliple coins
+    ✔ simulate df works with multiple coins @done(23-04-07 07:22)
+    ✔ make it so that the simulator 6 can work with mutliple coins @done(23-04-07 07:22)
+    ✔ make a base function that returns a pdFrame for backtesting the DF array only @done(23-04-07 07:22)
+    ☐ add print statement that tells you how many order settings there are ... indicator settings and coins and total bars and then the total amount of settings to go through and total amount of bars to go through
+    ☐ there seems no point of having the final array in simulate 6 because all we need is or so we can plot ... the finaly arrray is the same info from the df array that we already made so doesn't seem like there is a point.
 
 documentation:
     ☐ learn how to make it so that there are blocks of text that look like the python file in markdown text
@@ -30,6 +25,7 @@ Numba:
     ☐ Does disabling cache=True in your application change anything?
 
 TODOs:
+    ☐ make a grpah that takes the to the upside score and the gains percent and sets those as x and y values and graphs them as scatter plots so i cna see which one has the best of both worlds ... this would be for the DF
     ☐ make replay_trade_plotter work with order records
     ☐ make dl bar more accurate by doing math to figure out how many candles are within the amount of time we are trying to download
     ☐ make it so leverage goes to 100 when sl or tsl moves past entry and liq price is maxed out
@@ -50,6 +46,14 @@ Would Be Nice:
     ☐ send pct change of position in order result when decreasing or increaseing position size
 
 Archive:
+  ✔ work on eval is below and above with multiple coins @done(23-04-06 10:05)
+  ✔ make eval grpahable @done(23-04-06 10:05)
+  ✔ work on combine evals with multiple coins @done(23-04-06 10:05)
+  ✔ make combine graphable @done(23-04-06 12:30)
+  ✔ edit from talib to be able to handle indicators with symbol columns @done(23-04-05 13:37)
+  ✔ create stable branch @done(23-04-05 13:45)
+  ✔ edit from talib to be able to handle mutliple coins @done(23-04-05 08:52)
+  ✔ change all talib to be getatr talib instead of function @done(23-04-05 13:19)
   ✔ make it so user can download mutliple coins @done(23-04-04 15:01)
   ✔ learn to save file as hd5 @done(23-04-04 10:19)
   ✔ add progress bar to downloading data @done(23-04-04 14:51)

@@ -636,7 +636,7 @@ def fill_order_records_nb(
     order_records["bar"] = bar
     order_records["equity"] = account_state.equity
     order_records["fees_paid"] = order_result.fees_paid
-    order_records["settings_id"] = order_settings_counter
+    order_records["order_set_id"] = order_settings_counter
     order_records["order_id"] = order_records_id[0]
     order_records["order_type"] = order_result.order_type
     order_records["price"] = order_result.price
@@ -651,7 +651,7 @@ def fill_order_records_nb(
 
 @njit(cache=True)
 def fill_strat_records_nb(
-    indicator_settings_counter: int,
+    entries_col: int,
     order_settings_counter: int,
     symbol_counter: int,
     strat_records: RecordArray,
@@ -661,7 +661,7 @@ def fill_strat_records_nb(
 ) -> RecordArray:
 
     strat_records["equity"] = equity
-    strat_records["ind_set"] = indicator_settings_counter
+    strat_records["entries_col"] = entries_col
     strat_records["or_set"] = order_settings_counter
     strat_records["symbol"] = symbol_counter
     strat_records["real_pnl"] = round(pnl, 4)
@@ -712,11 +712,15 @@ def fill_strategy_result_records_nb(
     yp_ym = y_pred - ym
 
     yp_ym_s = yp_ym**2
+    
     to_the_upside = yp_ym_s.sum() / y_ym_s.sum()
-
+    
+    if gains_pct <= 0:
+        to_the_upside = -to_the_upside
+        
     # strat array
     strategy_result_records["symbol"] = temp_strat_records["symbol"][0]
-    strategy_result_records["ind_set"] = temp_strat_records["ind_set"][0]
+    strategy_result_records["entries_col"] = temp_strat_records["entries_col"][0]
     strategy_result_records["or_set"] = temp_strat_records["or_set"][0]
     strategy_result_records["total_trades"] = wins_and_losses_array.size
     strategy_result_records["gains_pct"] = gains_pct
@@ -729,14 +733,14 @@ def fill_strategy_result_records_nb(
 @njit(cache=True)
 def fill_settings_result_records_nb(
     entry_order: EntryOrder,
-    indicator_settings_counter: int,
+    entries_col: int,
     symbol_counter: int,
     settings_result_records: RecordArray,
     stops_order: StopsOrder,
 ) -> RecordArray:
 
     settings_result_records["symbol"] = symbol_counter
-    settings_result_records["ind_set_id"] = indicator_settings_counter
+    settings_result_records["entries_col"] = entries_col
     settings_result_records["leverage"] = entry_order.leverage
     settings_result_records["max_equity_risk_pct"] = entry_order.max_equity_risk_pct * 100
     settings_result_records["max_equity_risk_value"] = entry_order.max_equity_risk_value
