@@ -3,7 +3,8 @@ currently working on:
     ✔ make it so that the simulator 6 can work with mutliple coins @done(23-04-07 07:22)
     ✔ make a base function that returns a pdFrame for backtesting the DF array only @done(23-04-07 07:22)
     ☐ add print statement that tells you how many order settings there are ... indicator settings and coins and total bars and then the total amount of settings to go through and total amount of bars to go through
-    ☐ there seems no point of having the final array in simulate 6 because all we need is or so we can plot ... the finaly arrray is the same info from the df array that we already made so doesn't seem like there is a point.
+    ☐ make a yifinance downloader
+    ☐ add mock candle creation to utils
 
 documentation:
     ☐ learn how to make it so that there are blocks of text that look like the python file in markdown text
@@ -25,6 +26,7 @@ Numba:
     ☐ Does disabling cache=True in your application change anything?
 
 TODOs:
+    ☐ there seems no point of having the final array in simulate 6 because all we need is or so we can plot ... the finaly arrray is the same info from the df array that we already made so doesn't seem like there is a point.
     ☐ make a grpah that takes the to the upside score and the gains percent and sets those as x and y values and graphs them as scatter plots so i cna see which one has the best of both worlds ... this would be for the DF
     ☐ make replay_trade_plotter work with order records
     ☐ make dl bar more accurate by doing math to figure out how many candles are within the amount of time we are trying to download

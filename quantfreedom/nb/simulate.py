@@ -1,4 +1,5 @@
 import numpy as np
+
 from numba import njit
 from quantfreedom._typing import PossibleArray, Array1d, RecordArray
 from quantfreedom.nb.execute_funcs import process_order_nb, check_sl_tp_nb
@@ -339,7 +340,6 @@ def backtest_df_array_only_nb(
                             ],
                             stops_order=stops_order,
                         )
-
                         result_records_filled += 1
             entries_col += 1
     return (
