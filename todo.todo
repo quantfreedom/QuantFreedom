@@ -4,6 +4,7 @@ currently working on:
     ✔ make a base function that returns a pdFrame for backtesting the DF array only @done(23-04-07 07:22)
     ☐ add print statement that tells you how many order settings there are ... indicator settings and coins and total bars and then the total amount of settings to go through and total amount of bars to go through
     ☐ make a yifinance downloader
+    ☐ create mock candles function
     ☐ add mock candle creation to utils
 
 documentation:
