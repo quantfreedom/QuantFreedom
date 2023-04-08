@@ -40,7 +40,7 @@ def pretty(object) -> None:
         print(object)
 
 
-def genMockDataFrame(
+def generate_candles(
     number_of_candles: int,
     seed=None,
 ) -> pdFrame:
