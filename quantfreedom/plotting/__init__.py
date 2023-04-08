@@ -1,1 +1,1 @@
-from quantfreedom.plotting.strat_dash import *
+from quantfreedom.plotting.plotting_main import *

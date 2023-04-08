@@ -10,7 +10,17 @@ from quantfreedom._typing import pdFrame
 dir_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 
 
-def delete_dir(p):
+def delete_dir(
+    p,
+):
+    """
+    Delete info in directory
+    
+    Parameters
+    ----------
+    p : path
+        path to directory
+    """
     for sub in p.iterdir():
         if sub.is_dir():
             delete_dir(sub)
@@ -20,6 +30,9 @@ def delete_dir(p):
 
 
 def clear_cache():
+    """
+    clears the python cache and numba cache
+    """
     for p in Path(dir_path).parent.parent.rglob("numba_cache"):
         delete_dir(p)
     for p in Path(__file__).parent.parent.rglob("__pycache__"):
@@ -28,7 +41,22 @@ def clear_cache():
         p.unlink()
 
 
-def pretty(object) -> None:
+def pretty(
+    object: tuple,
+):
+    """
+    Prints named tuples in a pretty way like
+    StopOrder(
+        var1=54,
+        var2=1000,
+        var3=2.45,
+    )
+        
+    Parameters
+    ----------
+    object : namedtuple
+        must only be a named tuple
+    """
     try:
         object._fields[0]
         items = []
@@ -41,9 +69,28 @@ def pretty(object) -> None:
 
 
 def generate_candles(
-    number_of_candles: int,
-    seed=None,
+    number_of_candles: int = 100,
+    seed: int = None,
 ) -> pdFrame:
+    """
+    Generate a dataframe filled with random candles
+
+    Explainer Video
+    ---------------
+        Coming_Soon
+    
+    Parameters
+    ----------
+    number_of_candles: int = 100
+        number of candles you want to create
+    seed: int = None
+        random seed number
+
+    Returns
+    -------
+    pdFrame
+        Dataframe of open high low close
+    """
     np.random.seed(seed)
 
     periods = number_of_candles * 48

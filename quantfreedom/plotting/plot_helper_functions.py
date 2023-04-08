@@ -1,30 +1,52 @@
-import pandas as pd
 import numpy as np
+import plotly.graph_objects as go
 
+from quantfreedom._typing import pdFrame, pdIndex
 from quantfreedom.enums.enums import OrderType
 from quantfreedom._typing import (
     RecordArray,
     Array1d,
 )
 
-import plotly.graph_objects as go
-import dash_bootstrap_components as dbc
-from dash import Dash, dcc, html, dash_table
-from jupyter_dash import JupyterDash
-from plotly.subplots import make_subplots
-from dash_bootstrap_templates import load_figure_template
-
 
 def get_candle_trace_data(
-    index_prices,
-    open_prices,
-    high_prices,
-    low_prices,
-    close_prices,
-    order_records,
-    indicator_dict,
-):
-    array_size = open_prices.shape[0]
+    index_prices: pdIndex,
+    prices: pdFrame,
+    order_records: RecordArray,
+    indicator_dict: dict,
+)-> list:
+    """
+    Function Name
+    -------------
+        get_candle_trace_data
+    
+    Quick Summary
+    -------------
+        Here we take all the info needed to create a candlestick chart and also place indicators on top of the candle stick chart
+    
+    Explainer Video
+    ---------------
+        Coming_Soon
+    
+    Required Parameters
+    -------------------
+    Variable Name: Variable Type
+    
+    index_prices: pdIndex
+        index
+    prices: pdFrame
+        price dataframe
+    order_records: RecordArray
+        order records
+    indicator_dict: dict
+        dictionary of candle stick and indicator data
+    
+    Returns
+    -------
+    list
+        list of Candle stick chart and indicators data for plotly
+    """
+    array_size = prices.shape[0]
 
     order_price_array = np.full(array_size, np.nan)
     avg_entry_array = np.full(array_size, np.nan)
@@ -78,11 +100,8 @@ def get_candle_trace_data(
         array_counter += 1
     trace_data_list = cerate_candle_trace_trades_list(
         index_prices=index_prices,
-        open_prices=open_prices,
-        high_prices=high_prices,
-        low_prices=low_prices,
-        close_prices=close_prices,
-        order_price=order_price_array,
+        prices=prices,
+        order_price_array=order_price_array,
         avg_entry=avg_entry_array,
         stop_loss=stop_loss_array,
         trailing_sl=trailing_sl_array,
@@ -186,17 +205,19 @@ def fill_candle_trace_trades(
 
 
 def cerate_candle_trace_trades_list(
-    index_prices,
-    open_prices,
-    high_prices,
-    low_prices,
-    close_prices,
-    order_price,
-    avg_entry,
-    stop_loss,
-    trailing_sl,
-    take_profit,
+    index_prices: pdIndex,
+    prices: pdFrame,
+    order_price_array: Array1d,
+    avg_entry: Array1d,
+    stop_loss: Array1d,
+    trailing_sl: Array1d,
+    take_profit: Array1d,
 ):
+    open_prices = prices.open.values
+    high_prices = prices.high.values
+    low_prices = prices.low.values
+    close_prices = prices.close.values
+    
     return [
         go.Candlestick(
             x=index_prices,
@@ -209,7 +230,7 @@ def cerate_candle_trace_trades_list(
         # go.Scatter(
         #     name="Entries",
         #     x=index_prices,
-        #     y=order_price,
+        #     y=order_price_array,
         #     mode="markers",
         #     marker=dict(
         #         color="yellow",
@@ -272,11 +293,35 @@ def cerate_candle_trace_trades_list(
 
 def append_to_trace_data_list(
     trace_data_list: list,
-    dict_key,
-    dict_value,
-    index_prices,
-    temp_ind_vals,
+    dict_key: str,
+    dict_value: pdFrame,
+    index_prices: pdIndex,
+    temp_ind_vals: pdFrame,
 ):
+    """
+    Function Name
+    -------------
+        append_to_trace_data_list
+    
+    Quick Summary
+    -------------
+        appending value or entry scatter plots to the trace data list
+    
+    Required Parameters
+    -------------------
+    Variable Name: Variable Type
+    
+    trace_data_list: list
+        trace data list
+    dict_key: str
+        either values or entries
+    dict_value: pdFrame
+        dataframe of either an indicator or entries
+    index_prices: pdIndex
+        index
+    temp_ind_vals: pdFrame
+        needed so we can use this if the dict key is entries so we can generate temp_ind_entries
+    """
     if "values" in dict_key:
         temp_ind_vals[0] = dict_value.values.flatten()
         ind_name = list(dict_value.columns.names)[1].split("_")[0]

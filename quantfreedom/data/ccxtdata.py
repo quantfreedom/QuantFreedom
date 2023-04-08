@@ -20,10 +20,21 @@ class CCXTData:
         bars_per_loop: int = 200,
     ):
         """
-        data_download Download Data using CCXT
+        Function name:
+            data_download 
+        
+        Quick Summary:
+            Download Data using CCXT
 
+        Explainer Video
+        ---------------
+            Coming_Soon
+            
         Parameters
         ----------
+        cls: self
+            passing all the information from the created class
+            
         exchange : str
             'bybit' or 'binance' or whatever exchange works with ccxt
             http://docs.ccxt.com/#/README?id=exchanges
@@ -51,9 +62,15 @@ class CCXTData:
         drop_volume: bool = True
             Set this to False if you want to keep volume data.
 
+        remove_rate_limit: bool = False
+            This is the default rate limit the exchange asks for. If you remove it then its possible that if you are trying to get tons and tons of data from the exchange they could ban you or time you out.
+
+        bars_per_loop: int = 200
+            How many bars you want to grab at a time. Some exchanges let you grab more info per loop and some don't. I don't think grabbing more would make anything faster but you can try if the exchange allows for more. You would have to do your research and figure out how man bars but i know bybit says you can grab a max of 200 and apparently binance lets you grab up to 1000.
+        
         Returns
         -------
-        Pandas dataframe
+            Pandas dataframe of prices
         """
         if remove_rate_limit:
             exchange = getattr(ccxt, exchange)()

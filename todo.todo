@@ -4,9 +4,17 @@ currently working on:
     ✔ move all stuff array creation and checking to the base so that we can print out the total symbols to test information stuff @done(23-04-08 09:23)
     ✔ make it so the backtester nb takes new paramaters and change all things cart_array to have cart_array. @done(23-04-08 09:23)
 
-documentation:
+Documentation:
+    ☐ plotly helper functions
     ☐ learn how to make it so that there are blocks of text that look like the python file in markdown text
      
+Videos to make:
+    ☐ utils helpers generat candles
+    ☐ backtest_df_only
+    ☐ data_download
+    ☐ strat_dashboard
+    ☐ get_candle_trace_data
+
 Next Verson:
     ☐ create tabs in dashboard for multiple settings to look at
     ☐ figure out how to share results like a screen shot of your dashboard
@@ -14,6 +22,9 @@ Next Verson:
     ☐ create cart calc where the person can just copy paste their settings and get the number back as well as the number of cart times the number of ind settings ... then also include a number for total bars tested times number of order settings times number of ind settings make it a helper function because it will just print the results as the return
     ☐ create base that returns entry settings using vbt indicator creation thing
     ☐ once new window then make it so you can select from a max of 5 or 10 different reports
+
+Plotly Dash:
+    ☐ make it so in the ind dict you only send the entries once
 
 Python course:
     ☐ watch some courses and make simple 1 or 2 min vids on the topic
