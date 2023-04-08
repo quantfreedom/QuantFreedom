@@ -1,5 +1,4 @@
-from quantfreedom.utils.formatting import pretty
-from quantfreedom.utils.caching import clear_cache
+from quantfreedom.utils.helpers import clear_cache, pretty
 
 __all__ = [
     'pretty',
