@@ -70,6 +70,7 @@ class CCXTData:
         if not all(isinstance(x, str) for x in symbols):
             raise ValueError("your symbols must be strings")
 
+        symbols = sorted(symbols)
         timeframe_int = int(sub(r"\D", "", timeframe))
         timeframe_str = sub(r"\d", "", timeframe)
         len_symbols = len(symbols)
@@ -171,6 +172,7 @@ class CCXTData:
                     final_df = final_df.join(data)
                 pbar.update(1)
         final_df.sort_index(ascending=True, inplace=True)
+        final_df.sort_index(axis=1, level=0, sort_remaining=False)
         final_df.dropna(how='all', inplace=True)
         final_df.drop(final_df.tail(1).index, inplace=True)
         return final_df

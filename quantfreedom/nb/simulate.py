@@ -7,12 +7,10 @@ from quantfreedom.nb.helper_funcs import (
     static_var_checker_nb,
     create_1d_arrays_nb,
     check_1d_arrays_nb,
-    create_cart_product_nb,
     fill_strategy_result_records_nb,
     fill_settings_result_records_nb,
 )
 from quantfreedom.enums.enums import (
-    final_array_dt,
     or_dt,
     strat_df_array_dt,
     strat_records_dt,
@@ -21,134 +19,28 @@ from quantfreedom.enums.enums import (
     EntryOrder,
     OrderResult,
     StopsOrder,
+    StaticVariables,
+    Arrays1dTuple,
 )
 
 
 @njit(cache=True)
-def backtest_df_array_only_nb(
+def backtest_df_only_nb(
     num_of_symbols: int,
+    total_indicator_settings: int,
+    total_order_settings: int,
+    total_bars: int,
     # entry info
+    og_equity: float,
     entries: PossibleArray,
     prices: PossibleArray,
-    # required account info
-    equity: float,
-    fee_pct: float,
-    mmr: float,
-    # required order
-    lev_mode: int,
-    order_type: int,
-    size_type: int,
-    # Order Params
-    leverage: PossibleArray = np.nan,
-    max_equity_risk_pct: PossibleArray = np.nan,
-    max_equity_risk_value: PossibleArray = np.nan,
-    max_order_size_pct: float = 100.0,
-    min_order_size_pct: float = 0.01,
-    max_order_size_value: float = np.inf,
-    min_order_size_value: float = 1.0,
-    max_lev: float = 100.0,
-    size_pct: PossibleArray = np.nan,
-    size_value: PossibleArray = np.nan,
-    # Stop Losses
-    sl_pcts: PossibleArray = np.nan,
-    sl_to_be: bool = False,
-    sl_to_be_based_on: PossibleArray = np.nan,
-    sl_to_be_when_pct_from_avg_entry: PossibleArray = np.nan,
-    sl_to_be_zero_or_entry: PossibleArray = np.nan,
-    sl_to_be_then_trail: bool = False,
-    sl_to_be_trail_by_when_pct_from_avg_entry: PossibleArray = np.nan,
-    # Trailing Stop Loss Params
-    tsl_pcts_init: PossibleArray = np.nan,
-    tsl_true_or_false: bool = False,
-    tsl_based_on: PossibleArray = np.nan,
-    tsl_trail_by_pct: PossibleArray = np.nan,
-    tsl_when_pct_from_avg_entry: PossibleArray = np.nan,
-    # Take Profit Params
-    risk_rewards: PossibleArray = np.nan,
-    tp_pcts: PossibleArray = np.nan,
-    # Results Filters
-    gains_pct_filter: float = -np.inf,
-    total_trade_filter: int = 0,
+    # filters
+    gains_pct_filter: float,
+    total_trade_filter: int,
+    # Tuples
+    static_variables_tuple: StaticVariables,
+    cart_array_tuple: Arrays1dTuple,
 ) -> Array1d[Array1d, Array1d]:
-    # Static checks
-    static_variables_tuple = static_var_checker_nb(
-        equity=equity,
-        fee_pct=fee_pct,
-        mmr=mmr,
-        lev_mode=lev_mode,
-        order_type=order_type,
-        size_type=size_type,
-        max_lev=max_lev,
-        max_order_size_pct=max_order_size_pct,
-        min_order_size_pct=min_order_size_pct,
-        max_order_size_value=max_order_size_value,
-        min_order_size_value=min_order_size_value,
-        sl_to_be=sl_to_be,
-        sl_to_be_then_trail=sl_to_be_then_trail,
-        tsl_true_or_false=tsl_true_or_false,
-        gains_pct_filter=gains_pct_filter,
-        total_trade_filter=total_trade_filter,
-    )
-
-    og_equity = equity
-
-    # Create 1d Arrays
-    arrays_1d_tuple = create_1d_arrays_nb(
-        leverage=leverage,
-        max_equity_risk_pct=max_equity_risk_pct,
-        max_equity_risk_value=max_equity_risk_value,
-        risk_rewards=risk_rewards,
-        size_pct=size_pct,
-        size_value=size_value,
-        sl_pcts=sl_pcts,
-        sl_to_be_based_on=sl_to_be_based_on,
-        sl_to_be_trail_by_when_pct_from_avg_entry=sl_to_be_trail_by_when_pct_from_avg_entry,
-        sl_to_be_when_pct_from_avg_entry=sl_to_be_when_pct_from_avg_entry,
-        sl_to_be_zero_or_entry=sl_to_be_zero_or_entry,
-        tp_pcts=tp_pcts,
-        tsl_based_on=tsl_based_on,
-        tsl_pcts_init=tsl_pcts_init,
-        tsl_trail_by_pct=tsl_trail_by_pct,
-        tsl_when_pct_from_avg_entry=tsl_when_pct_from_avg_entry,
-    )
-
-    # Checking all new arrays
-    check_1d_arrays_nb(
-        static_variables_tuple=static_variables_tuple,
-        arrays_1d_tuple=arrays_1d_tuple,
-    )
-
-    # Cart of new arrays
-    (
-        leverage_cart_array,
-        max_equity_risk_pct_cart_array,
-        max_equity_risk_value_cart_array,
-        risk_rewards_cart_array,
-        size_pct_cart_array,
-        size_value_cart_array,
-        sl_pcts_cart_array,
-        sl_to_be_based_on_cart_array,
-        sl_to_be_trail_by_when_pct_from_avg_entry_cart_array,
-        sl_to_be_when_pct_from_avg_entry_cart_array,
-        sl_to_be_zero_or_entry_cart_array,
-        tp_pcts_cart_array,
-        tsl_based_on_cart_array,
-        tsl_pcts_init_cart_array,
-        tsl_trail_by_pct_cart_array,
-        tsl_when_pct_from_avg_entry_cart_array,
-    ) = create_cart_product_nb(
-        arrays_1d_tuple=arrays_1d_tuple,
-    )
-
-    arrays_1d_tuple = 0
-
-    # Creating Settings Vars
-    total_order_settings = sl_pcts_cart_array.shape[0]
-
-    total_indicator_settings = entries.shape[1]
-
-    total_bars = entries.shape[0]
-
     # Creating strat records
     strategy_result_records = np.empty(
         int(num_of_symbols * total_indicator_settings * total_order_settings / 3),
@@ -189,42 +81,44 @@ def backtest_df_array_only_nb(
 
             for order_settings_counter in range(total_order_settings):
                 entry_order = EntryOrder(
-                    leverage=leverage_cart_array[order_settings_counter],
-                    max_equity_risk_pct=max_equity_risk_pct_cart_array[
+                    leverage=cart_array_tuple.leverage[order_settings_counter],
+                    max_equity_risk_pct=cart_array_tuple.max_equity_risk_pct[
                         order_settings_counter
                     ],
-                    max_equity_risk_value=max_equity_risk_value_cart_array[
+                    max_equity_risk_value=cart_array_tuple.max_equity_risk_value[
                         order_settings_counter
                     ],
-                    order_type=order_type,
-                    risk_rewards=risk_rewards_cart_array[order_settings_counter],
-                    size_pct=size_pct_cart_array[order_settings_counter],
-                    size_value=size_value_cart_array[order_settings_counter],
-                    sl_pcts=sl_pcts_cart_array[order_settings_counter],
-                    tp_pcts=tp_pcts_cart_array[order_settings_counter],
-                    tsl_pcts_init=tsl_pcts_init_cart_array[order_settings_counter],
+                    order_type=static_variables_tuple.order_type,
+                    risk_rewards=cart_array_tuple.risk_rewards[order_settings_counter],
+                    size_pct=cart_array_tuple.size_pct[order_settings_counter],
+                    size_value=cart_array_tuple.size_value[order_settings_counter],
+                    sl_pcts=cart_array_tuple.sl_pcts[order_settings_counter],
+                    tp_pcts=cart_array_tuple.tp_pcts[order_settings_counter],
+                    tsl_pcts_init=cart_array_tuple.tsl_pcts_init[
+                        order_settings_counter
+                    ],
                 )
                 stops_order = StopsOrder(
-                    sl_to_be=sl_to_be,
-                    sl_to_be_based_on=sl_to_be_based_on_cart_array[
+                    sl_to_be=static_variables_tuple.sl_to_be,
+                    sl_to_be_based_on=cart_array_tuple.sl_to_be_based_on[
                         order_settings_counter
                     ],
-                    sl_to_be_then_trail=sl_to_be_then_trail,
-                    sl_to_be_trail_by_when_pct_from_avg_entry=sl_to_be_trail_by_when_pct_from_avg_entry_cart_array[
+                    sl_to_be_then_trail=static_variables_tuple.sl_to_be_then_trail,
+                    sl_to_be_trail_by_when_pct_from_avg_entry=cart_array_tuple.sl_to_be_trail_by_when_pct_from_avg_entry[
                         order_settings_counter
                     ],
-                    sl_to_be_when_pct_from_avg_entry=sl_to_be_when_pct_from_avg_entry_cart_array[
+                    sl_to_be_when_pct_from_avg_entry=cart_array_tuple.sl_to_be_when_pct_from_avg_entry[
                         order_settings_counter
                     ],
-                    sl_to_be_zero_or_entry=sl_to_be_zero_or_entry_cart_array[
+                    sl_to_be_zero_or_entry=cart_array_tuple.sl_to_be_zero_or_entry[
                         order_settings_counter
                     ],
-                    tsl_based_on=tsl_based_on_cart_array[order_settings_counter],
-                    tsl_trail_by_pct=tsl_trail_by_pct_cart_array[
+                    tsl_based_on=cart_array_tuple.tsl_based_on[order_settings_counter],
+                    tsl_trail_by_pct=cart_array_tuple.tsl_trail_by_pct[
                         order_settings_counter
                     ],
-                    tsl_true_or_false=tsl_true_or_false,
-                    tsl_when_pct_from_avg_entry=tsl_when_pct_from_avg_entry_cart_array[
+                    tsl_true_or_false=static_variables_tuple.tsl_true_or_false,
+                    tsl_when_pct_from_avg_entry=cart_array_tuple.tsl_when_pct_from_avg_entry[
                         order_settings_counter
                     ],
                 )

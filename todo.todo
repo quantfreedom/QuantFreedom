@@ -1,5 +1,8 @@
 currently working on:
-    ☐ add print statement that tells you how many order settings there are ... indicator settings and coins and total bars and then the total amount of settings to go through and total amount of bars to go through
+    ✔ add print statement that tells you how many order settings there are ... indicator settings and coins and total bars and then the total amount of settings to go through and total amount of bars to go through @done(23-04-08 08:04)
+    ☐ make cretea cart product return array1dtuple
+    ☐ move all stuff array creation and checking to the base so that we can print out the total symbols to test information stuff
+    ☐ make it so the backtester nb takes new paramaters and change all things cart_array to have cart_array.
 
 documentation:
     ☐ learn how to make it so that there are blocks of text that look like the python file in markdown text

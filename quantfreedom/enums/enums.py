@@ -66,22 +66,22 @@ class EntryOrder(tp.NamedTuple):
 
 
 class Arrays1dTuple(tp.NamedTuple):
-    leverage_array: float
-    max_equity_risk_pct_array: float
-    max_equity_risk_value_array: float
-    risk_rewards_array: float
-    size_pct_array: float
-    size_value_array: float
-    sl_pcts_array: float
-    sl_to_be_based_on_array: float
-    sl_to_be_trail_by_when_pct_from_avg_entry_array: float
-    sl_to_be_when_pct_from_avg_entry_array: float
-    sl_to_be_zero_or_entry_array: float
-    tp_pcts_array: float
-    tsl_based_on_array: float
-    tsl_pcts_init_array: float
-    tsl_trail_by_pct_array: float
-    tsl_when_pct_from_avg_entry_array: float
+    leverage: float
+    max_equity_risk_pct: float
+    max_equity_risk_value: float
+    risk_rewards: float
+    size_pct: float
+    size_value: float
+    sl_pcts: float
+    sl_to_be_based_on: float
+    sl_to_be_trail_by_when_pct_from_avg_entry: float
+    sl_to_be_when_pct_from_avg_entry: float
+    sl_to_be_zero_or_entry: float
+    tp_pcts: float
+    tsl_based_on: float
+    tsl_pcts_init: float
+    tsl_trail_by_pct: float
+    tsl_when_pct_from_avg_entry: float
 
 
 class OrderResult(tp.NamedTuple):

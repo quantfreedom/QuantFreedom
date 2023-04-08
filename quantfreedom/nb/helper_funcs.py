@@ -203,22 +203,22 @@ def create_1d_arrays_nb(
     )
 
     return Arrays1dTuple(
-        leverage_array=leverage_array,
-        max_equity_risk_pct_array=max_equity_risk_pct_array,
-        max_equity_risk_value_array=max_equity_risk_value_array,
-        risk_rewards_array=risk_rewards_array,
-        size_pct_array=size_pct_array,
-        size_value_array=size_value_array,
-        sl_pcts_array=sl_pcts_array,
-        sl_to_be_based_on_array=sl_to_be_based_on_array,
-        sl_to_be_trail_by_when_pct_from_avg_entry_array=sl_to_be_trail_by_when_pct_from_avg_entry_array,
-        sl_to_be_when_pct_from_avg_entry_array=sl_to_be_when_pct_from_avg_entry_array,
-        sl_to_be_zero_or_entry_array=sl_to_be_zero_or_entry_array,
-        tp_pcts_array=tp_pcts_array,
-        tsl_based_on_array=tsl_based_on_array,
-        tsl_pcts_init_array=tsl_pcts_init_array,
-        tsl_trail_by_pct_array=tsl_trail_by_pct_array,
-        tsl_when_pct_from_avg_entry_array=tsl_when_pct_from_avg_entry_array,
+        leverage=leverage_array,
+        max_equity_risk_pct=max_equity_risk_pct_array,
+        max_equity_risk_value=max_equity_risk_value_array,
+        risk_rewards=risk_rewards_array,
+        size_pct=size_pct_array,
+        size_value=size_value_array,
+        sl_pcts=sl_pcts_array,
+        sl_to_be_based_on=sl_to_be_based_on_array,
+        sl_to_be_trail_by_when_pct_from_avg_entry=sl_to_be_trail_by_when_pct_from_avg_entry_array,
+        sl_to_be_when_pct_from_avg_entry=sl_to_be_when_pct_from_avg_entry_array,
+        sl_to_be_zero_or_entry=sl_to_be_zero_or_entry_array,
+        tp_pcts=tp_pcts_array,
+        tsl_based_on=tsl_based_on_array,
+        tsl_pcts_init=tsl_pcts_init_array,
+        tsl_trail_by_pct=tsl_trail_by_pct_array,
+        tsl_when_pct_from_avg_entry=tsl_when_pct_from_avg_entry_array,
     )
 
 
@@ -227,53 +227,53 @@ def check_1d_arrays_nb(
     static_variables_tuple: StaticVariables,
     arrays_1d_tuple: Arrays1dTuple,
 ):
-    if np.isfinite(arrays_1d_tuple.size_value_array).all():
-        if arrays_1d_tuple.size_value_array.any() < 1:
+    if np.isfinite(arrays_1d_tuple.size_value).all():
+        if arrays_1d_tuple.size_value.any() < 1:
             raise ValueError("size_value must be greater than 1.")
         if (
-            arrays_1d_tuple.size_value_array.any()
+            arrays_1d_tuple.size_value.any()
             > static_variables_tuple.max_order_size_value
         ):
             raise ValueError("size_value is greater than max_order_size_value")
 
         if (
-            arrays_1d_tuple.size_value_array.any()
+            arrays_1d_tuple.size_value.any()
             < static_variables_tuple.min_order_size_value
         ):
             raise ValueError("size_value is greater than max_order_size_value")
 
-    if not np.isfinite(arrays_1d_tuple.size_pct_array).all():
-        if arrays_1d_tuple.size_pct_array.any() < 1:
+    if not np.isfinite(arrays_1d_tuple.size_pct).all():
+        if arrays_1d_tuple.size_pct.any() < 1:
             raise ValueError("size_pct must be greater than 1.")
 
         if (
-            arrays_1d_tuple.size_pct_array.any()
+            arrays_1d_tuple.size_pct.any()
             > static_variables_tuple.max_order_size_pct
         ):
             raise ValueError("size_pct is greater than max_order_size_pct")
 
         if (
-            arrays_1d_tuple.size_pct_array.any()
+            arrays_1d_tuple.size_pct.any()
             < static_variables_tuple.min_order_size_pct
         ):
             raise ValueError("size_pct is greater than max_order_size_pct")
 
     if (
-        np.isinf(arrays_1d_tuple.sl_pcts_array).any()
-        or arrays_1d_tuple.sl_pcts_array.any() < 0
+        np.isinf(arrays_1d_tuple.sl_pcts).any()
+        or arrays_1d_tuple.sl_pcts.any() < 0
     ):
         raise ValueError("sl_pcts has to be nan or greater than 0 and not inf")
 
     if (
-        np.isinf(arrays_1d_tuple.tsl_pcts_init_array).any()
-        or arrays_1d_tuple.tsl_pcts_init_array.any() < 0
+        np.isinf(arrays_1d_tuple.tsl_pcts_init).any()
+        or arrays_1d_tuple.tsl_pcts_init.any() < 0
     ):
         raise ValueError(
             "tsl_pcts_init has to be nan or greater than 0 and not inf")
 
     if (
-        np.isinf(arrays_1d_tuple.tp_pcts_array).any()
-        or arrays_1d_tuple.tp_pcts_array.any() < 0
+        np.isinf(arrays_1d_tuple.tp_pcts).any()
+        or arrays_1d_tuple.tp_pcts.any() < 0
     ):
         raise ValueError("tp_pcts has to be nan or greater than 0 and not inf")
 
@@ -283,15 +283,15 @@ def check_1d_arrays_nb(
         raise ValueError("leverage mode is out of range or not finite")
 
     check_sl_tsl_for_nan = (
-        np.isnan(arrays_1d_tuple.sl_pcts_array).any()
-        and np.isnan(arrays_1d_tuple.tsl_pcts_init_array).any()
+        np.isnan(arrays_1d_tuple.sl_pcts).any()
+        and np.isnan(arrays_1d_tuple.tsl_pcts_init).any()
     )
 
     # if leverage is too big or too small
     if static_variables_tuple.lev_mode == LeverageMode.Isolated:
-        if not np.isfinite(arrays_1d_tuple.leverage_array).any() or (
-            arrays_1d_tuple.leverage_array.any() > static_variables_tuple.max_lev
-            or arrays_1d_tuple.leverage_array.any() < 0
+        if not np.isfinite(arrays_1d_tuple.leverage).any() or (
+            arrays_1d_tuple.leverage.any() > static_variables_tuple.max_lev
+            or arrays_1d_tuple.leverage.any() < 0
         ):
             raise ValueError("leverage needs to be between 1 and max lev")
     if static_variables_tuple.lev_mode == LeverageMode.LeastFreeCashUsed:
@@ -299,53 +299,53 @@ def check_1d_arrays_nb(
             raise ValueError(
                 "When using Least Free Cash Used set a proper sl or tsl > 0"
             )
-        if np.isfinite(arrays_1d_tuple.leverage_array).any():
+        if np.isfinite(arrays_1d_tuple.leverage).any():
             raise ValueError(
                 "When using Least Free Cash Used leverage iso must be np.nan"
             )
 
     # making sure we have a number greater than 0 for rr
     if (
-        np.isinf(arrays_1d_tuple.risk_rewards_array).any()
-        or arrays_1d_tuple.risk_rewards_array.any() < 0
+        np.isinf(arrays_1d_tuple.risk_rewards).any()
+        or arrays_1d_tuple.risk_rewards.any() < 0
     ):
         raise ValueError("Risk Rewards has to be greater than 0 or np.nan")
 
     # check if RR has sl pct / price or tsl pct / price
-    if not np.isnan(arrays_1d_tuple.risk_rewards_array).any() and check_sl_tsl_for_nan:
+    if not np.isnan(arrays_1d_tuple.risk_rewards).any() and check_sl_tsl_for_nan:
         raise ValueError(
             "When risk to reward is set you have to have a sl or tsl > 0")
 
     if (
-        arrays_1d_tuple.risk_rewards_array.any() > 0
-        and np.isfinite(arrays_1d_tuple.tp_pcts_array).any()
+        arrays_1d_tuple.risk_rewards.any() > 0
+        and np.isfinite(arrays_1d_tuple.tp_pcts).any()
     ):
         raise ValueError(
             "You can't have take profits set when using Risk to reward")
 
     if (
-        np.isinf(arrays_1d_tuple.max_equity_risk_pct_array).any()
-        or arrays_1d_tuple.max_equity_risk_pct_array.any() < 0
+        np.isinf(arrays_1d_tuple.max_equity_risk_pct).any()
+        or arrays_1d_tuple.max_equity_risk_pct.any() < 0
     ):
         raise ValueError(
             "Max equity risk percent has to be greater than 0 or np.nan")
 
     elif (
-        np.isinf(arrays_1d_tuple.max_equity_risk_value_array).any()
-        or arrays_1d_tuple.max_equity_risk_value_array.any() < 0
+        np.isinf(arrays_1d_tuple.max_equity_risk_value).any()
+        or arrays_1d_tuple.max_equity_risk_value.any() < 0
     ):
         raise ValueError("Max equity risk has to be greater than 0 or np.nan")
 
     if (
-        not np.isnan(arrays_1d_tuple.max_equity_risk_pct_array).any()
-        and not np.isnan(arrays_1d_tuple.max_equity_risk_value_array).any()
+        not np.isnan(arrays_1d_tuple.max_equity_risk_pct).any()
+        and not np.isnan(arrays_1d_tuple.max_equity_risk_value).any()
     ):
         raise ValueError(
             "You can't have max risk pct and max risk value both set at the same time."
         )
     if (
-        not np.isnan(arrays_1d_tuple.size_value_array).any()
-        and not np.isnan(arrays_1d_tuple.size_pct_array).any()
+        not np.isnan(arrays_1d_tuple.size_value).any()
+        and not np.isnan(arrays_1d_tuple.size_pct).any()
     ):
         raise ValueError(
             "You can't have size and size pct set at the same time.")
@@ -359,15 +359,15 @@ def check_1d_arrays_nb(
     # Getting the right size for Size Type Amount
     if static_variables_tuple.size_type == SizeType.Amount:
         if (
-            np.isnan(arrays_1d_tuple.size_value_array).any()
-            or arrays_1d_tuple.size_value_array.any() < 1
+            np.isnan(arrays_1d_tuple.size_value).any()
+            or arrays_1d_tuple.size_value.any() < 1
         ):
             raise ValueError(
                 "With SizeType as amount, size_value must be 1 or greater."
             )
 
     if static_variables_tuple.size_type == SizeType.PercentOfAccount:
-        if np.isnan(arrays_1d_tuple.size_pct_array).any():
+        if np.isnan(arrays_1d_tuple.size_pct).any():
             raise ValueError(
                 "You need size_pct to be > 0 if using percent of account.")
 
@@ -383,16 +383,16 @@ def check_1d_arrays_nb(
 
     # setting risk percent size
     if static_variables_tuple.size_type == SizeType.RiskPercentOfAccount:
-        if np.isnan(arrays_1d_tuple.size_pct_array).any():
+        if np.isnan(arrays_1d_tuple.size_pct).any():
             raise ValueError(
                 "You need size_pct to be > 0 if using risk percent of account."
             )
 
     # stop loss break even checks
-    if np.isfinite(arrays_1d_tuple.sl_to_be_based_on_array).any() and (
-        arrays_1d_tuple.sl_to_be_based_on_array.any()
+    if np.isfinite(arrays_1d_tuple.sl_to_be_based_on).any() and (
+        arrays_1d_tuple.sl_to_be_based_on.any()
         < SL_BE_or_Trail_BasedOn.open_price
-        or arrays_1d_tuple.sl_to_be_based_on_array.any()
+        or arrays_1d_tuple.sl_to_be_based_on.any()
         > SL_BE_or_Trail_BasedOn.close_price
     ):
         raise ValueError(
@@ -401,54 +401,54 @@ def check_1d_arrays_nb(
 
     if (
         np.isinf(
-            arrays_1d_tuple.sl_to_be_trail_by_when_pct_from_avg_entry_array).any()
-        or arrays_1d_tuple.sl_to_be_trail_by_when_pct_from_avg_entry_array.any() < 0
+            arrays_1d_tuple.sl_to_be_trail_by_when_pct_from_avg_entry).any()
+        or arrays_1d_tuple.sl_to_be_trail_by_when_pct_from_avg_entry.any() < 0
     ):
         raise ValueError(
             "You need sl_to_be_trail_by_when_pct_from_avg_entry to be > 0 or not inf."
         )
 
     if (
-        np.isinf(arrays_1d_tuple.sl_to_be_when_pct_from_avg_entry_array).any()
-        or arrays_1d_tuple.sl_to_be_when_pct_from_avg_entry_array.any() < 0
+        np.isinf(arrays_1d_tuple.sl_to_be_when_pct_from_avg_entry).any()
+        or arrays_1d_tuple.sl_to_be_when_pct_from_avg_entry.any() < 0
     ):
         raise ValueError(
             "You need sl_to_be_when_pct_from_avg_entry to be > 0 or not inf."
         )
 
     if (
-        arrays_1d_tuple.sl_to_be_zero_or_entry_array.any() < 0
-        or arrays_1d_tuple.sl_to_be_zero_or_entry_array.any() > 1
+        arrays_1d_tuple.sl_to_be_zero_or_entry.any() < 0
+        or arrays_1d_tuple.sl_to_be_zero_or_entry.any() > 1
     ):
         raise ValueError(
             "sl_to_be_zero_or_entry needs to be 0 for zero or 1 for entry")
 
     if static_variables_tuple.sl_to_be == False:
-        if np.isfinite(arrays_1d_tuple.sl_to_be_based_on_array).any():
+        if np.isfinite(arrays_1d_tuple.sl_to_be_based_on).any():
             raise ValueError(
                 "sl_to_be needs to be True to use sl_to_be_based_on.")
         if static_variables_tuple.sl_to_be_then_trail == True:
             raise ValueError(
                 "sl_to_be needs to be True to use sl_to_be_then_trail.")
         if np.isfinite(
-            arrays_1d_tuple.sl_to_be_trail_by_when_pct_from_avg_entry_array
+            arrays_1d_tuple.sl_to_be_trail_by_when_pct_from_avg_entry
         ).any():
             raise ValueError(
                 "sl_to_be needs to be True to use sl_to_be_trail_by_when_pct_from_avg_entry."
             )
-        if np.isfinite(arrays_1d_tuple.sl_to_be_when_pct_from_avg_entry_array).any():
+        if np.isfinite(arrays_1d_tuple.sl_to_be_when_pct_from_avg_entry).any():
             raise ValueError(
                 "sl_to_be needs to be True to use sl_to_be_when_pct_from_avg_entry."
             )
-        if np.isfinite(arrays_1d_tuple.sl_to_be_zero_or_entry_array).any():
+        if np.isfinite(arrays_1d_tuple.sl_to_be_zero_or_entry).any():
             raise ValueError(
                 "sl_to_be needs to be True to use sl_to_be_zero_or_entry.")
 
     if static_variables_tuple.sl_to_be and (
-        not np.isfinite(arrays_1d_tuple.sl_to_be_based_on_array).any()
-        or not np.isfinite(arrays_1d_tuple.sl_to_be_when_pct_from_avg_entry_array).any()
-        or not np.isfinite(arrays_1d_tuple.sl_to_be_zero_or_entry_array).any()
-        or not np.isfinite(arrays_1d_tuple.sl_pcts_array).any()
+        not np.isfinite(arrays_1d_tuple.sl_to_be_based_on).any()
+        or not np.isfinite(arrays_1d_tuple.sl_to_be_when_pct_from_avg_entry).any()
+        or not np.isfinite(arrays_1d_tuple.sl_to_be_zero_or_entry).any()
+        or not np.isfinite(arrays_1d_tuple.sl_pcts).any()
     ):
         raise ValueError(
             "If you have sl_to_be set to true then you must provide the other params like sl_pcts etc"
@@ -457,58 +457,58 @@ def check_1d_arrays_nb(
     if (
         static_variables_tuple.sl_to_be and static_variables_tuple.sl_to_be_then_trail
     ) and (
-        not np.isfinite(arrays_1d_tuple.sl_to_be_based_on_array).any()
-        or not np.isfinite(arrays_1d_tuple.sl_to_be_when_pct_from_avg_entry_array).any()
-        or not np.isfinite(arrays_1d_tuple.sl_to_be_zero_or_entry_array).any()
+        not np.isfinite(arrays_1d_tuple.sl_to_be_based_on).any()
+        or not np.isfinite(arrays_1d_tuple.sl_to_be_when_pct_from_avg_entry).any()
+        or not np.isfinite(arrays_1d_tuple.sl_to_be_zero_or_entry).any()
         or not np.isfinite(
-            arrays_1d_tuple.sl_to_be_trail_by_when_pct_from_avg_entry_array
+            arrays_1d_tuple.sl_to_be_trail_by_when_pct_from_avg_entry
         ).any()
-        or not np.isfinite(arrays_1d_tuple.sl_pcts_array).any()
+        or not np.isfinite(arrays_1d_tuple.sl_pcts).any()
     ):
         raise ValueError(
             "If you have sl_to_be set to true then you must provide the other params like sl_pcts etc"
         )
 
     # tsl Checks
-    if np.isfinite(arrays_1d_tuple.tsl_based_on_array).any() and (
-        arrays_1d_tuple.tsl_based_on_array.any() < SL_BE_or_Trail_BasedOn.open_price
-        or arrays_1d_tuple.tsl_based_on_array.any() > SL_BE_or_Trail_BasedOn.close_price
+    if np.isfinite(arrays_1d_tuple.tsl_based_on).any() and (
+        arrays_1d_tuple.tsl_based_on.any() < SL_BE_or_Trail_BasedOn.open_price
+        or arrays_1d_tuple.tsl_based_on.any() > SL_BE_or_Trail_BasedOn.close_price
     ):
         raise ValueError(
             "You need tsl_to_be_based_on to be be either 0 1 2 or 3. look up SL_BE_or_Trail_BasedOn enums"
         )
 
     if (
-        np.isinf(arrays_1d_tuple.tsl_trail_by_pct_array).any()
-        or arrays_1d_tuple.tsl_trail_by_pct_array.any() < 0
+        np.isinf(arrays_1d_tuple.tsl_trail_by_pct).any()
+        or arrays_1d_tuple.tsl_trail_by_pct.any() < 0
     ):
         raise ValueError("You need tsl_trail_by_pct to be > 0 or not inf.")
 
     if (
-        np.isinf(arrays_1d_tuple.tsl_when_pct_from_avg_entry_array).any()
-        or arrays_1d_tuple.tsl_when_pct_from_avg_entry_array.any() < 0
+        np.isinf(arrays_1d_tuple.tsl_when_pct_from_avg_entry).any()
+        or arrays_1d_tuple.tsl_when_pct_from_avg_entry.any() < 0
     ):
         raise ValueError(
             "You need tsl_when_pct_from_avg_entry to be > 0 or not inf.")
 
     if static_variables_tuple.tsl_true_or_false == False:
-        if np.isfinite(arrays_1d_tuple.tsl_based_on_array).any():
+        if np.isfinite(arrays_1d_tuple.tsl_based_on).any():
             raise ValueError(
                 "tsl_true_or_false needs to be True to use tsl_based_on.")
-        if np.isfinite(arrays_1d_tuple.tsl_trail_by_pct_array).any():
+        if np.isfinite(arrays_1d_tuple.tsl_trail_by_pct).any():
             raise ValueError(
                 "tsl_true_or_false needs to be True to use tsl_trail_by_pct."
             )
-        if np.isfinite(arrays_1d_tuple.tsl_when_pct_from_avg_entry_array).any():
+        if np.isfinite(arrays_1d_tuple.tsl_when_pct_from_avg_entry).any():
             raise ValueError(
                 "tsl_true_or_false needs to be True to use tsl_when_pct_from_avg_entry."
             )
 
     if static_variables_tuple.tsl_true_or_false and (
-        not np.isfinite(arrays_1d_tuple.tsl_based_on_array).any()
-        or not np.isfinite(arrays_1d_tuple.tsl_trail_by_pct_array).any()
-        or not np.isfinite(arrays_1d_tuple.tsl_when_pct_from_avg_entry_array).any()
-        or not np.isfinite(arrays_1d_tuple.tsl_pcts_init_array).any()
+        not np.isfinite(arrays_1d_tuple.tsl_based_on).any()
+        or not np.isfinite(arrays_1d_tuple.tsl_trail_by_pct).any()
+        or not np.isfinite(arrays_1d_tuple.tsl_when_pct_from_avg_entry).any()
+        or not np.isfinite(arrays_1d_tuple.tsl_pcts_init).any()
     ):
         raise ValueError(
             "If you have tsl_true_or_false set to true then you must provide the other params like tsl_pcts_init etc"
@@ -602,7 +602,7 @@ def create_cart_product_nb(
     # tsl_trail_by_pct_cart_array = cart_array['tsl_trail_by_pct']
     # tsl_when_pct_from_avg_entry_cart_array = cart_array['tsl_when_pct_from_avg_entry']
 
-    return (
+    return Arrays1dTuple(
         leverage_cart_array,
         max_equity_risk_pct_cart_array,
         max_equity_risk_value_cart_array,

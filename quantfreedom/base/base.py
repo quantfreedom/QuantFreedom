@@ -3,7 +3,13 @@ import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
 
-from quantfreedom.nb.simulate import backtest_df_array_only_nb
+from quantfreedom.nb.simulate import backtest_df_only_nb
+from quantfreedom.nb.helper_funcs import (
+    static_var_checker_nb,
+    create_1d_arrays_nb,
+    check_1d_arrays_nb,
+    create_cart_product_nb,
+)
 from quantfreedom._typing import (
     plSeries,
     pdFrame,
@@ -57,50 +63,100 @@ def backtest_df_only(
     gains_pct_filter: float = -np.inf,
     total_trade_filter: int = 0,
 ):
-    strat_array, settings_array = backtest_df_array_only_nb(
-        num_of_symbols=len(prices.columns.levels[0]),
-        # entry info
-        entries=entries.values,
-        prices=prices.values,
-        # required account info
+    print("Checking static variables for errors or conflicts.")
+    # Static checks
+    static_variables_tuple = static_var_checker_nb(
         equity=equity,
         fee_pct=fee_pct,
         mmr=mmr,
-        # required order
         lev_mode=lev_mode,
         order_type=order_type,
         size_type=size_type,
-        # Order Params
-        leverage=leverage,
-        max_equity_risk_pct=max_equity_risk_pct,
-        max_equity_risk_value=max_equity_risk_value,
+        max_lev=max_lev,
         max_order_size_pct=max_order_size_pct,
         min_order_size_pct=min_order_size_pct,
         max_order_size_value=max_order_size_value,
         min_order_size_value=min_order_size_value,
-        max_lev=max_lev,
-        size_pct=size_pct,
-        size_value=size_value,
-        # Stop Losses
-        sl_pcts=sl_pcts,
         sl_to_be=sl_to_be,
-        sl_to_be_based_on=sl_to_be_based_on,
-        sl_to_be_when_pct_from_avg_entry=sl_to_be_when_pct_from_avg_entry,
-        sl_to_be_zero_or_entry=sl_to_be_zero_or_entry,
         sl_to_be_then_trail=sl_to_be_then_trail,
-        sl_to_be_trail_by_when_pct_from_avg_entry=sl_to_be_trail_by_when_pct_from_avg_entry,
-        # Trailing Stop Loss Params
-        tsl_pcts_init=tsl_pcts_init,
         tsl_true_or_false=tsl_true_or_false,
-        tsl_based_on=tsl_based_on,
-        tsl_trail_by_pct=tsl_trail_by_pct,
-        tsl_when_pct_from_avg_entry=tsl_when_pct_from_avg_entry,
-        # Take Profit Params
-        risk_rewards=risk_rewards,
-        tp_pcts=tp_pcts,
-        # Results Filters
         gains_pct_filter=gains_pct_filter,
         total_trade_filter=total_trade_filter,
+    )
+    print("Turning all variables into arrays.")
+    # Create 1d Arrays
+    arrays_1d_tuple = create_1d_arrays_nb(
+        leverage=leverage,
+        max_equity_risk_pct=max_equity_risk_pct,
+        max_equity_risk_value=max_equity_risk_value,
+        risk_rewards=risk_rewards,
+        size_pct=size_pct,
+        size_value=size_value,
+        sl_pcts=sl_pcts,
+        sl_to_be_based_on=sl_to_be_based_on,
+        sl_to_be_trail_by_when_pct_from_avg_entry=sl_to_be_trail_by_when_pct_from_avg_entry,
+        sl_to_be_when_pct_from_avg_entry=sl_to_be_when_pct_from_avg_entry,
+        sl_to_be_zero_or_entry=sl_to_be_zero_or_entry,
+        tp_pcts=tp_pcts,
+        tsl_based_on=tsl_based_on,
+        tsl_pcts_init=tsl_pcts_init,
+        tsl_trail_by_pct=tsl_trail_by_pct,
+        tsl_when_pct_from_avg_entry=tsl_when_pct_from_avg_entry,
+    )
+    print(
+        "Checking arrays for errors or conflicts ... the backtest will begin shortly, please hold."
+    )
+    # Checking all new arrays
+    check_1d_arrays_nb(
+        static_variables_tuple=static_variables_tuple,
+        arrays_1d_tuple=arrays_1d_tuple,
+    )
+
+    print(
+        "Creating cartesian product ... after this the backtest will start, I promise :).\n"
+    )
+    cart_array_tuple = create_cart_product_nb(arrays_1d_tuple=arrays_1d_tuple)
+
+    num_of_symbols = len(prices.columns.levels[0])
+
+    # Creating Settings Vars
+    total_order_settings = cart_array_tuple.sl_pcts.shape[0]
+
+    total_indicator_settings = entries.shape[1]
+
+    total_bars = entries.shape[0]
+
+    # Printing out total numbers of things
+    print(
+        "Starting the backtest now ... and also here are some stats for your backtest.\n"
+    )
+    print(f"Total symbols: {num_of_symbols:,}")
+    print(
+        f"Total indicator settings per symbol: {int(total_indicator_settings / num_of_symbols):,}"
+    )
+    print(f"Total indicator settings to test: {total_indicator_settings:,}")
+    print(f"Total order settings per symbol: {total_order_settings:,}")
+    print(f"Total order settings to test: {total_order_settings * num_of_symbols:,}")
+    print(f"Total candles per symbol: {total_bars:,}")
+    print(
+        f"Total candles to test: {total_indicator_settings * total_order_settings * total_bars:,}"
+    )
+    print(
+        f"\nTotal combinations to test: {total_indicator_settings * total_order_settings:,}"
+    )
+
+    strat_array, settings_array = backtest_df_only_nb(
+        num_of_symbols=num_of_symbols,
+        total_indicator_settings=total_indicator_settings,
+        total_order_settings=total_order_settings,
+        total_bars=total_bars,
+        og_equity=equity,
+        entries=entries.values,
+        prices=prices.values,
+        gains_pct_filter=gains_pct_filter,
+        total_trade_filter=total_trade_filter,
+        static_variables_tuple=static_variables_tuple,
+        cart_array_tuple=cart_array_tuple,
     )
 
     strat_results_df = pd.DataFrame(strat_array).sort_values(
