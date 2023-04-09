@@ -10,36 +10,38 @@ from quantfreedom._typing import (
 
 from quantfreedom.enums import (
     AccountState,
-    OrderResult,
     Arrays1dTuple,
-    OrderType,
-    StaticVariables,
+    EntryOrder,
     LeverageMode,
+    OrderResult,
+    OrderType,
     SizeType,
     SL_BE_or_Trail_BasedOn,
-    EntryOrder,
+    StaticVariables,
     StopsOrder,
 )
 
 
 @njit(cache=True)
 def static_var_checker_nb(
+    divide_records_array_size_by: float,
     equity: float,
     fee_pct: float,
-    mmr: float,
+    gains_pct_filter: float,
     lev_mode: int,
-    order_type: int,
-    size_type: int,
     max_lev: float,
     max_order_size_pct: float,
-    min_order_size_pct: float,
     max_order_size_value: float,
+    min_order_size_pct: float,
     min_order_size_value: float,
-    sl_to_be: bool,
+    mmr: float,
+    order_type: int,
+    size_type: int,
     sl_to_be_then_trail: bool,
-    tsl_true_or_false: bool,
-    gains_pct_filter: float,
+    sl_to_be: bool,
     total_trade_filter: int,
+    tsl_true_or_false: bool,
+    upside_filter: float,
 ) -> StaticVariables:
     if equity < 0 or not np.isfinite(equity):
         raise ValueError("YOU HAVE NO MONEY!!!! You Broke!!!!")
@@ -65,12 +67,10 @@ def static_var_checker_nb(
         )
 
     if not np.isfinite(min_order_size_value) or min_order_size_value < 1:
-        raise ValueError(
-            "min_order_size_value has to be between .01 and 1 min inf")
+        raise ValueError("min_order_size_value has to be between .01 and 1 min inf")
 
     if np.isnan(max_order_size_value) or max_order_size_value < min_order_size_value:
-        raise ValueError(
-            "max_order_size_value has to be > min_order_size_value")
+        raise ValueError("max_order_size_value has to be > min_order_size_value")
 
     if gains_pct_filter == np.inf:
         raise ValueError("gains_pct_filter can't be inf")
@@ -79,8 +79,7 @@ def static_var_checker_nb(
         raise ValueError("total_trade_filter needs to be greater than 0")
 
     if sl_to_be == True and tsl_true_or_false == True:
-        raise ValueError(
-            "You can't have sl_to_be and tsl_true_or_false both be true")
+        raise ValueError("You can't have sl_to_be and tsl_true_or_false both be true")
 
     if sl_to_be != True and sl_to_be != False:
         raise ValueError("sl_to_be needs to be true or false")
@@ -95,6 +94,12 @@ def static_var_checker_nb(
     if 0 > order_type > len(OrderType) or not np.isfinite(order_type):
         raise ValueError("order_type is invalid")
 
+    if not (-1 <= upside_filter <= 1):
+        raise ValueError("upside filter must be between -1 and 1")
+
+    if not (1 <= divide_records_array_size_by <= 1000):
+        raise ValueError("divide_records_array_size_by filter must be between 1 and 1000")
+
     # Static variables creation
     fee_pct /= 100
     mmr /= 100
@@ -102,6 +107,7 @@ def static_var_checker_nb(
     min_order_size_pct /= 100
 
     return StaticVariables(
+        divide_records_array_size_by=divide_records_array_size_by,
         fee_pct=fee_pct,
         lev_mode=lev_mode,
         max_lev=max_lev,
@@ -115,6 +121,7 @@ def static_var_checker_nb(
         sl_to_be_then_trail=sl_to_be_then_trail,
         sl_to_be=sl_to_be,
         tsl_true_or_false=tsl_true_or_false,
+        upside_filter=upside_filter,
     )
 
 
@@ -169,8 +176,7 @@ def create_1d_arrays_nb(
     )
 
     sl_to_be_when_pct_from_avg_entry_array = to_1d_array_nb(
-        np.asarray(np.asarray(sl_to_be_when_pct_from_avg_entry) /
-                   100, dtype=np.float_)
+        np.asarray(np.asarray(sl_to_be_when_pct_from_avg_entry) / 100, dtype=np.float_)
     )
 
     sl_to_be_zero_or_entry_array = to_1d_array_nb(
@@ -182,21 +188,18 @@ def create_1d_arrays_nb(
         np.asarray(np.asarray(tsl_pcts_init) / 100, dtype=np.float_)
     )
 
-    tsl_based_on_array = to_1d_array_nb(
-        np.asarray(tsl_based_on, dtype=np.float_))
+    tsl_based_on_array = to_1d_array_nb(np.asarray(tsl_based_on, dtype=np.float_))
 
     tsl_trail_by_pct_array = to_1d_array_nb(
         np.asarray(np.asarray(tsl_trail_by_pct) / 100, dtype=np.float_)
     )
 
     tsl_when_pct_from_avg_entry_array = to_1d_array_nb(
-        np.asarray(np.asarray(tsl_when_pct_from_avg_entry) /
-                   100, dtype=np.float_)
+        np.asarray(np.asarray(tsl_when_pct_from_avg_entry) / 100, dtype=np.float_)
     )
 
     # Take Profit Arrays
-    risk_rewards_array = to_1d_array_nb(
-        np.asarray(risk_rewards, dtype=np.float_))
+    risk_rewards_array = to_1d_array_nb(np.asarray(risk_rewards, dtype=np.float_))
 
     tp_pcts_array = to_1d_array_nb(
         np.asarray(np.asarray(tp_pcts) / 100, dtype=np.float_)
@@ -224,8 +227,8 @@ def create_1d_arrays_nb(
 
 @njit(cache=True)
 def check_1d_arrays_nb(
-    static_variables_tuple: StaticVariables,
     arrays_1d_tuple: Arrays1dTuple,
+    static_variables_tuple: StaticVariables,
 ):
     if np.isfinite(arrays_1d_tuple.size_value).all():
         if arrays_1d_tuple.size_value.any() < 1:
@@ -246,35 +249,22 @@ def check_1d_arrays_nb(
         if arrays_1d_tuple.size_pct.any() < 1:
             raise ValueError("size_pct must be greater than 1.")
 
-        if (
-            arrays_1d_tuple.size_pct.any()
-            > static_variables_tuple.max_order_size_pct
-        ):
+        if arrays_1d_tuple.size_pct.any() > static_variables_tuple.max_order_size_pct:
             raise ValueError("size_pct is greater than max_order_size_pct")
 
-        if (
-            arrays_1d_tuple.size_pct.any()
-            < static_variables_tuple.min_order_size_pct
-        ):
+        if arrays_1d_tuple.size_pct.any() < static_variables_tuple.min_order_size_pct:
             raise ValueError("size_pct is greater than max_order_size_pct")
 
-    if (
-        np.isinf(arrays_1d_tuple.sl_pcts).any()
-        or arrays_1d_tuple.sl_pcts.any() < 0
-    ):
+    if np.isinf(arrays_1d_tuple.sl_pcts).any() or arrays_1d_tuple.sl_pcts.any() < 0:
         raise ValueError("sl_pcts has to be nan or greater than 0 and not inf")
 
     if (
         np.isinf(arrays_1d_tuple.tsl_pcts_init).any()
         or arrays_1d_tuple.tsl_pcts_init.any() < 0
     ):
-        raise ValueError(
-            "tsl_pcts_init has to be nan or greater than 0 and not inf")
+        raise ValueError("tsl_pcts_init has to be nan or greater than 0 and not inf")
 
-    if (
-        np.isinf(arrays_1d_tuple.tp_pcts).any()
-        or arrays_1d_tuple.tp_pcts.any() < 0
-    ):
+    if np.isinf(arrays_1d_tuple.tp_pcts).any() or arrays_1d_tuple.tp_pcts.any() < 0:
         raise ValueError("tp_pcts has to be nan or greater than 0 and not inf")
 
     if (0 > static_variables_tuple.lev_mode > len(LeverageMode)) or not np.isfinite(
@@ -313,22 +303,19 @@ def check_1d_arrays_nb(
 
     # check if RR has sl pct / price or tsl pct / price
     if not np.isnan(arrays_1d_tuple.risk_rewards).any() and check_sl_tsl_for_nan:
-        raise ValueError(
-            "When risk to reward is set you have to have a sl or tsl > 0")
+        raise ValueError("When risk to reward is set you have to have a sl or tsl > 0")
 
     if (
         arrays_1d_tuple.risk_rewards.any() > 0
         and np.isfinite(arrays_1d_tuple.tp_pcts).any()
     ):
-        raise ValueError(
-            "You can't have take profits set when using Risk to reward")
+        raise ValueError("You can't have take profits set when using Risk to reward")
 
     if (
         np.isinf(arrays_1d_tuple.max_equity_risk_pct).any()
         or arrays_1d_tuple.max_equity_risk_pct.any() < 0
     ):
-        raise ValueError(
-            "Max equity risk percent has to be greater than 0 or np.nan")
+        raise ValueError("Max equity risk percent has to be greater than 0 or np.nan")
 
     elif (
         np.isinf(arrays_1d_tuple.max_equity_risk_value).any()
@@ -347,8 +334,7 @@ def check_1d_arrays_nb(
         not np.isnan(arrays_1d_tuple.size_value).any()
         and not np.isnan(arrays_1d_tuple.size_pct).any()
     ):
-        raise ValueError(
-            "You can't have size and size pct set at the same time.")
+        raise ValueError("You can't have size and size pct set at the same time.")
 
     # simple check if order size type is valid
     if 0 > static_variables_tuple.order_type > len(OrderType) or not np.isfinite(
@@ -368,8 +354,7 @@ def check_1d_arrays_nb(
 
     if static_variables_tuple.size_type == SizeType.PercentOfAccount:
         if np.isnan(arrays_1d_tuple.size_pct).any():
-            raise ValueError(
-                "You need size_pct to be > 0 if using percent of account.")
+            raise ValueError("You need size_pct to be > 0 if using percent of account.")
 
     # checking to see if you set a stop loss for risk based size types
     if (
@@ -390,18 +375,15 @@ def check_1d_arrays_nb(
 
     # stop loss break even checks
     if np.isfinite(arrays_1d_tuple.sl_to_be_based_on).any() and (
-        arrays_1d_tuple.sl_to_be_based_on.any()
-        < SL_BE_or_Trail_BasedOn.open_price
-        or arrays_1d_tuple.sl_to_be_based_on.any()
-        > SL_BE_or_Trail_BasedOn.close_price
+        arrays_1d_tuple.sl_to_be_based_on.any() < SL_BE_or_Trail_BasedOn.open_price
+        or arrays_1d_tuple.sl_to_be_based_on.any() > SL_BE_or_Trail_BasedOn.close_price
     ):
         raise ValueError(
             "You need sl_to_be_based_on to be be either 0 1 2 or 3. look up SL_BE_or_Trail_BasedOn enums"
         )
 
     if (
-        np.isinf(
-            arrays_1d_tuple.sl_to_be_trail_by_when_pct_from_avg_entry).any()
+        np.isinf(arrays_1d_tuple.sl_to_be_trail_by_when_pct_from_avg_entry).any()
         or arrays_1d_tuple.sl_to_be_trail_by_when_pct_from_avg_entry.any() < 0
     ):
         raise ValueError(
@@ -420,19 +402,14 @@ def check_1d_arrays_nb(
         arrays_1d_tuple.sl_to_be_zero_or_entry.any() < 0
         or arrays_1d_tuple.sl_to_be_zero_or_entry.any() > 1
     ):
-        raise ValueError(
-            "sl_to_be_zero_or_entry needs to be 0 for zero or 1 for entry")
+        raise ValueError("sl_to_be_zero_or_entry needs to be 0 for zero or 1 for entry")
 
     if static_variables_tuple.sl_to_be == False:
         if np.isfinite(arrays_1d_tuple.sl_to_be_based_on).any():
-            raise ValueError(
-                "sl_to_be needs to be True to use sl_to_be_based_on.")
+            raise ValueError("sl_to_be needs to be True to use sl_to_be_based_on.")
         if static_variables_tuple.sl_to_be_then_trail == True:
-            raise ValueError(
-                "sl_to_be needs to be True to use sl_to_be_then_trail.")
-        if np.isfinite(
-            arrays_1d_tuple.sl_to_be_trail_by_when_pct_from_avg_entry
-        ).any():
+            raise ValueError("sl_to_be needs to be True to use sl_to_be_then_trail.")
+        if np.isfinite(arrays_1d_tuple.sl_to_be_trail_by_when_pct_from_avg_entry).any():
             raise ValueError(
                 "sl_to_be needs to be True to use sl_to_be_trail_by_when_pct_from_avg_entry."
             )
@@ -441,8 +418,7 @@ def check_1d_arrays_nb(
                 "sl_to_be needs to be True to use sl_to_be_when_pct_from_avg_entry."
             )
         if np.isfinite(arrays_1d_tuple.sl_to_be_zero_or_entry).any():
-            raise ValueError(
-                "sl_to_be needs to be True to use sl_to_be_zero_or_entry.")
+            raise ValueError("sl_to_be needs to be True to use sl_to_be_zero_or_entry.")
 
     if static_variables_tuple.sl_to_be and (
         not np.isfinite(arrays_1d_tuple.sl_to_be_based_on).any()
@@ -488,13 +464,11 @@ def check_1d_arrays_nb(
         np.isinf(arrays_1d_tuple.tsl_when_pct_from_avg_entry).any()
         or arrays_1d_tuple.tsl_when_pct_from_avg_entry.any() < 0
     ):
-        raise ValueError(
-            "You need tsl_when_pct_from_avg_entry to be > 0 or not inf.")
+        raise ValueError("You need tsl_when_pct_from_avg_entry to be > 0 or not inf.")
 
     if static_variables_tuple.tsl_true_or_false == False:
         if np.isfinite(arrays_1d_tuple.tsl_based_on).any():
-            raise ValueError(
-                "tsl_true_or_false needs to be True to use tsl_based_on.")
+            raise ValueError("tsl_true_or_false needs to be True to use tsl_based_on.")
         if np.isfinite(arrays_1d_tuple.tsl_trail_by_pct).any():
             raise ValueError(
                 "tsl_true_or_false needs to be True to use tsl_trail_by_pct."
@@ -519,7 +493,6 @@ def check_1d_arrays_nb(
 def create_cart_product_nb(
     arrays_1d_tuple: Arrays1dTuple,
 ):
-
     # dtype_names = (
     #     'order_settings_id',
     #     'leverage',
@@ -556,7 +529,7 @@ def create_cart_product_nb(
         n *= arrays_1d_tuple[k].size
         m = int(n / arrays_1d_tuple[k].size)
         for j in range(1, arrays_1d_tuple[k].size):
-            out[j * m: (j + 1) * m, k + 1:] = out[0:m, k + 1:]
+            out[j * m : (j + 1) * m, k + 1 :] = out[0:m, k + 1 :]
 
     # # literal unroll
     # counter = 0
@@ -631,7 +604,6 @@ def fill_order_records_nb(
     account_state: AccountState,
     order_result: OrderResult,
 ) -> RecordArray:
-
     order_records["avg_entry"] = order_result.average_entry
     order_records["bar"] = bar
     order_records["equity"] = account_state.equity
@@ -652,14 +624,13 @@ def fill_order_records_nb(
 @njit(cache=True)
 def fill_strat_records_nb(
     entries_col: int,
-    order_settings_counter: int,
-    symbol_counter: int,
-    strat_records: RecordArray,
-    strat_records_filled: Array1d,
     equity: float,
+    order_settings_counter: int,
     pnl: float,
+    strat_records_filled: Array1d,
+    strat_records: RecordArray,
+    symbol_counter: int,
 ) -> RecordArray:
-
     strat_records["equity"] = equity
     strat_records["entries_col"] = entries_col
     strat_records["or_set"] = order_settings_counter
@@ -670,28 +641,10 @@ def fill_strat_records_nb(
 
 
 @njit(cache=True)
-def fill_strategy_result_records_nb(
+def get_to_the_upside_nb(
     gains_pct: float,
-    strategy_result_records: RecordArray,
-    temp_strat_records: Array1d,
-    wins_and_losses_array: Array1d,
-
-) -> RecordArray:
-
-    # filter out all BE trades
-    wins_and_losses_array_no_be = wins_and_losses_array[wins_and_losses_array != 0]
-
-    # win rate calc
-    win_loss = np.where(wins_and_losses_array_no_be < 0, 0, 1)
-    win_rate = round(
-        np.count_nonzero(win_loss) / win_loss.size * 100, 2
-    )
-
-    total_pnl = temp_strat_records["real_pnl"][
-        ~np.isnan(temp_strat_records["real_pnl"])
-    ].sum()
-
-    # to_the_upside calculation
+    wins_and_losses_array_no_be: Array1d,
+):
     x = np.arange(1, len(wins_and_losses_array_no_be) + 1)
     y = wins_and_losses_array_no_be.cumsum()
 
@@ -712,17 +665,36 @@ def fill_strategy_result_records_nb(
     yp_ym = y_pred - ym
 
     yp_ym_s = yp_ym**2
-    
+
     to_the_upside = yp_ym_s.sum() / y_ym_s.sum()
-    
+
     if gains_pct <= 0:
         to_the_upside = -to_the_upside
-        
+    return to_the_upside
+
+
+@njit(cache=True)
+def fill_strategy_result_records_nb(
+    gains_pct: float,
+    strategy_result_records: RecordArray,
+    temp_strat_records: Array1d,
+    to_the_upside: float,
+    total_trades: int,
+    wins_and_losses_array_no_be: Array1d,
+) -> RecordArray:
+    # win rate calc
+    win_loss = np.where(wins_and_losses_array_no_be < 0, 0, 1)
+    win_rate = round(np.count_nonzero(win_loss) / win_loss.size * 100, 2)
+
+    total_pnl = temp_strat_records["real_pnl"][
+        ~np.isnan(temp_strat_records["real_pnl"])
+    ].sum()
+
     # strat array
     strategy_result_records["symbol"] = temp_strat_records["symbol"][0]
     strategy_result_records["entries_col"] = temp_strat_records["entries_col"][0]
     strategy_result_records["or_set"] = temp_strat_records["or_set"][0]
-    strategy_result_records["total_trades"] = wins_and_losses_array.size
+    strategy_result_records["total_trades"] = total_trades
     strategy_result_records["gains_pct"] = gains_pct
     strategy_result_records["win_rate"] = win_rate
     strategy_result_records["to_the_upside"] = to_the_upside
@@ -732,31 +704,40 @@ def fill_strategy_result_records_nb(
 
 @njit(cache=True)
 def fill_settings_result_records_nb(
-    entry_order: EntryOrder,
     entries_col: int,
-    symbol_counter: int,
+    entry_order: EntryOrder,
     settings_result_records: RecordArray,
     stops_order: StopsOrder,
+    symbol_counter: int,
 ) -> RecordArray:
-
     settings_result_records["symbol"] = symbol_counter
     settings_result_records["entries_col"] = entries_col
     settings_result_records["leverage"] = entry_order.leverage
-    settings_result_records["max_equity_risk_pct"] = entry_order.max_equity_risk_pct * 100
+    settings_result_records["max_equity_risk_pct"] = (
+        entry_order.max_equity_risk_pct * 100
+    )
     settings_result_records["max_equity_risk_value"] = entry_order.max_equity_risk_value
     settings_result_records["risk_rewards"] = entry_order.risk_rewards
     settings_result_records["size_pct"] = entry_order.size_pct * 100
     settings_result_records["size_value"] = entry_order.size_value
     settings_result_records["sl_pcts"] = entry_order.sl_pcts * 100
     settings_result_records["sl_to_be_based_on"] = stops_order.sl_to_be_based_on
-    settings_result_records["sl_to_be_trail_by_when_pct_from_avg_entry"] = stops_order.sl_to_be_trail_by_when_pct_from_avg_entry * 100
-    settings_result_records["sl_to_be_when_pct_from_avg_entry"] = stops_order.sl_to_be_when_pct_from_avg_entry * 100
-    settings_result_records["sl_to_be_zero_or_entry"] = stops_order.sl_to_be_zero_or_entry
-    settings_result_records["tp_pcts"] = (entry_order.tp_pcts * 100)
+    settings_result_records["sl_to_be_trail_by_when_pct_from_avg_entry"] = (
+        stops_order.sl_to_be_trail_by_when_pct_from_avg_entry * 100
+    )
+    settings_result_records["sl_to_be_when_pct_from_avg_entry"] = (
+        stops_order.sl_to_be_when_pct_from_avg_entry * 100
+    )
+    settings_result_records[
+        "sl_to_be_zero_or_entry"
+    ] = stops_order.sl_to_be_zero_or_entry
+    settings_result_records["tp_pcts"] = entry_order.tp_pcts * 100
     settings_result_records["tsl_based_on"] = stops_order.tsl_based_on
     settings_result_records["tsl_pcts_init"] = entry_order.tsl_pcts_init * 100
     settings_result_records["tsl_trail_by_pct"] = stops_order.tsl_trail_by_pct * 100
-    settings_result_records["tsl_when_pct_from_avg_entry"] = stops_order.tsl_when_pct_from_avg_entry * 100
+    settings_result_records["tsl_when_pct_from_avg_entry"] = (
+        stops_order.tsl_when_pct_from_avg_entry * 100
+    )
 
 
 @njit(cache=True)

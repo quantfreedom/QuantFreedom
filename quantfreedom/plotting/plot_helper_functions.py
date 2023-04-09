@@ -24,10 +24,6 @@ def get_candle_trace_data(
     -------------
         Here we take all the info needed to create a candlestick chart and also place indicators on top of the candle stick chart
     
-    Explainer Video
-    ---------------
-        Coming_Soon
-    
     Required Parameters
     -------------------
     Variable Name: Variable Type

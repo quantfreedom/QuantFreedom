@@ -1,11 +1,11 @@
 currently working on:
-    ✔ add print statement that tells you how many order settings there are ... indicator settings and coins and total bars and then the total amount of settings to go through and total amount of bars to go through @done(23-04-08 08:04)
-    ✔ make cretea cart product return array1dtuple @done(23-04-08 09:23)
-    ✔ move all stuff array creation and checking to the base so that we can print out the total symbols to test information stuff @done(23-04-08 09:23)
-    ✔ make it so the backtester nb takes new paramaters and change all things cart_array to have cart_array. @done(23-04-08 09:23)
+    ✔ add filter for to the upside @done(23-04-09 07:09)
+    ✔ add variable for divide array size by @done(23-04-09 07:09)
 
 Documentation:
     ☐ plotly helper functions
+      ☐ fill_candle_trace_trades
+      ☐ cerate_candle_trace_trades_list
     ☐ learn how to make it so that there are blocks of text that look like the python file in markdown text
      
 Videos to make:
@@ -25,6 +25,7 @@ Next Verson:
 
 Plotly Dash:
     ☐ make it so in the ind dict you only send the entries once
+    ☐ make it so that once you take profit or get stopped out the icon shows up because right now the tp isn't showing up
 
 Python course:
     ☐ watch some courses and make simple 1 or 2 min vids on the topic
@@ -57,6 +58,13 @@ Would Be Nice:
     ☐ send pct change of position in order result when decreasing or increaseing position size
 
 Archive:
+  ✔ utils helpers @done(23-04-08 14:46)
+  ✔ get_candle_trace_data @done(23-04-08 14:43)
+  ✔ append_to_trace_data_list @done(23-04-08 14:43)
+  ✔ move all stuff array creation and checking to the base so that we can print out the total symbols to test information stuff @done(23-04-08 09:23)
+  ✔ make it so the backtester nb takes new paramaters and change all things cart_array to have cart_array. @done(23-04-08 09:23)
+  ✔ add print statement that tells you how many order settings there are ... indicator settings and coins and total bars and then the total amount of settings to go through and total amount of bars to go through @done(23-04-08 08:04)
+  ✔ make cretea cart product return array1dtuple @done(23-04-08 09:23)
   ✔ add mock candle creation to utils @done(23-04-07 21:18)
   ✔ simulate df works with multiple coins @done(23-04-07 07:22)
   ✔ make it so that the simulator 6 can work with mutliple coins @done(23-04-07 07:22)

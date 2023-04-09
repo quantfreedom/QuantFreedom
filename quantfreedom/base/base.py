@@ -21,8 +21,8 @@ from quantfreedom.enums.enums import OrderType, SL_BE_or_Trail_BasedOn
 
 def backtest_df_only(
     # entry info
-    entries: pdFrame,
     prices: pdFrame,
+    entries: pdFrame,
     # required account info
     equity: float,
     fee_pct: float,
@@ -47,7 +47,7 @@ def backtest_df_only(
     sl_to_be: bool = False,
     sl_to_be_based_on: PossibleArray = np.nan,
     sl_to_be_when_pct_from_avg_entry: PossibleArray = np.nan,
-    sl_to_be_zero_or_entry: PossibleArray = np.nan,
+    sl_to_be_zero_or_entry: PossibleArray = np.nan, # 0 for zero or 1 for entry
     sl_to_be_then_trail: bool = False,
     sl_to_be_trail_by_when_pct_from_avg_entry: PossibleArray = np.nan,
     # Trailing Stop Loss Params
@@ -62,27 +62,30 @@ def backtest_df_only(
     # Results Filters
     gains_pct_filter: float = -np.inf,
     total_trade_filter: int = 0,
+    divide_records_array_size_by: float = 1.0,  # between 1 and 1000
+    upside_filter: float = -1.0,  # between -1 and 1
 ) -> tuple[pdFrame, pdFrame]:
-
     print("Checking static variables for errors or conflicts.")
     # Static checks
     static_variables_tuple = static_var_checker_nb(
+        divide_records_array_size_by=divide_records_array_size_by,
         equity=equity,
         fee_pct=fee_pct,
-        mmr=mmr,
+        gains_pct_filter=gains_pct_filter,
         lev_mode=lev_mode,
-        order_type=order_type,
-        size_type=size_type,
         max_lev=max_lev,
         max_order_size_pct=max_order_size_pct,
-        min_order_size_pct=min_order_size_pct,
         max_order_size_value=max_order_size_value,
+        min_order_size_pct=min_order_size_pct,
         min_order_size_value=min_order_size_value,
-        sl_to_be=sl_to_be,
+        mmr=mmr,
+        order_type=order_type,
+        size_type=size_type,
         sl_to_be_then_trail=sl_to_be_then_trail,
-        tsl_true_or_false=tsl_true_or_false,
-        gains_pct_filter=gains_pct_filter,
+        sl_to_be=sl_to_be,
         total_trade_filter=total_trade_filter,
+        tsl_true_or_false=tsl_true_or_false,
+        upside_filter=upside_filter,
     )
     print("Turning all variables into arrays.")
     # Create 1d Arrays
@@ -109,8 +112,8 @@ def backtest_df_only(
     )
     # Checking all new arrays
     check_1d_arrays_nb(
-        static_variables_tuple=static_variables_tuple,
         arrays_1d_tuple=arrays_1d_tuple,
+        static_variables_tuple=static_variables_tuple,
     )
 
     print(
@@ -147,17 +150,17 @@ def backtest_df_only(
     )
 
     strat_array, settings_array = backtest_df_only_nb(
+        cart_array_tuple=cart_array_tuple,
+        entries=entries.values,
+        gains_pct_filter=gains_pct_filter,
         num_of_symbols=num_of_symbols,
+        og_equity=equity,
+        prices=prices.values,
+        static_variables_tuple=static_variables_tuple,
+        total_bars=total_bars,
         total_indicator_settings=total_indicator_settings,
         total_order_settings=total_order_settings,
-        total_bars=total_bars,
-        og_equity=equity,
-        entries=entries.values,
-        prices=prices.values,
-        gains_pct_filter=gains_pct_filter,
         total_trade_filter=total_trade_filter,
-        static_variables_tuple=static_variables_tuple,
-        cart_array_tuple=cart_array_tuple,
     )
 
     strat_results_df = pd.DataFrame(strat_array).sort_values(
@@ -185,5 +188,3 @@ def backtest_df_only(
     setting_results_df = setting_results_df.T
 
     return strat_results_df, setting_results_df
-
-

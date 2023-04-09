@@ -23,8 +23,8 @@ pd.options.display.float_format = "{:,.2f}".format
 load_figure_template("darkly")
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
 try:
-    shell = get_ipython()
-    if shell == "ZMQInteractiveShell":
+    shell = str(get_ipython())
+    if "ZMQInteractiveShell" in shell:
         app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
     elif shell == "TerminalInteractiveShell":
         app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])

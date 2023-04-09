@@ -107,6 +107,7 @@ class OrderResult(tp.NamedTuple):
 
 
 class StaticVariables(tp.NamedTuple):
+    divide_records_array_size_by: float
     fee_pct: float
     lev_mode: int
     max_lev: float
@@ -120,6 +121,7 @@ class StaticVariables(tp.NamedTuple):
     sl_to_be_then_trail: bool
     sl_to_be: bool
     tsl_true_or_false: bool
+    upside_filter: float
 
 
 class StopsOrder(tp.NamedTuple):
