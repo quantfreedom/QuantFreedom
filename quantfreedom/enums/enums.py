@@ -115,7 +115,7 @@ class StaticVariables(tp.NamedTuple):
     max_order_size_value: float
     min_order_size_pct: float
     min_order_size_value: float
-    mmr: float
+    mmr_pct: float
     order_type: int
     size_type: int
     sl_to_be_then_trail: bool
@@ -199,7 +199,6 @@ class SizeTypeT(tp.NamedTuple):
     PercentOfAccount: int = 1
     RiskAmount: int = 2
     RiskPercentOfAccount: int = 3
-
 
 SizeType = SizeTypeT()
 

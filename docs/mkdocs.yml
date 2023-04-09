@@ -83,6 +83,15 @@ markdown_extensions:
   - pymdownx.tilde
 
 plugins:
+  - search
+  - gen-files:
+      scripts:
+        - gen_ref_pages.py
+  - open-in-new-tab
+  - autorefs
+  - tags
+  - minify:
+      minify_html: true
   - mkdocstrings:
       enable_inventory: true
       handlers:
@@ -93,12 +102,6 @@ plugins:
             line_length: 1
             separate_signature: true
             docstring_section_style: list
-  - search
-  - open-in-new-tab
-  - autorefs
-  - tags
-  - minify:
-      minify_html: true
 
 nav:
   - Getting Started:
@@ -106,11 +109,10 @@ nav:
       - Installation: getting-started/install.md
       - Release Notes: getting-started/releasenotes.md
   - API:
-      - api/enums.md
-      - api/numba.md
+      - api/base/base.md
   - Tutorials:
       - tutorials/index.md
-      - Numpy: 
+      - Numpy:
           - tutorials/numpy/broadcasting.md
           - tutorials/numpy/logical.md
           - tutorials/numpy/random.md

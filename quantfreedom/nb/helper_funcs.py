@@ -34,7 +34,7 @@ def static_var_checker_nb(
     max_order_size_value: float,
     min_order_size_pct: float,
     min_order_size_value: float,
-    mmr: float,
+    mmr_pct: float,
     order_type: int,
     size_type: int,
     sl_to_be_then_trail: bool,
@@ -49,8 +49,8 @@ def static_var_checker_nb(
     if fee_pct < 0 or not np.isfinite(fee_pct):
         raise ValueError("fee_pct must be finite")
 
-    if mmr < 0 or not np.isfinite(mmr):
-        raise ValueError("mmr must be finite")
+    if mmr_pct < 0 or not np.isfinite(mmr_pct):
+        raise ValueError("mmr_pct must be finite")
 
     if not np.isfinite(max_lev) or 1 > max_lev > 100:
         raise ValueError("max lev has to be between 1 and 100")
@@ -102,7 +102,7 @@ def static_var_checker_nb(
 
     # Static variables creation
     fee_pct /= 100
-    mmr /= 100
+    mmr_pct /= 100
     max_order_size_pct /= 100
     min_order_size_pct /= 100
 
@@ -115,7 +115,7 @@ def static_var_checker_nb(
         max_order_size_value=max_order_size_value,
         min_order_size_pct=min_order_size_pct,
         min_order_size_value=min_order_size_value,
-        mmr=mmr,
+        mmr_pct=mmr_pct,
         order_type=order_type,
         size_type=size_type,
         sl_to_be_then_trail=sl_to_be_then_trail,

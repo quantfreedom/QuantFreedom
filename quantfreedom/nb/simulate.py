@@ -271,7 +271,7 @@ def simulate_up_to_6_nb(
     # required account info
     equity: float,
     fee_pct: float,
-    mmr: float,
+    mmr_pct: float,
     # required order
     lev_mode: int,
     order_type: int,
@@ -314,7 +314,7 @@ def simulate_up_to_6_nb(
     static_variables_tuple = static_var_checker_nb(
         equity=equity,
         fee_pct=fee_pct,
-        mmr=mmr,
+        mmr_pct=mmr_pct,
         lev_mode=lev_mode,
         order_type=order_type,
         size_type=size_type,

@@ -248,7 +248,7 @@ def short_increase_nb(
             temp_price
             + temp_price * 0.002
             - average_entry_new  # TODO .2 is percent padding user wants
-            + static_variables_tuple.mmr * average_entry_new
+            + static_variables_tuple.mmr_pct * average_entry_new
         )  # math checked
 
         if leverage_new > static_variables_tuple.max_lev:
@@ -289,7 +289,7 @@ def short_increase_nb(
         cash_borrowed_new = account_state.cash_borrowed + size_value - cash_used_new
 
         liq_price_new = average_entry_new * (
-            1 + (1 / leverage_new) - static_variables_tuple.mmr
+            1 + (1 / leverage_new) - static_variables_tuple.mmr_pct
         )  # math checked
 
     # Create take profits if requested

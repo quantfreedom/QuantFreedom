@@ -17,6 +17,7 @@ you may run into problems later on with git saying you need to fonfigure your us
 
 once you have git and python installed we need to check to make sure you were able to add everything to the path properly so press your windows key and type edit the system environment variables then click on environment variables then double click on path and make sure your python 310 scripts and python 310 are at the top then you want your vs code bin below it ... so your order should look something like mine but i think the most important is that the python version you want to use is first
 ![env var](docs/docs/assets/env_var.png)
+![env var](../../../quantfreedom/)
 
 Now download vs code https://code.visualstudio.com/download and then go to the extensions tab and install python, jupyter and gitlens and also python environment manager
 
