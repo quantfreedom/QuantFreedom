@@ -1,6 +1,5 @@
 currently working on:
-    ✔ add filter for to the upside @done(23-04-09 07:09)
-    ✔ add variable for divide array size by @done(23-04-09 07:09)
+    ☐ 
 
 Documentation:
     ☐ plotly helper functions
@@ -14,6 +13,9 @@ Videos to make:
     ☐ data_download
     ☐ strat_dashboard
     ☐ get_candle_trace_data
+
+User Suggestions:
+    ☐ add sharpe ratio to dataframe results
 
 Next Verson:
     ☐ create tabs in dashboard for multiple settings to look at
@@ -57,98 +59,3 @@ Ask Other Users ?:
 Would Be Nice:
     ☐ send pct change of position in order result when decreasing or increaseing position size
 
-Archive:
-  ✔ utils helpers @done(23-04-08 14:46)
-  ✔ get_candle_trace_data @done(23-04-08 14:43)
-  ✔ append_to_trace_data_list @done(23-04-08 14:43)
-  ✔ move all stuff array creation and checking to the base so that we can print out the total symbols to test information stuff @done(23-04-08 09:23)
-  ✔ make it so the backtester nb takes new paramaters and change all things cart_array to have cart_array. @done(23-04-08 09:23)
-  ✔ add print statement that tells you how many order settings there are ... indicator settings and coins and total bars and then the total amount of settings to go through and total amount of bars to go through @done(23-04-08 08:04)
-  ✔ make cretea cart product return array1dtuple @done(23-04-08 09:23)
-  ✔ add mock candle creation to utils @done(23-04-07 21:18)
-  ✔ simulate df works with multiple coins @done(23-04-07 07:22)
-  ✔ make it so that the simulator 6 can work with mutliple coins @done(23-04-07 07:22)
-  ✔ make a base function that returns a pdFrame for backtesting the DF array only @done(23-04-07 07:22)
-  ✔ create mock candles function @done(23-04-07 21:10)
-  ✔ work on eval is below and above with multiple coins @done(23-04-06 10:05)
-  ✔ make eval grpahable @done(23-04-06 10:05)
-  ✔ work on combine evals with multiple coins @done(23-04-06 10:05)
-  ✔ make combine graphable @done(23-04-06 12:30)
-  ✔ edit from talib to be able to handle indicators with symbol columns @done(23-04-05 13:37)
-  ✔ create stable branch @done(23-04-05 13:45)
-  ✔ edit from talib to be able to handle mutliple coins @done(23-04-05 08:52)
-  ✔ change all talib to be getatr talib instead of function @done(23-04-05 13:19)
-  ✔ make it so user can download mutliple coins @done(23-04-04 15:01)
-  ✔ learn to save file as hd5 @done(23-04-04 10:19)
-  ✔ add progress bar to downloading data @done(23-04-04 14:51)
-  ✔ make it so the progress bar can figure out how many loops you will have to do and report that @done(23-04-04 21:11)
-  ✔ do a check to make sure user isn't sending prices or price if they are sending user in df @done(23-04-03 19:47)
-  ✔ update plotly dash to have the ability to send any amount of indicators @done(23-04-03 06:55)
-  ✔ fix eval is below sending indicator data @done(23-04-03 19:45)
-  ✔ fix eval is above sending indicator data @done(23-04-03 19:45)
-  ✔ create tons of functions for plotly @done(23-04-03 06:57)
-  ✔ create base func that takes 1 set of settings and returns the order record infor necessary to make an octobot like report in a new window https://raw.githubusercontent.com/Drakkar-Software/OctoBot-Pro/assets/images/report_1.jpg @done(23-04-03 19:47)
-  ✔ create functions for adding to candle trace data chart @done(23-04-03 06:56)
-  ✔ create indicator trace data function @done(23-04-03 06:56)
-  ✔ create get_candle_trace_data @done(23-04-02 15:02)
-  ✔ create fill_candle_trace_trades @done(23-04-02 15:02)
-  ✔ create an all links account @done(23-04-02 13:23)
-  ✔ crete a functions for simulate up to 6 @done(23-04-02 13:35)
-  ✔ make a variable checker function @done(23-04-02 09:48)
-  ✔ make fill strat result func @done(23-04-02 09:48)
-  ✔ make fill setting results func @done(23-04-02 09:48)
-  ✔ make create cart product func @done(23-04-02 09:48)
-  ✔ make check 1d array func @done(23-04-02 09:48)
-  ✔ make create 1d array func @done(23-04-02 09:48)
-  ✔ check all numba stuff @done(23-04-02 07:19)
-  ✔ fix number formating in table @done(23-03-28 14:25)
-  ✔ make it so that trades is the first candle stick chart @done(23-03-28 07:57)
-  ✔ create dropdown of all times @done(23-03-28 07:57)
-  ✔ create date picker @done(23-03-28 07:57)
-  ✔ cumsum trade pnl chart lines with markers @done(23-03-28 14:25)
-  ✔ make it so that table header is frozen @done(23-03-27 20:25)
-  ✔ check order records because there is tons of zeros that show up at the end @done(23-03-25 20:01)
-  ✔ make it so that talib can take in atr data and process it with combos @done(23-03-26 13:53)
-  ✔ make one dataframe returned for out names so loop through 1 out name at a time @done(23-03-25 10:32)
-  ✔ in talib make it so that you add to list not append @done(23-03-25 10:33)
-  ✔ have it so the user sends the prices df and then the cand ohlc then you do the get atr thing so you can do prices.close or prices.open @done(23-03-25 08:15)
-  ✔ look into checkign whole array against 1 number and returning true or false and not doing a for loop @done(23-03-25 08:09)
-  ✔ instead of creating a df every for loop finish and then concat just concat to a lsit of tuples then at the end throw the finished array into a df and then put the multindex column list of tuples with names and it should work ... do this for both talib and evals @done(23-03-25 08:08)
-  ✔ look into checking the whole array against the whole array for np.where then returning true or false @done(23-03-25 08:09)
-  ✔ make it so that i can get true false based on being above ema and below rsi @done(23-03-24 20:38)
-  ✔ create help function for from_talib abstract.Function('rsi') @done(23-03-24 13:14)
-  ✔ build is below function for evaluators @done(23-03-24 14:07)
-  ✔ create for loop that runs through the selected ind multiple times @done(23-03-23 12:51)
-  ✔ create dataframe with multiple columns for talib @done(23-03-24 11:34)
-  ✔ check user kwargs for default inputs for each talib indicator dynamicly @done(23-03-23 08:49)
-  ✔ create cart or comb based on users input @done(23-03-23 12:50)
-  ✔ fix simulate from signals @done(23-03-22 09:30)
-  ✔ make data frame return only function @done(23-03-20 19:57)
-  ✔ make a work around for cart array numba @done(23-03-19 18:46)
-  ✔ work in selling @done(23-03-19 13:52)
-  ✔ remove the ability for the user to create sl tsl tp prices @done(23-03-18 19:27) @project(Currently Working On)
-  ✔ make a function for only getting the cart arrays that make it past the filter and include the order settings id ... basically just borrow from the df array @done(23-03-18 18:54) @project(Currently Working On)
-  ✔ map order type number to english @done(23-03-18 18:55) @project(Currently Working On)
-  ✔ put df in an order that makes sense @done(23-03-18 18:55) @project(Currently Working On)
-  ✔ change all tsl_pcts to tsl_pcts init @done(23-03-18 19:01) @project(Currently Working On)
-  ✔ create order status info for moved sl moved and set to filled for now 
-  ✔ work on check stops - investigate why no sl to be stops 
-  ✔ order check for sl to be to make sure specific settings are there when wanting to sl to be 
-  ✔ order check for tsl to be to make sure specific settings are there when wanting to tsl to be 
-  ✔ change up df to remove sl pct and others 
-  ✔ create or filled so i can subtract that num from end or if the current settings don't pass gains filter 
-  ✔ work on long decrease 
-  ✔ add an else statement to the gains that deals with erasing the data from order records 
-  ✔ multiple all the cart arrays pct by 100 before returning cart array 
-  ✔ update code to get position size in buy func 
-  ✔ delete log records 
-  ✔ add each trade info to order records 
-  ✔ return cart array 
-  ✔ added the ability to delete pycache and also added a specific folder where numba cache is and also the clear cache deletes the numba cache as well 
-  ✔ created the named tuples now 
-  ✔ got the long increase working 
-  ✔ fixed the main branch for brandon 
-  ✔ cleaned up fill order and log records 
-  ✔ did the whole order check section over again 
-  ✔ work on check stops - investigate tsl 
-  ✔ make log_trades_plot work with order records 

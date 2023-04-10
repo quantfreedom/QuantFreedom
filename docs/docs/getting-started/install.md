@@ -1,80 +1,117 @@
-# Index Page
+# Installation
+!!! note 
+    My goal is to have the best documentation possible and that can only happen if you ask questions or give feedback. So if you have any questions or problems along the way make sure you message me and let me know what you are having a problem with 
 
-## How to install via cmd line using vs code
-If you have any problems along the way make sure you message me and let me know what you are having a problem with ... i want these installation instructions to be perfect so anyone can install 
+!!! warning "Ta-lib and pytables"
+    You have to have talib installed and pytables installed. So make sure you go to the bottom of this installation page and install them into your virtual environment
 
-I am using vscode because it is so easy to use and you can use jupyter notebooks in it for free
-
-Before we start:
-
-To avoid all types of issues i would suggestion uninstalling anaconda and all of your python installations, unless you know for sure that you need those previous versions for other projects and everything ... or if you are familiar with python already and you know what you are doing you can keep them ... but there have been many pathing issues with having different versions and anaconda installed.
-
-So if you do not need to do any of this then you can move to the next section ... but if you do need to uninstall then go and uninstall all of your python versions and anaconda versions ... then go to the python website and download python 3.10.10 and then make sure you select add to path when installing and also install for all users. https://www.python.org/downloads/
-
-Then make sure you have git installed ... if you don't go to the git website and download git and install. To the best of my knowledge all you need to do is just hit next for everything but i also suggest at least reading some of the options. https://git-scm.com/downloads
-
-you may run into problems later on with git saying you need to fonfigure your user name and user email ... to check this in the cmd terminal type in git config --global --list ... then you should see your user email and user name ... for github ... if you don't then type git config --global user.name "your_username" git config --global user.email "your_email_address@example.com"
-
-once you have git and python installed we need to check to make sure you were able to add everything to the path properly so press your windows key and type edit the system environment variables then click on environment variables then double click on path and make sure your python 310 scripts and python 310 are at the top then you want your vs code bin below it ... so your order should look something like mine but i think the most important is that the python version you want to use is first
-![env var](docs/docs/assets/env_var.png)
-![env var](../../../quantfreedom/)
-
-Now download vs code https://code.visualstudio.com/download and then go to the extensions tab and install python, jupyter and gitlens and also python environment manager
-
-once you have vscode installed launch it and then press ctrl shift p and then type in terminal select default profile .. then make sure you select cmd prompt as the default
-
-now you want to go to a location on your computer and create a folder called coding because this is where you will store your virtual environment and possibly the cloned repo
-
-if you want to help develop the backtester then go to the github link and star and fork the project https://github.com/QuantFreedom1022/QuantFreedom ... if not skip to the next step
-
-once you have forked it then grab the code of your forked project from the code button and copy the link
-
-once you have the link copied then go back to vs code and press ctrl shift p and type git clone and then past the link of the code or if you are signed into your github you can select the new fork from the drop down list
-
-i would then suggest cloning to the coding folder that you made
-
-ok this part is for everyone
-
-before we create the virtual env you have to make sure you are using the cmd prompt so go to terminal in the menu and select new terminal and then once the terminal pops up make sure you are in the cmd prompt. if you aren't and have changed your default to the cmd prompt then close out your vs code and open it again and it should work this time. It is super important that we are in the cmd prompt or this installation wont work
-
-if you are in the cmd prompt then make sure the folder location for the cmd prompt is the coding folder ... if it isn't use cd and type in the location of the coding folder like cd "C:\users\my stuff\coding" ... make sure you use quotes because if you have spaces in some of your folder names you have to have quotes
-
-now that you are in the right folder we want to type 
+## If you know what your doing
+Make sure you create a virtual environment to install all of this into so you don't crowd your main python file.
 ```
-python -m venv qfFree
+pip install quantfreedom
 ```
-this will create a virtual env named qfFree
+## If you need some guidence
+This next part will be for those who need some more guidence on doing the install
 
-next we want to type 
-```
-qfFree\Scripts\activate```
- to activate the virtual env ... this will make sure anything we install is in the virtual env and not on our global python which is super extra important
+## Installing Python
+To avoid all types of issues I would suggestion uninstalling anaconda and all of your python installations, unless you know for sure that you need those previous versions for other projects and everything ... or if you are familiar with python already and you know what you are doing you can keep them ... but there have been many pathing issues with having different versions and anaconda installed.
 
-if you are using 
-now we need to create a jupyter notebook kernel by typing this ipython kernel install --user --name=qfFree
+If you do not need to do any of this then you can move to the next section ... but if you do need to uninstall then go and uninstall all of your python versions and anaconda versions ... then go to the python website and download python 3.10.10 and then make sure you select add to path when installing and also install for all users. https://www.python.org/downloads/
 
-if you want to install the dev env then you have to type pip install -e then the location of your cloned repo like "C:\user\mystuff\coding\QuantFreedom" this will then install the backtester
+## Installing Git
+Then make sure you have git installed ... if you don't have it installed, go to the git website and download git and install. To the best of my knowledge all you need to do is just hit next for everything, well thats what I did at least and it worked. https://git-scm.com/downloads
 
-if you are just installing to use the backtester then type pip install -U git+https://github.com/QuantFreedom1022/quantfreedom
+Now you need to configure your user name email from github so open up a cmd terminal and type git config --global user.name ```your github username``` then type git config --global user.email ```the email address you used to sign up to github```. 
 
-once we have our venv created and everything is pip installed then we want to do control shift p and type select Interpreter to start jupyter server and then select the venv we just created that way it selects that venv every time we use jupyter
+An example of this would be <br>
+```git config --global user.name quantfreedom``` <br>
+```git config --global user.email quantfreedom@gmail.com```
 
-also make sure you have auto save on by going to file preferences setting then type auto save and then select after delay ... for people working in dev env this is for making sure you see the auto updates in the source control for pushing new data and for people who are just working you always want your data saved ... unless you don't you can choose another auto save or turn it off
+## Checking your paths
+Once you have git and python installed we need to check to make sure you were able to add everything to the path properly. Press your windows key and type ```edit the system environment variables``` then click on ```environment variables``` then double click on ```path``` and make sure your python scripts and python for the version you want to use, are at the top then you want your vs code bin below it ... so your order should look something like mine but i think the most important is that the python version you want to use is first ![env var](../assets/env_var.png)
 
-make sure you are on the dev branch and then fetch the upstream then right click on the dev upstream and merge into current branch ... then sync your changes to update your origin branch
+## How to install via VScode
+I use vscode and love it so I highly suggest you use it as well even if you are using another IDE ... unless you really love yours then let me know about it because maybe I am missing out on something
 
-You now should have created a virtual environment
+### Quick summary
+- Go to the terminal menu and start a new terminal in the cmd window
+- Make sure you have your vertual environment active and ```pip install quantfreedom```
 
-if you are using the dev env if you want to get the latest updates from my repo to keep your forked repo up to date then in the source control section of vs code which is usually under the magnified glass the weird looking 3 circle thing ... if you installed git lens you should see remotes and branches
+### More detailed version of installing with vscode
+Download vscode https://code.visualstudio.com/download and then go to the extensions tab and search for and install python, jupyter and gitlens. The extensions tab is on the left side menu with an icon that is 4 squares with the upper right square being detached slightly.
 
-click on remotes and you should see upstream ... what you need to do is make sure you right click on upstream and do fetch all ... if you see there are updates then which ever branch you are on locally which you can tell in the lower left corner of the vscode window it should say dev or main or some branch name then you right click on the same name for upstream and select merge branch into current branch ... this will get all the changes from my repo and put them on your local hard drive ... then you need to sync those changes to your forked branch by just clicking sync changes
+Once you have vscode installed launch it and then press ctrl shift p and then type ```terminal select default profile``` .. then make sure you select cmd prompt as the default
 
-this is why i highly highly highly suggest you work from your own folder and don't edit any original code because if you work on the same file as me and there are updates from both of us then there will be merge problems
+Now you want to go to a location on your computer and create a folder called coding because this is where you will store your virtual environment and possibly the cloned repo
 
-i would suggest making your own tests folder and also your own folder inside quantfreedom folder ... if you make your own folder in quantfreedom then make sure you add it to the _init_.py file inside the quant freedom or it wont work ... then you have to add init.py files to all the folders you make inside of your folder ... you want to do this to avoid merging problems
+### Developers
+If you want to help develop the backtester then go to the github link and star and fork the project https://github.com/QuantFreedom1022/QuantFreedom ... if not skip to the next step
 
-This should be it ... i highly suggest watching the video about installation as i know i am probably missed some things ... but if i do please let me know so i cam make these instructions better ... also don't forget to install talib
+Once you have forked it then grab the code of your forked project from the code button and copy the link.
 
+Once you have the link copied then go back to vs code and press ctrl shift p and type git clone and then past the link of the code or if you are signed into your github you can select the new fork from the drop down list.
+
+I would then suggest cloning to the coding folder that you made
+
+### Command Prompt
+Before we create the virtual env you have to make sure you are using the cmd prompt
+- Go to terminal in the menu and select new terminal
+- Once the terminal pops up make sure you are in the cmd prompt.
+- If you aren't and have changed your default to the cmd prompt then close out your vs code and open it again and it should work this time.
+- It is super important that we are in the cmd prompt or this installation wont work. So if you have problems let me know
+
+If you are in the cmd prompt then make sure the folder location for the cmd prompt is the coding folder you should have created ... if it isn't use cd and type in the location of the coding folder like cd ```"C:\users\my stuff\coding"``` ... make sure you use quotes because if you have spaces in some of your folder names you have to have quotes.
+
+### Creating the virtual Env
+Now that you are in the right folder we want to type ```python -m venv qfFree```. This will create a virtual env named qfFree
+
+Next we want to type ```qfFree\Scripts\activate``` to activate the virtual env ... this will make sure anything we install is in the virtual env and not on our global python which is super extra important.
+
+Now we need to create a jupyter notebook kernel by typing ```pip install notebook```. This will install juypter notebook
+
+After that is done then type ```ipython kernel install --user --name=qfFree```
+
+#### Development Environemtnt
+If you want to install the dev env then you have to type pip install -e then the location of your cloned repo like ```"C:\user\mystuff\coding\QuantFreedom"```. This will then install the backtester locally so you can work on it.
+
+#### Regular Users
+If you are just installing to use the backtester then type ```pip install quantfreedom```
+
+### Selecting Interpreter
+Once we have our venv created and everything is pip installed, then we want to do control shift p inside vs code and type ```python: select Interpreter``` and selecting the qfFree venv we just created. If you don't see it then go to enter interpreter path and find the place you created the venv then dig into qfFree then scripts then select python.exe
+
+Next we come back to vscode and do control shift p again and type ```juypter: slect interpreter to start jupyter server``` and then select the venv we just created that way it selects that venv every time we use jupyter notebooks.
+
+### Auto Save
+Also make sure you have auto save on by going to ```file - preferences - setting``` then type ```auto save``` and then select ```after delay```
+
+For people working in dev env this is for making sure you see the auto updates in the source control for pushing new data and for people who are just working you always want your data saved ... unless you don't you can choose another auto save or turn it off
+
+### Regular Users
+Ok so if you are just a regular user you should be done now ... again any problems or questions ask them in the discord.
+
+
+## Developers
+Ok so you have decided you want to contribute and make some nice functions ... let's make it happen! First you have to make sure you have done all the things mentioned previouly about installing the dev stuff. If you have done that then lets gets started with developing
+
+In the lower left corner you should see something that says main or dev or stable, but whatever it says click it and make sure you are on the stable branch. 
+
+### Create your own working folder
+Once you open the quantfreedom folder then I highly highly highly suggest you work from your own folder and don't edit any original code. If you work on the same file as me and there are updates from both of us then there will be merge problems.
+
+Inside the folder i suggest you make a folder for you and also a test folder where you will store all of the tests you are going to be doing.
+
+### Getting updates
+To get updates to your fork
+- Make sure you are in the stable version branch
+- Go to source control 
+- Go the remotes section
+- Open the upstream section
+- Right click on the stable branch and select merge branch into current branch
+- select the first option to merge the upstream branch stable into the local branch stable
+- then make sure you sync your changes which basically means you take your local branch and put all the changes into your github fork
+
+##
 Installation Problems
 
 !!! warning "Installation Problems"
@@ -88,10 +125,14 @@ To install ta lib you need to do the following
 - Download the one that has your python version. You can check your python version ( i run python 3.10.10 on a 64bit windows machine so i am going to choose cp310 ) ... if you don't know your python version in the terminal type python --version.
 ![talib](../assets/talib.png)
 - Once you downloaded the file you need to change your folder path in the terminal by doing cd (download location of folder)
-- Once there type in pip install ( full file name of the talib wheel you downloaded)
+- Then pip install ```entire file name of the tables you downloaded``` 
+- example ```pip install TA_Lib‑0.4.24‑cp310‑cp310‑win_amd64.whl```
 
-## isntalling pytables
+## Installing pytables
 to install pytables you have to do the same thing as talib
 
-go to this website and download the version of python that you have https://www.lfd.uci.edu/~gohlke/pythonlibs/#pytables
-for me i have version 3.10.10 right now so i download tables‑3.7.0‑cp310‑cp310‑win_amd64.whl then put it in your folder and change your directiroy in the terminal to the directory you put it in then do pip install tables‑3.7.0‑cp310‑cp310‑win_amd64.whl
+- go to this website and download the version of python that you have https://www.lfd.uci.edu/~gohlke/pythonlibs/#pytables
+- I have version 3.10.10 right now so I download tables‑3.7.0‑cp310‑cp310‑win_amd64.whl
+- Put the file in a folder ( preferably the working directory of the folder that your terminal is working from ) and  if needed change your terminal directiroy to the directory you put the file in 
+- Then pip install ```entire file name of the tables you downloaded``` 
+- example ```pip install tables‑3.7.0‑cp310‑cp310‑win_amd64.whl```

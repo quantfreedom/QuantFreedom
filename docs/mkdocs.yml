@@ -98,9 +98,9 @@ plugins:
       enable_inventory: true
       handlers:
         python:
-          paths: [../quantfreedom]
+          paths: [..]
           options:
-            show_source: true
+            show_source: false
             line_length: 1
             separate_signature: true
             docstring_section_style: list
@@ -108,10 +108,9 @@ plugins:
 
 nav:
   - Getting Started:
-      - index.md
-      - Installation: getting-started/install.md
-      - Release Notes: getting-started/releasenotes.md
-  - API: api/*
+    - index.md
+    - Install: getting-started/install.md
+    - Release Notes: getting-started/releasenotes.md
   - Tutorials:
       - tutorials/index.md
       - Numpy:
@@ -123,3 +122,5 @@ nav:
       - Pandas Functions:
           - tutorials/pandas_functions/multiindex.md
           - tutorials/pandas_functions/indexing.md
+  - API: api/*
+  - Installation: getting-started/install.md
