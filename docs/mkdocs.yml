@@ -90,6 +90,8 @@ plugins:
   - open-in-new-tab
   - autorefs
   - tags
+  - literate-nav:
+      nav_file: SUMMARY.md
   - minify:
       minify_html: true
   - mkdocstrings:
@@ -102,14 +104,14 @@ plugins:
             line_length: 1
             separate_signature: true
             docstring_section_style: list
+            docstring_style: numpy
 
 nav:
   - Getting Started:
       - index.md
       - Installation: getting-started/install.md
       - Release Notes: getting-started/releasenotes.md
-  - API:
-      - api/base/base.md
+  - API: api/*
   - Tutorials:
       - tutorials/index.md
       - Numpy:

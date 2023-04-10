@@ -4,6 +4,7 @@
 .mypy_cache
 .pytest_cache
 docs/site
+api/
 dist
 quantfreedom.egg-info
 numba_cache

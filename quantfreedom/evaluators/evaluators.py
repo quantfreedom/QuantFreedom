@@ -16,6 +16,44 @@ def combine_evals(
     first_ind_data: pdFrame = None,
     second_ind_data: pdFrame = None,
 ) -> pdFrame:
+    """
+    _summary_
+
+    Parameters
+    ----------
+    first_eval_data : pdFrame
+        _description_
+    second_eval_data : pdFrame
+        _description_
+    plot_results : bool, optional
+        _description_, by default False
+    first_eval_data_needs_prices : bool, optional
+        _description_, by default False
+    second_eval_data_needs_prices : bool, optional
+        _description_, by default False
+    prices : pdFrame, optional
+        _description_, by default None
+    first_ind_data : pdFrame, optional
+        _description_, by default None
+    second_ind_data : pdFrame, optional
+        _description_, by default None
+
+    Returns
+    -------
+    pdFrame
+        _description_
+
+    Raises
+    ------
+    ValueError
+        _description_
+    ValueError
+        _description_
+    ValueError
+        _description_
+    ValueError
+        _description_
+    """
 
     if plot_results and (first_ind_data is None or second_ind_data is None):
         raise ValueError(
@@ -538,6 +576,42 @@ def eval_is_below(
     cand_ohlc: str = None,
     plot_results: bool = False,
 ) -> pdFrame:
+    """
+    _summary_
+
+    Parameters
+    ----------
+    want_to_evaluate : pdFrame
+        _description_
+    user_args : Union[list[int, float], int, float, Array1d], optional
+        _description_, by default None
+    indicator_data : pdFrame, optional
+        _description_, by default None
+    prices : pdFrame, optional
+        _description_, by default None
+    cand_ohlc : str, optional
+        _description_, by default None
+    plot_results : bool, optional
+        _description_, by default False
+
+    Returns
+    -------
+    pdFrame
+        _description_
+
+    Raises
+    ------
+    ValueError
+        _description_
+    ValueError
+        _description_
+    ValueError
+        _description_
+    ValueError
+        _description_
+    ValueError
+        _description_
+    """
     if not isinstance(want_to_evaluate, pdFrame):
         raise ValueError("Data must be a dataframe with multindex")
 
