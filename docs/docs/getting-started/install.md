@@ -72,10 +72,16 @@ Now we need to create a jupyter notebook kernel by typing ```pip install noteboo
 After that is done then type ```ipython kernel install --user --name=qfFree```
 
 #### Development Environemtnt
-If you want to install the dev env then you have to type pip install -e then the location of your cloned repo like ```"C:\user\mystuff\coding\QuantFreedom"```. This will then install the backtester locally so you can work on it.
+If you want to install the dev env then you have to type ```pip install -e``` then the location of your cloned repo like ```"C:\user\mystuff\coding\QuantFreedom"```. This will then install the backtester locally so you can work on it. So it would look like this as an example.
+```
+pip install -e "C:\user\mystuff\coding\QuantFreedom"
+```
 
 #### Regular Users
-If you are just installing to use the backtester then type ```pip install quantfreedom```
+If you are just installing to use the backtester then type this into the cmd line.
+```
+pip install quantfreedom
+```
 
 ### Selecting Interpreter
 Once we have our venv created and everything is pip installed, then we want to do control shift p inside vs code and type ```python: select Interpreter``` and selecting the qfFree venv we just created. If you don't see it then go to enter interpreter path and find the place you created the venv then dig into qfFree then scripts then select python.exe

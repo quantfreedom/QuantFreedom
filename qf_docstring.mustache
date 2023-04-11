@@ -1,39 +1,27 @@
-{{! Quant Freedom Docstring Template }}
+{{! QF Docstring Template }}
 Function Name
 -------------
-    {{name}}
+{{name}}
 
-Quick Summary
+Summary
 -------------
-    {{summaryPlaceholder}}
+{{summaryPlaceholder}}
 
-Explainer Video
----------------
-    Coming_Soon
+{{#parametersExist}}
 
-{{#argsExist}}
-Required Parameters
--------------------
-Variable Name: Variable Type
-
+Parameters
+----------
 {{#args}}
-{{var}}: {{typePlaceholder}}<br>
+{{var}} : {{typePlaceholder}}
     {{descriptionPlaceholder}}
 {{/args}}
-{{/argsExist}}
-
-{{#kwargsExist}} 
-Optional Parameters
--------------------
-Variable Name: Variable Type = Default Value 
-
 {{#kwargs}}
-{{var}}: {{typePlaceholder}} = {{&default}}
+{{var}} : {{typePlaceholder}}, {{&default}}
     {{descriptionPlaceholder}}
 {{/kwargs}}
-{{/kwargsExist}}
-
+{{/parametersExist}}
 {{#returnsExist}}
+
 Returns
 -------
 {{#returns}}

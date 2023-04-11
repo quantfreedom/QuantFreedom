@@ -20,31 +20,28 @@ class CCXTData:
         bars_per_loop: int = 200,
     ):
         """
-        Function name:
-            data_download 
-        
-        Quick Summary:
-            Download Data using CCXT
+        Function Name
+        -------------
+        data_download
+
+        Quick Summary
+        -------------
+        Download Data using CCXT. Go here to find a list of exchanges http://docs.ccxt.com/#/README?id=exchanges
 
         Explainer Video
         ---------------
-            Coming_Soon
-            
+        https://youtu.be/yDNPhgO-450
+
         Parameters
         ----------
         cls: self
             passing all the information from the created class
-            
         exchange : str
             'bybit' or 'binance' or whatever exchange works with ccxt
-            http://docs.ccxt.com/#/README?id=exchanges
-
         start : str
             needs to be in this format '2022-01-01T00:00:00Z'
-
         end : str
             needs to be in this format '2022-01-01T00:00:00Z'
-
         symbol : list or str
             This will depend on the exchange for bybit it would be 'BTCUSDT' you will have to look this up on ccxt if you need to know.
             You can send this as a list of symbols or just one symbol.
@@ -55,19 +52,15 @@ class CCXTData:
             exh.load_markets()
             exh.symbols
             ```
-
         timeframe : str
             '1m', '5m', '1h' '4h' '1d' '1w'
-
         drop_volume: bool = True
             Set this to False if you want to keep volume data.
-
         remove_rate_limit: bool = False
             This is the default rate limit the exchange asks for. If you remove it then its possible that if you are trying to get tons and tons of data from the exchange they could ban you or time you out.
-
         bars_per_loop: int = 200
             How many bars you want to grab at a time. Some exchanges let you grab more info per loop and some don't. I don't think grabbing more would make anything faster but you can try if the exchange allows for more. You would have to do your research and figure out how man bars but i know bybit says you can grab a max of 200 and apparently binance lets you grab up to 1000.
-        
+
         Returns
         -------
             Pandas dataframe of prices
@@ -190,6 +183,6 @@ class CCXTData:
                 pbar.update(1)
         final_df.sort_index(ascending=True, inplace=True)
         final_df.sort_index(axis=1, level=0, sort_remaining=False)
-        final_df.dropna(how='all', inplace=True)
+        final_df.dropna(how="all", inplace=True)
         final_df.drop(final_df.tail(1).index, inplace=True)
         return final_df

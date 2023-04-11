@@ -95,7 +95,9 @@ plugins:
   - minify:
       minify_html: true
   - mkdocstrings:
+      enabled: !ENV [ENABLE_MKDOCSTRINGS, true]
       enable_inventory: true
+      default_handler: python
       handlers:
         python:
           paths: [..]
@@ -103,8 +105,8 @@ plugins:
             show_source: false
             line_length: 1
             separate_signature: true
-            docstring_section_style: list
             docstring_style: numpy
+            docstring_section_style: list
 
 nav:
   - Getting Started:
