@@ -1,11 +1,11 @@
 # MultiIndex
-We will be learning more about multiIndexing using pandas ... this is very very very very important to understand as a quant. Make sure you check out the offical pandas website and read through the entire documentation on this because it is really important you know how it works.
+We will be learning more about multiIndexing using pandas ... this is very very very very important to understand as a quant. Make sure you check out the official pandas website and read through the entire documentation on this because it is really important you know how it works.
 
 https://pandas.pydata.org/docs/user_guide/advanced.html<br>
 https://pandas.pydata.org/docs/reference/api/pandas.MultiIndex.html
 
 ## pandas.MultiIndex.from_tuples
-### Offical Doc Link
+### Official Doc Link
 https://pandas.pydata.org/docs/reference/api/pandas.MultiIndex.from_tuples.html<br>
 
 ### My Youtube Tutorial Video

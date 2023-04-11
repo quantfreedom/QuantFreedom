@@ -2,7 +2,7 @@
 Here we will be going over different functions that test if something is true or false
 
 ## np.where
-### Offical Doc Link
+### Official Doc Link
 https://numpy.org/doc/stable/reference/generated/numpy.where.html
 ### My Youtube Tutorial Video
 https://youtu.be/-oMjyoQhvCY

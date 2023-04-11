@@ -8,6 +8,11 @@ api/
 dist
 quantfreedom.egg-info
 numba_cache
+.todo
+thinking.txt
+.mustache
+tests/
+math/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

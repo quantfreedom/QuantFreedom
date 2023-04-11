@@ -5,7 +5,7 @@ I will be going over all things broadcasting in this section
 ### My Youtube Tutorial Video
 https://youtu.be/2rZnShOh9as
 
-### Offical numpy doc link
+### Official numpy doc link
 https://numpy.org/doc/stable/reference/generated/numpy.broadcast_to.html
 
 ### Written Examples

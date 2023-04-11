@@ -44,7 +44,7 @@ if tester.lower() in ('open', 'high', 'low', 'close'):
 if tester.lower() not in ('open', 'high', 'low', 'close'):
 
 capitalize upper lowercase str or list
-.upper .lower .capitialize
+.upper .lower .capitalize
 
 list comprehension for loop 
 param_keys = [ind_name + '_' + x for x in param_keys] 

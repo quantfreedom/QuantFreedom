@@ -3,7 +3,7 @@ Time to talk about the basics of just creating a pandas dataframe
 
 ## pandas.DataFrame
 
-### Offical Doc Link
+### Official Doc Link
 https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html
 
 ### My Youtube Tutorial Video

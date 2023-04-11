@@ -5,7 +5,7 @@ https://pandas.pydata.org/docs/user_guide/advanced.html<br>
 https://pandas.pydata.org/docs/reference/api/pandas.MultiIndex.html
 
 ## pandas.DataFrame.xs
-### Offical Doc Link
+### Official Doc Link
 https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.xs.html
 
 ### My Youtube Tutorial Video

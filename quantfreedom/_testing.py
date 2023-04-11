@@ -24,7 +24,7 @@ Notes
     but the body is indented to help it stand out from surrounding text.
 
 If a section is indented, then a section break is created by
-resuming unindented text.
+resuming unindent text.
 
 Attributes
 ----------
