@@ -299,7 +299,7 @@ def combine_evals(
     )
 
 
-def eval_is_above(
+def is_above(
     want_to_evaluate: pdFrame,
     user_args: Union[list[int, float], int, float, Array1d] = None,
     indicator_data: pdFrame = None,
@@ -568,7 +568,7 @@ def eval_is_above(
     )
 
 
-def eval_is_below(
+def is_below(
     want_to_evaluate: pdFrame,
     user_args: Union[list[int, float], int, float, Array1d] = None,
     indicator_data: pdFrame = None,

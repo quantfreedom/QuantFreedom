@@ -10,13 +10,39 @@ from quantfreedom._typing import pdFrame, Array1d
 
 def from_talib(
     func_name: str,
-    cart_product: bool,
-    combos: bool,
     prices: pdFrame = None,
     indicator_data: pdFrame = None,
+    cart_product: bool = False,
+    combos: bool = False,
     **kwargs,
 ) -> pdFrame:
-
+    """
+    Function Name
+    -------------
+    from_talib
+    
+    Summary
+    -------
+    _summary_
+    
+    Parameters
+    ----------
+    func_name : str
+        _description_
+    prices : pdFrame, None
+        _description_
+    indicator_data : pdFrame, None
+        _description_
+    cart_product : bool, False
+        _description_
+    combos : bool, False
+        _description_
+    
+    Returns
+    -------
+    pdFrame
+        _description_
+    """
     if all(x is None for x in (prices, indicator_data)):
         raise ValueError(
             f"You need to send either prices = pdFrame or indicator_data = pdFrame"
