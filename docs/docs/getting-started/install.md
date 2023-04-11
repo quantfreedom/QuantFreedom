@@ -2,8 +2,13 @@
 !!! note 
     My goal is to have the best documentation possible and that can only happen if you ask questions or give feedback. So if you have any questions or problems along the way make sure you message me and let me know what you are having a problem with 
 
-!!! warning "Ta-lib and pytables"
-    You have to have talib installed and pytables installed. So make sure you go to the bottom of this installation page and install them into your virtual environment
+!!! warning "Ta-lib"
+    You have to have talib installed. So make sure you go to the bottom of this installation page and install them into your virtual environment
+
+## Youtube installation video
+I highly highly suggest watching the video on how to install this unless you already know what you are doing. If you are going to be developing for the project i suggest you watch it as well. This goes into such great detail and walks you through the whole process. But the video is not a substitute for not reading this documentation if you get stuck because there could be some small updates that i put here instead of doing the whole video over again every time there is a small update.
+
+https://youtu.be/FyRkj4FJShY
 
 ## If you know what your doing
 Make sure you create a virtual environment to install all of this into so you don't crowd your main python file.
@@ -109,6 +114,7 @@ Inside the folder i suggest you make a folder for you and also a test folder whe
 
 ### Getting updates
 To get updates to your fork
+
 - Make sure you are in the stable version branch
 - Go to source control 
 - Go the remotes section
@@ -116,13 +122,6 @@ To get updates to your fork
 - Right click on the stable branch and select merge branch into current branch
 - select the first option to merge the upstream branch stable into the local branch stable
 - then make sure you sync your changes which basically means you take your local branch and put all the changes into your github fork
-
-##
-Installation Problems
-
-!!! warning "Installation Problems"
-    If you have any trouble or run into installation errors then what i have found is if i shutdown vscode then open it back up and then reactivate my virtual environment then pip install again it is able to make the full install
-
 
 ## Install TA-Lib
 To install ta lib you need to do the following
@@ -134,11 +133,13 @@ To install ta lib you need to do the following
 - Then pip install ```entire file name of the tables you downloaded``` 
 - example ```pip install TA_Lib‑0.4.24‑cp310‑cp310‑win_amd64.whl```
 
-## Installing pytables
-to install pytables you have to do the same thing as talib
+## Accidental non venv install
+If you have done what i have done multiple times and installed something outside of your venv then you can just run this and it will uninstall everything ... then make sure you are in your venv and run the original pip install quantfreedom again or the dev way again
+```
+pip freeze > requirements.txt && pip uninstall -r requirements.txt -y
+```
+##
+Installation Problems
 
-- go to this website and download the version of python that you have https://www.lfd.uci.edu/~gohlke/pythonlibs/#pytables
-- I have version 3.10.10 right now so I download tables‑3.7.0‑cp310‑cp310‑win_amd64.whl
-- Put the file in a folder ( preferably the working directory of the folder that your terminal is working from ) and  if needed change your terminal directory to the directory you put the file in 
-- Then pip install ```entire file name of the tables you downloaded``` 
-- example ```pip install tables‑3.7.0‑cp310‑cp310‑win_amd64.whl```
+!!! warning "Installation Problems"
+    If you have any trouble or run into installation errors then what i have found is if i shutdown vscode then open it back up and then reactivate my virtual environment then pip install again it is able to make the full install
