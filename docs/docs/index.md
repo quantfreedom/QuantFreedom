@@ -6,7 +6,7 @@ title: Getting started
 
 ## What is QuantFreedom?
 
-So I chose to make this back tester because I saw that all of the back casters that are out there they're either behind a paywall or they have people that aren't traders that are trying to build a platform for Traders. I tried using them and the documentation was absolutely trash or the people didn't want to talk to you or add certain features and so I realize that I'm just going to have to make my own which in the long run is actually good for me because it forces me to learn how to become a well-rounded complete from the ground up quatrader.
+So I chose to make this back tester because I saw that all of the back casters that are out there they're either behind a paywall or they have people that aren't traders that are trying to build a platform for Traders. I tried using them and the documentation was absolutely trash or the people didn't want to talk to you or add certain features and so I realize that I'm just going to have to make my own which in the long run is actually good for me because it forces me to learn how to become a well-rounded complete from the ground up quant trader.
 
 I also needed this thing to be ultra fast and the one place that I was using before was so slow that it was 100 times slower than the slowest back tester that's out there and the one that was the fastest the person just was not a traitor and had no interest in actually making a platform for Traders and so this is my combination of both of those and what I believe both of those platforms should have been
 

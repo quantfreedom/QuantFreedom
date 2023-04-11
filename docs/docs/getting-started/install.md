@@ -10,8 +10,8 @@ Make sure you create a virtual environment to install all of this into so you do
 ```
 pip install quantfreedom
 ```
-## If you need some guidence
-This next part will be for those who need some more guidence on doing the install
+## If you need some guidance
+This next part will be for those who need some more guidance on doing the install
 
 ## Installing Python
 To avoid all types of issues I would suggestion uninstalling anaconda and all of your python installations, unless you know for sure that you need those previous versions for other projects and everything ... or if you are familiar with python already and you know what you are doing you can keep them ... but there have been many pathing issues with having different versions and anaconda installed.
@@ -35,7 +35,7 @@ I use vscode and love it so I highly suggest you use it as well even if you are 
 
 ### Quick summary
 - Go to the terminal menu and start a new terminal in the cmd window
-- Make sure you have your vertual environment active and ```pip install quantfreedom```
+- Make sure you have your virtual environment active and ```pip install quantfreedom```
 
 ### More detailed version of installing with vscode
 Download vscode https://code.visualstudio.com/download and then go to the extensions tab and search for and install python, jupyter and gitlens. The extensions tab is on the left side menu with an icon that is 4 squares with the upper right square being detached slightly.
@@ -80,7 +80,7 @@ If you are just installing to use the backtester then type ```pip install quantf
 ### Selecting Interpreter
 Once we have our venv created and everything is pip installed, then we want to do control shift p inside vs code and type ```python: select Interpreter``` and selecting the qfFree venv we just created. If you don't see it then go to enter interpreter path and find the place you created the venv then dig into qfFree then scripts then select python.exe
 
-Next we come back to vscode and do control shift p again and type ```juypter: slect interpreter to start jupyter server``` and then select the venv we just created that way it selects that venv every time we use jupyter notebooks.
+Next we come back to vscode and do control shift p again and type ```juypter: select interpreter to start jupyter server``` and then select the venv we just created that way it selects that venv every time we use jupyter notebooks.
 
 ### Auto Save
 Also make sure you have auto save on by going to ```file - preferences - setting``` then type ```auto save``` and then select ```after delay```
@@ -92,7 +92,7 @@ Ok so if you are just a regular user you should be done now ... again any proble
 
 
 ## Developers
-Ok so you have decided you want to contribute and make some nice functions ... let's make it happen! First you have to make sure you have done all the things mentioned previouly about installing the dev stuff. If you have done that then lets gets started with developing
+Ok so you have decided you want to contribute and make some nice functions ... let's make it happen! First you have to make sure you have done all the things mentioned previously about installing the dev stuff. If you have done that then lets gets started with developing
 
 In the lower left corner you should see something that says main or dev or stable, but whatever it says click it and make sure you are on the stable branch. 
 
@@ -133,6 +133,6 @@ to install pytables you have to do the same thing as talib
 
 - go to this website and download the version of python that you have https://www.lfd.uci.edu/~gohlke/pythonlibs/#pytables
 - I have version 3.10.10 right now so I download tables‑3.7.0‑cp310‑cp310‑win_amd64.whl
-- Put the file in a folder ( preferably the working directory of the folder that your terminal is working from ) and  if needed change your terminal directiroy to the directory you put the file in 
+- Put the file in a folder ( preferably the working directory of the folder that your terminal is working from ) and  if needed change your terminal directory to the directory you put the file in 
 - Then pip install ```entire file name of the tables you downloaded``` 
 - example ```pip install tables‑3.7.0‑cp310‑cp310‑win_amd64.whl```
