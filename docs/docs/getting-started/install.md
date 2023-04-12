@@ -52,6 +52,9 @@ Now you want to go to a location on your computer and create a folder called cod
 ### Developers
 If you want to help develop the backtester then go to the github link and star and fork the project https://github.com/QuantFreedom1022/QuantFreedom ... if not skip to the next step
 
+!!! warning
+    Make sure you uncheck copy only main branch ... you want to be able to copy all branches
+
 Once you have forked it then grab the code of your forked project from the code button and copy the link.
 
 Once you have the link copied then go back to vs code and press ctrl shift p and type git clone and then past the link of the code or if you are signed into your github you can select the new fork from the drop down list.
