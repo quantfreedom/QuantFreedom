@@ -59,3 +59,7 @@ Ask Other Users ?:
 Would Be Nice:
     ☐ send pct change of position in order result when decreasing or increaseing position size
 
+merge dev into main
+git merge main
+git checkout main
+git merge dev

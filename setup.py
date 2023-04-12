@@ -36,7 +36,6 @@ setup(
         "pandas",
         "polars",
         "pyarrow",
-        "pybit",
         "tables",
         'typing_extensions; python_version < "3.8"',
     ],
