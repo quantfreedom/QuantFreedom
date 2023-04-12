@@ -44,21 +44,20 @@ def strat_dashboard(
     """
     Function Name
     -------------
-        strat_dashboard
+    strat_dashboard
 
     Quick Summary
     -------------
-        Creates a dashboard with your trades, indicators, cumliative PnL and the order records of all the trades.
+    Creates a dashboard with your trades, indicators, cumulative PnL and the order records of all the trades.
 
     Explainer Video
     ---------------
-        Coming_Soon
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
 
-    Required Parameters
-    -------------------
-    Variable Name: Variable Type
-
-    indicator_dict: dict
+    ## Variables needed
+    Parameters
+    ----------
+    indicator_dict : dict
         You need to create a dictionary of all your indicators.
 
         If you have any indicators that need to go on the candle stick chart then make a key named candle_chart and inside of that you put your indicator values with keys called value with a number after it like in the example, then you provide the entries
@@ -66,27 +65,30 @@ def strat_dashboard(
         If you have indicators that need their own chart then create a key called indicator with a number after it and then provide the indicator values and the entries in new keys.
 
         Example:
-            indicator_dict = {
-                    "candle_chart": {
-                        "values1": ema_300_ind[[('BTCUSDT', 300)]],
-                        "values2": ema_600_ind[[('BTCUSDT', 600)]],
-                        "entries": entries[[("BTCUSDT", 30, 50, 300, 600)]],
-                        },
-                    "indicator1": {
-                        "values1": rsi_ind[[('BTCUSDT', 30)]],
-                        "entries": entries[[("BTCUSDT", 30, 50, 300, 600)]],
-                        },
-                    "indicator2": {
-                        "values1": atr_ind[[('BTCUSDT', 50)]],
-                        "entries": entries[[("BTCUSDT", 30, 50, 300, 600)]],
-                        },
-                    }
-    prices: pdFrame
+        ```python
+        indicator_dict = {
+            "candle_chart": {
+                "values1": ema_300_ind[[('BTCUSDT', 300)]],
+                "values2": ema_600_ind[[('BTCUSDT', 600)]],
+                "entries": entries[[("BTCUSDT", 30, 50, 300, 600)]],
+                },
+            "indicator1": {
+                "values1": rsi_ind[[('BTCUSDT', 30)]],
+                "entries": entries[[("BTCUSDT", 30, 50, 300, 600)]],
+                },
+            "indicator2": {
+                "values1": atr_ind[[('BTCUSDT', 50)]],
+                "entries": entries[[("BTCUSDT", 30, 50, 300, 600)]],
+                },
+            }
+        ```
+    prices : pdFrame
         Your prices info as one symbol like prices['BTCUSDT']
-
-    order_records: RecordArray
+    order_records : RecordArray
         Order Records
 
+
+    ## Function returns
     Returns
     -------
     JupyterDash

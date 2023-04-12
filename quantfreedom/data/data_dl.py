@@ -2,7 +2,7 @@ import ccxt
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
-from quantfreedom._typing import Union
+from quantfreedom._typing import Union, pdFrame
 from re import sub
 
 def data_download_from_ccxt(
@@ -14,11 +14,11 @@ def data_download_from_ccxt(
     drop_volume: bool = True,
     remove_rate_limit: bool = False,
     bars_per_loop: int = 200,
-):
+)-> pdFrame:
     """
     Function Name
     -------------
-    data_download
+    data_download_from_ccxt
 
     Quick Summary
     -------------
@@ -28,10 +28,9 @@ def data_download_from_ccxt(
     ---------------
     https://youtu.be/yDNPhgO-450
 
+    ## Variables needed
     Parameters
     ----------
-    cls: self
-        passing all the information from the created class
     exchange : str
         'bybit' or 'binance' or whatever exchange works with ccxt
     start : str
@@ -50,16 +49,18 @@ def data_download_from_ccxt(
         ```
     timeframe : str
         '1m', '5m', '1h' '4h' '1d' '1w'
-    drop_volume: bool = True
+    drop_volume : bool, True
         Set this to False if you want to keep volume data.
-    remove_rate_limit: bool = False
+    remove_rate_limit : bool, False
         This is the default rate limit the exchange asks for. If you remove it then its possible that if you are trying to get tons and tons of data from the exchange they could ban you or time you out.
-    bars_per_loop: int = 200
+    bars_per_loop : int, 200
         How many bars you want to grab at a time. Some exchanges let you grab more info per loop and some don't. I don't think grabbing more would make anything faster but you can try if the exchange allows for more. You would have to do your research and figure out how man bars but i know bybit says you can grab a max of 200 and apparently binance lets you grab up to 1000.
 
+    ## Function returns
     Returns
     -------
-        Pandas dataframe of prices
+    Pandas DataFrame
+        Pandas DataFrame of open high low close data for each symbol
     """
     if remove_rate_limit:
         exchange = getattr(ccxt, exchange)()

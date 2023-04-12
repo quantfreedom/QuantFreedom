@@ -17,61 +17,65 @@ def combine_evals(
     second_ind_data: pdFrame = None,
 ) -> pdFrame:
     """
-    _summary_
+    Function Name
+    -------------
+    combine_evals
 
+    Summary
+    -------
+    Combine two evaluators to get your entries.
+
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+    ## Variables needed
     Parameters
     ----------
     first_eval_data : pdFrame
-        _description_
+        Data from one of the evaluator results
     second_eval_data : pdFrame
-        _description_
-    plot_results : bool, optional
-        _description_, by default False
-    first_eval_data_needs_prices : bool, optional
-        _description_, by default False
-    second_eval_data_needs_prices : bool, optional
-        _description_, by default False
-    prices : pdFrame, optional
-        _description_, by default None
-    first_ind_data : pdFrame, optional
-        _description_, by default None
-    second_ind_data : pdFrame, optional
-        _description_, by default None
+        Data from the second evaluator results
+    plot_results : bool, False
+        if you want to plot the results of the last column or not just to make sure it is working.
+    first_eval_data_needs_prices : bool, False
+        For plotting only: If you need price data for plotting
+    second_eval_data_needs_prices : bool, False
+        For plotting only: If you need price data for plotting
+    prices : pdFrame, None
+        Price data
+    first_ind_data : pdFrame, None
+        For plotting only: You need to send first indicators data for plotting
+    second_ind_data : pdFrame, None
+        For plotting only: You need to send second indicators data for plotting
 
+    ## What is being returned
     Returns
     -------
-    pdFrame
-        _description_
-
-    Raises
-    ------
-    ValueError
-        _description_
-    ValueError
-        _description_
-    ValueError
-        _description_
-    ValueError
-        _description_
+    Pandas DataFrame
+        Returns a pandas dataframe of true false entries
     """
 
     if plot_results and (first_ind_data is None or second_ind_data is None):
         raise ValueError(
-            "Make sure you are sending first and second indicator data if you want to plot")
+            "Make sure you are sending first and second indicator data if you want to plot"
+        )
     elif plot_results:
         if first_eval_data_needs_prices and prices is None:
             raise ValueError("You need to provide prices to plot the candles")
         elif not first_eval_data_needs_prices and prices is not None:
             raise ValueError(
-                "Make sure you set first_eval_data_needs_prices to true if you want to send price data")
+                "Make sure you set first_eval_data_needs_prices to true if you want to send price data"
+            )
     elif not plot_results and (
-        first_eval_data_needs_prices or
-        prices is not None or
-        first_ind_data is not None or
-        second_ind_data is not None
+        first_eval_data_needs_prices
+        or prices is not None
+        or first_ind_data is not None
+        or second_ind_data is not None
     ):
         raise ValueError(
-            "Make sure you set plot_results to true if you want to send any plotting data.")
+            "Make sure you set plot_results to true if you want to send any plotting data."
+        )
 
     if len(first_eval_data.columns.levels) < len(second_eval_data.columns.levels):
         temp = len(first_eval_data.columns.levels)
@@ -81,16 +85,27 @@ def combine_evals(
     list_for_product = []
     pd_col_names = []
     for x in range(temp):
-        if list(first_eval_data.columns.levels[x]) == list(second_eval_data.columns.levels[x]):
+        if list(first_eval_data.columns.levels[x]) == list(
+            second_eval_data.columns.levels[x]
+        ):
             list_for_product.append(list(first_eval_data.columns.levels[x]))
             pd_col_names.append(first_eval_data.columns.names[x])
     levels = list(product(*list_for_product))
 
-    pd_col_names = pd_col_names + list(first_eval_data.droplevel(pd_col_names, axis=1).columns.names) + \
-        list(second_eval_data.droplevel(pd_col_names, axis=1).columns.names)
+    pd_col_names = (
+        pd_col_names
+        + list(first_eval_data.droplevel(pd_col_names, axis=1).columns.names)
+        + list(second_eval_data.droplevel(pd_col_names, axis=1).columns.names)
+    )
 
     combine_array = np.empty(
-        (first_eval_data.shape[0], first_eval_data[levels[0]].shape[1] * second_eval_data[levels[0]].shape[1] * len(levels)), dtype=np.bool_
+        (
+            first_eval_data.shape[0],
+            first_eval_data[levels[0]].shape[1]
+            * second_eval_data[levels[0]].shape[1]
+            * len(levels),
+        ),
+        dtype=np.bool_,
     )
 
     try:
@@ -115,16 +130,15 @@ def combine_evals(
         temp_big_df = first_eval_data[level]
         temp_small_df = second_eval_data[level]
         for big_count, big_values in enumerate(temp_big_df.values.T):
-
             for small_count, small_values in enumerate(temp_small_df.values.T):
-
                 combine_array[:, comb_counter] = np.logical_and(
                     big_values == True, small_values == True
                 )
 
                 pd_multind_tuples = pd_multind_tuples + (
-                    level + temp_big_def_columns[big_count] +
-                    temp_smaller_def_columns[small_count],
+                    level
+                    + temp_big_def_columns[big_count]
+                    + temp_smaller_def_columns[small_count],
                 )
 
                 comb_counter += 1
@@ -159,7 +173,7 @@ def combine_evals(
                         x=plot_index,
                         y=temp_first_ind_data,
                         mode="lines",
-                        line=dict(width=3, color='#60BFE1'),
+                        line=dict(width=3, color="#60BFE1"),
                         name="First Ind",
                     ),
                     go.Scatter(
@@ -170,7 +184,7 @@ def combine_evals(
                             np.nan,
                         ),
                         mode="markers",
-                        marker=dict(size=3, color='yellow'),
+                        marker=dict(size=3, color="yellow"),
                         name="Combo Signals",
                     ),
                 ],
@@ -183,7 +197,7 @@ def combine_evals(
                         x=plot_index,
                         y=temp_second_ind_data,
                         mode="lines",
-                        line=dict(width=2, color='#60BFE1'),
+                        line=dict(width=2, color="#60BFE1"),
                         name="Second Ind",
                     ),
                     go.Scatter(
@@ -194,7 +208,7 @@ def combine_evals(
                             np.nan,
                         ),
                         mode="markers",
-                        marker=dict(size=3, color='yellow'),
+                        marker=dict(size=3, color="yellow"),
                         name="Combo Signals",
                     ),
                 ],
@@ -217,22 +231,20 @@ def combine_evals(
                         close=temp_prices.close,
                         name="Candles",
                     ),
-
                     # First Plot
                     go.Scatter(
                         x=plot_index,
                         y=temp_first_ind_data,
                         mode="lines",
-                        line=dict(width=3, color='#60BFE1'),
+                        line=dict(width=3, color="#60BFE1"),
                         name="First Ind",
                     ),
-
                     # Second Plot
                     go.Scatter(
                         x=plot_index,
                         y=temp_second_ind_data,
                         mode="lines",
-                        line=dict(width=3, color='#84E5AC'),
+                        line=dict(width=3, color="#84E5AC"),
                         name="Second Ind",
                     ),
                     go.Scatter(
@@ -243,7 +255,7 @@ def combine_evals(
                             np.nan,
                         ),
                         mode="markers",
-                        marker=dict(size=3, color='yellow'),
+                        marker=dict(size=3, color="yellow"),
                         name="Combo Signals",
                     ),
                 ],
@@ -260,16 +272,15 @@ def combine_evals(
                         x=plot_index,
                         y=temp_first_ind_data,
                         mode="lines",
-                        line=dict(width=2, color='green'),
+                        line=dict(width=2, color="green"),
                         name="First Ind",
                     ),
-
                     # Second Plot
                     go.Scatter(
                         x=plot_index,
                         y=temp_second_ind_data,
                         mode="lines",
-                        line=dict(width=3, color='red'),
+                        line=dict(width=3, color="red"),
                         name="Second Ind",
                     ),
                     go.Scatter(
@@ -280,7 +291,7 @@ def combine_evals(
                             np.nan,
                         ),
                         mode="markers",
-                        marker=dict(size=3, color='yellow'),
+                        marker=dict(size=3, color="yellow"),
                         name="Combo Signals",
                     ),
                 ],
@@ -307,6 +318,41 @@ def is_above(
     cand_ohlc: str = None,
     plot_results: bool = False,
 ) -> pdFrame:
+    """
+    Function Name
+    -------------
+    is_above
+
+    Summary
+    -------
+    Think of this like I want to evaluate if the rsi is above [60,70,80] (user_args) or i want to evaluate if the ema is above btc (prices) candle closes (cand_ohlc) or i want to evaluate if the ema is above the rsi (indicator_data). So you send what you want to evaluate in (want_to_evaluate) and then the rest.
+
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+    ## Variables needed
+    Parameters
+    ----------
+    want_to_evaluate : pdFrame
+        indicator you want to evaluate.
+    user_args : Union[list[int, float], int, float, Array1d], None
+        User arguments like [60,70,80]
+    indicator_data : pdFrame, None
+        Indicator data like the rsi or atr
+    prices : pdFrame, None
+        price data
+    cand_ohlc : str, None
+        Only send this if you send price data as well: what part of the candle you want to evaluate
+    plot_results : bool, False
+        do you want to plot the results of the last column just to see if it is working properly.
+
+    ## What is being returned
+    Returns
+    -------
+    pdFrame
+        Pandas dataframe of true false values for your entries.
+    """
     if not isinstance(want_to_evaluate, pdFrame):
         raise ValueError("Data must be a dataframe with multindex")
 
@@ -323,7 +369,8 @@ def is_above(
         user_args = np.asarray(user_args)
 
         eval_array = np.empty(
-            (want_to_evaluate.shape[0], want_to_evaluate.shape[1] * user_args.size), dtype=np.bool_
+            (want_to_evaluate.shape[0], want_to_evaluate.shape[1] * user_args.size),
+            dtype=np.bool_,
         )
 
         eval_array_counter = 0
@@ -396,8 +443,7 @@ def is_above(
                 )
 
                 pd_multind_tuples = pd_multind_tuples + (
-                    want_to_evaluate.columns[eval_array_counter] +
-                    (cand_ohlc,),
+                    want_to_evaluate.columns[eval_array_counter] + (cand_ohlc,),
                 )
                 eval_array_counter += 1
 
@@ -420,7 +466,7 @@ def is_above(
                         x=plot_index,
                         y=temp_eval_values,
                         mode="lines",
-                        line=dict(width=4, color='lightblue'),
+                        line=dict(width=4, color="lightblue"),
                         name=want_to_evaluate_name,
                     ),
                     go.Scatter(
@@ -431,7 +477,7 @@ def is_above(
                             np.nan,
                         ),
                         mode="markers",
-                        marker=dict(size=3, color='yellow'),
+                        marker=dict(size=3, color="yellow"),
                         name="Signals",
                     ),
                 ]
@@ -450,8 +496,7 @@ def is_above(
         ).swaplevel(1, -1, axis=1)
 
     elif isinstance(indicator_data, pdFrame):
-        want_to_evaluate_name = want_to_evaluate.columns.names[-1].split("_")[
-            1]
+        want_to_evaluate_name = want_to_evaluate.columns.names[-1].split("_")[1]
         indicator_data_name = indicator_data.columns.names[-1].split("_")[0]
 
         pd_col_names = list(want_to_evaluate.columns.names) + [
@@ -460,7 +505,10 @@ def is_above(
 
         want_to_evaluate_settings_tuple_list = want_to_evaluate.columns.to_list()
 
-        eval_array = np.empty_like(want_to_evaluate,  dtype=np.bool_,)
+        eval_array = np.empty_like(
+            want_to_evaluate,
+            dtype=np.bool_,
+        )
         pd_multind_tuples = ()
 
         indicator_data_levels = list(indicator_data.columns)
@@ -476,9 +524,10 @@ def is_above(
                     True,
                     False,
                 )
-                pd_multind_tuples = pd_multind_tuples + \
-                    (want_to_evaluate_settings_tuple_list[eval_array_counter] + (
-                        indicator_data_name,),)
+                pd_multind_tuples = pd_multind_tuples + (
+                    want_to_evaluate_settings_tuple_list[eval_array_counter]
+                    + (indicator_data_name,),
+                )
                 eval_array_counter += 1
 
         if plot_results:
@@ -577,40 +626,39 @@ def is_below(
     plot_results: bool = False,
 ) -> pdFrame:
     """
-    _summary_
+    Function Name
+    -------------
+    is_below
 
+    Summary
+    -------
+    Think of this like I want to evaluate if the rsi is below [60,70,80] (user_args) or i want to evaluate if the ema is below btc (prices) candle closes (cand_ohlc) or i want to evaluate if the ema is below the rsi (indicator_data). So you send what you want to evaluate in (want_to_evaluate) and then the rest.
+
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+    ## Variables needed
     Parameters
     ----------
     want_to_evaluate : pdFrame
-        _description_
-    user_args : Union[list[int, float], int, float, Array1d], optional
-        _description_, by default None
-    indicator_data : pdFrame, optional
-        _description_, by default None
-    prices : pdFrame, optional
-        _description_, by default None
-    cand_ohlc : str, optional
-        _description_, by default None
-    plot_results : bool, optional
-        _description_, by default False
+        indicator you want to evaluate.
+    user_args : Union[list[int, float], int, float, Array1d], None
+        User arguments like [60,70,80]
+    indicator_data : pdFrame, None
+        Indicator data like the rsi or atr
+    prices : pdFrame, None
+        price data
+    cand_ohlc : str, None
+        Only send this if you send price data as well: what part of the candle you want to evaluate
+    plot_results : bool, False
+        do you want to plot the results of the last column just to see if it is working properly.
 
+    ## What is being returned
     Returns
     -------
     pdFrame
-        _description_
-
-    Raises
-    ------
-    ValueError
-        _description_
-    ValueError
-        _description_
-    ValueError
-        _description_
-    ValueError
-        _description_
-    ValueError
-        _description_
+        Pandas dataframe of true false values for your entries.
     """
     if not isinstance(want_to_evaluate, pdFrame):
         raise ValueError("Data must be a dataframe with multindex")
@@ -628,7 +676,8 @@ def is_below(
         user_args = np.asarray(user_args)
 
         eval_array = np.empty(
-            (want_to_evaluate.shape[0], want_to_evaluate.shape[1] * user_args.size), dtype=np.bool_
+            (want_to_evaluate.shape[0], want_to_evaluate.shape[1] * user_args.size),
+            dtype=np.bool_,
         )
 
         eval_array_counter = 0
@@ -701,8 +750,7 @@ def is_below(
                 )
 
                 pd_multind_tuples = pd_multind_tuples + (
-                    want_to_evaluate.columns[eval_array_counter] +
-                    (cand_ohlc,),
+                    want_to_evaluate.columns[eval_array_counter] + (cand_ohlc,),
                 )
                 eval_array_counter += 1
 
@@ -725,7 +773,7 @@ def is_below(
                         x=plot_index,
                         y=temp_eval_values,
                         mode="lines",
-                        line=dict(width=4, color='lightblue'),
+                        line=dict(width=4, color="lightblue"),
                         name=want_to_evaluate_name,
                     ),
                     go.Scatter(
@@ -736,7 +784,7 @@ def is_below(
                             np.nan,
                         ),
                         mode="markers",
-                        marker=dict(size=3, color='yellow'),
+                        marker=dict(size=3, color="yellow"),
                         name="Signals",
                     ),
                 ]
@@ -755,8 +803,7 @@ def is_below(
         ).swaplevel(1, -1, axis=1)
 
     elif isinstance(indicator_data, pdFrame):
-        want_to_evaluate_name = want_to_evaluate.columns.names[-1].split("_")[
-            1]
+        want_to_evaluate_name = want_to_evaluate.columns.names[-1].split("_")[1]
         indicator_data_name = indicator_data.columns.names[-1].split("_")[0]
 
         pd_col_names = list(want_to_evaluate.columns.names) + [
@@ -765,7 +812,10 @@ def is_below(
 
         want_to_evaluate_settings_tuple_list = want_to_evaluate.columns.to_list()
 
-        eval_array = np.empty_like(want_to_evaluate,  dtype=np.bool_,)
+        eval_array = np.empty_like(
+            want_to_evaluate,
+            dtype=np.bool_,
+        )
         pd_multind_tuples = ()
 
         indicator_data_levels = list(indicator_data.columns)
@@ -781,9 +831,10 @@ def is_below(
                     True,
                     False,
                 )
-                pd_multind_tuples = pd_multind_tuples + \
-                    (want_to_evaluate_settings_tuple_list[eval_array_counter] + (
-                        indicator_data_name,),)
+                pd_multind_tuples = pd_multind_tuples + (
+                    want_to_evaluate_settings_tuple_list[eval_array_counter]
+                    + (indicator_data_name,),
+                )
                 eval_array_counter += 1
 
         if plot_results:

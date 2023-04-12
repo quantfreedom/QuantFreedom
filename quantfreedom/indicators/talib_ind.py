@@ -12,36 +12,52 @@ def from_talib(
     func_name: str,
     prices: pdFrame = None,
     indicator_data: pdFrame = None,
-    cart_product: bool = False,
-    combos: bool = False,
+    all_possible_combos: bool = False,
+    column_wise_combos: bool = False,
     **kwargs,
 ) -> pdFrame:
     """
     Function Name
     -------------
     from_talib
-    
+
     Summary
     -------
-    _summary_
-    
+    Using talib to create indicator data. If you need a list of the indicators visit the talib website https://ta-lib.github.io/ta-lib-python/funcs.html
+
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+    ## Variables needed
     Parameters
     ----------
     func_name : str
-        _description_
+        the short form name of the function like dema for Double Exponential Moving Average. Please look at https://ta-lib.github.io/ta-lib-python/funcs.html for a list of all the short form function names
     prices : pdFrame, None
-        _description_
+        price data
     indicator_data : pdFrame, None
-        _description_
-    cart_product : bool, False
-        _description_
-    combos : bool, False
-        _description_
-    
+        indicator data like if you want to put an ema on the rsi you send the rsi indicator data here and ema the for func name
+    all_possible_combos : bool, False
+        If you want all possible combinations, aka the cartesian product, or not. Example of what the cart product does
+        ```
+        [1,2]
+        [a,b]
+        answer: [(1,a), (1,b), (2,a), (2,b)]
+        ```
+    column_wise_combos : bool, False
+        Standard column wise combos. An example is
+        ```
+        [1,2,3]
+        [a,b,c]
+        answer: [(1,a), (2,b), (3,c)]
+        ```
+
+    ## Function returns
     Returns
     -------
     pdFrame
-        _description_
+        Pandas Dataframe of indicator values
     """
     if all(x is None for x in (prices, indicator_data)):
         raise ValueError(
@@ -71,12 +87,11 @@ def from_talib(
     ind_params = list(indicator_info["parameters"].keys())
     ind_name = indicator_info["name"]
 
-    if cart_product and combos:
+    if all_possible_combos and column_wise_combos:
+        raise ValueError(f"you can't have cart product and column_wise_combos both be true")
+    if len(ind_params) == 1 and (all_possible_combos or column_wise_combos):
         raise ValueError(
-            f"you can't have cart product and combos both be true")
-    if len(ind_params) == 1 and (cart_product or combos):
-        raise ValueError(
-            f"This indicator only has one paramater which is {ind_params[0]} therefore can't do combos or cart product."
+            f"This indicator only has one paramater which is {ind_params[0]} therefore can't do column_wise_combos or cart product."
         )
 
     for in_names_key, in_names_values in indicator_info["input_names"].items():
@@ -85,8 +100,7 @@ def from_talib(
             for kwarg_keys, kwarg_values in kwargs.items():
                 if in_names_key == kwarg_keys:
                     if not isinstance(kwarg_values, list):
-                        raise ValueError(
-                            f"{in_names_key} must be a list of strings")
+                        raise ValueError(f"{in_names_key} must be a list of strings")
 
                     if isinstance(kwarg_values, list):
                         if not all(isinstance(x, str) for x in kwarg_values):
@@ -108,8 +122,7 @@ def from_talib(
                     filled = True
                     break
                 elif in_names_key == "prices" and kwarg_keys == "price":
-                    raise ValueError(
-                        f"You need to provide prices= instead of price=")
+                    raise ValueError(f"You need to provide prices= instead of price=")
 
             if not filled:
                 input_names = in_names_values
@@ -126,8 +139,7 @@ def from_talib(
                     filled = True
                     break
                 elif in_names_key == "price" and kwarg_keys == "prices":
-                    raise ValueError(
-                        f"You need to provide price= instead of prices=")
+                    raise ValueError(f"You need to provide price= instead of prices=")
 
             if not filled:
                 input_names = [in_names_values]
@@ -148,14 +160,17 @@ def from_talib(
 
                     elif isinstance(kwarg_values, (list, Array1d)):
                         if (
-                            cart_product == False
-                            and combos == False
+                            all_possible_combos == False
+                            and column_wise_combos == False
                             and len(indicator_info["parameters"]) > 1
                         ):
                             raise ValueError(
                                 f"you can't have list(s) as args when the {func_name} has mutiple params without doing a combo or cart product"
                             )
-                        if not all(isinstance(x, (int, float, np.int_, np.float_)) for x in kwarg_values):
+                        if not all(
+                            isinstance(x, (int, float, np.int_, np.float_))
+                            for x in kwarg_values
+                        ):
                             raise ValueError(
                                 f"{param_names_key} your list has to be filled with ints or floats"
                             )
@@ -163,12 +178,12 @@ def from_talib(
                             raise ValueError(
                                 f"{param_names_key} your list or array length must be greater than 1"
                             )
-                        if combos or cart_product:
+                        if column_wise_combos or all_possible_combos:
                             if biggest == 1 and len(kwarg_values) > 1:
                                 biggest = len(kwarg_values)
-                            if biggest != len(kwarg_values) and combos:
+                            if biggest != len(kwarg_values) and column_wise_combos:
                                 raise ValueError(
-                                    f"{param_names_key} when using combos, all listed items must be same length"
+                                    f"{param_names_key} when using column_wise_combos, all listed items must be same length"
                                 )
 
                         users_args_list.append(np.asarray(kwarg_values))
@@ -182,12 +197,12 @@ def from_talib(
     else:
         param_dict = ()
 
-    if biggest == 1 and (combos or cart_product):
+    if biggest == 1 and (column_wise_combos or all_possible_combos):
         raise ValueError(
-            f"You have to have a list for paramaters for {ind_params} to use cart product or combos"
+            f"You have to have a list for paramaters for {ind_params} to use cart product or column_wise_combos"
         )
 
-    elif combos:
+    elif column_wise_combos:
         final_user_args = []
         for x in users_args_list:
             if x.size == 1:
@@ -196,7 +211,7 @@ def from_talib(
                 final_user_args.append(x)
         final_user_args = tuple(final_user_args)
 
-    elif cart_product:
+    elif all_possible_combos:
         final_user_args = np.array(list(product(*users_args_list))).T
 
     else:
@@ -212,66 +227,68 @@ def from_talib(
         symbols = list(prices.columns.levels[0])
         num_of_symbols = len(symbols)
         final_array = np.empty(
-            (prices.shape[0], ind_setings_len * output_names_len * num_of_symbols))
+            (prices.shape[0], ind_setings_len * output_names_len * num_of_symbols)
+        )
         counter = 0
 
         if output_names_len == 1:
-            param_keys = [list(prices.columns.names)[0]] + \
-                [ind_name + "_" + x for x in ind_params]
+            param_keys = [list(prices.columns.names)[0]] + [
+                ind_name + "_" + x for x in ind_params
+            ]
 
             for symbol in symbols:
                 temp_prices_tuple = ()
 
                 for input_name in input_names:
-                    temp_prices_tuple = temp_prices_tuple + \
-                        (prices[symbol][input_name].values,)
+                    temp_prices_tuple = temp_prices_tuple + (
+                        prices[symbol][input_name].values,
+                    )
 
                 for c in range(ind_setings_len):
-
                     # x is the array object in the tuple (x,x)
                     for x in final_user_args:
                         if type(x[c]) == np.int_:
                             ind_settings_tup = ind_settings_tup + (int(x[c]),)
                         if type(x[c]) == np.float_:
-                            ind_settings_tup = ind_settings_tup + \
-                                (float(x[c]),)
+                            ind_settings_tup = ind_settings_tup + (float(x[c]),)
 
                     final_array[:, counter] = getattr(talib, func_name.upper())(
                         *temp_prices_tuple,
                         *ind_settings_tup,
                     )
 
-                    pd_multind_tuples = pd_multind_tuples + \
-                        ((symbol,) + ind_settings_tup,)
+                    pd_multind_tuples = pd_multind_tuples + (
+                        (symbol,) + ind_settings_tup,
+                    )
 
                     ind_settings_tup = ()
                     counter += 1
 
         elif output_names_len > 1:
-            param_keys = [list(prices.columns.names)[
-                0]] + [ind_name + "_output_names"] + [ind_name + "_" + x for x in ind_params]
+            param_keys = (
+                [list(prices.columns.names)[0]]
+                + [ind_name + "_output_names"]
+                + [ind_name + "_" + x for x in ind_params]
+            )
 
             for symbol in symbols:
                 temp_prices_tuple = ()
 
                 for input_name in input_names:
-                    temp_prices_tuple = temp_prices_tuple + \
-                        (prices[symbol][input_name].values,)
+                    temp_prices_tuple = temp_prices_tuple + (
+                        prices[symbol][input_name].values,
+                    )
 
                 # these are the names called by the fun like talib('rsi').real - real is the output name
                 for out_name_count, out_name in enumerate(output_names):
-
                     # c is the indicator result of the array within the tuple (array[x], array[x])
                     for c in range(ind_setings_len):
-
                         # x is the array object in the tuple (x,x)
                         for x in final_user_args:
                             if type(x[c]) == np.int_:
-                                ind_settings_tup = ind_settings_tup + \
-                                    (int(x[c]),)
+                                ind_settings_tup = ind_settings_tup + (int(x[c]),)
                             if type(x[c]) == np.float_:
-                                ind_settings_tup = ind_settings_tup + \
-                                    (float(x[c]),)
+                                ind_settings_tup = ind_settings_tup + (float(x[c]),)
 
                         final_array[:, counter] = getattr(talib, func_name.upper())(
                             *temp_prices_tuple,
@@ -295,8 +312,7 @@ def from_talib(
         user_ind_values = indicator_data.values
         user_ind_names = list(indicator_data.columns.names)
         user_ind_name = user_ind_names[1].split("_")[0]
-        param_keys = [user_ind_name + "_" +
-                      ind_name + "_" + x for x in ind_params]
+        param_keys = [user_ind_name + "_" + ind_name + "_" + x for x in ind_params]
         param_keys = user_ind_names + param_keys
         final_array = np.empty(
             (
@@ -306,17 +322,14 @@ def from_talib(
         )
         if output_names_len == 1:
             for col in range(user_ind_values.shape[1]):
-
                 # c is the indicator result of the array within the tuple (array[x], array[x])
                 for c in range(ind_setings_len):
-
                     # x is the array object in the tuple (x,x)
                     for x in final_user_args:
                         if type(x[c]) == np.int_:
                             ind_settings_tup = ind_settings_tup + (int(x[c]),)
                         if type(x[c]) == np.float_:
-                            ind_settings_tup = ind_settings_tup + \
-                                (float(x[c]),)
+                            ind_settings_tup = ind_settings_tup + (float(x[c]),)
                     final_array[:, counter] = getattr(talib, func_name.upper())(
                         user_ind_values[:, col],
                         *ind_settings_tup,
@@ -333,23 +346,23 @@ def from_talib(
             user_ind_col_names = []
             for col_name in list(indicator_data.columns.names):
                 user_ind_col_names.append(col_name)
-            param_keys = user_ind_col_names + [ind_name + "_output_names"] + [ind_name + "_" + x for x in ind_params]
+            param_keys = (
+                user_ind_col_names
+                + [ind_name + "_output_names"]
+                + [ind_name + "_" + x for x in ind_params]
+            )
 
             # these are the names called by the fun like talib('rsi').real - real is the output name
             for col in range(user_ind_values.shape[1]):
                 for out_name_count, out_name in enumerate(output_names):
-
                     # c is the indicator result of the array within the tuple (array[x], array[x])
                     for c in range(ind_setings_len):
-
                         # x is the array object in the tuple (x,x)
                         for x in final_user_args:
                             if type(x[c]) == np.int_:
-                                ind_settings_tup = ind_settings_tup + \
-                                    (int(x[c]),)
+                                ind_settings_tup = ind_settings_tup + (int(x[c]),)
                             if type(x[c]) == np.float_:
-                                ind_settings_tup = ind_settings_tup + \
-                                    (float(x[c]),)
+                                ind_settings_tup = ind_settings_tup + (float(x[c]),)
 
                         final_array[:, counter] = getattr(talib, func_name.upper())(
                             user_ind_values[:, col],
@@ -357,8 +370,7 @@ def from_talib(
                         )[out_name_count]
 
                         pd_multind_tuples = pd_multind_tuples + (
-                            user_ind_settings[col] +
-                            (out_name,) + ind_settings_tup,
+                            user_ind_settings[col] + (out_name,) + ind_settings_tup,
                         )
 
                         counter += 1
@@ -369,8 +381,7 @@ def from_talib(
                 "Something is wrong with the output name length for user ind data"
             )
     else:
-        raise ValueError(
-            "Something is wrong with either df prices or user indicator")
+        raise ValueError("Something is wrong with either df prices or user indicator")
     return pd.DataFrame(
         final_array,
         index=pd_index,
