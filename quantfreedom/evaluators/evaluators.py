@@ -12,7 +12,7 @@ def combine_evals(
     plot_results: bool = False,
     first_eval_data_needs_prices: bool = False,
     second_eval_data_needs_prices: bool = False,
-    prices: pdFrame = None,
+    price_data: pdFrame = None,
     first_ind_data: pdFrame = None,
     second_ind_data: pdFrame = None,
 ) -> pdFrame:
@@ -42,7 +42,7 @@ def combine_evals(
         For plotting only: If you need price data for plotting
     second_eval_data_needs_prices : bool, False
         For plotting only: If you need price data for plotting
-    prices : pdFrame, None
+    price_data : pdFrame, None
         Price data
     first_ind_data : pdFrame, None
         For plotting only: You need to send first indicators data for plotting
@@ -61,15 +61,15 @@ def combine_evals(
             "Make sure you are sending first and second indicator data if you want to plot"
         )
     elif plot_results:
-        if first_eval_data_needs_prices and prices is None:
-            raise ValueError("You need to provide prices to plot the candles")
-        elif not first_eval_data_needs_prices and prices is not None:
+        if first_eval_data_needs_prices and price_data is None:
+            raise ValueError("You need to provide price_data to plot the candles")
+        elif not first_eval_data_needs_prices and price_data is not None:
             raise ValueError(
                 "Make sure you set first_eval_data_needs_prices to true if you want to send price data"
             )
     elif not plot_results and (
         first_eval_data_needs_prices
-        or prices is not None
+        or price_data is not None
         or first_ind_data is not None
         or second_ind_data is not None
     ):
@@ -153,7 +153,7 @@ def combine_evals(
 
         # candle data with subplot
         if first_eval_data_needs_prices and not second_eval_data_needs_prices:
-            temp_prices = prices[list(prices.columns)[-1][0]]
+            temp_prices = price_data[list(price_data.columns)[-1][0]]
             fig = make_subplots(
                 rows=2,
                 cols=1,
@@ -220,7 +220,7 @@ def combine_evals(
             fig.show()
 
         elif first_eval_data_needs_prices and second_eval_data_needs_prices:
-            temp_prices = prices[list(prices.columns)[-1][0]]
+            temp_prices = price_data[list(price_data.columns)[-1][0]]
             fig = go.Figure(
                 data=[
                     go.Candlestick(
@@ -314,7 +314,7 @@ def is_above(
     want_to_evaluate: pdFrame,
     user_args: Union[list[int, float], int, float, Array1d] = None,
     indicator_data: pdFrame = None,
-    prices: pdFrame = None,
+    price_data: pdFrame = None,
     cand_ohlc: str = None,
     plot_results: bool = False,
 ) -> pdFrame:
@@ -325,7 +325,7 @@ def is_above(
 
     Summary
     -------
-    Think of this like I want to evaluate if the rsi is above [60,70,80] (user_args) or i want to evaluate if the ema is above btc (prices) candle closes (cand_ohlc) or i want to evaluate if the ema is above the rsi (indicator_data). So you send what you want to evaluate in (want_to_evaluate) and then the rest.
+    Think of this like I want to evaluate if the rsi is above [60,70,80] (user_args) or i want to evaluate if the ema is above btc (price_data) candle closes (cand_ohlc) or i want to evaluate if the ema is above the rsi (indicator_data). So you send what you want to evaluate in (want_to_evaluate) and then the rest.
 
     Explainer Video
     ---------------
@@ -340,7 +340,7 @@ def is_above(
         User arguments like [60,70,80]
     indicator_data : pdFrame, None
         Indicator data like the rsi or atr
-    prices : pdFrame, None
+    price_data : pdFrame, None
         price data
     cand_ohlc : str, None
         Only send this if you send price data as well: what part of the candle you want to evaluate
@@ -415,7 +415,7 @@ def is_above(
             fig.update_layout(height=500, title="Last Column of the Results")
             fig.show()
 
-    elif isinstance(prices, pdFrame):
+    elif isinstance(price_data, pdFrame):
         if cand_ohlc == None or cand_ohlc.lower() not in (
             "open",
             "high",
@@ -427,11 +427,11 @@ def is_above(
             )
 
         eval_array = np.empty_like(want_to_evaluate, dtype=np.bool_)
-        symbols = list(prices.columns.levels[0])
+        symbols = list(price_data.columns.levels[0])
         eval_array_counter = 0
 
         for symbol in symbols:
-            temp_prices_values = prices[symbol][cand_ohlc].values
+            temp_prices_values = price_data[symbol][cand_ohlc].values
             if not all(isinstance(x, (np.int_, np.float_)) for x in temp_prices_values):
                 raise ValueError("price data must be ints or floats")
 
@@ -448,7 +448,7 @@ def is_above(
                 eval_array_counter += 1
 
         if plot_results:
-            temp_prices = prices[prices.columns.levels[0][-1]]
+            temp_prices = price_data[price_data.columns.levels[0][-1]]
             temp_eval_values = want_to_evaluate.iloc[:, -1].values
             plot_index = want_to_evaluate.index
 
@@ -621,7 +621,7 @@ def is_below(
     want_to_evaluate: pdFrame,
     user_args: Union[list[int, float], int, float, Array1d] = None,
     indicator_data: pdFrame = None,
-    prices: pdFrame = None,
+    price_data: pdFrame = None,
     cand_ohlc: str = None,
     plot_results: bool = False,
 ) -> pdFrame:
@@ -632,7 +632,7 @@ def is_below(
 
     Summary
     -------
-    Think of this like I want to evaluate if the rsi is below [60,70,80] (user_args) or i want to evaluate if the ema is below btc (prices) candle closes (cand_ohlc) or i want to evaluate if the ema is below the rsi (indicator_data). So you send what you want to evaluate in (want_to_evaluate) and then the rest.
+    Think of this like I want to evaluate if the rsi is below [60,70,80] (user_args) or i want to evaluate if the ema is below btc (price_data) candle closes (cand_ohlc) or i want to evaluate if the ema is below the rsi (indicator_data). So you send what you want to evaluate in (want_to_evaluate) and then the rest.
 
     Explainer Video
     ---------------
@@ -647,7 +647,7 @@ def is_below(
         User arguments like [60,70,80]
     indicator_data : pdFrame, None
         Indicator data like the rsi or atr
-    prices : pdFrame, None
+    price_data : pdFrame, None
         price data
     cand_ohlc : str, None
         Only send this if you send price data as well: what part of the candle you want to evaluate
@@ -722,7 +722,7 @@ def is_below(
             fig.update_layout(height=500, title="Last Column of the Results")
             fig.show()
 
-    elif isinstance(prices, pdFrame):
+    elif isinstance(price_data, pdFrame):
         if cand_ohlc == None or cand_ohlc.lower() not in (
             "open",
             "high",
@@ -734,11 +734,11 @@ def is_below(
             )
 
         eval_array = np.empty_like(want_to_evaluate, dtype=np.bool_)
-        symbols = list(prices.columns.levels[0])
+        symbols = list(price_data.columns.levels[0])
         eval_array_counter = 0
 
         for symbol in symbols:
-            temp_prices_values = prices[symbol][cand_ohlc].values
+            temp_prices_values = price_data[symbol][cand_ohlc].values
             if not all(isinstance(x, (np.int_, np.float_)) for x in temp_prices_values):
                 raise ValueError("price data must be ints or floats")
 
@@ -755,7 +755,7 @@ def is_below(
                 eval_array_counter += 1
 
         if plot_results:
-            temp_prices = prices[prices.columns.levels[0][-1]]
+            temp_prices = price_data[price_data.columns.levels[0][-1]]
             temp_eval_values = want_to_evaluate.iloc[:, -1].values
             plot_index = want_to_evaluate.index
 
