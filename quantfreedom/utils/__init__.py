@@ -1,6 +1,7 @@
-from quantfreedom.utils.helpers import clear_cache, pretty
+from quantfreedom.utils.helpers import *
 
 __all__ = [
-    'pretty',
+    "pretty",
     "clear_cache",
-    ]
+    "generate_candles",
+]

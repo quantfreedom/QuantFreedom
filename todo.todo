@@ -1,5 +1,8 @@
 currently working on:
-    ☐ 
+    ☐ create simple plot that plots candles then adds a trace and creates a plot below of last data column
+    ☐ create simple plot that plots candle then adds scatter on top of it
+    ☐ update release notes
+    ☐ update features
 
 Documentation:
     ☐ plotly helper functions

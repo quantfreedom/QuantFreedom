@@ -6,14 +6,20 @@ from talib.abstract import Function
 from talib import get_functions
 from itertools import product
 from quantfreedom._typing import pdFrame, Array1d
+from quantfreedom.plotting.plot_helper_functions import (
+    plot_on_candles_1_chart,
+    plot_results_candles_and_chart,
+)
 
 
 def from_talib(
     func_name: str,
-    prices: pdFrame = None,
+    price_data: pdFrame = None,
     indicator_data: pdFrame = None,
     all_possible_combos: bool = False,
     column_wise_combos: bool = False,
+    plot_results: bool = False,
+    plot_on_data: bool = False,
     **kwargs,
 ) -> pdFrame:
     """
@@ -34,7 +40,7 @@ def from_talib(
     ----------
     func_name : str
         the short form name of the function like dema for Double Exponential Moving Average. Please look at https://ta-lib.github.io/ta-lib-python/funcs.html for a list of all the short form function names
-    prices : pdFrame, None
+    price_data : pdFrame, None
         price data
     indicator_data : pdFrame, None
         indicator data like if you want to put an ema on the rsi you send the rsi indicator data here and ema the for func name
@@ -59,25 +65,25 @@ def from_talib(
     pdFrame
         Pandas Dataframe of indicator values
     """
-    if all(x is None for x in (prices, indicator_data)):
+    if all(x is None for x in (price_data, indicator_data)):
         raise ValueError(
-            f"You need to send either prices = pdFrame or indicator_data = pdFrame"
+            f"You need to send either price_data = pdFrame or indicator_data = pdFrame"
         )
-    elif all(x is not None for x in (prices, indicator_data)):
+    elif all(x is not None for x in (price_data, indicator_data)):
         raise ValueError(
-            f"You can't send both prices and values ... please pick one or the other"
+            f"You can't send both price_data and values ... please pick one or the other"
         )
     elif (
         not isinstance(indicator_data, pdFrame)
         and indicator_data is not None
-        or not isinstance(prices, pdFrame)
-        and prices is not None
+        or not isinstance(price_data, pdFrame)
+        and price_data is not None
     ):
         raise ValueError(f"You must send this as a pandas dataframe")
     elif isinstance(indicator_data, pdFrame):
         pd_index = indicator_data.index
-    elif isinstance(prices, pdFrame):
-        pd_index = prices.index
+    elif isinstance(price_data, pdFrame):
+        pd_index = price_data.index
 
     users_args_list = []
     biggest = 1
@@ -88,7 +94,9 @@ def from_talib(
     ind_name = indicator_info["name"]
 
     if all_possible_combos and column_wise_combos:
-        raise ValueError(f"you can't have cart product and column_wise_combos both be true")
+        raise ValueError(
+            f"you can't have cart product and column_wise_combos both be true"
+        )
     if len(ind_params) == 1 and (all_possible_combos or column_wise_combos):
         raise ValueError(
             f"This indicator only has one paramater which is {ind_params[0]} therefore can't do column_wise_combos or cart product."
@@ -121,8 +129,10 @@ def from_talib(
                     input_names = kwarg_values
                     filled = True
                     break
-                elif in_names_key == "prices" and kwarg_keys == "price":
-                    raise ValueError(f"You need to provide prices= instead of price=")
+                elif in_names_key == "price_data" and kwarg_keys == "price":
+                    raise ValueError(
+                        f"You need to provide price_data= instead of price="
+                    )
 
             if not filled:
                 input_names = in_names_values
@@ -138,8 +148,10 @@ def from_talib(
                     input_names = [kwarg_values]
                     filled = True
                     break
-                elif in_names_key == "price" and kwarg_keys == "prices":
-                    raise ValueError(f"You need to provide price= instead of prices=")
+                elif in_names_key == "price" and kwarg_keys == "price_data":
+                    raise ValueError(
+                        f"You need to provide price= instead of price_data="
+                    )
 
             if not filled:
                 input_names = [in_names_values]
@@ -223,25 +235,25 @@ def from_talib(
     output_names_len = len(output_names)
 
     # sending price data as your data to work with
-    if prices is not None:
-        symbols = list(prices.columns.levels[0])
+    if price_data is not None:
+        symbols = list(price_data.columns.levels[0])
         num_of_symbols = len(symbols)
         final_array = np.empty(
-            (prices.shape[0], ind_setings_len * output_names_len * num_of_symbols)
+            (price_data.shape[0], ind_setings_len * output_names_len * num_of_symbols)
         )
         counter = 0
 
         if output_names_len == 1:
-            param_keys = [list(prices.columns.names)[0]] + [
+            param_keys = [list(price_data.columns.names)[0]] + [
                 ind_name + "_" + x for x in ind_params
             ]
 
             for symbol in symbols:
-                temp_prices_tuple = ()
+                temp_price_data_tuple = ()
 
                 for input_name in input_names:
-                    temp_prices_tuple = temp_prices_tuple + (
-                        prices[symbol][input_name].values,
+                    temp_price_data_tuple = temp_price_data_tuple + (
+                        price_data[symbol][input_name].values,
                     )
 
                 for c in range(ind_setings_len):
@@ -253,7 +265,7 @@ def from_talib(
                             ind_settings_tup = ind_settings_tup + (float(x[c]),)
 
                     final_array[:, counter] = getattr(talib, func_name.upper())(
-                        *temp_prices_tuple,
+                        *temp_price_data_tuple,
                         *ind_settings_tup,
                     )
 
@@ -266,17 +278,17 @@ def from_talib(
 
         elif output_names_len > 1:
             param_keys = (
-                [list(prices.columns.names)[0]]
+                [list(price_data.columns.names)[0]]
                 + [ind_name + "_output_names"]
                 + [ind_name + "_" + x for x in ind_params]
             )
 
             for symbol in symbols:
-                temp_prices_tuple = ()
+                temp_price_data_tuple = ()
 
                 for input_name in input_names:
-                    temp_prices_tuple = temp_prices_tuple + (
-                        prices[symbol][input_name].values,
+                    temp_price_data_tuple = temp_price_data_tuple + (
+                        price_data[symbol][input_name].values,
                     )
 
                 # these are the names called by the fun like talib('rsi').real - real is the output name
@@ -291,7 +303,7 @@ def from_talib(
                                 ind_settings_tup = ind_settings_tup + (float(x[c]),)
 
                         final_array[:, counter] = getattr(talib, func_name.upper())(
-                            *temp_prices_tuple,
+                            *temp_price_data_tuple,
                             *ind_settings_tup,
                         )[out_name_count]
 
@@ -381,8 +393,10 @@ def from_talib(
                 "Something is wrong with the output name length for user ind data"
             )
     else:
-        raise ValueError("Something is wrong with either df prices or user indicator")
-    return pd.DataFrame(
+        raise ValueError(
+            "Something is wrong with either df price_data or user indicator"
+        )
+    ta_lib_data = pd.DataFrame(
         final_array,
         index=pd_index,
         columns=pd.MultiIndex.from_tuples(
@@ -390,6 +404,21 @@ def from_talib(
             names=param_keys,
         ),
     )
+
+    if plot_on_data:
+        if price_data is not None:
+            plot_on_candles_1_chart(
+                ta_lib_data=ta_lib_data,
+                price_data=price_data,
+            )
+    elif plot_results:
+        if price_data is not None:
+            plot_results_candles_and_chart(
+                ta_lib_data=ta_lib_data,
+                price_data=price_data,
+            )
+
+    return ta_lib_data
 
 
 def talib_ind_info(func_name: str):

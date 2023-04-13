@@ -1,5 +1,6 @@
 import numpy as np
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 from quantfreedom._typing import pdFrame, pdIndex
 from quantfreedom.enums.enums import OrderType
@@ -14,20 +15,20 @@ def get_candle_trace_data(
     prices: pdFrame,
     order_records: RecordArray,
     indicator_dict: dict,
-)-> list:
+) -> list:
     """
     Function Name
     -------------
         get_candle_trace_data
-    
+
     Quick Summary
     -------------
         Here we take all the info needed to create a candlestick chart and also place indicators on top of the candle stick chart
-    
+
     Required Parameters
     -------------------
     Variable Name: Variable Type
-    
+
     index_prices: pdIndex
         index
     prices: pdFrame
@@ -36,7 +37,7 @@ def get_candle_trace_data(
         order records
     indicator_dict: dict
         dictionary of candle stick and indicator data
-    
+
     Returns
     -------
     list
@@ -213,7 +214,7 @@ def cerate_candle_trace_trades_list(
     high_prices = prices.high.values
     low_prices = prices.low.values
     close_prices = prices.close.values
-    
+
     return [
         go.Candlestick(
             x=index_prices,
@@ -298,15 +299,15 @@ def append_to_trace_data_list(
     Function Name
     -------------
         append_to_trace_data_list
-    
+
     Quick Summary
     -------------
         appending value or entry scatter plots to the trace data list
-    
+
     Required Parameters
     -------------------
     Variable Name: Variable Type
-    
+
     trace_data_list: list
         trace data list
     dict_key: str
@@ -342,3 +343,72 @@ def append_to_trace_data_list(
                 name="Signals",
             )
         )
+
+
+def plot_on_candles_1_chart(
+    ta_lib_data: pdFrame,
+    price_data: pdFrame,
+):
+    plot_index = price_data.index
+
+    fig = go.Figure(
+        data=[
+            go.Candlestick(
+                x=plot_index,
+                open=price_data.iloc[:, -4].values,
+                high=price_data.iloc[:, -3].values,
+                low=price_data.iloc[:, -2].values,
+                close=price_data.iloc[:, -1].values,
+                name="Candles",
+            ),
+            go.Scatter(
+                x=plot_index,
+                y=ta_lib_data.iloc[:, -1],
+                mode="lines",
+                line=dict(width=2, color="lightblue"),
+            ),
+        ]
+    )
+    fig.update_xaxes(rangeslider_visible=False)
+    fig.update_layout(height=500, title="Last Column of the Results")
+    fig.show()
+
+
+def plot_results_candles_and_chart(
+    ta_lib_data: pdFrame,
+    price_data: pdFrame,
+):
+    plot_index = price_data.index
+    fig = make_subplots(
+        rows=2,
+        cols=1,
+        shared_xaxes=True,
+        vertical_spacing=0.03,
+        row_heights=[0.6, 0.4],
+    )
+
+    fig.add_traces(
+        data=go.Candlestick(
+            x=plot_index,
+            open=price_data.iloc[:, -4].values,
+            high=price_data.iloc[:, -3].values,
+            low=price_data.iloc[:, -2].values,
+            close=price_data.iloc[:, -1].values,
+            name="Candles",
+        ),
+        rows=1,
+        cols=1,
+    )
+    fig.add_traces(
+        data=go.Scatter(
+            x=plot_index,
+            y=ta_lib_data.iloc[:, -1],
+            mode="lines",
+            line=dict(width=2, color="lightblue"),
+        ),
+        rows=2,
+        cols=1,
+    )
+    fig.update_xaxes(rangeslider_visible=False)
+    fig.update_layout(height=700, title="Last Column of the Results")
+    fig.show()
