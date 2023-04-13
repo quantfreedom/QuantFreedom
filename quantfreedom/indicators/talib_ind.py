@@ -6,6 +6,7 @@ from talib.abstract import Function
 from talib import get_functions
 from itertools import product
 from quantfreedom._typing import pdFrame, Array1d
+from quantfreedom.indicators.indicators_cls import Indicator
 from quantfreedom.plotting.plot_helper_functions import (
     plot_on_candles_1_chart,
     plot_results_candles_and_chart,
@@ -13,14 +14,14 @@ from quantfreedom.plotting.plot_helper_functions import (
 
 
 def from_talib(
-    func_name: str,
-    price_data: pdFrame = None,
-    indicator_data: pdFrame = None,
-    all_possible_combos: bool = False,
-    column_wise_combos: bool = False,
-    plot_results: bool = False,
-    plot_on_data: bool = False,
-    **kwargs,
+        func_name: str,
+        price_data: pdFrame = None,
+        indicator_data: pdFrame = None,
+        all_possible_combos: bool = False,
+        column_wise_combos: bool = False,
+        plot_results: bool = False,
+        plot_on_data: bool = False,
+        **kwargs,
 ) -> pdFrame:
     """
     Function Name
@@ -74,10 +75,10 @@ def from_talib(
             f"You can't send both price_data and values ... please pick one or the other"
         )
     elif (
-        not isinstance(indicator_data, pdFrame)
-        and indicator_data is not None
-        or not isinstance(price_data, pdFrame)
-        and price_data is not None
+            not isinstance(indicator_data, pdFrame)
+            and indicator_data is not None
+            or not isinstance(price_data, pdFrame)
+            and price_data is not None
     ):
         raise ValueError(f"You must send this as a pandas dataframe")
     elif isinstance(indicator_data, pdFrame):
@@ -172,16 +173,16 @@ def from_talib(
 
                     elif isinstance(kwarg_values, (list, Array1d)):
                         if (
-                            all_possible_combos == False
-                            and column_wise_combos == False
-                            and len(indicator_info["parameters"]) > 1
+                                all_possible_combos == False
+                                and column_wise_combos == False
+                                and len(indicator_info["parameters"]) > 1
                         ):
                             raise ValueError(
                                 f"you can't have list(s) as args when the {func_name} has mutiple params without doing a combo or cart product"
                             )
                         if not all(
-                            isinstance(x, (int, float, np.int_, np.float_))
-                            for x in kwarg_values
+                                isinstance(x, (int, float, np.int_, np.float_))
+                                for x in kwarg_values
                         ):
                             raise ValueError(
                                 f"{param_names_key} your list has to be filled with ints or floats"
@@ -278,9 +279,9 @@ def from_talib(
 
         elif output_names_len > 1:
             param_keys = (
-                [list(price_data.columns.names)[0]]
-                + [ind_name + "_output_names"]
-                + [ind_name + "_" + x for x in ind_params]
+                    [list(price_data.columns.names)[0]]
+                    + [ind_name + "_output_names"]
+                    + [ind_name + "_" + x for x in ind_params]
             )
 
             for symbol in symbols:
@@ -359,9 +360,9 @@ def from_talib(
             for col_name in list(indicator_data.columns.names):
                 user_ind_col_names.append(col_name)
             param_keys = (
-                user_ind_col_names
-                + [ind_name + "_output_names"]
-                + [ind_name + "_" + x for x in ind_params]
+                    user_ind_col_names
+                    + [ind_name + "_output_names"]
+                    + [ind_name + "_" + x for x in ind_params]
             )
 
             # these are the names called by the fun like talib('rsi').real - real is the output name
@@ -418,7 +419,8 @@ def from_talib(
                 price_data=price_data,
             )
 
-    return ta_lib_data
+    ind = Indicator(data=ta_lib_data, name=func_name)
+    return ind
 
 
 def talib_ind_info(func_name: str):
