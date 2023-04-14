@@ -12,7 +12,6 @@ from quantfreedom.plotting.plot_helper_functions import (
     plot_results_candles_and_chart,
 )
 
-
 def from_talib(
         func_name: str,
         price_data: pdFrame = None,
