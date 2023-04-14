@@ -622,35 +622,6 @@ def is_rising(
     user_args: Union[list[int, float], int, float, Array1d] = None,
     plot_results: bool = False,
 ) -> pdFrame:
-    """
-    Function Name
-    -------------
-    is_rising
-    
-    Summary
-    -------
-    _summary_
-            
-    Explainer Video
-    ---------------
-    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
-    
-    ## Variables needed
-    Parameters
-    ----------
-    want_to_evaluate : pdFrame
-        _description_
-    user_args : Union[list[int, float], int, float, Array1d], None
-        _description_
-    plot_results : bool, False
-        _description_
-    
-    ## Function returns
-    Returns
-    -------
-    pdFrame
-        _description_
-    """
     if not isinstance(want_to_evaluate, pdFrame):
         raise ValueError("Data must be a dataframe with multindex")
 
