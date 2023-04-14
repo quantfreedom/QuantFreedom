@@ -1,4 +1,5 @@
-from quantfreedom import *
+from quantfreedom import generate_candles
+from quantfreedom.levon_qf.talib_ind_levon import from_talib
 
 price_data = generate_candles(
     number_of_candles=200,

@@ -5,6 +5,8 @@ import talib
 from talib.abstract import Function
 from talib import get_functions
 from itertools import product
+
+from quantfreedom.levon_qf.indicators_cls import Indicator
 from quantfreedom._typing import pdFrame, Array1d
 from quantfreedom.plotting.simple_plots import (
     plot_on_candles_1_chart,
@@ -419,8 +421,8 @@ def from_talib(
                 price_data=price_data,
             )
 
-    # ind = Indicator(data=ta_lib_data, name=func_name)
-    return ta_lib_data
+    ind = Indicator(data=ta_lib_data, name=func_name)
+    return ind
 
 
 def talib_ind_info(func_name: str):
