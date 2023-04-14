@@ -719,7 +719,7 @@ def is_rising(
     )
 
 
-def is_below_lev(
+def _is_below(
     want_to_evaluate: pdFrame,
     user_args: Union[list[int, float], int, float, Array1d] = None,
     indicator_data: pdFrame = None,
