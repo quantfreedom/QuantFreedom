@@ -70,7 +70,7 @@ def pretty(
 
 def generate_candles(
     number_of_candles: int = 100,
-    plot_candles: bool = True,
+    plot_candles: bool = False,
     seed: int = None,
 ) -> pdFrame:
     """
@@ -93,7 +93,7 @@ def generate_candles(
         number of candles you want to create
     seed : int, None
         random seed number
-    plot_candles : bool, None
+    plot_candles : bool, False
         If the candles should be graphed or not.
   
     ## What is being returned

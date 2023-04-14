@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+import pip
 
 with open("README.md", "r", encoding="utf-8", errors="ignore") as fh:
     long_description = fh.read()
@@ -19,8 +20,8 @@ setup(
     packages=find_packages(),
     install_requires=[
         "autopep8",
-        "ccxt",
-        "dash",
+        "ccxt==2.9.13",
+        "dash==2.9.1",
         "dash_bootstrap_templates",
         "h5py",
         "ipywidgets==7.7.2",
@@ -31,9 +32,9 @@ setup(
         "notebook",
         "tqdm",
         'numba>=0.53.1; python_version < "3.10"',
-        'numba>=0.56.0; python_version >= "3.10"',
-        "numpy>=1.16.5",
-        "pandas",
+        'numba==0.56.4; python_version >= "3.10"',
+        "numpy==1.23.5",
+        "pandas==1.5.3",
         "polars",
         "pyarrow",
         "tables",
