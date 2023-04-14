@@ -1,1 +1,1 @@
-from quantfreedom.levon_qf import *
+from quantfreedom.levon_qf.indicators_cls import *
