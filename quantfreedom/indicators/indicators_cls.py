@@ -3,6 +3,7 @@ from talib import func_name
 import quantfreedom
 from quantfreedom._typing import pdFrame, Union, Array1d
 from quantfreedom.levon_qf.eval_lev import _is_below
+from quantfreedom.evaluators.evaluators import combine_evals
 
 
 class Indicator:
@@ -21,16 +22,13 @@ class Indicator:
         self.eval_to_data[name] = data
 
     def combined_data_frame(self, eval_names):
-        b = {}
-        symbols = list(self.eval_to_data[eval_names[0]].columns.levels[0])
+        b = None
         for nm in eval_names:
             curr_df = self.eval_to_data[nm]
-            for symbol in symbols:
-                curr_val = curr_df[[symbol]]
-                if symbol not in b:
-                    b[symbol] = curr_val
-                else:
-                     b[symbol] = b[symbol] & curr_val
+            if b is None:
+                b = curr_df
+            else:
+                b = combine_evals(b, curr_df)
         return b
 
     def get_data_frame(self):
