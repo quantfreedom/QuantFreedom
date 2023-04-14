@@ -9,7 +9,7 @@ price_data = generate_candles(
 rsi_data = from_talib(
      func_name="rsi",
      price_data=price_data,
-    timeperiod=20,
+    timeperiod=15,
     plot_results=False,
     # price="low",
 )
@@ -18,7 +18,7 @@ rsi_ema_ind = from_talib(
     indicator_data=rsi_data.data,
     cart_product=False,
     combos=False,
-    timeperiod=15,
+    timeperiod=30,
 )
 print(rsi_data.is_below(user_args=45))
 print(rsi_ema_ind.data)
