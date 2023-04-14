@@ -374,7 +374,7 @@ def is_above(
         )
 
         eval_array_counter = 0
-        temp_eval_values = want_to_evaluate.values.T
+        temp_want_to_eval_values = want_to_evaluate.values.T
         for count, value in enumerate(want_to_evaluate.values.T):
             for eval_col in range(user_args.size):
                 eval_array[:, eval_array_counter] = np.where(
@@ -387,14 +387,14 @@ def is_above(
                 )
 
         if plot_results:
-            temp_eval_values = want_to_evaluate.iloc[:, -1].values
+            temp_want_to_eval_values = want_to_evaluate.iloc[:, -1].values
             plot_index = want_to_evaluate.index
 
             fig = go.Figure(
                 data=[
                     go.Scatter(
                         x=plot_index,
-                        y=temp_eval_values,
+                        y=temp_want_to_eval_values,
                         mode="lines",
                         line=dict(width=2),
                         name=want_to_evaluate_name,
@@ -403,7 +403,7 @@ def is_above(
                         x=plot_index,
                         y=np.where(
                             eval_array[:, -1],
-                            temp_eval_values,
+                            temp_want_to_eval_values,
                             np.nan,
                         ),
                         mode="markers",
@@ -435,9 +435,9 @@ def is_above(
             if not all(isinstance(x, (np.int_, np.float_)) for x in temp_prices_values):
                 raise ValueError("price data must be ints or floats")
 
-            temp_eval_values = want_to_evaluate[symbol].values.T
+            temp_want_to_eval_values = want_to_evaluate[symbol].values.T
 
-            for values in temp_eval_values:
+            for values in temp_want_to_eval_values:
                 eval_array[:, eval_array_counter] = np.where(
                     values > temp_prices_values, True, False
                 )
@@ -449,7 +449,7 @@ def is_above(
 
         if plot_results:
             temp_prices = price_data[price_data.columns.levels[0][-1]]
-            temp_eval_values = want_to_evaluate.iloc[:, -1].values
+            temp_want_to_eval_values = want_to_evaluate.iloc[:, -1].values
             plot_index = want_to_evaluate.index
 
             fig = go.Figure(
@@ -464,7 +464,7 @@ def is_above(
                     ),
                     go.Scatter(
                         x=plot_index,
-                        y=temp_eval_values,
+                        y=temp_want_to_eval_values,
                         mode="lines",
                         line=dict(width=4, color="lightblue"),
                         name=want_to_evaluate_name,
@@ -473,7 +473,7 @@ def is_above(
                         x=plot_index,
                         y=np.where(
                             eval_array[:, -1],
-                            temp_eval_values,
+                            temp_want_to_eval_values,
                             np.nan,
                         ),
                         mode="markers",
@@ -531,7 +531,7 @@ def is_above(
                 eval_array_counter += 1
 
         if plot_results:
-            temp_eval_values = want_to_evaluate.iloc[:, -1].values
+            temp_want_to_eval_values = want_to_evaluate.iloc[:, -1].values
             temp_ind_values = indicator_data.iloc[:, -1].values
             plot_index = want_to_evaluate.index
 
@@ -546,7 +546,7 @@ def is_above(
                     ),
                     go.Scatter(
                         x=plot_index,
-                        y=temp_eval_values,
+                        y=temp_want_to_eval_values,
                         mode="lines",
                         line=dict(width=2),
                         name=want_to_evaluate_name,
@@ -555,7 +555,7 @@ def is_above(
                         x=plot_index,
                         y=np.where(
                             eval_array[:, -1],
-                            temp_eval_values,
+                            temp_want_to_eval_values,
                             np.nan,
                         ),
                         mode="markers",
@@ -576,14 +576,14 @@ def is_above(
             )
 
         if plot_results:
-            temp_eval_values = want_to_evaluate.iloc[:, -1].values
+            temp_want_to_eval_values = want_to_evaluate.iloc[:, -1].values
             plot_index = want_to_evaluate.index
 
             fig = go.Figure(
                 data=[
                     go.Scatter(
                         x=plot_index,
-                        y=temp_eval_values,
+                        y=temp_want_to_eval_values,
                         mode="lines",
                         line=dict(width=2),
                         name=want_to_evaluate_name,
@@ -592,7 +592,7 @@ def is_above(
                         x=plot_index,
                         y=np.where(
                             eval_array[:, -1],
-                            temp_eval_values,
+                            temp_want_to_eval_values,
                             np.nan,
                         ),
                         mode="markers",
@@ -607,6 +607,108 @@ def is_above(
         raise ValueError(
             "something is wrong with what you sent please make sure the type of variable you are sending matches with the type required"
         )
+    return pd.DataFrame(
+        eval_array,
+        index=want_to_evaluate.index,
+        columns=pd.MultiIndex.from_tuples(
+            tuples=list(pd_multind_tuples),
+            names=pd_col_names,
+        ),
+    )
+
+
+def is_rising(
+    want_to_evaluate: pdFrame,
+    user_args: Union[list[int, float], int, float, Array1d] = None,
+    plot_results: bool = False,
+) -> pdFrame:
+    if not isinstance(want_to_evaluate, pdFrame):
+        raise ValueError("Data must be a dataframe with multindex")
+
+    want_to_evaluate_values = want_to_evaluate.values
+    want_to_evaluate_name = want_to_evaluate.columns.names[1].split("_")[0]
+    pd_col_names = list(want_to_evaluate.columns.names) + [
+        want_to_evaluate_name + "_is_rising"
+    ]
+    pd_multind_tuples = ()
+
+    if user_args is None:
+        eval_array = np.where(
+            want_to_evaluate.values > want_to_evaluate.shift(1).values, True, False
+        )
+        col_levels = list(want_to_evaluate.columns)
+        for tup in col_levels:
+            pd_multind_tuples = pd_multind_tuples + (tup + ("any amount",),)
+
+        if plot_results:
+            temp_want_to_eval_values = want_to_evaluate.iloc[:, -1].values
+            plot_index = want_to_evaluate.index
+
+            fig = go.Figure(
+                data=[
+                    go.Scatter(
+                        x=plot_index,
+                        y=temp_want_to_eval_values,
+                        mode="markers+lines",
+                        line=dict(width=2),
+                        name=want_to_evaluate_name,
+                    ),
+                    go.Scatter(
+                        x=plot_index,
+                        y=np.where(
+                            eval_array[:, -1],
+                            temp_want_to_eval_values,
+                            np.nan,
+                        ),
+                        mode="markers",
+                        marker=dict(size=8),
+                        name="Signals",
+                    ),
+                ]
+            )
+            fig.update_layout(height=500, title="Last Column of the Results")
+            fig.show()
+
+    elif isinstance(user_args, (int, float)):
+        eval_array = np.where(
+            want_to_evaluate.values > want_to_evaluate.shift(1).values + user_args,
+            True,
+            False,
+        )
+        
+        col_levels = list(want_to_evaluate.columns)
+        for tup in col_levels:
+            pd_multind_tuples = pd_multind_tuples + (tup + (user_args,),)
+        
+        if plot_results:
+            temp_want_to_eval_values = want_to_evaluate.iloc[:, -1].values
+            plot_index = want_to_evaluate.index
+
+            fig = go.Figure(
+                data=[
+                    go.Scatter(
+                        x=plot_index,
+                        y=temp_want_to_eval_values,
+                        mode="markers+lines",
+                        line=dict(width=2),
+                        name=want_to_evaluate_name,
+                    ),
+                    go.Scatter(
+                        x=plot_index,
+                        y=np.where(
+                            eval_array[:, -1],
+                            temp_want_to_eval_values,
+                            np.nan,
+                        ),
+                        mode="markers",
+                        marker=dict(size=8),
+                        name="Signals",
+                    ),
+                ]
+            )
+            fig.update_layout(height=500, title="Last Column of the Results")
+            fig.show()
+
     return pd.DataFrame(
         eval_array,
         index=want_to_evaluate.index,
@@ -681,7 +783,7 @@ def is_below(
         )
 
         eval_array_counter = 0
-        temp_eval_values = want_to_evaluate.values.T
+        temp_want_to_eval_values = want_to_evaluate.values.T
         for count, value in enumerate(want_to_evaluate.values.T):
             for eval_col in range(user_args.size):
                 eval_array[:, eval_array_counter] = np.where(
@@ -694,14 +796,14 @@ def is_below(
                 )
 
         if plot_results:
-            temp_eval_values = want_to_evaluate.iloc[:, -1].values
+            temp_want_to_eval_values = want_to_evaluate.iloc[:, -1].values
             plot_index = want_to_evaluate.index
 
             fig = go.Figure(
                 data=[
                     go.Scatter(
                         x=plot_index,
-                        y=temp_eval_values,
+                        y=temp_want_to_eval_values,
                         mode="lines",
                         line=dict(width=2),
                         name=want_to_evaluate_name,
@@ -710,7 +812,7 @@ def is_below(
                         x=plot_index,
                         y=np.where(
                             eval_array[:, -1],
-                            temp_eval_values,
+                            temp_want_to_eval_values,
                             np.nan,
                         ),
                         mode="markers",
@@ -742,9 +844,9 @@ def is_below(
             if not all(isinstance(x, (np.int_, np.float_)) for x in temp_prices_values):
                 raise ValueError("price data must be ints or floats")
 
-            temp_eval_values = want_to_evaluate[symbol].values.T
+            temp_want_to_eval_values = want_to_evaluate[symbol].values.T
 
-            for values in temp_eval_values:
+            for values in temp_want_to_eval_values:
                 eval_array[:, eval_array_counter] = np.where(
                     values < temp_prices_values, True, False
                 )
@@ -756,7 +858,7 @@ def is_below(
 
         if plot_results:
             temp_prices = price_data[price_data.columns.levels[0][-1]]
-            temp_eval_values = want_to_evaluate.iloc[:, -1].values
+            temp_want_to_eval_values = want_to_evaluate.iloc[:, -1].values
             plot_index = want_to_evaluate.index
 
             fig = go.Figure(
@@ -771,7 +873,7 @@ def is_below(
                     ),
                     go.Scatter(
                         x=plot_index,
-                        y=temp_eval_values,
+                        y=temp_want_to_eval_values,
                         mode="lines",
                         line=dict(width=4, color="lightblue"),
                         name=want_to_evaluate_name,
@@ -780,7 +882,7 @@ def is_below(
                         x=plot_index,
                         y=np.where(
                             eval_array[:, -1],
-                            temp_eval_values,
+                            temp_want_to_eval_values,
                             np.nan,
                         ),
                         mode="markers",
@@ -838,7 +940,7 @@ def is_below(
                 eval_array_counter += 1
 
         if plot_results:
-            temp_eval_values = want_to_evaluate.iloc[:, -1].values
+            temp_want_to_eval_values = want_to_evaluate.iloc[:, -1].values
             temp_ind_values = indicator_data.iloc[:, -1].values
             plot_index = want_to_evaluate.index
 
@@ -853,7 +955,7 @@ def is_below(
                     ),
                     go.Scatter(
                         x=plot_index,
-                        y=temp_eval_values,
+                        y=temp_want_to_eval_values,
                         mode="lines",
                         line=dict(width=2),
                         name=want_to_evaluate_name,
@@ -862,7 +964,7 @@ def is_below(
                         x=plot_index,
                         y=np.where(
                             eval_array[:, -1],
-                            temp_eval_values,
+                            temp_want_to_eval_values,
                             np.nan,
                         ),
                         mode="markers",
@@ -883,14 +985,14 @@ def is_below(
             )
 
         if plot_results:
-            temp_eval_values = want_to_evaluate.iloc[:, -1].values
+            temp_want_to_eval_values = want_to_evaluate.iloc[:, -1].values
             plot_index = want_to_evaluate.index
 
             fig = go.Figure(
                 data=[
                     go.Scatter(
                         x=plot_index,
-                        y=temp_eval_values,
+                        y=temp_want_to_eval_values,
                         mode="lines",
                         line=dict(width=2),
                         name=want_to_evaluate_name,
@@ -899,7 +1001,7 @@ def is_below(
                         x=plot_index,
                         y=np.where(
                             eval_array[:, -1],
-                            temp_eval_values,
+                            temp_want_to_eval_values,
                             np.nan,
                         ),
                         mode="markers",
