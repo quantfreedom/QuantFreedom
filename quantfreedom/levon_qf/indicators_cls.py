@@ -2,7 +2,7 @@ from talib import func_name
 
 import quantfreedom
 from quantfreedom._typing import pdFrame, Union, Array1d
-from quantfreedom.evaluators import evaluators
+from quantfreedom.levon_qf.eval_lev import is_below_lev
 
 
 class Indicator:
@@ -39,7 +39,7 @@ class Indicator:
                  prices: pdFrame = None,
                  cand_ohlc: str = None,
                  plot_results: bool = False, ):
-        data =  evaluators.is_below(self.data,
+        data =  is_below_lev(self.data,
                                                            user_args,
                                                            indicator_data,
                                                            prices,
@@ -50,7 +50,7 @@ class Indicator:
 
 
     def is_raising(self):
-        data = evaluators.is_below(self.data,
+        data = is_below_lev(self.data,
                                    40,
                                    )
         self.save_values('is_raising', data)
