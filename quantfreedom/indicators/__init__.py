@@ -1,4 +1,4 @@
-from quantfreedom.indicators.talib_ind_levon import *
+from quantfreedom.indicators.talib_ind import *
 
 __all__ = [
     "from_talib",
