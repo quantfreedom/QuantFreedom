@@ -2,7 +2,7 @@ from talib import func_name
 
 import quantfreedom
 from quantfreedom._typing import pdFrame, Union, Array1d
-from quantfreedom.levon_qf.eval_lev import _is_below
+from quantfreedom.levon_qf.eval_lev import _is_below, combine_evals
 
 
 class Indicator:
@@ -21,13 +21,13 @@ class Indicator:
         self.eval_to_data[name] = data
 
     def combined_data_frame(self, eval_names):
-        b = []
+        b = None
         for nm in eval_names:
-            curr_val = self.eval_to_data[nm]["QuantFreedom"]
-            if len(b) == 0:
-                b = curr_val
+            curr_df = self.eval_to_data[nm]
+            if b is None:
+                b = curr_df
             else:
-                b = b & curr_val
+                b = combine_evals(b, curr_df)
         return b
 
     def get_data_frame(self):

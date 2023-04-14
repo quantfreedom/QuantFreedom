@@ -22,5 +22,5 @@ rsi_ema_ind = from_talib(
 )
 print(rsi_data.is_below(user_args=45))
 print(rsi_ema_ind.data)
-print(rsi_data.is_below(indicator_data=rsi_ema_ind.data))
+(rsi_data.is_below(indicator_data=rsi_ema_ind.data))
 print(rsi_data.combined_data_frame(['is_below0', 'is_below1']))

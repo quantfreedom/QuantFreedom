@@ -6,7 +6,7 @@ from talib.abstract import Function
 from talib import get_functions
 from itertools import product
 
-from quantfreedom.levon_qf.indicators_cls import Indicator
+from quantfreedom.levon_qf.indicators_cls_lev import Indicator
 from quantfreedom._typing import pdFrame, Array1d
 from quantfreedom.plotting.simple_plots import (
     plot_on_candles_1_chart,
