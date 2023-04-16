@@ -21,7 +21,7 @@ Enums
 
 import numpy as np
 
-from quantfreedom import _typing as tp
+from quantfreedom._typing import NamedTuple, Array1d
 
 __all__ = [
     "AccountState",
@@ -30,7 +30,7 @@ __all__ = [
     "OrderResult",
     "OrderType",
     "RejectedOrderError",
-    "SL_BE_or_Trail_BasedOn",
+    "CandleBody",
     "LeverageMode",
     "SizeType",
     "EntryOrder",
@@ -45,14 +45,14 @@ __all__ = [
 ]
 
 
-class AccountState(tp.NamedTuple):
+class AccountState(NamedTuple):
     available_balance: float = 0.0
     cash_borrowed: float = 0.0
     cash_used: float = 0.0
     equity: float = 0.0
 
 
-class EntryOrder(tp.NamedTuple):
+class EntryOrder(NamedTuple):
     leverage: float = 0.0
     max_equity_risk_pct: float = np.nan
     max_equity_risk_value: float = np.nan
@@ -60,31 +60,35 @@ class EntryOrder(tp.NamedTuple):
     risk_rewards: float = np.nan
     size_pct: float = np.nan
     size_value: float = np.nan
+    sl_based_on_add_pct: float = np.nan
+    sl_based_on: float = np.nan
     sl_pcts: float = np.nan
     tp_pcts: float = np.nan
     tsl_pcts_init: float = np.nan
 
 
-class Arrays1dTuple(tp.NamedTuple):
-    leverage: float
-    max_equity_risk_pct: float
-    max_equity_risk_value: float
-    risk_rewards: float
-    size_pct: float
-    size_value: float
-    sl_pcts: float
-    sl_to_be_based_on: float
-    sl_to_be_trail_by_when_pct_from_avg_entry: float
-    sl_to_be_when_pct_from_avg_entry: float
-    sl_to_be_zero_or_entry: float
-    tp_pcts: float
-    tsl_based_on: float
-    tsl_pcts_init: float
-    tsl_trail_by_pct: float
-    tsl_when_pct_from_avg_entry: float
+class Arrays1dTuple(NamedTuple):
+    leverage: Array1d
+    max_equity_risk_pct: Array1d
+    max_equity_risk_value: Array1d
+    risk_rewards: Array1d
+    size_pct: Array1d
+    size_value: Array1d
+    sl_based_on_add_pct: Array1d
+    sl_based_on: Array1d
+    sl_pcts: Array1d
+    sl_to_be_based_on: Array1d
+    sl_to_be_trail_by_when_pct_from_avg_entry: Array1d
+    sl_to_be_when_pct_from_avg_entry: Array1d
+    sl_to_be_zero_or_entry: Array1d
+    tp_pcts: Array1d
+    tsl_based_on: Array1d
+    tsl_pcts_init: Array1d
+    tsl_trail_by_pct: Array1d
+    tsl_when_pct_from_avg_entry: Array1d
 
 
-class OrderResult(tp.NamedTuple):
+class OrderResult(NamedTuple):
     average_entry: float = 0.0
     fees_paid: float = 0.0
     leverage: float = 0.0
@@ -106,25 +110,25 @@ class OrderResult(tp.NamedTuple):
     tsl_prices: float = 0.0
 
 
-class StaticVariables(tp.NamedTuple):
-    divide_records_array_size_by: float
-    fee_pct: float
+class StaticVariables(NamedTuple):
+    divide_records_array_size_by: float = 1.0
+    fee_pct: float = 0.06
     lev_mode: int
-    max_lev: float
-    max_order_size_pct: float
-    max_order_size_value: float
-    min_order_size_pct: float
-    min_order_size_value: float
-    mmr_pct: float
+    max_lev: float = 100.0
+    max_order_size_pct: float = 100.0
+    max_order_size_value: float = np.inf
+    min_order_size_pct: float = 0.01
+    min_order_size_value: float = 1.0
+    mmr_pct: float = 0.5
     order_type: int
     size_type: int
-    sl_to_be_then_trail: bool
-    sl_to_be: bool
-    tsl_true_or_false: bool
-    upside_filter: float
+    sl_to_be_then_trail: bool = False
+    sl_to_be: bool = False
+    tsl_true_or_false: bool = False
+    upside_filter: float = -np.inf
 
 
-class StopsOrder(tp.NamedTuple):
+class StopsOrder(NamedTuple):
     sl_to_be: bool = False
     sl_to_be_based_on: float = np.nan
     sl_to_be_then_trail: bool = False
@@ -137,7 +141,7 @@ class StopsOrder(tp.NamedTuple):
     tsl_when_pct_from_avg_entry: float = np.nan
 
 
-class LeverageModeT(tp.NamedTuple):
+class LeverageModeT(NamedTuple):
     Isolated: int = 0
     LeastFreeCashUsed: int = 1
 
@@ -145,7 +149,7 @@ class LeverageModeT(tp.NamedTuple):
 LeverageMode = LeverageModeT()
 
 
-class OrderStatusT(tp.NamedTuple):
+class OrderStatusT(NamedTuple):
     Filled: int = 0
     Ignored: int = 1
     Rejected: int = 2
@@ -154,7 +158,7 @@ class OrderStatusT(tp.NamedTuple):
 OrderStatus = OrderStatusT()
 
 
-class OrderStatusInfoT(tp.NamedTuple):
+class OrderStatusInfoT(NamedTuple):
     HopefullyNoProblems: int = 0
     MaxEquityRisk: int = 1
 
@@ -162,7 +166,7 @@ class OrderStatusInfoT(tp.NamedTuple):
 OrderStatusInfo = OrderStatusInfoT()
 
 
-class OrderTypeT(tp.NamedTuple):
+class OrderTypeT(NamedTuple):
     LongEntry: int = 0
     ShortEntry: int = 1
     Both: int = 2
@@ -184,21 +188,22 @@ class OrderTypeT(tp.NamedTuple):
 OrderType = OrderTypeT()
 
 
-class SL_BE_or_Trail_BasedOnT(tp.NamedTuple):
-    open_price: int = 0
-    high_price: int = 1
-    low_price: int = 2
-    close_price: int = 3
+class CandleBodyT(NamedTuple):
+    open: int = 0
+    high: int = 1
+    low: int = 2
+    close: int = 3
 
 
-SL_BE_or_Trail_BasedOn = SL_BE_or_Trail_BasedOnT()
+CandleBody = CandleBodyT()
 
 
-class SizeTypeT(tp.NamedTuple):
+class SizeTypeT(NamedTuple):
     Amount: int = 0
     PercentOfAccount: int = 1
     RiskAmount: int = 2
     RiskPercentOfAccount: int = 3
+
 
 SizeType = SizeTypeT()
 

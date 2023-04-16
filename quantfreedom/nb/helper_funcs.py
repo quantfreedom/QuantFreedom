@@ -16,7 +16,7 @@ from quantfreedom.enums import (
     OrderResult,
     OrderType,
     SizeType,
-    SL_BE_or_Trail_BasedOn,
+    CandleBody,
     StaticVariables,
     StopsOrder,
 )
@@ -98,7 +98,9 @@ def static_var_checker_nb(
         raise ValueError("upside filter must be between -1 and 1")
 
     if not (1 <= divide_records_array_size_by <= 1000):
-        raise ValueError("divide_records_array_size_by filter must be between 1 and 1000")
+        raise ValueError(
+            "divide_records_array_size_by filter must be between 1 and 1000"
+        )
 
     # Static variables creation
     fee_pct /= 100
@@ -133,16 +135,18 @@ def create_1d_arrays_nb(
     risk_rewards,
     size_pct,
     size_value,
+    sl_based_on_add_pct,
+    sl_based_on,
     sl_pcts,
     sl_to_be_based_on,
     sl_to_be_trail_by_when_pct_from_avg_entry,
     sl_to_be_when_pct_from_avg_entry,
     sl_to_be_zero_or_entry,
-    tsl_pcts_init,
+    tp_pcts,
     tsl_based_on,
+    tsl_pcts_init,
     tsl_trail_by_pct,
     tsl_when_pct_from_avg_entry,
-    tp_pcts,
 ) -> Arrays1dTuple:
     leverage_array = to_1d_array_nb(np.asarray(leverage, dtype=np.float_))
 
@@ -168,6 +172,12 @@ def create_1d_arrays_nb(
     sl_to_be_based_on_array = to_1d_array_nb(
         np.asarray(sl_to_be_based_on, dtype=np.float_)
     )
+
+    sl_based_on_add_pct_array = to_1d_array_nb(
+        np.asarray(np.asarray(sl_based_on_add_pct) / 100, dtype=np.float_)
+    )
+
+    sl_based_on_array = to_1d_array_nb(np.asarray(sl_based_on, dtype=np.float_))
 
     sl_to_be_trail_by_when_pct_from_avg_entry_array = to_1d_array_nb(
         np.asarray(
@@ -212,6 +222,8 @@ def create_1d_arrays_nb(
         risk_rewards=risk_rewards_array,
         size_pct=size_pct_array,
         size_value=size_value_array,
+        sl_based_on_add_pct=sl_based_on_add_pct_array,
+        sl_based_on=sl_based_on_array,
         sl_pcts=sl_pcts_array,
         sl_to_be_based_on=sl_to_be_based_on_array,
         sl_to_be_trail_by_when_pct_from_avg_entry=sl_to_be_trail_by_when_pct_from_avg_entry_array,
@@ -259,6 +271,14 @@ def check_1d_arrays_nb(
         raise ValueError("sl_pcts has to be nan or greater than 0 and not inf")
 
     if (
+        np.isinf(arrays_1d_tuple.sl_based_on_add_pct).any()
+        or arrays_1d_tuple.sl_based_on_add_pct.any() < 0
+    ):
+        raise ValueError(
+            "sl_based_on_add_pct has to be nan or greater than 0 and not inf"
+        )
+
+    if (
         np.isinf(arrays_1d_tuple.tsl_pcts_init).any()
         or arrays_1d_tuple.tsl_pcts_init.any() < 0
     ):
@@ -275,6 +295,7 @@ def check_1d_arrays_nb(
     check_sl_tsl_for_nan = (
         np.isnan(arrays_1d_tuple.sl_pcts).any()
         and np.isnan(arrays_1d_tuple.tsl_pcts_init).any()
+        and np.isnan(arrays_1d_tuple.sl_based_on).any()
     )
 
     # if leverage is too big or too small
@@ -375,11 +396,36 @@ def check_1d_arrays_nb(
 
     # stop loss break even checks
     if np.isfinite(arrays_1d_tuple.sl_to_be_based_on).any() and (
-        arrays_1d_tuple.sl_to_be_based_on.any() < SL_BE_or_Trail_BasedOn.open_price
-        or arrays_1d_tuple.sl_to_be_based_on.any() > SL_BE_or_Trail_BasedOn.close_price
+        arrays_1d_tuple.sl_to_be_based_on.any() < CandleBody.open
+        or arrays_1d_tuple.sl_to_be_based_on.any() > CandleBody.close
     ):
         raise ValueError(
-            "You need sl_to_be_based_on to be be either 0 1 2 or 3. look up SL_BE_or_Trail_BasedOn enums"
+            "You need sl_to_be_based_on to be be either open, high , low, or close. look up CandleBody enums"
+        )
+
+    # stop loss based on checks
+    if np.isfinite(arrays_1d_tuple.sl_based_on).any() and (
+        arrays_1d_tuple.sl_based_on.any() < CandleBody.open
+        or arrays_1d_tuple.sl_based_on.any() > CandleBody.close
+    ):
+        raise ValueError(
+            "You need sl_to_be_based_on to be be either open, high , low, or close. look up CandleBody enums"
+        )
+
+    if (
+        np.isfinite(arrays_1d_tuple.sl_based_on_add_pct).any()
+        and not np.isfinite(arrays_1d_tuple.sl_based_on).any()
+    ):
+        raise ValueError(
+            "You have to have a stop loss based on something to be able to add pct to it"
+        )
+
+    if (
+        np.isfinite(arrays_1d_tuple.sl_pcts).any()
+        and np.isfinite(arrays_1d_tuple.sl_based_on).any()
+    ):
+        raise ValueError(
+            "You can't have both stop loss pct and stop loss based on set at the same time"
         )
 
     if (
@@ -424,16 +470,18 @@ def check_1d_arrays_nb(
         not np.isfinite(arrays_1d_tuple.sl_to_be_based_on).any()
         or not np.isfinite(arrays_1d_tuple.sl_to_be_when_pct_from_avg_entry).any()
         or not np.isfinite(arrays_1d_tuple.sl_to_be_zero_or_entry).any()
+        or not np.isfinite(arrays_1d_tuple.sl_based_on).any()
         or not np.isfinite(arrays_1d_tuple.sl_pcts).any()
     ):
         raise ValueError(
-            "If you have sl_to_be set to true then you must provide the other params like sl_pcts etc"
+            "If you have sl_to_be set to true then you must provide the other params like sl_pcts or sl_based_on etc"
         )
 
     if (
         static_variables_tuple.sl_to_be and static_variables_tuple.sl_to_be_then_trail
     ) and (
         not np.isfinite(arrays_1d_tuple.sl_to_be_based_on).any()
+        or not np.isfinite(arrays_1d_tuple.sl_to_be_based_on).any()
         or not np.isfinite(arrays_1d_tuple.sl_to_be_when_pct_from_avg_entry).any()
         or not np.isfinite(arrays_1d_tuple.sl_to_be_zero_or_entry).any()
         or not np.isfinite(
@@ -442,16 +490,16 @@ def check_1d_arrays_nb(
         or not np.isfinite(arrays_1d_tuple.sl_pcts).any()
     ):
         raise ValueError(
-            "If you have sl_to_be set to true then you must provide the other params like sl_pcts etc"
+            "If you have sl_to_be set to true then you must provide the other params like sl_pcts or sl_based_on etc"
         )
 
     # tsl Checks
     if np.isfinite(arrays_1d_tuple.tsl_based_on).any() and (
-        arrays_1d_tuple.tsl_based_on.any() < SL_BE_or_Trail_BasedOn.open_price
-        or arrays_1d_tuple.tsl_based_on.any() > SL_BE_or_Trail_BasedOn.close_price
+        arrays_1d_tuple.tsl_based_on.any() < CandleBody.open
+        or arrays_1d_tuple.tsl_based_on.any() > CandleBody.close
     ):
         raise ValueError(
-            "You need tsl_to_be_based_on to be be either 0 1 2 or 3. look up SL_BE_or_Trail_BasedOn enums"
+            "You need tsl_to_be_based_on to be be either 0 1 2 or 3. look up CandleBody enums"
         )
 
     if (
@@ -545,16 +593,18 @@ def create_cart_product_nb(
     risk_rewards_cart_array = out.T[3]
     size_pct_cart_array = out.T[4]
     size_value_cart_array = out.T[5]
-    sl_pcts_cart_array = out.T[6]
-    sl_to_be_based_on_cart_array = out.T[7]
-    sl_to_be_trail_by_when_pct_from_avg_entry_cart_array = out.T[8]
-    sl_to_be_when_pct_from_avg_entry_cart_array = out.T[9]
-    sl_to_be_zero_or_entry_cart_array = out.T[10]
-    tp_pcts_cart_array = out.T[11]
-    tsl_based_on_cart_array = out.T[12]
-    tsl_pcts_init_cart_array = out.T[13]
-    tsl_trail_by_pct_cart_array = out.T[14]
-    tsl_when_pct_from_avg_entry_cart_array = out.T[15]
+    sl_based_on_add_pct_cart_array = out.T[6]
+    sl_based_on_cart_array = out.T[7]
+    sl_pcts_cart_array = out.T[8]
+    sl_to_be_based_on_cart_array = out.T[9]
+    sl_to_be_trail_by_when_pct_from_avg_entry_cart_array = out.T[10]
+    sl_to_be_when_pct_from_avg_entry_cart_array = out.T[11]
+    sl_to_be_zero_or_entry_cart_array = out.T[12]
+    tp_pcts_cart_array = out.T[13]
+    tsl_based_on_cart_array = out.T[14]
+    tsl_pcts_init_cart_array = out.T[15]
+    tsl_trail_by_pct_cart_array = out.T[16]
+    tsl_when_pct_from_avg_entry_cart_array = out.T[17]
 
     # leverage_cart_array = cart_array['leverage']
     # max_equity_risk_pct_cart_array = cart_array['max_equity_risk_pct']
@@ -576,22 +626,24 @@ def create_cart_product_nb(
     # tsl_when_pct_from_avg_entry_cart_array = cart_array['tsl_when_pct_from_avg_entry']
 
     return Arrays1dTuple(
-        leverage_cart_array,
-        max_equity_risk_pct_cart_array,
-        max_equity_risk_value_cart_array,
-        risk_rewards_cart_array,
-        size_pct_cart_array,
-        size_value_cart_array,
-        sl_pcts_cart_array,
-        sl_to_be_based_on_cart_array,
-        sl_to_be_trail_by_when_pct_from_avg_entry_cart_array,
-        sl_to_be_when_pct_from_avg_entry_cart_array,
-        sl_to_be_zero_or_entry_cart_array,
-        tp_pcts_cart_array,
-        tsl_based_on_cart_array,
-        tsl_pcts_init_cart_array,
-        tsl_trail_by_pct_cart_array,
-        tsl_when_pct_from_avg_entry_cart_array,
+        leverage=leverage_cart_array,
+        max_equity_risk_pct=max_equity_risk_pct_cart_array,
+        max_equity_risk_value=max_equity_risk_value_cart_array,
+        risk_rewards=risk_rewards_cart_array,
+        size_pct=size_pct_cart_array,
+        size_value=size_value_cart_array,
+        sl_based_on_add_pct=sl_based_on_add_pct_cart_array,
+        sl_based_on=sl_based_on_cart_array,
+        sl_pcts=sl_pcts_cart_array,
+        sl_to_be_based_on=sl_to_be_based_on_cart_array,
+        sl_to_be_trail_by_when_pct_from_avg_entry=sl_to_be_trail_by_when_pct_from_avg_entry_cart_array,
+        sl_to_be_when_pct_from_avg_entry=sl_to_be_when_pct_from_avg_entry_cart_array,
+        sl_to_be_zero_or_entry=sl_to_be_zero_or_entry_cart_array,
+        tp_pcts=tp_pcts_cart_array,
+        tsl_based_on=tsl_based_on_cart_array,
+        tsl_pcts_init=tsl_pcts_init_cart_array,
+        tsl_trail_by_pct=tsl_trail_by_pct_cart_array,
+        tsl_when_pct_from_avg_entry=tsl_when_pct_from_avg_entry_cart_array,
     )
 
 

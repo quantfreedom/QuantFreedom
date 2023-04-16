@@ -1,10 +1,41 @@
-currently working on:
-    ☐ first download the latest 200 candles of 5 min data
+important:
+    ☐ you have to get with the numba people so you can figure out literaly unroll because its possible that the cart product array had the wrong info because eveything was out of order
+
+strat Dev:
+    ✔ change sltobe thing to candle_body enums @done(23-04-16 08:57)
+    ✔ add stop loss based on and add pct in enums to entry @done(23-04-16 08:59)
+    ✔ sl based on check 1 d arrays @done(23-04-16 09:27)
+    ✔ cart product for sl based on @done(23-04-16 09:37)
+    ✔ added sl based on to entry order in main backtesting df entry order tuple @done(23-04-16 09:40)
+    ☐ add sl based on to long increase nb
+    ☐ add sl based on to short increase nb
+    ☐ 
+    ☐ 
+    ☐ 
+    ☐ 
+    ☐ 
+    ☐ change sltobe thing to candle_body enums
+    ☐ add stop loss based on and add pct in enums to entry
+    ☐ sl based on check 1 d arrays
+    ☐ cart product for sl based on
+    ☐ added sl based on to entry order in main backtesting df entry order tuple
+    ☐ 
+    ☐ 
+    ☐ 
+    ☐ 
+    ☐ add stop loss based on and add pct in simulate 6
+    ☐ add stop loss based on and add pct in base py
+    ☐ add stop loss based on and add pct in backtestdf only
+    ☐ add pct to sl based on
+    ☐ 
+    ☐ 
+    ✔ first download the latest 200 candles of 5 min data @done(23-04-16 08:49)
     ☐ use ccxt or bybit api to get up to date info ... check old code or watch chad vid to figure that out or part time larry
     ☐ create the divergence function to take the nessarcy info
     ☐ create single order createion function and hook that up to ccxt or bybit ... i prefer bybit i think
     ☐ update release notes
     ☐ update features
+    ☐ 
 
 Documentation:
     ☐ plotly helper functions
@@ -43,6 +74,7 @@ Numba:
     ☐ Does disabling cache=True in your application change anything?
 
 TODOs:
+    ☐ organize the check 1d arrays function
     ☐ there seems no point of having the final array in simulate 6 because all we need is or so we can plot ... the finaly arrray is the same info from the df array that we already made so doesn't seem like there is a point.
     ☐ make a grpah that takes the to the upside score and the gains percent and sets those as x and y values and graphs them as scatter plots so i cna see which one has the best of both worlds ... this would be for the DF
     ☐ make replay_trade_plotter work with order records

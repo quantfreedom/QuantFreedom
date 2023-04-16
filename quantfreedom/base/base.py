@@ -42,6 +42,8 @@ def backtest_df_only(
     # Stop Losses
     sl_pcts: PossibleArray = np.nan,
     sl_to_be: bool = False,
+    sl_based_on: PossibleArray = np.nan,
+    sl_based_on_add_pct: PossibleArray = np.nan,
     sl_to_be_based_on: PossibleArray = np.nan,
     sl_to_be_when_pct_from_avg_entry: PossibleArray = np.nan,
     sl_to_be_zero_or_entry: PossibleArray = np.nan,  # 0 for zero or 1 for entry
@@ -74,7 +76,7 @@ def backtest_df_only(
     Explainer Video
     ---------------
     https://youtu.be/yDNPhgO-450
-    
+
     Parameters
     ----------
     prices : pdFrame
@@ -113,6 +115,10 @@ def backtest_df_only(
         When you have selected a size type that is based on percent you put your size percent here.
     size_value : PossibleArray, np.nan
         when you selected a size type that is based on value you put your size value here.
+    sl_based_on : PossibleArray, np.nan
+        stop loss based on open high low close of candle
+    sl_based_on_add_pct : PossibleArray, np.nan
+        add a specific percentage amount to the stop loss
     sl_pcts : PossibleArray, np.nan
         stop loss based on percent
     sl_to_be : bool, False
@@ -185,6 +191,8 @@ def backtest_df_only(
         risk_rewards=risk_rewards,
         size_pct=size_pct,
         size_value=size_value,
+        sl_based_on_add_pct=sl_based_on_add_pct,
+        sl_based_on=sl_based_on,
         sl_pcts=sl_pcts,
         sl_to_be_based_on=sl_to_be_based_on,
         sl_to_be_trail_by_when_pct_from_avg_entry=sl_to_be_trail_by_when_pct_from_avg_entry,
