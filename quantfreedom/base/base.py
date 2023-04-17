@@ -13,7 +13,7 @@ from quantfreedom._typing import (
     pdFrame,
     PossibleArray,
 )
-from quantfreedom.enums.enums import OrderType, SL_BE_or_Trail_BasedOn
+from quantfreedom.enums.enums import OrderType, CandleBody
 
 
 def backtest_df_only(
@@ -124,7 +124,7 @@ def backtest_df_only(
     sl_to_be : bool, False
         if you want to move your stop loss to break even
     sl_to_be_based_on : PossibleArray, np.nan
-        Selecting what part of the candle you want your stop loss to break even to based on. Please look in enums api to find out more info on SL_BE_or_Trail_BasedOn
+        Selecting what part of the candle you want your stop loss to break even to based on. Please look in enums api to find out more info on CandleBody
     sl_to_be_when_pct_from_avg_entry : PossibleArray, np.nan
         how far in percent does the price have to be from your average entry to move your stop loss to break even
     sl_to_be_zero_or_entry : PossibleArray, np.nan
@@ -136,7 +136,7 @@ def backtest_df_only(
     tsl_true_or_false : bool, False
         if you want to have a trailing stop loss this must be set to true
     tsl_based_on : PossibleArray, np.nan
-        Selecting what part of the candle you want your trailing stop loss to be based on. Please look in enums api to find out more info on SL_BE_or_Trail_BasedOn
+        Selecting what part of the candle you want your trailing stop loss to be based on. Please look in enums api to find out more info on CandleBody
     tsl_trail_by_pct : PossibleArray, np.nan
         how much percent from the price do you want to trail your stop loss
     tsl_when_pct_from_avg_entry : PossibleArray, np.nan
@@ -272,12 +272,12 @@ def backtest_df_only(
     symbols = list(entries.columns.levels[0])
     setting_results_df = pd.DataFrame(settings_array).dropna(axis="columns", thresh=1)
 
-    for i in range(len(SL_BE_or_Trail_BasedOn._fields)):
+    for i in range(len(CandleBody._fields)):
         setting_results_df.replace(
-            {"tsl_based_on": {i: SL_BE_or_Trail_BasedOn._fields[i]}}, inplace=True
+            {"tsl_based_on": {i: CandleBody._fields[i]}}, inplace=True
         )
         setting_results_df.replace(
-            {"sl_to_be_based_on": {i: SL_BE_or_Trail_BasedOn._fields[i]}}, inplace=True
+            {"sl_to_be_based_on": {i: CandleBody._fields[i]}}, inplace=True
         )
     for i in range(len(symbols)):
         setting_results_df.replace({"symbol": {i: symbols[i]}}, inplace=True)
