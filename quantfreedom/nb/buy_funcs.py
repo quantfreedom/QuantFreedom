@@ -345,7 +345,7 @@ def long_increase_nb(
         order_type=entry_order.order_type,
         pct_chg_trade=np.nan,
         position=position_new,
-        prices=prices.open,
+        price=prices.open,
         realized_pnl=np.nan,
         size_value=size_value,
         sl_pcts=sl_pcts_new,

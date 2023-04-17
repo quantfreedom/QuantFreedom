@@ -244,7 +244,6 @@ def check_sl_tp_nb(
 
 @njit(cache=True)
 def process_order_nb(
-    price: float,
     bar: int,
     order_type: int,
     entries_col: int,
