@@ -7,14 +7,23 @@ price_data = generate_candles(
     plot_candles=False,
     seed=None,
 )
-sm = StrategyMaker
+sm = StrategyMaker()
 rsi_data = sm.from_talib(
-     func_name="rsi",
-     price_data=price_data,
+    func_name="rsi",
+    price_data=price_data,
     timeperiod=15,
     plot_results=False,
     # price="low",
 )
+
+ema_data = sm.from_talib(
+    func_name="ema",
+    price_data=price_data,
+    timeperiod=15,
+    plot_results=False,
+    # price="low",
+)
+ema_data.is_below(price_data=price_data, cand_ohlc="close")
 rsi_ema_ind = sm.from_talib(
     func_name='ema',
     indicator_data=rsi_data.data,
@@ -27,6 +36,4 @@ rsi_ema_ind.data
 rsi_data.is_below(indicator_data=rsi_ema_ind.data)
 # rsi_data.combined_data_frame(['is_below0', 'is_below1']
 
-sm.print()
-
-
+print(sm.combined_data_frame())

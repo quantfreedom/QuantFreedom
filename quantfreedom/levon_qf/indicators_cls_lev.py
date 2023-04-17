@@ -21,7 +21,7 @@ class Indicator:
         self.eval_to_data[name] = data
 
     def get_eval_to_data(self):
-        return self.data
+        return self.eval_to_data
     def combined_data_frame(self, eval_names):
         b = None
         for nm in eval_names:
@@ -39,21 +39,27 @@ class Indicator:
         self,
         user_args: Union[list[int, float], int, float, Array1d] = None,
         indicator_data: pdFrame = None,
-        prices: pdFrame = None,
+        price_data: pdFrame = None,
         cand_ohlc: str = None,
         plot_results: bool = False,
     ):
         if indicator_data is not None:
             data = _is_below(
+                user_args=user_args,
                 want_to_evaluate=indicator_data,
                 indicator_data=self.data,
                 plot_results=plot_results,
+                price_data=price_data,
+                cand_ohlc=cand_ohlc
             )
-        elif user_args is not None:
+        else:
             data = _is_below(
                 want_to_evaluate=self.data,
                 user_args=user_args,
+                indicator_data=indicator_data,
                 plot_results=plot_results,
+                price_data=price_data,
+                cand_ohlc=cand_ohlc
             )
         self.save_values(f"is_below{self.counter}", data)
         return data

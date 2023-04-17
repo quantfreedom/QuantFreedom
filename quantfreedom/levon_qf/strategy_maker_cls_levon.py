@@ -1,10 +1,11 @@
+from quantfreedom import combine_evals
 from quantfreedom._typing import pdFrame, Array1d
 from quantfreedom.levon_qf.talib_ind_levon import from_talib
 
 
 class StrategyMaker:
     def __init__(self):
-        self.indicators = {}
+        self.indicators = []
 
     def from_talib(self,
                     func_name: str,
@@ -24,9 +25,20 @@ class StrategyMaker:
                                plot_results,
                                plot_on_data,
                                **kwargs, )
-        self.indicators[func_name] = indicator
+        self.indicators.append(indicator)
         return indicator
 
     def print(self):
-        for k, v in self.indicators.items():
-            print(k, v.get_eval_to_data())
+        for v in self.indicators:
+            print(v.get_eval_to_data())
+
+    def combined_data_frame(self):
+        b = None
+        for indicator in self.indicators:
+            eval_to_data = indicator.get_eval_to_data()
+            for _, v in eval_to_data.items():
+                if b is None:
+                    b = v
+                else:
+                    b = combine_evals(b, v)
+        return b
