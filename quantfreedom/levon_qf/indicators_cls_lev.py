@@ -20,6 +20,8 @@ class Indicator:
         self.counter += 1
         self.eval_to_data[name] = data
 
+    def get_eval_to_data(self):
+        return self.data
     def combined_data_frame(self, eval_names):
         b = None
         for nm in eval_names:
