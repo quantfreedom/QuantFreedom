@@ -270,12 +270,21 @@ def check_1d_arrays_nb(
     if np.isinf(arrays_1d_tuple.sl_pcts).any() or arrays_1d_tuple.sl_pcts.any() < 0:
         raise ValueError("sl_pcts has to be nan or greater than 0 and not inf")
 
+    # sl based on checks
     if (
         np.isinf(arrays_1d_tuple.sl_based_on_add_pct).any()
         or arrays_1d_tuple.sl_based_on_add_pct.any() < 0
     ):
         raise ValueError(
             "sl_based_on_add_pct has to be nan or greater than 0 and not inf"
+        )
+
+    if (
+        not np.isfinite(arrays_1d_tuple.sl_based_on_add_pct).any()
+        and np.isfinite(arrays_1d_tuple.sl_based_on).any()
+    ):
+        raise ValueError(
+            "sl_based_on_add_pct has to be set in order to use sl based on ... please set it to be > 0 and not np.inf"
         )
 
     if (
@@ -410,14 +419,6 @@ def check_1d_arrays_nb(
     ):
         raise ValueError(
             "You need sl_to_be_based_on to be be either open, high , low, or close. look up CandleBody enums"
-        )
-
-    if (
-        np.isfinite(arrays_1d_tuple.sl_based_on_add_pct).any()
-        and not np.isfinite(arrays_1d_tuple.sl_based_on).any()
-    ):
-        raise ValueError(
-            "You have to have a stop loss based on something to be able to add pct to it"
         )
 
     if (

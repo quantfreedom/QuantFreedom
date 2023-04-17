@@ -1,23 +1,2 @@
-piv low = price data [0]
-piv low index
-candle counter = 1
-rsi div graph = fill_like(np.nan,  price data size)
-candle div graph = fill_like(np.nan,  price data size)
-for x in range(1, len(price data))
-        if data.low [x] < pivlow
-            for lb in range (lookback):
-                if x-1b > 0
-                    if curnt rsi[x] > rsi[x-lb] and data.close < data.open
-                        divergence dected = true
-                        
-                        rsi div graph[x-lb] = rsi[x-lb]-2
-                        rsi div graph[x] = rsi[x]-2
-                        
-                        candle div graph[x-lb] = data.low[x-lb]-2
-                        candle div graph[x] = data.low[x]-2
-                        
-                        break
-                else:
-                    break
-            piv low = data.low[x]
-        
+for second trade
+i need possible loss of current position

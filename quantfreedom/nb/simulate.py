@@ -22,6 +22,7 @@ from quantfreedom.enums.enums import (
     StopsOrder,
     StaticVariables,
     Arrays1dTuple,
+    PriceTuple,
 )
 
 
@@ -100,7 +101,9 @@ def backtest_df_only_nb(
                     risk_rewards=cart_array_tuple.risk_rewards[order_settings_counter],
                     size_pct=cart_array_tuple.size_pct[order_settings_counter],
                     size_value=cart_array_tuple.size_value[order_settings_counter],
-                    sl_based_on_add_pct= cart_array_tuple.sl_based_on_add_pct[order_settings_counter],
+                    sl_based_on_add_pct=cart_array_tuple.sl_based_on_add_pct[
+                        order_settings_counter
+                    ],
                     sl_based_on=cart_array_tuple.sl_based_on[order_settings_counter],
                     sl_pcts=cart_array_tuple.sl_pcts[order_settings_counter],
                     tp_pcts=cart_array_tuple.tp_pcts[order_settings_counter],
@@ -166,6 +169,12 @@ def backtest_df_only_nb(
 
                 # entries loop
                 for bar in range(total_bars):
+                    prices = PriceTuple(
+                        open=open_prices[bar],
+                        high=high_prices[bar],
+                        low=low_prices[bar],
+                        close=close_prices[bar],
+                    )
                     if account_state.available_balance < 5:
                         break
 
@@ -179,7 +188,7 @@ def backtest_df_only_nb(
                             order_result=order_result,
                             order_settings_counter=order_settings_counter,
                             order_type=entry_order.order_type,
-                            price=open_prices[bar],
+                            prices=prices,
                             static_variables_tuple=static_variables_tuple,
                             strat_records_filled=strat_records_filled,
                             strat_records=strat_records[strat_records_filled[0]],
@@ -210,7 +219,7 @@ def backtest_df_only_nb(
                                 order_result=order_result,
                                 order_settings_counter=order_settings_counter,
                                 order_type=order_result.order_type,
-                                price=open_prices[bar],
+                                prices=prices,
                                 static_variables_tuple=static_variables_tuple,
                                 strat_records_filled=strat_records_filled,
                                 strat_records=strat_records[strat_records_filled[0]],

@@ -72,6 +72,77 @@ def long_increase_nb(
                 - temp_sl_price * static_variables_tuple.fee_pct / prices.open
             )
 
+        elif np.isfinite(entry_order.sl_based_on):
+            sl_based_on = entry_order.sl_based_on
+            if sl_based_on == CandleBody.low:
+                sl_prices_new = prices.low - (
+                    prices.low * entry_order.sl_based_on_add_pct
+                )
+            elif sl_based_on == CandleBody.close:
+                sl_prices_new = prices.close - (
+                    prices.close * entry_order.sl_based_on_add_pct
+                )
+            elif sl_based_on == CandleBody.open:
+                sl_prices_new = prices.open - (
+                    prices.open * entry_order.sl_based_on_add_pct
+                )
+            elif sl_based_on == CandleBody.high:
+                sl_prices_new = prices.high - (
+                    prices.high * entry_order.sl_based_on_add_pct
+                )
+
+            if static_variables_tuple.size_type == SizeType.RiskPercentOfAccount:
+                if position_old != 0:
+                    tpl = (  # total possible loss no fees on second trade
+                        (
+                            (order_result.position / order_result.average_entry)
+                            * (order_result.sl_prices - order_result.average_entry)
+                        )
+                        - (
+                            (order_result.position / order_result.average_entry)
+                            * order_result.average_entry
+                            * static_variables_tuple.fee_pct
+                        )
+                        - (
+                            (order_result.position / order_result.average_entry)
+                            * order_result.sl_prices
+                            * static_variables_tuple.fee_pct
+                        )
+                        + -(account_state.equity * entry_order.size_pct)
+                    )
+
+                    size_value = -(
+                        (
+                            tpl * prices.open * order_result.average_entry
+                            + prices.open
+                            * order_result.position
+                            * order_result.average_entry
+                            - sl_prices_new * prices.open * order_result.position
+                            + sl_prices_new
+                            * prices.open
+                            * order_result.position
+                            * static_variables_tuple.fee_pct
+                            + prices.open
+                            * order_result.position
+                            * order_result.average_entry
+                            * static_variables_tuple.fee_pct
+                        )
+                        / (
+                            order_result.average_entry
+                            * (
+                                prices.open
+                                - sl_prices_new
+                                + prices.open * static_variables_tuple.fee_pct
+                                + sl_prices_new * static_variables_tuple.fee_pct
+                            )
+                        )
+                    )
+                    position_new = position_old + size_value
+                    average_entry_new = (size_value + position_old) / (
+                        (size_value / prices.open) + (position_old / average_entry_new)
+                    )
+                    sl_pcts_new = (average_entry_new - sl_prices_new) / average_entry_new 
+
         elif np.isfinite(tsl_pcts_init_new):
             if static_variables_tuple.size_type == SizeType.RiskPercentOfAccount:
                 size_value = (

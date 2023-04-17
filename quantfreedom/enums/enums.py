@@ -37,6 +37,7 @@ __all__ = [
     "StopsOrder",
     "StaticVariables",
     "Arrays1dTuple",
+    "PriceTuple",
     "or_dt",
     "strat_df_array_dt",
     "settings_array_dt",
@@ -65,6 +66,13 @@ class EntryOrder(NamedTuple):
     sl_pcts: float = np.nan
     tp_pcts: float = np.nan
     tsl_pcts_init: float = np.nan
+
+
+class PriceTuple(NamedTuple):
+    open: float = np.nan
+    high: float = np.nan
+    low: float = np.nan
+    close: float = np.nan
 
 
 class Arrays1dTuple(NamedTuple):

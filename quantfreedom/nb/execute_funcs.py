@@ -23,6 +23,7 @@ from quantfreedom.enums.enums import (
     OrderResult,
     StopsOrder,
     StaticVariables,
+    PriceTuple,
 )
 
 
@@ -249,6 +250,7 @@ def process_order_nb(
     entries_col: int,
     order_settings_counter: int,
     symbol_counter: int,
+    prices: PriceTuple,
     account_state: AccountState,
     entry_order: EntryOrder,
     order_result: OrderResult,
@@ -261,7 +263,7 @@ def process_order_nb(
     fill_strat = False
     if order_type == OrderType.LongEntry:
         account_state_new, order_result_new = long_increase_nb(
-            price=price,
+            prices=prices,
             entry_order=entry_order,
             order_result=order_result,
             account_state=account_state,
@@ -269,7 +271,7 @@ def process_order_nb(
         )
     elif order_type == OrderType.ShortEntry:
         account_state_new, order_result_new = short_increase_nb(
-            price=price,
+            prices=prices,
             entry_order=entry_order,
             order_result=order_result,
             account_state=account_state,
