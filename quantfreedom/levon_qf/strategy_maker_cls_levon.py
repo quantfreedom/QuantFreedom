@@ -13,6 +13,7 @@ from quantfreedom._typing import (
 class StrategyMaker:
     def __init__(self):
         self.indicators = []
+        self.combined_data = None
 
     def from_talib(self,
                    func_name: str,
@@ -48,14 +49,13 @@ class StrategyMaker:
                     b = v
                 else:
                     b = combine_evals(b, v)
+        self.combined_data = b
         return b
 
     def backtest_df(
             self,
             # entry info
             prices: pdFrame,
-            entries: pdFrame,
-            # required account info
             equity: float,
             fee_pct: float,
             mmr_pct: float,
@@ -99,6 +99,9 @@ class StrategyMaker:
             divide_records_array_size_by: float = 1.0,  # between 1 and 1000
             upside_filter: float = -1.0,  # between -1 and 1
     ) -> tuple[pdFrame, pdFrame]:
+        entries = self.combined_data
+        if entries is None:
+            raise ValueError("fist you have to call combine data method")
         return backtest_df_only(
             prices,
             entries,
