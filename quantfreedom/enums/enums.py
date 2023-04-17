@@ -119,17 +119,17 @@ class OrderResult(NamedTuple):
 
 
 class StaticVariables(NamedTuple):
+    lev_mode: int
+    order_type: int
+    size_type: int
     divide_records_array_size_by: float = 1.0
     fee_pct: float = 0.06
-    lev_mode: int
     max_lev: float = 100.0
     max_order_size_pct: float = 100.0
     max_order_size_value: float = np.inf
     min_order_size_pct: float = 0.01
     min_order_size_value: float = 1.0
     mmr_pct: float = 0.5
-    order_type: int
-    size_type: int
     sl_to_be_then_trail: bool = False
     sl_to_be: bool = False
     tsl_true_or_false: bool = False

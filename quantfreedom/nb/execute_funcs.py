@@ -16,7 +16,7 @@ from quantfreedom._typing import (
 )
 from quantfreedom.enums.enums import (
     OrderType,
-    SL_BE_or_Trail_BasedOn,
+    CandleBody,
     OrderStatus,
     AccountState,
     EntryOrder,
@@ -76,13 +76,13 @@ def check_sl_tp_nb(
 
         # Stop Loss to break even
         elif not moved_sl_to_be_new and stops_order.sl_to_be:
-            if stops_order.sl_to_be_based_on == SL_BE_or_Trail_BasedOn.low_price:
+            if stops_order.sl_to_be_based_on == CandleBody.low:
                 sl_be_based_on = low_price
-            elif stops_order.sl_to_be_based_on == SL_BE_or_Trail_BasedOn.close_price:
+            elif stops_order.sl_to_be_based_on == CandleBody.close:
                 sl_be_based_on = close_price
-            elif stops_order.sl_to_be_based_on == SL_BE_or_Trail_BasedOn.open_price:
+            elif stops_order.sl_to_be_based_on == CandleBody.open:
                 sl_be_based_on = open_price
-            elif stops_order.sl_to_be_based_on == SL_BE_or_Trail_BasedOn.high_price:
+            elif stops_order.sl_to_be_based_on == CandleBody.high:
                 sl_be_based_on = high_price
 
             if (
@@ -104,13 +104,13 @@ def check_sl_tp_nb(
 
         # Trailing Stop Loss
         elif stops_order.tsl_true_or_false:
-            if stops_order.tsl_based_on == SL_BE_or_Trail_BasedOn.low_price:
+            if stops_order.tsl_based_on == CandleBody.low:
                 trail_based_on = low_price
-            elif stops_order.tsl_based_on == SL_BE_or_Trail_BasedOn.high_price:
+            elif stops_order.tsl_based_on == CandleBody.high:
                 trail_based_on = high_price
-            elif stops_order.tsl_based_on == SL_BE_or_Trail_BasedOn.open_price:
+            elif stops_order.tsl_based_on == CandleBody.open:
                 trail_based_on = open_price
-            elif stops_order.tsl_based_on == SL_BE_or_Trail_BasedOn.close_price:
+            elif stops_order.tsl_based_on == CandleBody.close:
                 trail_based_on = close_price
 
             # not going to adjust every candle
@@ -152,13 +152,13 @@ def check_sl_tp_nb(
 
         # Stop Loss to break even
         elif not moved_sl_to_be_new and stops_order.sl_to_be:
-            if stops_order.sl_to_be_based_on == SL_BE_or_Trail_BasedOn.low_price:
+            if stops_order.sl_to_be_based_on == CandleBody.low:
                 sl_be_based_on = low_price
-            elif stops_order.sl_to_be_based_on == SL_BE_or_Trail_BasedOn.close_price:
+            elif stops_order.sl_to_be_based_on == CandleBody.close:
                 sl_be_based_on = close_price
-            elif stops_order.sl_to_be_based_on == SL_BE_or_Trail_BasedOn.open_price:
+            elif stops_order.sl_to_be_based_on == CandleBody.open:
                 sl_be_based_on = open_price
-            elif stops_order.sl_to_be_based_on == SL_BE_or_Trail_BasedOn.high_price:
+            elif stops_order.sl_to_be_based_on == CandleBody.high:
                 sl_be_based_on = high_price
 
             if (
@@ -180,13 +180,13 @@ def check_sl_tp_nb(
 
         # Trailing Stop Loss
         elif stops_order.tsl_true_or_false:
-            if stops_order.tsl_based_on == SL_BE_or_Trail_BasedOn.high_price:
+            if stops_order.tsl_based_on == CandleBody.high:
                 trail_based_on = high_price
-            elif stops_order.tsl_based_on == SL_BE_or_Trail_BasedOn.close_price:
+            elif stops_order.tsl_based_on == CandleBody.close:
                 trail_based_on = close_price
-            elif stops_order.tsl_based_on == SL_BE_or_Trail_BasedOn.open_price:
+            elif stops_order.tsl_based_on == CandleBody.open:
                 trail_based_on = open_price
-            elif stops_order.tsl_based_on == SL_BE_or_Trail_BasedOn.low_price:
+            elif stops_order.tsl_based_on == CandleBody.low:
                 trail_based_on = low_price
 
             # not going to adjust every candle
