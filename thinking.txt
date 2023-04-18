@@ -1,2 +1,4 @@
-for second trade
-i need possible loss of current position
+get data
+check if entry
+if is entry get size value
+if size value is not np.nan place trade

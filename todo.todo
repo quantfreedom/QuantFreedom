@@ -1,6 +1,9 @@
 important:
     ☐ you have to get with the numba people so you can figure out literaly unroll because its possible that the cart product array had the wrong info because eveything was out of order
 
+strategy:
+    ☐ add trade counter and multiply by max equity risk
+
 strat Dev:
     ✔ change sltobe thing to candle_body enums @done(23-04-16 08:57)
     ✔ add stop loss based on and add pct in enums to entry @done(23-04-16 08:59)
@@ -11,7 +14,7 @@ strat Dev:
     ☐ add sl based on to long increase nb
     ☐ add sl based on to short increase nb
     ☐ 
-    ☐ 
+    ☐ impletment trade counter into buy sell code
     ☐ 
     ☐ 
     ☐ 

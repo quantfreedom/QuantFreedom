@@ -35,7 +35,7 @@ def backtest_df_only_nb(
     # entry info
     og_equity: float,
     entries: PossibleArray,
-    prices: PossibleArray,
+    price_data: PossibleArray,
     # filters
     gains_pct_filter: float,
     total_trade_filter: int,
@@ -65,21 +65,19 @@ def backtest_df_only_nb(
     strat_records_filled = np.array([0])
 
     prices_start = 0
-    prices_end = 4
     entries_per_symbol = int(entries.shape[1] / num_of_symbols)
     entries_start = 0
     entries_end = entries_per_symbol
     entries_col = 0
 
     for symbol_counter in range(num_of_symbols):
-        open_prices = prices[:, prices_start:prices_end][:, 0]
-        high_prices = prices[:, prices_start:prices_end][:, 1]
-        low_prices = prices[:, prices_start:prices_end][:, 2]
-        close_prices = prices[:, prices_start:prices_end][:, 3]
+        open_prices = price_data[:, prices_start]
+        high_prices = price_data[:, prices_start + 1]
+        low_prices = price_data[:, prices_start + 2]
+        close_prices = price_data[:, prices_start + 3]
 
-        prices_start = prices_end
-        prices_end += 4
-
+        prices_start +=4
+        
         symbol_entries = entries[:, entries_start:entries_end]
         entries_start = entries_end
         entries_end += entries_per_symbol

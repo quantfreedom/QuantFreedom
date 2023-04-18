@@ -18,7 +18,7 @@ from quantfreedom.enums.enums import OrderType, CandleBody
 
 def backtest_df_only(
     # entry info
-    prices: pdFrame,
+    price_data: pdFrame,
     entries: pdFrame,
     # required account info
     equity: float,
@@ -79,8 +79,8 @@ def backtest_df_only(
 
     Parameters
     ----------
-    prices : pdFrame
-        Dataframe of prices
+    price_data : pdFrame
+        Dataframe of price_data
     entries : pdFrame
         Dataframe of entries
     equity : float
@@ -218,7 +218,7 @@ def backtest_df_only(
     )
     cart_array_tuple = create_cart_product_nb(arrays_1d_tuple=arrays_1d_tuple)
 
-    num_of_symbols = len(prices.columns.levels[0])
+    num_of_symbols = len(price_data.columns.levels[0])
 
     # Creating Settings Vars
     total_order_settings = cart_array_tuple.sl_pcts.shape[0]
@@ -252,7 +252,7 @@ def backtest_df_only(
         gains_pct_filter=gains_pct_filter,
         num_of_symbols=num_of_symbols,
         og_equity=equity,
-        prices=prices.values,
+        price_data=price_data.values,
         static_variables_tuple=static_variables_tuple,
         total_bars=total_bars,
         total_indicator_settings=total_indicator_settings,
@@ -264,7 +264,7 @@ def backtest_df_only(
         by=["to_the_upside", "gains_pct"], ascending=False
     )
 
-    symbols = list(prices.columns.levels[0])
+    symbols = list(price_data.columns.levels[0])
 
     for i in range(len(symbols)):
         strat_results_df.replace({"symbol": {i: symbols[i]}}, inplace=True)
