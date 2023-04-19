@@ -30,4 +30,4 @@ def sim_6_base(
         broadcast_arrays=broadcast_arrays,
     )
 
-    return strat_results_df, setting_results_df
+    return order_records

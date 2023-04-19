@@ -135,7 +135,10 @@ class StaticVariables(NamedTuple):
     sl_to_be_then_trail: bool = False
     sl_to_be: bool = False
     tsl_true_or_false: bool = False
-    upside_filter: float = -np.inf
+    upside_filter: float = -1.0
+    gains_pct_filter: float = -np.inf
+    total_trade_filter: int = 0
+    divide_records_array_size_by: float = 1.0
 
 
 class StopsOrder(NamedTuple):

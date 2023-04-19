@@ -165,7 +165,6 @@ def backtest_df_only(
     static_variables_tuple = static_var_checker_nb(
         equity=equity,
         divide_records_array_size_by=divide_records_array_size_by,
-        equity=equity,
         fee_pct=fee_pct,
         gains_pct_filter=gains_pct_filter,
         lev_mode=lev_mode,

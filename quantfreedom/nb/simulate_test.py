@@ -33,9 +33,9 @@ def sim_test_thing_nb(
     static_variables_tuple: StaticVariables,
     broadcast_arrays: Arrays1dTuple,
 ) -> tuple[Array1d, RecordArray]:
-    order_records = np.empty(entries[0] * 2, dtype=or_dt)
-    order_records_id = np.array([0])
     total_bars = entries.shape[0]
+    order_records = np.empty(total_bars * 2, dtype=or_dt)
+    order_records_id = np.array([0])
 
     prices_start = 0
     for settings_counter in range(entries.shape[1]):
@@ -119,6 +119,12 @@ def sim_test_thing_nb(
 
         if curr_entries[bar]:
             # Process Order nb
+            prices = PriceTuple(
+                open=open_prices[bar],
+                high=high_prices[bar],
+                low=low_prices[bar],
+                close=close_prices[bar],
+            )
             account_state, order_result = process_order_nb(
                 account_state=account_state,
                 bar=bar,
@@ -128,8 +134,8 @@ def sim_test_thing_nb(
                 order_records=order_records[order_records_id[0]],
                 order_result=order_result,
                 order_type=entry_order.order_type,
-                price=open_prices[bar],
-                settings_counter=settings_counter,
+                prices=prices,
+                order_settings_counter=settings_counter,
                 static_variables_tuple=static_variables_tuple,
                 symbol_counter=settings_counter,
             )
@@ -155,14 +161,14 @@ def sim_test_thing_nb(
                 account_state, order_result = process_order_nb(
                     entry_order=entry_order,
                     order_type=order_result.order_type,
-                    price=open_prices[bar],
+                    prices=prices,
                     account_state=account_state,
                     order_result=order_result,
                     static_variables_tuple=static_variables_tuple,
                     bar=bar,
                     entries_col=settings_counter,
                     symbol_counter=settings_counter,
-                    settings_counter=settings_counter,
+                    order_settings_counter=settings_counter,
                     order_records=order_records[order_records_id[0]],
                     order_records_id=order_records_id,
                 )
