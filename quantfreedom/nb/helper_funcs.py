@@ -109,6 +109,7 @@ def static_var_checker_nb(
     min_order_size_pct /= 100
 
     return StaticVariables(
+        equity=equity,
         divide_records_array_size_by=divide_records_array_size_by,
         fee_pct=fee_pct,
         lev_mode=lev_mode,
@@ -647,7 +648,7 @@ def create_cart_product_nb(
 
 
 @njit(cache=True)
-def boradcast_to_1d_arrays(
+def boradcast_to_1d_arrays_nb(
     arrays_1d_tuple: Arrays1dTuple,
     entries: Array2d,
 ):

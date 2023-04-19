@@ -119,6 +119,7 @@ class OrderResult(NamedTuple):
 
 
 class StaticVariables(NamedTuple):
+    equity: float
     lev_mode: int
     lev_mode: int
     order_type: int
