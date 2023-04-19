@@ -623,8 +623,6 @@ def create_cart_product_nb(
     # tp_pcts_cart_array = cart_array['tp_pcts']
     # tsl_based_on_cart_array = cart_array['tsl_based_on']
     # tsl_pcts_init_cart_array = cart_array['tsl_pcts_init']
-    # tsl_trail_by_pct_cart_array = cart_array['tsl_trail_by_pct']
-    # tsl_when_pct_from_avg_entry_cart_array = cart_array['tsl_when_pct_from_avg_entry']
 
     return Arrays1dTuple(
         leverage=leverage_cart_array,
@@ -645,6 +643,81 @@ def create_cart_product_nb(
         tsl_pcts_init=tsl_pcts_init_cart_array,
         tsl_trail_by_pct=tsl_trail_by_pct_cart_array,
         tsl_when_pct_from_avg_entry=tsl_when_pct_from_avg_entry_cart_array,
+    )
+
+
+@njit(cache=True)
+def boradcast_to_1d_arrays(
+    arrays_1d_tuple: Arrays1dTuple,
+    entries: Array2d,
+):
+    x = 0
+    biggest = 1
+    while x < 7:
+        if arrays_1d_tuple[x].size > 1:
+            biggest = arrays_1d_tuple[x].size
+            x += 1
+            break
+        x += 1
+
+    while x < 7:
+        if arrays_1d_tuple[x].size > 1 and arrays_1d_tuple[x].size != biggest:
+            raise ValueError("Size mismatch")
+        x += 1
+    if biggest > 6:
+        raise ValueError("Total amount of tests must be <= 6")
+
+    leverage_braodcast_array = np.broadcast_to(arrays_1d_tuple[0], biggest)
+    max_equity_risk_pct_braodcast_array = np.broadcast_to(arrays_1d_tuple[1], biggest)
+    max_equity_risk_value_braodcast_array = np.broadcast_to(arrays_1d_tuple[2], biggest)
+    risk_rewards_braodcast_array = np.broadcast_to(arrays_1d_tuple[3], biggest)
+    size_pct_braodcast_array = np.broadcast_to(arrays_1d_tuple[4], biggest)
+    size_value_braodcast_array = np.broadcast_to(arrays_1d_tuple[5], biggest)
+    sl_based_on_add_pct_braodcast_array = np.broadcast_to(arrays_1d_tuple[6], biggest)
+    sl_based_on_braodcast_array = np.broadcast_to(arrays_1d_tuple[7], biggest)
+    sl_pcts_braodcast_array = np.broadcast_to(arrays_1d_tuple[8], biggest)
+    sl_to_be_based_on_braodcast_array = np.broadcast_to(arrays_1d_tuple[9], biggest)
+    sl_to_be_trail_by_when_pct_from_avg_entry_braodcast_array = np.broadcast_to(
+        arrays_1d_tuple[10], biggest
+    )
+    sl_to_be_when_pct_from_avg_entry_braodcast_array = np.broadcast_to(
+        arrays_1d_tuple[11], biggest
+    )
+    sl_to_be_zero_or_entry_braodcast_array = np.broadcast_to(
+        arrays_1d_tuple[12], biggest
+    )
+    tp_pcts_braodcast_array = np.broadcast_to(arrays_1d_tuple[13], biggest)
+    tsl_based_on_braodcast_array = np.broadcast_to(arrays_1d_tuple[14], biggest)
+    tsl_pcts_init_braodcast_array = np.broadcast_to(arrays_1d_tuple[15], biggest)
+    tsl_trail_by_pct_braodcast_array = np.broadcast_to(arrays_1d_tuple[16], biggest)
+    tsl_when_pct_from_avg_entry_braodcast_array = np.broadcast_to(
+        arrays_1d_tuple[17], biggest
+    )
+
+    if entries.shape[1] == 1:
+        entries = np.broadcast_to(entries, (entries.shape[0], biggest))
+    elif entries.shape[1] != biggest:
+        raise ValueError("Something is wrong with entries")
+
+    return entries, Arrays1dTuple(
+        leverage=leverage_braodcast_array,
+        max_equity_risk_pct=max_equity_risk_pct_braodcast_array,
+        max_equity_risk_value=max_equity_risk_value_braodcast_array,
+        risk_rewards=risk_rewards_braodcast_array,
+        size_pct=size_pct_braodcast_array,
+        size_value=size_value_braodcast_array,
+        sl_based_on_add_pct=sl_based_on_add_pct_braodcast_array,
+        sl_based_on=sl_based_on_braodcast_array,
+        sl_pcts=sl_pcts_braodcast_array,
+        sl_to_be_based_on=sl_to_be_based_on_braodcast_array,
+        sl_to_be_trail_by_when_pct_from_avg_entry=sl_to_be_trail_by_when_pct_from_avg_entry_braodcast_array,
+        sl_to_be_when_pct_from_avg_entry=sl_to_be_when_pct_from_avg_entry_braodcast_array,
+        sl_to_be_zero_or_entry=sl_to_be_zero_or_entry_braodcast_array,
+        tp_pcts=tp_pcts_braodcast_array,
+        tsl_based_on=tsl_based_on_braodcast_array,
+        tsl_pcts_init=tsl_pcts_init_braodcast_array,
+        tsl_trail_by_pct=tsl_trail_by_pct_braodcast_array,
+        tsl_when_pct_from_avg_entry=tsl_when_pct_from_avg_entry_braodcast_array,
     )
 
 

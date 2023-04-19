@@ -21,7 +21,7 @@ Enums
 
 import numpy as np
 
-from quantfreedom._typing import NamedTuple, Array1d
+from quantfreedom._typing import NamedTuple, Array1d, PossibleArray
 
 __all__ = [
     "AccountState",
@@ -76,24 +76,24 @@ class PriceTuple(NamedTuple):
 
 
 class Arrays1dTuple(NamedTuple):
-    leverage: Array1d
-    max_equity_risk_pct: Array1d
-    max_equity_risk_value: Array1d
-    risk_rewards: Array1d
-    size_pct: Array1d
-    size_value: Array1d
-    sl_based_on_add_pct: Array1d
-    sl_based_on: Array1d
-    sl_pcts: Array1d
-    sl_to_be_based_on: Array1d
-    sl_to_be_trail_by_when_pct_from_avg_entry: Array1d
-    sl_to_be_when_pct_from_avg_entry: Array1d
-    sl_to_be_zero_or_entry: Array1d
-    tp_pcts: Array1d
-    tsl_based_on: Array1d
-    tsl_pcts_init: Array1d
-    tsl_trail_by_pct: Array1d
-    tsl_when_pct_from_avg_entry: Array1d
+    leverage: PossibleArray = np.nan
+    max_equity_risk_pct: PossibleArray = np.nan
+    max_equity_risk_value: PossibleArray = np.nan
+    risk_rewards: PossibleArray = np.nan
+    size_pct: PossibleArray = np.nan
+    size_value: PossibleArray = np.nan
+    sl_based_on_add_pct: PossibleArray = np.nan
+    sl_based_on: PossibleArray = np.nan
+    sl_pcts: PossibleArray = np.nan
+    sl_to_be_based_on: PossibleArray = np.nan
+    sl_to_be_trail_by_when_pct_from_avg_entry: PossibleArray = np.nan
+    sl_to_be_when_pct_from_avg_entry: PossibleArray = np.nan
+    sl_to_be_zero_or_entry: PossibleArray = np.nan
+    tp_pcts: PossibleArray = np.nan
+    tsl_based_on: PossibleArray = np.nan
+    tsl_pcts_init: PossibleArray = np.nan
+    tsl_trail_by_pct: PossibleArray = np.nan
+    tsl_when_pct_from_avg_entry: PossibleArray = np.nan
 
 
 class OrderResult(NamedTuple):
@@ -119,6 +119,7 @@ class OrderResult(NamedTuple):
 
 
 class StaticVariables(NamedTuple):
+    lev_mode: int
     lev_mode: int
     order_type: int
     size_type: int
