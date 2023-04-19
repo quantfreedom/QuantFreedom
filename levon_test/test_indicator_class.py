@@ -7,6 +7,7 @@ price_data = generate_candles(
     plot_candles=False,
     seed=None,
 )
+#comment
 sm = StrategyMaker()
 rsi_data = sm.from_talib(
     func_name="rsi",
