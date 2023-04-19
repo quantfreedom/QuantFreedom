@@ -13,6 +13,7 @@ thinking.txt
 .mustache
 tests/
 math/
+strategy/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
