@@ -163,6 +163,7 @@ def backtest_df_only(
     print("Checking static variables for errors or conflicts.")
     # Static checks
     static_variables_tuple = static_var_checker_nb(
+        equity=equity,
         divide_records_array_size_by=divide_records_array_size_by,
         equity=equity,
         fee_pct=fee_pct,

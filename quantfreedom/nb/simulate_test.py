@@ -27,7 +27,7 @@ from quantfreedom.enums.enums import (
 
 
 @njit(cache=True)
-def simulate_up_to_6_nb(
+def sim_test_thing_nb(
     entries,
     price_data,
     static_variables_tuple: StaticVariables,
@@ -83,10 +83,10 @@ def simulate_up_to_6_nb(
     )
     # Account State Reset
     account_state = AccountState(
-        available_balance=og_equity,
+        available_balance=static_variables_tuple.equity,
         cash_borrowed=0.0,
         cash_used=0.0,
-        equity=og_equity,
+        equity=static_variables_tuple.equity,
     )
 
     # Order Result Reset
@@ -132,20 +132,6 @@ def simulate_up_to_6_nb(
                 settings_counter=settings_counter,
                 static_variables_tuple=static_variables_tuple,
                 symbol_counter=settings_counter,
-            )
-            account_state, order_result = process_order_nb(
-                account_state=account_state,
-                bar=bar,
-                entries_col=entries_col,
-                entry_order=entry_order,
-                order_result=order_result,
-                order_settings_counter=order_settings_counter,
-                order_type=entry_order.order_type,
-                prices=prices,
-                static_variables_tuple=static_variables_tuple,
-                strat_records_filled=strat_records_filled,
-                strat_records=strat_records[strat_records_filled[0]],
-                symbol_counter=symbol_counter,
             )
         if order_result.position > 0:
             # Check Stops
