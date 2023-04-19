@@ -1,4 +1,6 @@
-from quantfreedom import combine_evals, backtest_df_only
+import pandas as pd
+
+from quantfreedom import combine_evals, backtest_df_only, simulate_up_to_6_nb, CandleBody, Arrays1dTuple
 from quantfreedom._typing import pdFrame, Array1d
 from quantfreedom.levon_qf.talib_ind_levon import from_talib
 
@@ -14,6 +16,9 @@ class StrategyMaker:
     def __init__(self):
         self.indicators = []
         self.combined_data = None
+        self.strat_results_df = None
+        self.settings_results_df = None
+        self.price_data = None
 
     def from_talib(self,
                    func_name: str,
@@ -102,7 +107,8 @@ class StrategyMaker:
         entries = self.combined_data
         if entries is None:
             raise ValueError("fist you have to call combine data method")
-        return backtest_df_only(
+        self.price_data = prices
+        self.strat_results_df, self.settings_results_df = backtest_df_only(
             prices,
             entries,
             equity,
@@ -146,3 +152,60 @@ class StrategyMaker:
             divide_records_array_size_by,  # between 1 and 1000
             upside_filter,
         )
+        return self.strat_results_df, self.settings_results_df
+
+    def select_row_and_simulate(self, row_id):
+        settings = self.settings_results_df.iloc[:, row_id]
+
+        val = settings.loc["symbol"]
+        if isinstance(val, str):
+            price_data = self.price_data[[settings["symbol"]]]
+            entry_data = self.combined_data.iloc[:, [settings["entries_col"]]]
+        else:
+            price_data = self.price_data[settings.loc["symbol"].values.tolist()]
+            entry_data = self.combined_data.iloc[:, settings.loc["entries_col"].values.tolist()]
+
+        field_names = self.settings_results_df.iloc[:, row_id].index.to_list()[2:]
+        field_data = pd.DataFrame(self.settings_results_df.iloc[2:, row_id])
+        try:
+            field_data.loc["sl_to_be_based_on"]
+            for i in CandleBody._fields:
+                field_data.loc["sl_to_be_based_on"].replace(i, getattr(CandleBody, i), inplace=True)
+        except:
+            pass
+        try:
+            field_data.loc["tsl_based_on"]
+            for i in CandleBody._fields:
+                field_data.loc["tsl_based_on"].replace(i, getattr(CandleBody, i), inplace=True)
+        except:
+            pass
+        counter = 0
+        empadf = []
+        for field in Arrays1dTuple._fields:
+            if field == field_names[counter]:
+                empadf.append(np.asarray(field_data.loc[field_names[counter]].values, dtype=np.float_))
+                counter += 1
+            else:
+                empadf.append(np.nan)
+        empadf = Arrays1dTuple(
+            leverage=empadf[0],
+            max_equity_risk_pct=empadf[1],
+            max_equity_risk_value=empadf[2],
+            risk_rewards=empadf[3],
+            size_pct=empadf[4],
+            size_value=empadf[5],
+            sl_based_on_add_pct=empadf[6],
+            sl_based_on=empadf[7],
+            sl_pcts=empadf[8],
+            sl_to_be_based_on=empadf[9],
+            sl_to_be_trail_by_when_pct_from_avg_entry=empadf[10],
+            sl_to_be_when_pct_from_avg_entry=empadf[11],
+            sl_to_be_zero_or_entry=empadf[12],
+            tp_pcts=empadf[13],
+            tsl_based_on=empadf[14],
+            tsl_pcts_init=empadf[15],
+            tsl_trail_by_pct=empadf[16],
+            tsl_when_pct_from_avg_entry=empadf[17],
+        )
+
+        return price_data, entry_data, empadf
