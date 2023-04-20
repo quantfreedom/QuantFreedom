@@ -173,4 +173,4 @@ def sim_test_thing_nb(
                         order_records_id=order_records_id,
                     )
 
-        return order_records[: order_records_id[-1]]
+    return order_records[: order_records_id[-1]]
