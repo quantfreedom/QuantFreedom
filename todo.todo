@@ -2,6 +2,7 @@ important:
     ☐ you have to get with the numba people so you can figure out literaly unroll because its possible that the cart product array had the wrong info because eveything was out of order
 
 strategy:
+    ☐ the equity is constantly changing as your unrealized pnl goes up and down ... so 
     ☐ add trade counter and multiply by max equity risk
 
 strat Dev:

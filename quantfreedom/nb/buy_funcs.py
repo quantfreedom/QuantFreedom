@@ -249,6 +249,8 @@ def long_increase_nb(
         )  # math checked
         if leverage_new > static_variables_tuple.max_lev:
             leverage_new = static_variables_tuple.max_lev
+        elif leverage_new < 1:
+            leverage_new = 1
     else:
         raise RejectedOrderError(
             "Long Increase - Either lev mode is nan or something is wrong with the leverage_new or leverage_new mode"
