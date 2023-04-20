@@ -33,7 +33,7 @@ except NameError:
 bg_color = "#0b0b18"
 
 
-def strat_dashboard(
+def tabs_test(
     indicator_dict: dict,
     prices: pdFrame,
     order_records: RecordArray,
