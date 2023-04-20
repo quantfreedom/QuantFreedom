@@ -191,3 +191,4 @@ def strat_dashboard(
     )
 
     return candle_trades_and_ind, pnl_graph, d_table
+
