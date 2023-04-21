@@ -3,7 +3,7 @@ import numpy as np
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 
-from quantfreedom import get_candle_trace_data, append_to_trace_data_list
+from quantfreedom.plotting.strat_dashboard import get_candle_trace_data, append_to_trace_data_list
 from IPython import get_ipython
 from dash import Dash, dcc, html, dash_table
 from jupyter_dash import JupyterDash

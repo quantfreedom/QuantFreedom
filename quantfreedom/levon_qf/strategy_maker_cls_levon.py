@@ -1,5 +1,12 @@
 import pandas as pd
 import numpy as np
+import plotly.graph_objects as go
+import dash_bootstrap_components as dbc
+
+from IPython import get_ipython
+from dash import Dash, dcc, html, dash_table
+from jupyter_dash import JupyterDash
+from dash_bootstrap_templates import load_figure_template
 
 from quantfreedom import (
     combine_evals,
@@ -13,6 +20,7 @@ from quantfreedom import (
     StaticVariables,
     sim_6_base,
     boradcast_to_1d_arrays_nb,
+    tabs_test,
 )
 from quantfreedom.levon_qf.talib_ind_levon import from_talib
 
@@ -27,15 +35,15 @@ class StrategyMaker:
         self.static_vars = None
 
     def from_talib(
-            self,
-            func_name: str,
-            price_data: pdFrame = None,
-            indicator_data: pdFrame = None,
-            all_possible_combos: bool = False,
-            column_wise_combos: bool = False,
-            plot_results: bool = False,
-            plot_on_data: bool = False,
-            **kwargs,
+        self,
+        func_name: str,
+        price_data: pdFrame = None,
+        indicator_data: pdFrame = None,
+        all_possible_combos: bool = False,
+        column_wise_combos: bool = False,
+        plot_results: bool = False,
+        plot_on_data: bool = False,
+        **kwargs,
     ):
         indicator = from_talib(
             func_name,
@@ -67,51 +75,51 @@ class StrategyMaker:
         return b
 
     def backtest_df(
-            self,
-            # entry info
-            prices: pdFrame,
-            equity: float,
-            fee_pct: float,
-            mmr_pct: float,
-            # required order
-            lev_mode: int,
-            order_type: int,
-            size_type: int,
-            # Order Params
-            leverage: PossibleArray = np.nan,
-            max_equity_risk_pct: PossibleArray = np.nan,
-            max_equity_risk_value: PossibleArray = np.nan,
-            max_order_size_pct: float = 100.0,
-            min_order_size_pct: float = 0.01,
-            max_order_size_value: float = np.inf,
-            min_order_size_value: float = 1.0,
-            max_lev: float = 100.0,
-            size_pct: PossibleArray = np.nan,
-            size_value: PossibleArray = np.nan,
-            # Stop Losses
-            sl_pcts: PossibleArray = np.nan,
-            sl_to_be: bool = False,
-            sl_based_on: PossibleArray = np.nan,
-            sl_based_on_add_pct: PossibleArray = np.nan,
-            sl_to_be_based_on: PossibleArray = np.nan,
-            sl_to_be_when_pct_from_avg_entry: PossibleArray = np.nan,
-            sl_to_be_zero_or_entry: PossibleArray = np.nan,  # 0 for zero or 1 for entry
-            sl_to_be_then_trail: bool = False,
-            sl_to_be_trail_by_when_pct_from_avg_entry: PossibleArray = np.nan,
-            # Trailing Stop Loss Params
-            tsl_pcts_init: PossibleArray = np.nan,
-            tsl_true_or_false: bool = False,
-            tsl_based_on: PossibleArray = np.nan,
-            tsl_trail_by_pct: PossibleArray = np.nan,
-            tsl_when_pct_from_avg_entry: PossibleArray = np.nan,
-            # Take Profit Params
-            risk_rewards: PossibleArray = np.nan,
-            tp_pcts: PossibleArray = np.nan,
-            # Results Filters
-            gains_pct_filter: float = -np.inf,
-            total_trade_filter: int = 0,
-            divide_records_array_size_by: float = 1.0,  # between 1 and 1000
-            upside_filter: float = -1.0,  # between -1 and 1
+        self,
+        # entry info
+        prices: pdFrame,
+        equity: float,
+        fee_pct: float,
+        mmr_pct: float,
+        # required order
+        lev_mode: int,
+        order_type: int,
+        size_type: int,
+        # Order Params
+        leverage: PossibleArray = np.nan,
+        max_equity_risk_pct: PossibleArray = np.nan,
+        max_equity_risk_value: PossibleArray = np.nan,
+        max_order_size_pct: float = 100.0,
+        min_order_size_pct: float = 0.01,
+        max_order_size_value: float = np.inf,
+        min_order_size_value: float = 1.0,
+        max_lev: float = 100.0,
+        size_pct: PossibleArray = np.nan,
+        size_value: PossibleArray = np.nan,
+        # Stop Losses
+        sl_pcts: PossibleArray = np.nan,
+        sl_to_be: bool = False,
+        sl_based_on: PossibleArray = np.nan,
+        sl_based_on_add_pct: PossibleArray = np.nan,
+        sl_to_be_based_on: PossibleArray = np.nan,
+        sl_to_be_when_pct_from_avg_entry: PossibleArray = np.nan,
+        sl_to_be_zero_or_entry: PossibleArray = np.nan,  # 0 for zero or 1 for entry
+        sl_to_be_then_trail: bool = False,
+        sl_to_be_trail_by_when_pct_from_avg_entry: PossibleArray = np.nan,
+        # Trailing Stop Loss Params
+        tsl_pcts_init: PossibleArray = np.nan,
+        tsl_true_or_false: bool = False,
+        tsl_based_on: PossibleArray = np.nan,
+        tsl_trail_by_pct: PossibleArray = np.nan,
+        tsl_when_pct_from_avg_entry: PossibleArray = np.nan,
+        # Take Profit Params
+        risk_rewards: PossibleArray = np.nan,
+        tp_pcts: PossibleArray = np.nan,
+        # Results Filters
+        gains_pct_filter: float = -np.inf,
+        total_trade_filter: int = 0,
+        divide_records_array_size_by: float = 1.0,  # between 1 and 1000
+        upside_filter: float = -1.0,  # between -1 and 1
     ) -> tuple[pdFrame, pdFrame]:
         entries = self.combined_data
         if entries is None:
@@ -194,8 +202,8 @@ class StrategyMaker:
         else:
             price_data = self.price_data[settings.loc["symbol"].values.tolist()]
             entry_data = self.combined_data.iloc[
-                         :, settings.loc["entries_col"].values.tolist()
-                         ]
+                :, settings.loc["entries_col"].values.tolist()
+            ]
 
         field_names = self.settings_results_df.iloc[:, row_id].index.to_list()[2:]
         field_data = pd.DataFrame(self.settings_results_df.iloc[2:, row_id])
@@ -268,17 +276,32 @@ class StrategyMaker:
         return price_data, entry_data, empadf
 
     def test(self, id):
+        dash_tab_list = []
         settings = self.settings_results_df.iloc[:, id]
         indicator_dict = {}
         for i in range(len(self.indicators)):
             names = self.indicators[i].data.columns.names
-            entry_names = self.combined_data.iloc[:, [settings["entries_col"]]].columns.names
+            entry_names = self.combined_data.iloc[
+                :, [settings["entries_col"]]
+            ].columns.names
             val = []
             for n in names:
-                val.append(self.combined_data.iloc[:, [settings["entries_col"]]].columns[0][entry_names.index(n)])
-            indicator_dict[f'indicator{i}'] = {
+                val.append(
+                    self.combined_data.iloc[:, [settings["entries_col"]]].columns[0][
+                        entry_names.index(n)
+                    ]
+                )
+            indicator_dict[f"indicator{i}"] = {
                 f"values{i}": self.indicators[i].data[[tuple(val)]],
                 f"entries{i}": self.combined_data.iloc[:, [settings["entries_col"]]],
             }
 
+            dash_tab_list.append(
+                dcc.Tab(
+                    label=f"Tab {i}",
+                    children=[
+                        tabs_test(indicator_dict=indicator_dict,prices=price_data['asdf']),
+                    ],
+                )
+            )
         return indicator_dict

@@ -1,7 +1,8 @@
 import numpy as np
 from numba import njit
 
-from quantfreedom import (
+from quantfreedom._typing import Tuple
+from quantfreedom.enums.enums import (
     AccountState,
     EntryOrder,
     OrderResult,
@@ -13,7 +14,6 @@ from quantfreedom import (
     PriceTuple,
     SizeType,
     CandleBody,
-    Tuple,
 )
 
 

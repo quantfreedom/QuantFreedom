@@ -352,6 +352,7 @@ def simulate_up_to_6_nb(
         size_pct=size_pct,
         size_value=size_value,
         sl_pcts=sl_pcts,
+        sl_based_on_add_pct=sl_based_on_add_pct,
         sl_to_be_based_on=sl_to_be_based_on,
         sl_to_be_trail_by_when_pct_from_avg_entry=sl_to_be_trail_by_when_pct_from_avg_entry,
         sl_to_be_when_pct_from_avg_entry=sl_to_be_when_pct_from_avg_entry,
