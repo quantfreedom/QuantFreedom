@@ -1,4 +1,8 @@
-get data
-check if entry
-if is entry get size value
-if size value is not np.nan place trade
+sl init
+    sl to be
+        trailing sl
+    trailing sl
+sl based on
+    sl to be
+        trailing sl
+    trailing sl

@@ -27,7 +27,7 @@ from quantfreedom.enums.enums import (
 
 
 @njit(cache=True)
-def backtest_df_only_nb(
+def backtest_df_only_nb_testing(
     num_of_symbols: int,
     total_indicator_settings: int,
     total_order_settings: int,
@@ -76,8 +76,8 @@ def backtest_df_only_nb(
         low_prices = price_data[:, prices_start + 2]
         close_prices = price_data[:, prices_start + 3]
 
-        prices_start +=4
-        
+        prices_start += 4
+
         symbol_entries = entries[:, entries_start:entries_end]
         entries_start = entries_end
         entries_end += entries_per_symbol
@@ -292,11 +292,13 @@ def sim_test_thing_nb(
         prices_start += 4
 
         curr_entries = entries[:, settings_counter]
-    # order settings loops
+        # order settings loops
         entry_order = EntryOrder(
             leverage=broadcast_arrays.leverage[settings_counter],
             max_equity_risk_pct=broadcast_arrays.max_equity_risk_pct[settings_counter],
-            max_equity_risk_value=broadcast_arrays.max_equity_risk_value[settings_counter],
+            max_equity_risk_value=broadcast_arrays.max_equity_risk_value[
+                settings_counter
+            ],
             order_type=static_variables_tuple.order_type,
             risk_rewards=broadcast_arrays.risk_rewards[settings_counter],
             size_pct=broadcast_arrays.size_pct[settings_counter],

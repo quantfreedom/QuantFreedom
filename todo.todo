@@ -5,6 +5,15 @@ strategy:
     ☐ the equity is constantly changing as your unrealized pnl goes up and down ... so 
     ☐ add trade counter and multiply by max equity risk
 
+revamping sl:
+    ✔ set tuples @done(23-04-22 12:51)
+    ✔ change backtest df only to accept tuples @done(23-04-22 12:51)
+    ✔ checking stating vars @done(23-04-22 12:51)
+    ✔ create 1d arrays @done(23-04-22 13:54)
+    ✔ check 1d arrays @done(23-04-22 13:54)
+    ✔ create cart product of arrays @done(23-04-22 13:57)
+    ☐ backtest_df_only_nb_testing
+
 strat Dev:
     ✔ change sltobe thing to candle_body enums @done(23-04-16 08:57)
     ✔ add stop loss based on and add pct in enums to entry @done(23-04-16 08:59)
