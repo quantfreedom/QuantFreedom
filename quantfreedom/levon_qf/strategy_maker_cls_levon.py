@@ -4,25 +4,52 @@ import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 
 from IPython import get_ipython
-from dash import Dash, dcc, html, dash_table
+from dash import Dash, dcc, html
 from jupyter_dash import JupyterDash
 from dash_bootstrap_templates import load_figure_template
 
 from quantfreedom import (
     combine_evals,
     backtest_df_only,
-    simulate_up_to_6_nb,
     CandleBody,
     Arrays1dTuple,
     pdFrame,
     PossibleArray,
-    Array1d,
     StaticVariables,
     sim_6_base,
     boradcast_to_1d_arrays_nb,
-    tabs_test,
+    tabs_test_me,
 )
-from quantfreedom.levon_qf.talib_ind_levon import from_talib
+from quantfreedom.levon_qf.talib_ind_levon import from_talib_levon
+
+from quantfreedom.plotting.tabs_test_me import tabs_test_me
+from quantfreedom.base import backtest_df_only
+from quantfreedom.enums.enums import CandleBody
+from quantfreedom.plotting.strat_dashboard import strat_dashboard
+
+from IPython import get_ipython
+
+np.set_printoptions(formatter={"float_kind": "{:.2f}".format})
+
+pd.options.display.float_format = "{:,.2f}".format
+
+load_figure_template("darkly")
+dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
+try:
+    shell = str(get_ipython())
+    if "ZMQInteractiveShell" in shell:
+        app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
+    elif shell == "TerminalInteractiveShell":
+        app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
+    else:
+        app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
+except NameError:
+    app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
+
+bg_color = "#0b0b18"
+
+np.set_printoptions(formatter={"float_kind": "{:.2f}".format})
+pd.options.display.float_format = "{:,.2f}".format
 
 
 class StrategyMaker:
@@ -45,7 +72,7 @@ class StrategyMaker:
         plot_on_data: bool = False,
         **kwargs,
     ):
-        indicator = from_talib(
+        indicator = from_talib_levon(
             func_name,
             price_data,
             indicator_data,
@@ -192,7 +219,7 @@ class StrategyMaker:
         )
         return self.strat_results_df, self.settings_results_df
 
-    def select_row_and_simulate(self, row_id):
+    def strategy_dashboard(self, row_id):
         settings = self.settings_results_df.iloc[:, row_id]
 
         val = settings.loc["symbol"]
@@ -259,49 +286,58 @@ class StrategyMaker:
             arrays_1d_tuple=empadf, entries=entry_data.values
         )
 
-        return sim_6_base(
+        order_records = sim_6_base(
             price_data=price_data.values,
             entries=entries,
             static_variables_tuple=self.static_vars,
             broadcast_arrays=broadcast_arrays,
         )
 
-        # indicator_dict = {
-        #     "indicator1": {
-        #         "values1": rsi_ind.data[[('BTCUSDT', 15)]],
-        #         "entries1": entries.iloc[:, [0]],
-        #     },
-        # }
-
-        return price_data, entry_data, empadf
-
-    def test(self, id):
         dash_tab_list = []
-        settings = self.settings_results_df.iloc[:, id]
-        indicator_dict = {}
-        for i in range(len(self.indicators)):
-            names = self.indicators[i].data.columns.names
-            entry_names = self.combined_data.iloc[
-                :, [settings["entries_col"]]
-            ].columns.names
-            val = []
-            for n in names:
-                val.append(
-                    self.combined_data.iloc[:, [settings["entries_col"]]].columns[0][
-                        entry_names.index(n)
-                    ]
-                )
-            indicator_dict[f"indicator{i}"] = {
-                f"values{i}": self.indicators[i].data[[tuple(val)]],
-                f"entries{i}": self.combined_data.iloc[:, [settings["entries_col"]]],
-            }
+        if isinstance(row_id, int):
+            row_id = [row_id]
 
-            dash_tab_list.append(
-                dcc.Tab(
-                    label=f"Tab {i}",
-                    children=[
-                        tabs_test(indicator_dict=indicator_dict,prices=price_data['asdf']),
+        for count, temp_id in enumerate(row_id):
+            settings = self.settings_results_df.iloc[:, [temp_id]]
+            indicator_dict = {}
+            for i in range(len(self.indicators)):
+                names = self.indicators[i].data.columns.names
+                entry_names = self.combined_data.iloc[
+                    :, [settings.loc["entries_col", temp_id]]
+                ].columns.names
+                val = []
+                for n in names:
+                    val.append(
+                        self.combined_data.iloc[
+                            :, [settings.loc["entries_col", temp_id]]
+                        ].columns[0][entry_names.index(n)]
+                    )
+                indicator_dict[f"indicator{i}"] = {
+                    f"values{i}": self.indicators[i].data[[tuple(val)]],
+                    f"entries{i}": self.combined_data.iloc[
+                        :, [settings.loc["entries_col", temp_id]]
                     ],
+                }
+                candle, pnl, dtable = tabs_test_me(
+                    indicator_dict=indicator_dict,
+                    prices=self.price_data[
+                        indicator_dict["indicator0"]["values0"].columns[0][0]
+                    ],
+                    order_records=order_records[order_records["order_set_id"] == count],
                 )
-            )
-        return indicator_dict
+                dash_tab_list.append(
+                    dcc.Tab(
+                        label=f"Tab {count}",
+                        children=[
+                            html.Div(candle),
+                            html.Div(pnl),
+                            html.Div(dtable),
+                        ],
+                    )
+                )
+        app.layout = html.Div(
+            [
+                dcc.Tabs(dash_tab_list),
+            ]
+        )
+        return app.run_server(debug=False)

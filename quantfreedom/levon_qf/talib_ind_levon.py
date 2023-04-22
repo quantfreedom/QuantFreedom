@@ -15,7 +15,7 @@ from quantfreedom.plotting.simple_plots import (
 
 # this is an update
 
-def from_talib(
+def from_talib_levon(
     func_name: str,
     price_data: pdFrame = None,
     indicator_data: pdFrame = None,

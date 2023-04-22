@@ -33,7 +33,7 @@ except NameError:
 bg_color = "#0b0b18"
 
 
-def tabs_test(
+def tabs_test_levon(
     indicator_dict: dict,
     prices: pdFrame,
     order_records: RecordArray,

@@ -3,7 +3,10 @@ import numpy as np
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 
-from quantfreedom.plotting.strat_dashboard import get_candle_trace_data, append_to_trace_data_list
+from quantfreedom.plotting.strat_dashboard import (
+    get_candle_trace_data,
+    append_to_trace_data_list,
+)
 from IPython import get_ipython
 from dash import Dash, dcc, html, dash_table
 from jupyter_dash import JupyterDash
@@ -33,11 +36,11 @@ except NameError:
 bg_color = "#0b0b18"
 
 
-def tabs_test(
+def tabs_test_me(
     indicator_dict: dict,
     prices: pdFrame,
     order_records: RecordArray,
-) -> JupyterDash:
+):
     amount_of_subplots = 0
 
     for keys in indicator_dict.keys():
@@ -191,4 +194,3 @@ def tabs_test(
     )
 
     return candle_trades_and_ind, pnl_graph, d_table
-
