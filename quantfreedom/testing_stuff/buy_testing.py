@@ -2,68 +2,54 @@ import numpy as np
 from numba import njit
 
 from quantfreedom._typing import Tuple
-
-from quantfreedom.enums.enums import (
-    AccountState,
-    EntryOrder,
-    OrderResult,
-    OrderStatus,
-    OrderStatusInfo,
-    RejectedOrderError,
-    LeverageMode,
-    StaticVariables,
-    PriceTuple,
-    SizeType,
-    CandleBody,
-)
+from quantfreedom.testing_stuff.base_testing import *
+from quantfreedom.testing_stuff.buy_testing import *
+from quantfreedom.testing_stuff.enums_testing import *
+from quantfreedom.testing_stuff.execute_funcs_testing import *
+from quantfreedom.testing_stuff.helper_funcs_testing import *
+from quantfreedom.testing_stuff.simulate_testing import *
 
 
 # Long order to enter or add to a long position
 @njit(cache=True)
-def long_increase_nb(
+def long_increase_nb_testing(
     prices: PriceTuple,
     account_state: AccountState,
-    entry_order: EntryOrder,
+    order_settings: OrderSettings,
     order_result: OrderResult,
     static_variables_tuple: StaticVariables,
 ) -> Tuple[AccountState, OrderResult]:
     # new cash borrowed needs to be returned
     available_balance_new = account_state.available_balance
     cash_used_new = account_state.cash_used
-    leverage_new = entry_order.leverage
+    leverage_new = order_settings.leverage
     average_entry_new = order_result.average_entry
     liq_price_new = order_result.liq_price
     position_old = order_result.position
 
-    sl_pcts_new = entry_order.sl_pcts
-    tp_pcts_new = entry_order.tp_pcts
-    tsl_pcts_init_new = entry_order.tsl_pcts_init
+    sl_pct_new = order_settings.sl_init_pct
+    tp_pct_new = order_settings.take_profit_pct
 
-    # sl_prices_new = order_result.sl_prices
-    # tsl_prices_new = order_result.tsl_prices
-    # tp_prices_new = order_result.tp_prices
-
-    sl_prices_new = np.nan
-    tsl_prices_new = np.nan
-    tp_prices_new = np.nan
+    sl_price_new = np.nan
+    tp_price_new = np.nan
 
     if (
-        static_variables_tuple.size_type != SizeType.Amount
-        and static_variables_tuple.size_type != SizeType.PercentOfAccount
+        static_variables_tuple.size_type == SizeType.RiskAmount
+        or static_variables_tuple.size_type == SizeType.RiskPercentOfAccount
     ):
-        if np.isfinite(entry_order.sl_pcts):
-            sl_pcts_new = entry_order.sl_pcts
+        if np.isfinite(order_settings.sl_init_pct):
+            sl_pct_new = order_settings.sl_init_pct
             if static_variables_tuple.size_type == SizeType.RiskPercentOfAccount:
-                size_value = account_state.equity * entry_order.size_pct / sl_pcts_new
+                size_value = account_state.equity * order_settings.size_pct / sl_pct_new
 
             elif static_variables_tuple.size_type == SizeType.RiskAmount:
-                size_value = entry_order.size_value / sl_pcts_new
+                size_value = order_settings.size_value / sl_pct_new
                 if size_value < 1:
                     raise ValueError(
                         "Risk Amount has produced a size_value values less than 1."
                     )
-            temp_sl_price = prices.open - (prices.open * sl_pcts_new)
-            possible_loss = size_value * sl_pcts_new
+            temp_sl_price = prices.open - (prices.open * sl_pct_new)
+            possible_loss = size_value * sl_pct_new
 
             size_value = -possible_loss / (
                 temp_sl_price / prices.open
@@ -72,23 +58,23 @@ def long_increase_nb(
                 - temp_sl_price * static_variables_tuple.fee_pct / prices.open
             )
 
-        elif np.isfinite(entry_order.sl_based_on):
-            sl_based_on = entry_order.sl_based_on
+        elif np.isfinite(order_settings.sl_based_on):
+            sl_based_on = order_settings.sl_based_on
             if sl_based_on == CandleBody.low:
-                sl_prices_new = prices.low - (
-                    prices.low * entry_order.sl_based_on_add_pct
+                sl_price_new = prices.low - (
+                    prices.low * order_settings.sl_based_on_add_pct
                 )
             elif sl_based_on == CandleBody.close:
-                sl_prices_new = prices.close - (
-                    prices.close * entry_order.sl_based_on_add_pct
+                sl_price_new = prices.close - (
+                    prices.close * order_settings.sl_based_on_add_pct
                 )
             elif sl_based_on == CandleBody.open:
-                sl_prices_new = prices.open - (
-                    prices.open * entry_order.sl_based_on_add_pct
+                sl_price_new = prices.open - (
+                    prices.open * order_settings.sl_based_on_add_pct
                 )
             elif sl_based_on == CandleBody.high:
-                sl_prices_new = prices.high - (
-                    prices.high * entry_order.sl_based_on_add_pct
+                sl_price_new = prices.high - (
+                    prices.high * order_settings.sl_based_on_add_pct
                 )
 
             if static_variables_tuple.size_type == SizeType.RiskPercentOfAccount:
@@ -96,7 +82,7 @@ def long_increase_nb(
                     tpl = (  # total possible loss no fees on second trade
                         (
                             (order_result.position / order_result.average_entry)
-                            * (order_result.sl_prices - order_result.average_entry)
+                            * (order_result.sl_price - order_result.average_entry)
                         )
                         - (
                             (order_result.position / order_result.average_entry)
@@ -105,10 +91,10 @@ def long_increase_nb(
                         )
                         - (
                             (order_result.position / order_result.average_entry)
-                            * order_result.sl_prices
+                            * order_result.sl_price
                             * static_variables_tuple.fee_pct
                         )
-                        + -(account_state.equity * entry_order.size_pct)
+                        + -(account_state.equity * order_settings.size_pct)
                     )
 
                     size_value = -(
@@ -117,8 +103,8 @@ def long_increase_nb(
                             + prices.open
                             * order_result.position
                             * order_result.average_entry
-                            - sl_prices_new * prices.open * order_result.position
-                            + sl_prices_new
+                            - sl_price_new * prices.open * order_result.position
+                            + sl_price_new
                             * prices.open
                             * order_result.position
                             * static_variables_tuple.fee_pct
@@ -131,9 +117,9 @@ def long_increase_nb(
                             order_result.average_entry
                             * (
                                 prices.open
-                                - sl_prices_new
+                                - sl_price_new
                                 + prices.open * static_variables_tuple.fee_pct
-                                + sl_prices_new * static_variables_tuple.fee_pct
+                                + sl_price_new * static_variables_tuple.fee_pct
                             )
                         )
                     )
@@ -141,32 +127,10 @@ def long_increase_nb(
                     average_entry_new = (size_value + position_old) / (
                         (size_value / prices.open) + (position_old / average_entry_new)
                     )
-                    sl_pcts_new = (average_entry_new - sl_prices_new) / average_entry_new 
-
-        elif np.isfinite(tsl_pcts_init_new):
-            if static_variables_tuple.size_type == SizeType.RiskPercentOfAccount:
-                size_value = (
-                    account_state.equity * entry_order.size_pct / tsl_pcts_init_new
-                )
-
-            elif static_variables_tuple.size_type == SizeType.RiskAmount:
-                size_value = entry_order.size_value / tsl_pcts_init_new
-                if size_value < 1:
-                    raise ValueError(
-                        "Risk Amount has produced a size_value values less than 1."
-                    )
-            temp_tsl_price = prices.open - (prices.open * tsl_pcts_init_new)
-            possible_loss = size_value * (tsl_pcts_init_new)
-
-            size_value = -possible_loss / (
-                temp_tsl_price / prices.open
-                - 1
-                - static_variables_tuple.fee_pct
-                - temp_tsl_price * static_variables_tuple.fee_pct / prices.open
-            )
+                    sl_pct_new = (average_entry_new - sl_price_new) / average_entry_new
 
     elif static_variables_tuple.size_type == SizeType.Amount:
-        size_value = entry_order.size_value
+        size_value = order_settings.size_value
         if size_value > static_variables_tuple.max_order_size_value:
             size_value = static_variables_tuple.max_order_size_value
         elif size_value == np.inf:
@@ -174,30 +138,12 @@ def long_increase_nb(
 
     # getting size_value for percent of account
     elif static_variables_tuple.size_type == SizeType.PercentOfAccount:
-        size_value = account_state.equity * entry_order.size_pct  # math checked
+        size_value = account_state.equity * order_settings.size_pct  # math checked
 
     else:
         raise TypeError(
             "I have no clue what is wrong but something is wrong with making the size_value using size_value type"
         )
-
-    # TODO talk to someone who would want to use set prices for sl and trailing sl
-    # if np.isfinite(sl_prices_new):
-    #     sl_prices_new = prices.open - sl_prices_new
-    #     sl_pcts_new = (prices.open - sl_prices_new) / prices.open
-    #     possible_loss = size_value * sl_pcts_new
-
-    #     size_value = -possible_loss / \
-    #         ((sl_prices_new/prices.open - 1) - static_variables_tuple.fee_pct -
-    #             (sl_prices_new * static_variables_tuple.fee_pct / prices.open))
-
-    # elif np.isfinite(tsl_prices_new):
-    #     tsl_pcts_init_new = (prices.open - tsl_prices_new) / prices.open
-    #     possible_loss = size_value * tsl_pcts_init_new
-
-    #     size_value = -possible_loss / \
-    #         ((tsl_prices_new/prices.open - 1) - static_variables_tuple.fee_pct -
-    #             (tsl_prices_new * static_variables_tuple.fee_pct / prices.open))
 
     if (
         size_value < 1
@@ -220,42 +166,27 @@ def long_increase_nb(
     position_new = position_old + size_value
 
     # Create stop loss prices if requested
-    if not np.isnan(sl_pcts_new):
-        sl_prices_new = average_entry_new - (
-            average_entry_new * sl_pcts_new
+    if not np.isnan(sl_pct_new):
+        sl_price_new = average_entry_new - (
+            average_entry_new * sl_pct_new
         )  # math checked
     else:
-        sl_prices_new = np.nan
-        sl_pcts_new = np.nan
-
-    # Create trailing stop losses if requested
-    if not np.isnan(tsl_pcts_init_new):
-        tsl_prices_new = average_entry_new - (
-            average_entry_new * tsl_pcts_init_new
-        )  # math checked
-    else:
-        tsl_prices_new = np.nan
-        tsl_pcts_init_new = np.nan
+        sl_price_new = np.nan
+        sl_pct_new = np.nan
 
     # Risk % check
     # checking if there is some sort of stop loss
-    is_stop_loss = (
-        not np.isnan(sl_prices_new)
-        or not np.isnan(tsl_prices_new)
-        or not np.isnan(liq_price_new)
-    )
+    is_stop_loss = not np.isnan(sl_price_new) or not np.isnan(liq_price_new)
 
     # checking if there is some sort max equity
-    is_max_risk = not np.isnan(entry_order.max_equity_risk_pct) or not np.isnan(
-        entry_order.max_equity_risk_value
+    is_max_risk = not np.isnan(order_settings.max_equity_risk_pct) or not np.isnan(
+        order_settings.max_equity_risk_value
     )
 
     if is_stop_loss and is_max_risk:
         # store temp sl prices.open
-        if not np.isnan(sl_prices_new):
-            temp_price = sl_prices_new
-        elif not np.isnan(tsl_prices_new):
-            temp_price = tsl_prices_new
+        if not np.isnan(sl_price_new):
+            temp_price = sl_price_new
         elif not np.isnan(liq_price_new):
             temp_price = liq_price_new
 
@@ -272,12 +203,12 @@ def long_increase_nb(
         possible_loss = float(int(possible_loss))
 
         # getting account risk amount
-        if not np.isnan(entry_order.max_equity_risk_pct):
+        if not np.isnan(order_settings.max_equity_risk_pct):
             account_risk_amount = float(
-                int(account_state.equity * entry_order.max_equity_risk_pct)
+                int(account_state.equity * order_settings.max_equity_risk_pct)
             )
-        elif not np.isnan(entry_order.max_equity_risk_value):
-            account_risk_amount = entry_order.max_equity_risk_value
+        elif not np.isnan(order_settings.max_equity_risk_value):
+            account_risk_amount = order_settings.max_equity_risk_value
 
         # check if our possible loss is more than what we are willing to risk of our account
         if 0 < possible_loss > account_risk_amount:
@@ -289,37 +220,30 @@ def long_increase_nb(
                 moved_sl_to_be=order_result.moved_sl_to_be,
                 order_status=OrderStatus.Ignored,
                 order_status_info=OrderStatusInfo.MaxEquityRisk,
-                order_type=entry_order.order_type,
+                order_type=static_variables_tuple.order_type,
                 pct_chg_trade=np.nan,
                 position=order_result.position,
                 price=prices.open,
                 realized_pnl=np.nan,
                 size_value=np.nan,
-                sl_pcts=order_result.sl_pcts,
-                sl_prices=order_result.sl_prices,
-                tp_pcts=order_result.tp_pcts,
-                tp_prices=order_result.tp_prices,
-                tsl_pcts_init=order_result.tsl_pcts_init,
-                tsl_prices=order_result.tsl_prices,
+                sl_pct=order_result.sl_pct,
+                sl_price=order_result.sl_price,
+                tp_pct=order_result.tp_pct,
+                tp_price=order_result.tp_price,
             )
 
     # check if leverage_new amount is possible with size_value and free cash
-    # TODO add in info for leverage iso
     if static_variables_tuple.lev_mode == LeverageMode.LeastFreeCashUsed:
-        # create leverage_new for sl
-        if not np.isnan(sl_prices_new):
-            temp_price = sl_prices_new
-        elif not np.isnan(tsl_prices_new):
-            temp_price = tsl_prices_new
-
         leverage_new = -average_entry_new / (
-            temp_price
-            - temp_price * 0.002
+            sl_price_new
+            - sl_price_new * 0.001
             - average_entry_new  # TODO .2 is percent padding user wants
             - static_variables_tuple.mmr_pct * average_entry_new
         )  # math checked
         if leverage_new > static_variables_tuple.max_lev:
             leverage_new = static_variables_tuple.max_lev
+        elif leverage_new < 1:
+            leverage_new = 1
     else:
         raise RejectedOrderError(
             "Long Increase - Either lev mode is nan or something is wrong with the leverage_new or leverage_new mode"
@@ -358,43 +282,38 @@ def long_increase_nb(
         )  # math checked
 
     # Create take profits if requested
-    if not np.isnan(entry_order.risk_rewards):
-        if np.isfinite(sl_prices_new):
-            sl_or_tsl_prices = sl_prices_new
-        elif np.isfinite(tsl_prices_new):
-            sl_or_tsl_prices = tsl_prices_new
-
+    if not np.isnan(order_settings.risk_to_reward):
         coin_size = size_value / average_entry_new
 
-        loss_no_fees = coin_size * (sl_or_tsl_prices - average_entry_new)
+        loss_no_fees = coin_size * (sl_pct_new - average_entry_new)
 
         fee_open = coin_size * average_entry_new * static_variables_tuple.fee_pct
 
-        fee_close = coin_size * sl_or_tsl_prices * static_variables_tuple.fee_pct
+        fee_close = coin_size * sl_pct_new * static_variables_tuple.fee_pct
 
         loss = loss_no_fees - fee_open - fee_close
 
-        profit = -loss * entry_order.risk_rewards
+        profit = -loss * order_settings.risk_to_reward
 
-        tp_prices_new = (
+        tp_price_new = (
             profit + size_value * static_variables_tuple.fee_pct + size_value
         ) * (
             average_entry_new
             / (size_value - size_value * static_variables_tuple.fee_pct)
         )  # math checked
 
-        tp_pcts_new = (
-            tp_prices_new - average_entry_new
+        tp_pct_new = (
+            tp_price_new - average_entry_new
         ) / average_entry_new  # math checked
 
-    elif not np.isnan(tp_pcts_new):
-        tp_prices_new = average_entry_new + (
-            average_entry_new * tp_pcts_new
+    elif not np.isnan(tp_pct_new):
+        tp_price_new = average_entry_new + (
+            average_entry_new * tp_pct_new
         )  # math checked
 
     else:
-        tp_pcts_new = np.nan
-        tp_prices_new = np.nan
+        tp_pct_new = np.nan
+        tp_price_new = np.nan
 
     # Checking if we ran out of free cash or gone over our max risk amount
     if available_balance_new < 0:
@@ -413,23 +332,21 @@ def long_increase_nb(
         moved_sl_to_be=False,
         order_status=OrderStatus.Filled,
         order_status_info=OrderStatusInfo.HopefullyNoProblems,
-        order_type=entry_order.order_type,
+        order_type=static_variables_tuple.order_type,
         pct_chg_trade=np.nan,
         position=position_new,
         prices=prices.open,
         realized_pnl=np.nan,
         size_value=size_value,
-        sl_pcts=sl_pcts_new,
-        sl_prices=sl_prices_new,
-        tp_pcts=tp_pcts_new,
-        tp_prices=tp_prices_new,
-        tsl_pcts_init=tsl_pcts_init_new,
-        tsl_prices=tsl_prices_new,
+        sl_init_pct=sl_pct_new,
+        sl_price=sl_price_new,
+        tp_pct=tp_pct_new,
+        tp_price=tp_price_new,
     )
 
 
 @njit(cache=True)
-def long_decrease_nb(
+def long_decrease_nb_testing(
     fee_pct: float,
     order_result: OrderResult,
     account_state: AccountState,
@@ -497,10 +414,8 @@ def long_decrease_nb(
         price=order_result.price,
         realized_pnl=realized_pnl,
         size_value=size_value,
-        sl_pcts=order_result.sl_pcts,
-        sl_prices=order_result.sl_prices,
-        tp_pcts=order_result.tp_pcts,
-        tp_prices=order_result.tp_prices,
-        tsl_pcts_init=order_result.tsl_pcts_init,
-        tsl_prices=order_result.tsl_prices,
+        sl_pct=order_result.sl_pct,
+        sl_price=order_result.sl_price,
+        tp_pct=order_result.tp_pct,
+        tp_price=order_result.tp_price,
     )

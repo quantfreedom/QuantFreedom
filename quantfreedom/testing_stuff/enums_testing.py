@@ -15,7 +15,8 @@ __all__ = [
     "EntryOrder",
     "StopsOrder",
     "StaticVariables",
-    "Arrays1dTuple",
+    "OrderSettingsArrays",
+    "OrderSettings",
     "PriceTuple",
     "or_dt",
     "strat_df_array_dt",
@@ -67,10 +68,9 @@ class StopsOrder(NamedTuple):
     sl_to_be_zero_or_entry: float = np.nan
     trail_sl_based_on: float = np.nan
     trail_sl_by_pct: float = np.nan
-    trail_sl_start_when_pct_from_avg_entry: float = np.nan
+    trail_sl_when_pct_from_avg_entry: float = np.nan
     take_profit_pct: float = np.nan
     risk_to_reward: float = np.nan
-
 
 
 class OrderResult(NamedTuple):
@@ -87,12 +87,10 @@ class OrderResult(NamedTuple):
     price: float = 0.0
     realized_pnl: float = 0.0
     size_value: float = 0.0
-    sl_pcts: float = 0.0
-    sl_prices: float = 0.0
-    tp_pcts: float = 0.0
-    tp_prices: float = 0.0
-    tsl_pcts_init: float = 0.0
-    tsl_prices: float = 0.0
+    sl_pct: float = 0.0
+    sl_price: float = 0.0
+    tp_pct: float = 0.0
+    tp_price: float = 0.0
 
 
 class PriceTuple(NamedTuple):
@@ -102,23 +100,44 @@ class PriceTuple(NamedTuple):
     close: float = np.nan
 
 
-class Arrays1dTuple(NamedTuple):
-    leverage: Array1d = np.nan
-    max_equity_risk_pct: Array1d = np.nan
-    max_equity_risk_value: Array1d = np.nan
-    risk_to_reward: Array1d = np.nan
-    size_pct: Array1d = np.nan
-    size_value: Array1d = np.nan
-    sl_based_on: Array1d = np.nan
-    sl_based_on_add_pct: Array1d = np.nan
-    sl_based_on_lookback: Array1d = np.nan
-    sl_init_pct: Array1d = np.nan
-    sl_to_be_based_on: Array1d = np.nan
-    sl_to_be_zero_or_entry: Array1d = np.nan
-    take_profit_pct: Array1d = np.nan
-    trail_sl_based_on: Array1d = np.nan
-    trail_sl_by_pct: Array1d = np.nan
-    trail_sl_start_when_pct_from_avg_entry: Array1d = np.nan
+class OrderSettingsArrays(NamedTuple):
+    leverage: PossibleArray = np.nan
+    max_equity_risk_pct: PossibleArray = np.nan
+    max_equity_risk_value: PossibleArray = np.nan
+    risk_to_reward: PossibleArray = np.nan
+    size_pct: PossibleArray = np.nan
+    size_value: PossibleArray = np.nan
+    sl_based_on: PossibleArray = np.nan
+    sl_based_on_add_pct: PossibleArray = np.nan
+    sl_based_on_lookback: PossibleArray = np.nan
+    sl_init_pct: PossibleArray = np.nan
+    sl_to_be_based_on: PossibleArray = np.nan
+    sl_to_be_when_pct_from_avg_entry: PossibleArray = np.nan
+    sl_to_be_zero_or_entry: PossibleArray = np.nan
+    take_profit_pct: PossibleArray = np.nan
+    trail_sl_based_on: PossibleArray = np.nan
+    trail_sl_by_pct: PossibleArray = np.nan
+    trail_sl_when_pct_from_avg_entry: PossibleArray = np.nan
+
+
+class OrderSettings(NamedTuple):
+    leverage: float = np.nan
+    max_equity_risk_pct: float = np.nan
+    max_equity_risk_value: float = np.nan
+    risk_to_reward: float = np.nan
+    size_pct: float = np.nan
+    size_value: float = np.nan
+    sl_based_on: float = np.nan
+    sl_based_on_add_pct: float = np.nan
+    sl_based_on_lookback: float = np.nan
+    sl_init_pct: float = np.nan
+    sl_to_be_based_on: float = np.nan
+    sl_to_be_when_pct_from_avg_entry: PossibleArray = np.nan
+    sl_to_be_zero_or_entry: float = np.nan
+    take_profit_pct: float = np.nan
+    trail_sl_based_on: float = np.nan
+    trail_sl_by_pct: float = np.nan
+    trail_sl_when_pct_from_avg_entry: float = np.nan
 
 
 class LeverageModeT(NamedTuple):
@@ -214,16 +233,11 @@ settings_array_dt = np.dtype(
         ("risk_rewards", np.float_),
         ("size_pct", np.float_),
         ("size_value", np.float_),
-        ("sl_pcts", np.float_),
+        ("sl_pct", np.float_),
         ("sl_to_be_based_on", np.float_),
-        ("sl_to_be_trail_by_when_pct_from_avg_entry", np.float_),
         ("sl_to_be_when_pct_from_avg_entry", np.float_),
         ("sl_to_be_zero_or_entry", np.float_),
-        ("tp_pcts", np.float_),
-        ("tsl_based_on", np.float_),
-        ("tsl_pcts_init", np.float_),
-        ("tsl_trail_by_pct", np.float_),
-        ("tsl_when_pct_from_avg_entry", np.float_),
+        ("tp_pct", np.float_),
     ],
     align=True,
 )
@@ -255,14 +269,14 @@ final_array_dt = np.dtype(
         ("risk_rewards", np.float_),
         ("size_pct", np.float_),
         ("size_value", np.float_),
-        ("sl_pcts", np.float_),
+        ("sl_pct", np.float_),
         ("sl_to_be_based_on", np.float_),
         ("sl_to_be_trail_by_when_pct_from_avg_entry", np.float_),
         ("sl_to_be_when_pct_from_avg_entry", np.float_),
         ("sl_to_be_zero_or_entry", np.float_),
-        ("tp_pcts", np.float_),
+        ("tp_pct", np.float_),
         ("tsl_based_on", np.float_),
-        ("tsl_pcts_init", np.float_),
+        ("tsl_pct_init", np.float_),
         ("tsl_trail_by_pct", np.float_),
         ("tsl_when_pct_from_avg_entry", np.float_),
     ],
@@ -282,9 +296,9 @@ or_dt = np.dtype(
         ("order_type", np.float_),
         ("real_pnl", np.float_),
         ("equity", np.float_),
-        ("sl_prices", np.float_),
-        ("tsl_prices", np.float_),
-        ("tp_prices", np.float_),
+        ("sl_price", np.float_),
+        ("tsl_price", np.float_),
+        ("tp_price", np.float_),
     ],
     align=True,
 )

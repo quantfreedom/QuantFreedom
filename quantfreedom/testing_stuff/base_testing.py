@@ -2,17 +2,20 @@ import numpy as np
 import pandas as pd
 
 from quantfreedom._typing import pdFrame
+from quantfreedom.testing_stuff.base_testing import *
+from quantfreedom.testing_stuff.buy_testing import *
 from quantfreedom.testing_stuff.enums_testing import *
+from quantfreedom.testing_stuff.execute_funcs_testing import *
 from quantfreedom.testing_stuff.helper_funcs_testing import *
+from quantfreedom.testing_stuff.simulate_testing import *
 
 
 def backtest_df_only_testing(
     # entry info
     price_data: pdFrame,
     entries: pdFrame,
-    entry_order_tuple: EntryOrder,
     static_variables_tuple: StaticVariables,
-    stops_order_tuple: StopsOrder,
+    order_settings_arrays_tuple: OrderSettingsArrays,
 ) -> tuple[pdFrame, pdFrame]:
     print("Checking static variables for errors or conflicts.")
     # Static checks
@@ -21,28 +24,29 @@ def backtest_df_only_testing(
     )
     print("Turning all variables into arrays.")
     # Create 1d Arrays
-    arrays_1d_tuple = create_1d_arrays_nb_testing(
-        entry_order_tuple=entry_order_tuple,
-        stops_order_tuple=stops_order_tuple,
+    order_settings_arrays_tuple = all_os_as_1d_arrays_nb_testing(
+        order_settings_arrays_tuple=order_settings_arrays_tuple,
     )
     print(
         "Checking arrays for errors or conflicts ... the backtest will begin shortly, please hold."
     )
     # Checking all new arrays
-    check_1d_arrays_nb_testing(
-        arrays_1d_tuple=arrays_1d_tuple,
+    check_os_1d_arrays_nb_testing(
+        order_settings_arrays_tuple=order_settings_arrays_tuple,
         static_variables_tuple=static_variables_tuple,
     )
 
     print(
         "Creating cartesian product ... after this the backtest will start, I promise :).\n"
     )
-    cart_array_tuple = create_cart_product_nb_testing(arrays_1d_tuple=arrays_1d_tuple)
+    os_cart_arrays_tuple = create_os_cart_product_nb_testing(
+        order_settings_arrays_tuple=order_settings_arrays_tuple,
+    )
 
     num_of_symbols = len(price_data.columns.levels[0])
 
     # Creating Settings Vars
-    total_order_settings = cart_array_tuple.sl_init_pct.shape[0]
+    total_order_settings = os_cart_arrays_tuple.sl_init_pct.shape[0]
 
     total_indicator_settings = entries.shape[1]
 
@@ -68,17 +72,14 @@ def backtest_df_only_testing(
     )
 
     strat_array, settings_array = backtest_df_only_nb_testing(
-        cart_array_tuple=cart_array_tuple,
         entries=entries.values,
-        gains_pct_filter=gains_pct_filter,
         num_of_symbols=num_of_symbols,
-        og_equity=equity,
+        os_cart_arrays_tuple=os_cart_arrays_tuple,
         price_data=price_data.values,
         static_variables_tuple=static_variables_tuple,
         total_bars=total_bars,
         total_indicator_settings=total_indicator_settings,
         total_order_settings=total_order_settings,
-        total_trade_filter=total_trade_filter,
     )
 
     strat_results_df = pd.DataFrame(strat_array).sort_values(

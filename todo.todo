@@ -6,21 +6,21 @@ strategy:
     ☐ add trade counter and multiply by max equity risk
 
 revamping sl:
-    ✔ set tuples @done(23-04-22 12:51)
-    ✔ change backtest df only to accept tuples @done(23-04-22 12:51)
-    ✔ checking stating vars @done(23-04-22 12:51)
-    ✔ create 1d arrays @done(23-04-22 13:54)
-    ✔ check 1d arrays @done(23-04-22 13:54)
-    ✔ create cart product of arrays @done(23-04-22 13:57)
+    ✔ buy increase testing @done(23-04-23 12:12)
+    ✔ check sl @done(23-04-23 13:24)
+    ✔ buy decrease @done(23-04-23 13:24)
+    ✔ process order nb testing @done(23-04-23 13:24)
+    ☐ fill_settings_result_records_nb_testing
+    ☐ update numpy dt for fill_strategy_result_records_nb_testing
+    ☐ fill_strategy_result_records_nb_testing 
+    ☐ update numpy dt for fill_strategy_result_records_nb_testing
+    ☐ fill_order_records_nb_testing
+    ☐ update numpy dt for fill_order_records_nb_testing
+    ☐ fill_strat_records_nb_testing
+    ☐ update numpy dt for fill_strat_records_nb_testing
     ☐ backtest_df_only_nb_testing
 
 strat Dev:
-    ✔ change sltobe thing to candle_body enums @done(23-04-16 08:57)
-    ✔ add stop loss based on and add pct in enums to entry @done(23-04-16 08:59)
-    ✔ sl based on check 1 d arrays @done(23-04-16 09:27)
-    ✔ cart product for sl based on @done(23-04-16 09:37)
-    ✔ added sl based on to entry order in main backtesting df entry order tuple @done(23-04-16 09:40)
-    ✔ create price tuple @done(23-04-16 12:01)
     ☐ add sl based on to long increase nb
     ☐ add sl based on to short increase nb
     ☐ 
@@ -43,7 +43,6 @@ strat Dev:
     ☐ add pct to sl based on
     ☐ 
     ☐ 
-    ✔ first download the latest 200 candles of 5 min data @done(23-04-16 08:49)
     ☐ use ccxt or bybit api to get up to date info ... check old code or watch chad vid to figure that out or part time larry
     ☐ create the divergence function to take the nessarcy info
     ☐ create single order createion function and hook that up to ccxt or bybit ... i prefer bybit i think
@@ -74,6 +73,7 @@ Next Verson:
     ☐ create cart calc where the person can just copy paste their settings and get the number back as well as the number of cart times the number of ind settings ... then also include a number for total bars tested times number of order settings times number of ind settings make it a helper function because it will just print the results as the return
     ☐ create base that returns entry settings using vbt indicator creation thing
     ☐ once new window then make it so you can select from a max of 5 or 10 different reports
+    ☐ make it so you can have limit fees vs market fees
 
 Plotly Dash:
     ☐ make it so in the ind dict you only send the entries once
@@ -109,3 +109,17 @@ Ask Other Users ?:
 
 Would Be Nice:
     ☐ send pct change of position in order result when decreasing or increaseing position size
+Archive:
+  ✔ check 1d arrays @done(23-04-22 13:54)
+  ✔ create cart product of arrays @done(23-04-22 13:57)
+  ✔ set tuples @done(23-04-22 12:51)
+  ✔ change backtest df only to accept tuples @done(23-04-22 12:51)
+  ✔ checking stating vars @done(23-04-22 12:51)
+  ✔ create 1d arrays @done(23-04-22 13:54)
+  ✔ added sl based on to entry order in main backtesting df entry order tuple @done(23-04-16 09:40)
+  ✔ create price tuple @done(23-04-16 12:01)
+  ✔ sl based on check 1 d arrays @done(23-04-16 09:27)
+  ✔ cart product for sl based on @done(23-04-16 09:37)
+  ✔ change sltobe thing to candle_body enums @done(23-04-16 08:57)
+  ✔ add stop loss based on and add pct in enums to entry @done(23-04-16 08:59)
+  ✔ first download the latest 200 candles of 5 min data @done(23-04-16 08:49)

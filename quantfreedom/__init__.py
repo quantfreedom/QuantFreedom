@@ -15,6 +15,7 @@ from quantfreedom.data import *
 from quantfreedom.base import *
 from quantfreedom.enums import *
 from quantfreedom.nb import *
+from quantfreedom.testing_stuff import *
 from quantfreedom.indicators import *
 from quantfreedom.evaluators import *
 from quantfreedom.plotting import *
