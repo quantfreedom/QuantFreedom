@@ -46,7 +46,7 @@ def backtest_df_only_testing(
     num_of_symbols = len(price_data.columns.levels[0])
 
     # Creating Settings Vars
-    total_order_settings = os_cart_arrays_tuple.sl_init_pct.shape[0]
+    total_order_settings = os_cart_arrays_tuple.sl_pct.shape[0]
 
     total_indicator_settings = entries.shape[1]
 

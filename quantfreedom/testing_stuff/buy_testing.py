@@ -27,8 +27,8 @@ def long_increase_nb_testing(
     liq_price_new = order_result.liq_price
     position_old = order_result.position
 
-    sl_pct_new = order_settings.sl_init_pct
-    tp_pct_new = order_settings.take_profit_pct
+    sl_pct_new = order_settings.sl_pct
+    tp_pct_new = order_settings.tp_pct
 
     sl_price_new = np.nan
     tp_price_new = np.nan
@@ -37,8 +37,8 @@ def long_increase_nb_testing(
         static_variables_tuple.size_type == SizeType.RiskAmount
         or static_variables_tuple.size_type == SizeType.RiskPercentOfAccount
     ):
-        if np.isfinite(order_settings.sl_init_pct):
-            sl_pct_new = order_settings.sl_init_pct
+        if np.isfinite(order_settings.sl_pct):
+            sl_pct_new = order_settings.sl_pct
             if static_variables_tuple.size_type == SizeType.RiskPercentOfAccount:
                 size_value = account_state.equity * order_settings.size_pct / sl_pct_new
 
@@ -282,7 +282,7 @@ def long_increase_nb_testing(
         )  # math checked
 
     # Create take profits if requested
-    if not np.isnan(order_settings.risk_to_reward):
+    if not np.isnan(order_settings.risk_reward):
         coin_size = size_value / average_entry_new
 
         loss_no_fees = coin_size * (sl_pct_new - average_entry_new)
@@ -293,7 +293,7 @@ def long_increase_nb_testing(
 
         loss = loss_no_fees - fee_open - fee_close
 
-        profit = -loss * order_settings.risk_to_reward
+        profit = -loss * order_settings.risk_reward
 
         tp_price_new = (
             profit + size_value * static_variables_tuple.fee_pct + size_value
@@ -338,7 +338,7 @@ def long_increase_nb_testing(
         prices=prices.open,
         realized_pnl=np.nan,
         size_value=size_value,
-        sl_init_pct=sl_pct_new,
+        sl_pct=sl_pct_new,
         sl_price=sl_price_new,
         tp_pct=tp_pct_new,
         tp_price=tp_price_new,

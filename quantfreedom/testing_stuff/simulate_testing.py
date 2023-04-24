@@ -5,7 +5,7 @@ from quantfreedom._typing import PossibleArray, Array1d, RecordArray
 from quantfreedom.testing_stuff.base_testing import *
 from quantfreedom.testing_stuff.buy_testing import *
 from quantfreedom.testing_stuff.enums_testing import *
-from quantfreedom.testing_stuff.execute_funcs_testing import *
+from quantfreedom.testing_stuff.execute_funcs_testing import process_order_nb_testing
 from quantfreedom.testing_stuff.helper_funcs_testing import *
 from quantfreedom.testing_stuff.simulate_testing import *
 
@@ -35,9 +35,9 @@ def backtest_df_only_nb_testing(
         array_size,
         dtype=strat_df_array_dt,
     )
-    settings_result_records = np.empty(
+    order_settings_result_records = np.empty(
         array_size,
-        dtype=settings_array_dt,
+        dtype=order_settings_array_dt,
     )
     result_records_filled = 0
 
@@ -75,7 +75,7 @@ def backtest_df_only_nb_testing(
                     max_equity_risk_value=os_cart_arrays_tuple.max_equity_risk_value[
                         order_settings_counter
                     ],
-                    risk_to_reward=os_cart_arrays_tuple.risk_to_reward[
+                    risk_reward=os_cart_arrays_tuple.risk_reward[
                         order_settings_counter
                     ],
                     size_pct=os_cart_arrays_tuple.size_pct[order_settings_counter],
@@ -89,7 +89,7 @@ def backtest_df_only_nb_testing(
                     sl_based_on_lookback=os_cart_arrays_tuple.sl_based_on_lookback[
                         order_settings_counter
                     ],
-                    sl_init_pct=os_cart_arrays_tuple.sl_init_pct[
+                    sl_pct=os_cart_arrays_tuple.sl_pct[
                         order_settings_counter
                     ],
                     sl_to_be_based_on=os_cart_arrays_tuple.sl_to_be_based_on[
@@ -101,7 +101,7 @@ def backtest_df_only_nb_testing(
                     sl_to_be_when_pct_from_avg_entry=os_cart_arrays_tuple.sl_to_be_when_pct_from_avg_entry[
                         order_settings_counter
                     ],
-                    take_profit_pct=os_cart_arrays_tuple.take_profit_pct[
+                    tp_pct=os_cart_arrays_tuple.tp_pct[
                         order_settings_counter
                     ],
                     trail_sl_based_on=os_cart_arrays_tuple.trail_sl_based_on[
@@ -236,9 +236,9 @@ def backtest_df_only_nb_testing(
                                 wins_and_losses_array_no_be=wins_and_losses_array_no_be,
                             )
 
-                            fill_settings_result_records_nb_testing(
+                            fill_order_settings_result_records_nb_testing(
                                 entries_col=entries_col,
-                                settings_result_records=settings_result_records[
+                                order_settings_result_records=order_settings_result_records[
                                     result_records_filled
                                 ],
                                 symbol_counter=symbol_counter,
@@ -248,7 +248,7 @@ def backtest_df_only_nb_testing(
             entries_col += 1
     return (
         strategy_result_records[:result_records_filled],
-        settings_result_records[:result_records_filled],
+        order_settings_result_records[:result_records_filled],
     )
 
 
@@ -257,7 +257,7 @@ def sim_test_thing_nb(
     entries,
     price_data,
     static_variables_tuple: StaticVariables,
-    broadcast_arrays: Arrays1dTuple,
+    broadcast_arrays: OrderSettingsArrays,
 ) -> tuple[Array1d, RecordArray]:
     total_bars = entries.shape[0]
     order_records = np.empty(total_bars * 2, dtype=or_dt)
@@ -280,7 +280,7 @@ def sim_test_thing_nb(
                 settings_counter
             ],
             order_type=static_variables_tuple.order_type,
-            risk_rewards=broadcast_arrays.risk_rewards[settings_counter],
+            risk_reward=broadcast_arrays.risk_reward[settings_counter],
             size_pct=broadcast_arrays.size_pct[settings_counter],
             size_value=broadcast_arrays.size_value[settings_counter],
             sl_based_on_add_pct=broadcast_arrays.sl_based_on_add_pct[settings_counter],
