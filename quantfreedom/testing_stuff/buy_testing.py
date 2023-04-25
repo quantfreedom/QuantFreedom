@@ -3,7 +3,6 @@ from numba import njit
 
 from quantfreedom._typing import Tuple
 from quantfreedom.testing_stuff.base_testing import *
-from quantfreedom.testing_stuff.buy_testing import *
 from quantfreedom.testing_stuff.enums_testing import *
 from quantfreedom.testing_stuff.execute_funcs_testing import *
 from quantfreedom.testing_stuff.helper_funcs_testing import *
@@ -61,20 +60,20 @@ def long_increase_nb_testing(
         elif np.isfinite(order_settings.sl_based_on):
             sl_based_on = order_settings.sl_based_on
             if sl_based_on == CandleBody.low:
-                sl_price_new = prices.low - (
-                    prices.low * order_settings.sl_based_on_add_pct
+                sl_price_new = prices.low.min() - (
+                    prices.low.min() * order_settings.sl_based_on_add_pct
                 )
             elif sl_based_on == CandleBody.close:
-                sl_price_new = prices.close - (
-                    prices.close * order_settings.sl_based_on_add_pct
+                sl_price_new = prices.close.min() - (
+                    prices.close.min() * order_settings.sl_based_on_add_pct
                 )
             elif sl_based_on == CandleBody.open:
-                sl_price_new = prices.open - (
-                    prices.open * order_settings.sl_based_on_add_pct
+                sl_price_new = prices.open.min() - (
+                    prices.open.min() * order_settings.sl_based_on_add_pct
                 )
             elif sl_based_on == CandleBody.high:
-                sl_price_new = prices.high - (
-                    prices.high * order_settings.sl_based_on_add_pct
+                sl_price_new = prices.high.min() - (
+                    prices.high.min() * order_settings.sl_based_on_add_pct
                 )
 
             if static_variables_tuple.size_type == SizeType.RiskPercentOfAccount:

@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 
 from quantfreedom._typing import pdFrame
-from quantfreedom.testing_stuff.base_testing import *
 from quantfreedom.testing_stuff.buy_testing import *
 from quantfreedom.testing_stuff.enums_testing import *
 from quantfreedom.testing_stuff.execute_funcs_testing import *

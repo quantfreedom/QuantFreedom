@@ -12,8 +12,6 @@ __all__ = [
     "CandleBody",
     "LeverageMode",
     "SizeType",
-    "EntryOrder",
-    "StopsOrder",
     "StaticVariables",
     "OrderSettingsArrays",
     "OrderSettings",
@@ -21,7 +19,6 @@ __all__ = [
     "or_dt",
     "strat_df_array_dt",
     "order_settings_array_dt",
-    "final_array_dt",
     "strat_records_dt",
 ]
 
@@ -72,10 +69,11 @@ class OrderResult(NamedTuple):
 
 
 class PriceTuple(NamedTuple):
-    open: float = np.nan
-    high: float = np.nan
-    low: float = np.nan
-    close: float = np.nan
+    entry: float = np.nan
+    open: PossibleArray = np.nan
+    high: PossibleArray = np.nan
+    low: PossibleArray = np.nan
+    close: PossibleArray = np.nan
 
 
 class OrderSettingsArrays(NamedTuple):
