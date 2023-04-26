@@ -1,12 +1,27 @@
 import numpy as np
 from numba import njit
 
-from quantfreedom._typing import PossibleArray, Array1d, RecordArray
-from quantfreedom.testing_stuff.base_testing import *
-from quantfreedom.testing_stuff.buy_testing import *
-from quantfreedom.testing_stuff.enums_testing import *
-from quantfreedom.testing_stuff.execute_funcs_testing import process_order_nb_testing
-from quantfreedom.testing_stuff.helper_funcs_testing import *
+from quantfreedom._typing import PossibleArray, Array1d
+from quantfreedom.testing_stuff.enums_testing import (
+    AccountState,
+    OrderResult,
+    OrderSettings,
+    PriceTuple,
+    StaticVariables,
+    OrderSettingsArrays,
+    order_settings_array_dt,
+    strat_df_array_dt,
+    strat_records_dt,
+)
+from quantfreedom.testing_stuff.execute_funcs_testing import (
+    check_sl_tp_nb_testing,
+    process_order_nb_testing,
+)
+from quantfreedom.testing_stuff.helper_funcs_testing import (
+    fill_order_settings_result_records_nb_testing,
+    fill_strategy_result_records_nb_testing,
+    get_to_the_upside_nb_testing,
+)
 
 
 @njit(cache=True)
@@ -63,8 +78,7 @@ def backtest_df_only_nb_testing(
 
         # ind set loop
         for indicator_settings_counter in range(entries_per_symbol):
-            current_indicator_entries = symbol_entries[:,
-                                                       indicator_settings_counter]
+            current_indicator_entries = symbol_entries[:, indicator_settings_counter]
 
             for order_settings_counter in range(total_order_settings):
                 order_settings = OrderSettings(
@@ -89,9 +103,7 @@ def backtest_df_only_nb_testing(
                     sl_based_on_lookback=os_cart_arrays_tuple.sl_based_on_lookback[
                         order_settings_counter
                     ],
-                    sl_pct=os_cart_arrays_tuple.sl_pct[
-                        order_settings_counter
-                    ],
+                    sl_pct=os_cart_arrays_tuple.sl_pct[order_settings_counter],
                     sl_to_be_based_on=os_cart_arrays_tuple.sl_to_be_based_on[
                         order_settings_counter
                     ],
@@ -101,9 +113,7 @@ def backtest_df_only_nb_testing(
                     sl_to_be_when_pct_from_avg_entry=os_cart_arrays_tuple.sl_to_be_when_pct_from_avg_entry[
                         order_settings_counter
                     ],
-                    tp_pct=os_cart_arrays_tuple.tp_pct[
-                        order_settings_counter
-                    ],
+                    tp_pct=os_cart_arrays_tuple.tp_pct[order_settings_counter],
                     trail_sl_based_on=os_cart_arrays_tuple.trail_sl_based_on[
                         order_settings_counter
                     ],
@@ -137,12 +147,10 @@ def backtest_df_only_nb_testing(
                     price=0.0,
                     realized_pnl=0.0,
                     size_value=0.0,
-                    sl_pcts=0.0,
-                    sl_prices=0.0,
-                    tp_pcts=0.0,
-                    tp_prices=0.0,
-                    tsl_pcts_init=0.0,
-                    tsl_prices=0.0,
+                    sl_pct=0.0,
+                    sl_price=0.0,
+                    tp_pct=0.0,
+                    tp_price=0.0,
                 )
                 strat_records_filled[0] = 0
 
@@ -153,22 +161,22 @@ def backtest_df_only_nb_testing(
 
                     if current_indicator_entries[bar]:
                         if not np.isnan(order_settings.sl_based_on):
-                            lb = bar - order_settings.sl_based_on_lookback
+                            lb = int(bar - order_settings.sl_based_on_lookback)
                             if lb < 0:
                                 prices = PriceTuple(
                                     entry=open_prices[bar],
-                                    open=open_prices[0:bar+1],
-                                    high=high_prices[0:bar+1],
-                                    low=low_prices[0:bar+1],
-                                    close=close_prices[0:bar+1],
+                                    open=open_prices[0 : bar + 1],
+                                    high=high_prices[0 : bar + 1],
+                                    low=low_prices[0 : bar + 1],
+                                    close=close_prices[0 : bar + 1],
                                 )
                             else:
                                 prices = PriceTuple(
                                     entry=open_prices[bar],
-                                    open=open_prices[lb:bar+1],
-                                    high=high_prices[lb:bar+1],
-                                    low=low_prices[lb:bar+1],
-                                    close=close_prices[lb:bar+1],
+                                    open=open_prices[lb : bar + 1],
+                                    high=high_prices[lb : bar + 1],
+                                    low=low_prices[lb : bar + 1],
+                                    close=close_prices[lb : bar + 1],
                                 )
 
                         else:
@@ -233,7 +241,7 @@ def backtest_df_only_nb_testing(
                     / static_variables_tuple.equity
                 ) * 100
                 if gains_pct > static_variables_tuple.gains_pct_filter:
-                    temp_strat_records = strat_records[0: strat_records_filled[0]]
+                    temp_strat_records = strat_records[0 : strat_records_filled[0]]
                     wins_and_losses_array = temp_strat_records["real_pnl"][
                         ~np.isnan(temp_strat_records["real_pnl"])
                     ]
