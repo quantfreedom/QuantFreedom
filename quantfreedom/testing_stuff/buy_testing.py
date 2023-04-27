@@ -106,31 +106,48 @@ def long_increase_nb_testing(
                     )
 
                     size_value = (
-                        (
-                            -tpl * prices.entry * order_result.average_entry
-                            + prices.entry
-                            * order_result.position
-                            * order_result.average_entry
-                            - sl_price_new * prices.entry * order_result.position
-                            + sl_price_new
-                            * prices.entry
-                            * order_result.position
-                            * static_variables_tuple.fee_pct
-                            + prices.entry
-                            * order_result.position
-                            * order_result.average_entry
-                            * static_variables_tuple.fee_pct
-                        )
-                        / (
-                            order_result.average_entry
-                            * (
-                                prices.entry
-                                - sl_price_new
-                                + prices.entry * static_variables_tuple.fee_pct
-                                + sl_price_new * static_variables_tuple.fee_pct
-                            )
+                        -tpl * prices.entry * order_result.average_entry
+                        + prices.entry
+                        * order_result.position
+                        * order_result.average_entry
+                        - sl_price_new * prices.entry * order_result.position
+                        + sl_price_new
+                        * prices.entry
+                        * order_result.position
+                        * static_variables_tuple.fee_pct
+                        + prices.entry
+                        * order_result.position
+                        * order_result.average_entry
+                        * static_variables_tuple.fee_pct
+                    ) / (
+                        order_result.average_entry
+                        * (
+                            prices.entry
+                            - sl_price_new
+                            + prices.entry * static_variables_tuple.fee_pct
+                            + sl_price_new * static_variables_tuple.fee_pct
                         )
                     )
+                    if size_value < 1:
+                        return account_state, OrderResult(
+                            average_entry=order_result.average_entry,
+                            fees_paid=np.nan,
+                            leverage=order_result.leverage,
+                            liq_price=order_result.liq_price,
+                            moved_sl_to_be=order_result.moved_sl_to_be,
+                            order_status=OrderStatus.Ignored,
+                            order_status_info=OrderStatusInfo.RiskToBig,
+                            order_type=static_variables_tuple.order_type,
+                            pct_chg_trade=np.nan,
+                            position=order_result.position,
+                            price=prices.entry,
+                            realized_pnl=np.nan,
+                            size_value=np.nan,
+                            sl_pct=order_result.sl_pct,
+                            sl_price=order_result.sl_price,
+                            tp_pct=order_result.tp_pct,
+                            tp_price=order_result.tp_price,
+                        )
                     position_new = position_old + size_value
                     average_entry_new = (size_value + position_old) / (
                         (size_value / prices.entry) + (position_old / average_entry_new)
@@ -302,11 +319,11 @@ def long_increase_nb_testing(
     if not np.isnan(order_settings.risk_reward):
         coin_size = size_value / average_entry_new
 
-        loss_no_fees = coin_size * (sl_pct_new - average_entry_new)
+        loss_no_fees = coin_size * (sl_price_new - average_entry_new)
 
         fee_open = coin_size * average_entry_new * static_variables_tuple.fee_pct
 
-        fee_close = coin_size * sl_pct_new * static_variables_tuple.fee_pct
+        fee_close = coin_size * sl_price_new * static_variables_tuple.fee_pct
 
         loss = loss_no_fees - fee_open - fee_close
 

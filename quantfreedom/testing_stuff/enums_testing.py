@@ -136,6 +136,7 @@ OrderStatus = OrderStatusT()
 class OrderStatusInfoT(NamedTuple):
     HopefullyNoProblems: int = 0
     MaxEquityRisk: int = 1
+    RiskToBig: int = 2
 
 
 OrderStatusInfo = OrderStatusInfoT()

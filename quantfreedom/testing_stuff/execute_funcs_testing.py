@@ -40,8 +40,8 @@ def check_sl_tp_nb_testing(
     # Setting Vars
     moved_sl_to_be_new = order_result.moved_sl_to_be
     order_type_new = static_variables_tuple.order_type
-    price_new = np.nan
-    size_value_new = np.nan
+    price_new = order_result.price
+    size_value_new = np.inf
     sl_price_new = order_result.sl_price
 
     # checking if we are in a long
@@ -124,9 +124,6 @@ def check_sl_tp_nb_testing(
                     order_type_new = OrderType.MovedTSL
             price_new = np.nan
             size_value_new = np.nan
-        else:
-            price_new = np.nan
-            size_value_new = np.nan
 
     # # checking if we are in a short
     # elif order_type_new == OrderType.ShortEntry:
@@ -206,9 +203,6 @@ def check_sl_tp_nb_testing(
     #                 order_type_new = OrderType.MovedTSL
     #         price_new = np.nan
     #         size_value_new = np.nan
-    #     else:
-    #         price_new = np.nan
-    #         size_value_new = np.nan
 
     order_result_new = OrderResult(
         average_entry=order_result.average_entry,
@@ -251,6 +245,7 @@ def process_order_nb_testing(
     order_result: OrderResult,
     order_settings_counter: int,
     order_settings: OrderSettings,
+    order_type: int,
     prices: PriceTuple,
     static_variables_tuple: StaticVariables,
     symbol_counter: int,
@@ -260,7 +255,7 @@ def process_order_nb_testing(
     strat_records_filled: Optional[Array1d] = None,
 ):
     fill_strat = False
-    if static_variables_tuple.order_type == OrderType.LongEntry:
+    if order_type == OrderType.LongEntry:
         account_state_new, order_result_new = long_increase_nb_testing(
             bar=bar,
             prices=prices,
@@ -277,7 +272,7 @@ def process_order_nb_testing(
     #         account_state=account_state,
     #         static_variables_tuple=static_variables_tuple,
     #     )
-    elif OrderType.LongLiq <= static_variables_tuple.order_type <= OrderType.LongTSL:
+    elif OrderType.LongLiq <= order_type <= OrderType.LongTSL:
         account_state_new, order_result_new = long_decrease_nb_testing(
             order_result=order_result,
             account_state=account_state,
@@ -295,13 +290,13 @@ def process_order_nb_testing(
     if order_result_new.order_status == OrderStatus.Filled:
         if fill_strat and strat_records is not None:
             fill_strat_records_nb_testing(
+                equity=account_state_new.equity,
                 entries_col=entries_col,
                 order_settings_counter=order_settings_counter,
-                symbol_counter=symbol_counter,
+                pnl=order_result_new.realized_pnl,
                 strat_records=strat_records,
                 strat_records_filled=strat_records_filled,
-                equity=account_state_new.equity,
-                pnl=order_result_new.realized_pnl,
+                symbol_counter=symbol_counter,
             )
 
         elif order_records is not None:
