@@ -4,14 +4,25 @@ Testing the tester
 
 import numpy as np
 from numba import njit
-
-from quantfreedom._typing import *
-from quantfreedom.testing_stuff.base_testing import *
-from quantfreedom.testing_stuff.buy_testing import *
-from quantfreedom.testing_stuff.enums_testing import *
-from quantfreedom.testing_stuff.execute_funcs_testing import *
-from quantfreedom.testing_stuff.helper_funcs_testing import *
-from quantfreedom.testing_stuff.simulate_testing import *
+from quantfreedom._typing import Optional, RecordArray, Array1d
+from quantfreedom.testing_stuff.buy_testing import (
+    long_decrease_nb_testing,
+    long_increase_nb_testing,
+)
+from quantfreedom.testing_stuff.enums_testing import (
+    AccountState,
+    CandleBody,
+    OrderResult,
+    OrderSettings,
+    OrderStatus,
+    OrderType,
+    PriceTuple,
+    StaticVariables,
+)
+from quantfreedom.testing_stuff.helper_funcs_testing import (
+    fill_order_records_nb_testing,
+    fill_strat_records_nb_testing,
+)
 
 
 @njit(cache=True)
@@ -251,6 +262,7 @@ def process_order_nb_testing(
     fill_strat = False
     if static_variables_tuple.order_type == OrderType.LongEntry:
         account_state_new, order_result_new = long_increase_nb_testing(
+            bar=bar,
             prices=prices,
             order_settings=order_settings,
             order_result=order_result,

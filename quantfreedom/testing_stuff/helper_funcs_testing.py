@@ -1,12 +1,18 @@
 import numpy as np
 from numba import njit
+from quantfreedom._typing import RecordArray, Array1d, Array2d, PossibleArray
 
-from quantfreedom.testing_stuff.base_testing import *
-from quantfreedom.testing_stuff.buy_testing import *
-from quantfreedom.testing_stuff.enums_testing import *
-from quantfreedom.testing_stuff.execute_funcs_testing import *
-from quantfreedom.testing_stuff.helper_funcs_testing import *
-from quantfreedom.testing_stuff.simulate_testing import *
+from quantfreedom.testing_stuff.enums_testing import (
+    AccountState,
+    CandleBody,
+    LeverageMode,
+    OrderResult,
+    OrderSettings,
+    OrderSettingsArrays,
+    OrderType,
+    SizeType,
+    StaticVariables,
+)
 
 
 @njit(cache=True)
@@ -133,9 +139,9 @@ def all_os_as_1d_arrays_nb_testing(
     )
 
     # Stop Loss Arrays
-    sl_init_pct_array = to_1d_array_nb_testing(
+    sl_pct_array = to_1d_array_nb_testing(
         np.asarray(
-            np.asarray(order_settings_arrays_tuple.sl_init_pct) / 100, dtype=np.float_
+            np.asarray(order_settings_arrays_tuple.sl_pct) / 100, dtype=np.float_
         )
     )
 
@@ -191,13 +197,13 @@ def all_os_as_1d_arrays_nb_testing(
     )
 
     # Take Profit Arrays
-    risk_to_reward_array = to_1d_array_nb_testing(
-        np.asarray(order_settings_arrays_tuple.risk_to_reward, dtype=np.float_)
+    risk_reward_array = to_1d_array_nb_testing(
+        np.asarray(order_settings_arrays_tuple.risk_reward, dtype=np.float_)
     )
 
-    take_profit_pct_array = to_1d_array_nb_testing(
+    tp_pct_array = to_1d_array_nb_testing(
         np.asarray(
-            np.asarray(order_settings_arrays_tuple.take_profit_pct) / 100,
+            np.asarray(order_settings_arrays_tuple.tp_pct) / 100,
             dtype=np.float_,
         )
     )
@@ -206,17 +212,17 @@ def all_os_as_1d_arrays_nb_testing(
         leverage=leverage_array,
         max_equity_risk_pct=max_equity_risk_pct_array,
         max_equity_risk_value=max_equity_risk_value_array,
-        risk_to_reward=risk_to_reward_array,
+        risk_reward=risk_reward_array,
         size_pct=size_pct_array,
         size_value=size_value_array,
         sl_based_on=sl_based_on_array,
         sl_based_on_add_pct=sl_based_on_add_pct_array,
         sl_based_on_lookback=sl_based_on_lookback_array,
-        sl_init_pct=sl_init_pct_array,
+        sl_pct=sl_pct_array,
         sl_to_be_based_on=sl_to_be_based_on_array,
         sl_to_be_when_pct_from_avg_entry=sl_to_be_when_pct_from_avg_entry_array,
         sl_to_be_zero_or_entry=sl_to_be_zero_or_entry_array,
-        take_profit_pct=take_profit_pct_array,
+        tp_pct=tp_pct_array,
         trail_sl_based_on=trail_sl_based_on_array,
         trail_sl_by_pct=trail_sl_by_pct_array,
         trail_sl_when_pct_from_avg_entry=trail_sl_when_pct_from_avg_entry_array,
@@ -230,7 +236,7 @@ def check_os_1d_arrays_nb_testing(
 ):
     check_sl_for_nan = (
         np.isnan(order_settings_arrays_tuple.sl_based_on).any()
-        and np.isnan(order_settings_arrays_tuple.sl_init_pct).any()
+        and np.isnan(order_settings_arrays_tuple.sl_pct).any()
     )
 
     # Size Value
@@ -347,10 +353,10 @@ def check_os_1d_arrays_nb_testing(
 
     # Stop Loss init
     if (
-        np.isinf(order_settings_arrays_tuple.sl_init_pct).any()
-        or order_settings_arrays_tuple.sl_init_pct.any() < 0
+        np.isinf(order_settings_arrays_tuple.sl_pct).any()
+        or order_settings_arrays_tuple.sl_pct.any() < 0
     ):
-        raise ValueError("sl_init_pct has to be nan or greater than 0 and not inf")
+        raise ValueError("sl_pct has to be nan or greater than 0 and not inf")
 
     # Stop Loss based on
     if (
@@ -387,7 +393,7 @@ def check_os_1d_arrays_nb_testing(
 
     if (
         np.isfinite(order_settings_arrays_tuple.sl_based_on).any()
-        and np.isfinite(order_settings_arrays_tuple.sl_init_pct).any()
+        and np.isfinite(order_settings_arrays_tuple.sl_pct).any()
     ):
         raise ValueError("You can't have sl based on and sl init set at the same time.")
 
@@ -421,7 +427,7 @@ def check_os_1d_arrays_nb_testing(
         ).any()
     ) and (
         not np.isfinite(order_settings_arrays_tuple.sl_based_on).any()
-        or not np.isfinite(order_settings_arrays_tuple.sl_init_pct).any()
+        or not np.isfinite(order_settings_arrays_tuple.sl_pct).any()
     ):
         raise ValueError(
             "You need sl_init or sl_based_on to be set to use stop loss to break even"
@@ -458,7 +464,7 @@ def check_os_1d_arrays_nb_testing(
         or np.isfinite(order_settings_arrays_tuple.trail_sl_based_on).any()
     ) and (
         not np.isfinite(order_settings_arrays_tuple.sl_based_on).any()
-        or not np.isfinite(order_settings_arrays_tuple.sl_init_pct).any()
+        or not np.isfinite(order_settings_arrays_tuple.sl_pct).any()
     ):
         raise ValueError(
             "You need sl_init or sl_based_on to be set to use a trailing stop loss"
@@ -466,20 +472,17 @@ def check_os_1d_arrays_nb_testing(
 
     # Risk To Reward and TP
     if (
-        np.isinf(order_settings_arrays_tuple.risk_to_reward).any()
-        or order_settings_arrays_tuple.risk_to_reward.any() < 0
+        np.isinf(order_settings_arrays_tuple.risk_reward).any()
+        or order_settings_arrays_tuple.risk_reward.any() < 0
     ):
         raise ValueError("Risk to Reward has to be greater than 0 or np.nan")
 
-    if (
-        not np.isnan(order_settings_arrays_tuple.risk_to_reward).any()
-        and check_sl_for_nan
-    ):
+    if not np.isnan(order_settings_arrays_tuple.risk_reward).any() and check_sl_for_nan:
         raise ValueError("When risk to reward is set you have to have a sl")
 
     if (
-        order_settings_arrays_tuple.risk_to_reward.any() > 0
-        and np.isfinite(order_settings_arrays_tuple.take_profit_pct).any()
+        order_settings_arrays_tuple.risk_reward.any() > 0
+        and np.isfinite(order_settings_arrays_tuple.tp_pct).any()
     ):
         raise ValueError("You can't have take profits set when using Risk to reward")
 
@@ -493,7 +496,7 @@ def create_os_cart_product_nb_testing(
     #     'leverage',
     #     'max_equity_risk_pct',
     #     'max_equity_risk_value',
-    #     'risk_rewards',
+    #     'risk_reward',
     #     'size_pct',
     #     'size_value',
     #     'sl_pcts',
@@ -536,7 +539,7 @@ def create_os_cart_product_nb_testing(
     # leverage_cart_array = cart_array['leverage']
     # max_equity_risk_pct_cart_array = cart_array['max_equity_risk_pct']
     # max_equity_risk_value_cart_array = cart_array['max_equity_risk_value']
-    # risk_rewards_cart_array = cart_array['risk_rewards']
+    # risk_reward_cart_array = cart_array['risk_reward']
     # size_pct_cart_array = cart_array['size_pct']
     # size_value_cart_array = cart_array['size_value']
     # sl_pcts_cart_array = cart_array['sl_pcts']
@@ -554,17 +557,17 @@ def create_os_cart_product_nb_testing(
         leverage=out.T[0],
         max_equity_risk_pct=out.T[1],
         max_equity_risk_value=out.T[2],
-        risk_to_reward=out.T[3],
+        risk_reward=out.T[3],
         size_pct=out.T[4],
         size_value=out.T[5],
         sl_based_on=out.T[6],
         sl_based_on_add_pct=out.T[7],
         sl_based_on_lookback=out.T[8],
-        sl_init_pct=out.T[9],
+        sl_pct=out.T[9],
         sl_to_be_based_on=out.T[10],
         sl_to_be_when_pct_from_avg_entry=out.T[11],
         sl_to_be_zero_or_entry=out.T[12],
-        take_profit_pct=out.T[13],
+        tp_pct=out.T[13],
         trail_sl_based_on=out.T[14],
         trail_sl_by_pct=out.T[15],
         trail_sl_when_pct_from_avg_entry=out.T[16],
@@ -573,7 +576,7 @@ def create_os_cart_product_nb_testing(
 
 @njit(cache=True)
 def boradcast_to_1d_arrays_nb_testing(
-    arrays_1d_tuple: Arrays1dTuple,
+    arrays_1d_tuple: OrderSettingsArrays,
     entries: Array2d,
 ):
     x = 0
@@ -595,7 +598,7 @@ def boradcast_to_1d_arrays_nb_testing(
     leverage_braodcast_array = np.broadcast_to(arrays_1d_tuple[0], biggest)
     max_equity_risk_pct_braodcast_array = np.broadcast_to(arrays_1d_tuple[1], biggest)
     max_equity_risk_value_braodcast_array = np.broadcast_to(arrays_1d_tuple[2], biggest)
-    risk_rewards_braodcast_array = np.broadcast_to(arrays_1d_tuple[3], biggest)
+    risk_reward_braodcast_array = np.broadcast_to(arrays_1d_tuple[3], biggest)
     size_pct_braodcast_array = np.broadcast_to(arrays_1d_tuple[4], biggest)
     size_value_braodcast_array = np.broadcast_to(arrays_1d_tuple[5], biggest)
     sl_based_on_add_pct_braodcast_array = np.broadcast_to(arrays_1d_tuple[6], biggest)
@@ -624,11 +627,11 @@ def boradcast_to_1d_arrays_nb_testing(
     elif entries.shape[1] != biggest:
         raise ValueError("Something is wrong with entries")
 
-    return entries, Arrays1dTuple(
+    return entries, OrderSettingsArrays(
         leverage=leverage_braodcast_array,
         max_equity_risk_pct=max_equity_risk_pct_braodcast_array,
         max_equity_risk_value=max_equity_risk_value_braodcast_array,
-        risk_rewards=risk_rewards_braodcast_array,
+        risk_reward=risk_reward_braodcast_array,
         size_pct=size_pct_braodcast_array,
         size_value=size_value_braodcast_array,
         sl_based_on_add_pct=sl_based_on_add_pct_braodcast_array,
@@ -698,8 +701,8 @@ def fill_order_records_nb_testing(
     order_records["price"] = order_result.price
     order_records["real_pnl"] = round(order_result.realized_pnl, 4)
     order_records["size_value"] = order_result.size_value
-    order_records["sl_prices"] = order_result.sl_price
-    order_records["tp_prices"] = order_result.tp_price
+    order_records["sl_price"] = order_result.sl_price
+    order_records["tp_price"] = order_result.tp_price
 
     order_records_id[0] += 1
 
@@ -753,35 +756,51 @@ def fill_strategy_result_records_nb_testing(
 
 
 @njit(cache=True)
-def fill_settings_result_records_nb_testing(
+def fill_order_settings_result_records_nb_testing(
     entries_col: int,
     order_settings_tuple: OrderSettings,
-    settings_result_records: RecordArray,
+    order_settings_result_records: RecordArray,
     symbol_counter: int,
 ) -> RecordArray:
-    settings_result_records["symbol"] = symbol_counter
-    settings_result_records["entries_col"] = entries_col
-    settings_result_records["leverage"] = order_settings_tuple.leverage
-    settings_result_records["max_equity_risk_pct"] = (
+    order_settings_result_records["symbol"] = symbol_counter
+    order_settings_result_records["entries_col"] = entries_col
+    order_settings_result_records["leverage"] = order_settings_tuple.leverage
+    order_settings_result_records["max_equity_risk_pct"] = (
         order_settings_tuple.max_equity_risk_pct * 100
     )
-    settings_result_records[
+    order_settings_result_records[
         "max_equity_risk_value"
     ] = order_settings_tuple.max_equity_risk_value
-    settings_result_records["risk_rewards"] = order_settings_tuple.risk_to_reward
-    settings_result_records["size_pct"] = order_settings_tuple.size_pct * 100
-    settings_result_records["size_value"] = order_settings_tuple.size_value
-    settings_result_records["sl_pct"] = order_settings_tuple.sl_pct * 100
-    settings_result_records[
+    order_settings_result_records["risk_reward"] = order_settings_tuple.risk_reward
+    order_settings_result_records["size_pct"] = order_settings_tuple.size_pct * 100
+    order_settings_result_records["size_value"] = order_settings_tuple.size_value
+    order_settings_result_records["sl_based_on"] = order_settings_tuple.sl_based_on
+    order_settings_result_records["sl_based_on_add_pct"] = (
+        order_settings_tuple.sl_based_on_add_pct * 100
+    )
+    order_settings_result_records[
+        "sl_based_on_lookback"
+    ] = order_settings_tuple.sl_based_on_lookback
+    order_settings_result_records["sl_pct"] = order_settings_tuple.sl_pct * 100
+    order_settings_result_records[
         "sl_to_be_based_on"
     ] = order_settings_tuple.sl_to_be_based_on
-    settings_result_records["sl_to_be_when_pct_from_avg_entry"] = (
+    order_settings_result_records["sl_to_be_when_pct_from_avg_entry"] = (
         order_settings_tuple.sl_to_be_when_pct_from_avg_entry * 100
     )
-    settings_result_records[
+    order_settings_result_records[
         "sl_to_be_zero_or_entry"
     ] = order_settings_tuple.sl_to_be_zero_or_entry
-    settings_result_records["tp_pcts"] = order_settings_tuple.tp_pct * 100
+    order_settings_result_records["tp_pct"] = order_settings_tuple.tp_pct * 100
+    order_settings_result_records[
+        "trail_sl_based_on"
+    ] = order_settings_tuple.trail_sl_based_on
+    order_settings_result_records["trail_sl_by_pct"] = (
+        order_settings_tuple.trail_sl_by_pct * 100
+    )
+    order_settings_result_records["trail_sl_when_pct_from_avg_entry"] = (
+        order_settings_tuple.trail_sl_when_pct_from_avg_entry * 100
+    )
 
 
 @njit(cache=True)

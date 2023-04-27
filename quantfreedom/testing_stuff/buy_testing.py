@@ -2,17 +2,25 @@ import numpy as np
 from numba import njit
 
 from quantfreedom._typing import Tuple
-from quantfreedom.testing_stuff.base_testing import *
-from quantfreedom.testing_stuff.buy_testing import *
-from quantfreedom.testing_stuff.enums_testing import *
-from quantfreedom.testing_stuff.execute_funcs_testing import *
-from quantfreedom.testing_stuff.helper_funcs_testing import *
-from quantfreedom.testing_stuff.simulate_testing import *
+from quantfreedom.testing_stuff.enums_testing import (
+    AccountState,
+    CandleBody,
+    LeverageMode,
+    OrderResult,
+    OrderSettings,
+    OrderStatus,
+    OrderStatusInfo,
+    PriceTuple,
+    RejectedOrderError,
+    SizeType,
+    StaticVariables,
+)
 
 
 # Long order to enter or add to a long position
 @njit(cache=True)
 def long_increase_nb_testing(
+    bar: int,
     prices: PriceTuple,
     account_state: AccountState,
     order_settings: OrderSettings,
@@ -27,8 +35,8 @@ def long_increase_nb_testing(
     liq_price_new = order_result.liq_price
     position_old = order_result.position
 
-    sl_pct_new = order_settings.sl_init_pct
-    tp_pct_new = order_settings.take_profit_pct
+    sl_pct_new = order_settings.sl_pct
+    tp_pct_new = order_settings.tp_pct
 
     sl_price_new = np.nan
     tp_price_new = np.nan
@@ -37,8 +45,8 @@ def long_increase_nb_testing(
         static_variables_tuple.size_type == SizeType.RiskAmount
         or static_variables_tuple.size_type == SizeType.RiskPercentOfAccount
     ):
-        if np.isfinite(order_settings.sl_init_pct):
-            sl_pct_new = order_settings.sl_init_pct
+        if np.isfinite(order_settings.sl_pct):
+            sl_pct_new = order_settings.sl_pct
             if static_variables_tuple.size_type == SizeType.RiskPercentOfAccount:
                 size_value = account_state.equity * order_settings.size_pct / sl_pct_new
 
@@ -48,38 +56,38 @@ def long_increase_nb_testing(
                     raise ValueError(
                         "Risk Amount has produced a size_value values less than 1."
                     )
-            temp_sl_price = prices.open - (prices.open * sl_pct_new)
+            temp_sl_price = prices.entry - (prices.entry * sl_pct_new)
             possible_loss = size_value * sl_pct_new
 
             size_value = -possible_loss / (
-                temp_sl_price / prices.open
+                temp_sl_price / prices.entry
                 - 1
                 - static_variables_tuple.fee_pct
-                - temp_sl_price * static_variables_tuple.fee_pct / prices.open
+                - temp_sl_price * static_variables_tuple.fee_pct / prices.entry
             )
 
         elif np.isfinite(order_settings.sl_based_on):
             sl_based_on = order_settings.sl_based_on
             if sl_based_on == CandleBody.low:
-                sl_price_new = prices.low - (
-                    prices.low * order_settings.sl_based_on_add_pct
+                sl_price_new = prices.low.min() - (
+                    prices.low.min() * order_settings.sl_based_on_add_pct
                 )
             elif sl_based_on == CandleBody.close:
-                sl_price_new = prices.close - (
-                    prices.close * order_settings.sl_based_on_add_pct
+                sl_price_new = prices.close.min() - (
+                    prices.close.min() * order_settings.sl_based_on_add_pct
                 )
             elif sl_based_on == CandleBody.open:
-                sl_price_new = prices.open - (
-                    prices.open * order_settings.sl_based_on_add_pct
+                sl_price_new = prices.open.min() - (
+                    prices.open.min() * order_settings.sl_based_on_add_pct
                 )
             elif sl_based_on == CandleBody.high:
-                sl_price_new = prices.high - (
-                    prices.high * order_settings.sl_based_on_add_pct
+                sl_price_new = prices.high.min() - (
+                    prices.high.min() * order_settings.sl_based_on_add_pct
                 )
 
             if static_variables_tuple.size_type == SizeType.RiskPercentOfAccount:
                 if position_old != 0:
-                    tpl = (  # total possible loss no fees on second trade
+                    tpl = -(  # total possible loss no fees on second trade
                         (
                             (order_result.position / order_result.average_entry)
                             * (order_result.sl_price - order_result.average_entry)
@@ -97,18 +105,18 @@ def long_increase_nb_testing(
                         + -(account_state.equity * order_settings.size_pct)
                     )
 
-                    size_value = -(
+                    size_value = (
                         (
-                            tpl * prices.open * order_result.average_entry
-                            + prices.open
+                            -tpl * prices.entry * order_result.average_entry
+                            + prices.entry
                             * order_result.position
                             * order_result.average_entry
-                            - sl_price_new * prices.open * order_result.position
+                            - sl_price_new * prices.entry * order_result.position
                             + sl_price_new
-                            * prices.open
+                            * prices.entry
                             * order_result.position
                             * static_variables_tuple.fee_pct
-                            + prices.open
+                            + prices.entry
                             * order_result.position
                             * order_result.average_entry
                             * static_variables_tuple.fee_pct
@@ -116,18 +124,31 @@ def long_increase_nb_testing(
                         / (
                             order_result.average_entry
                             * (
-                                prices.open
+                                prices.entry
                                 - sl_price_new
-                                + prices.open * static_variables_tuple.fee_pct
+                                + prices.entry * static_variables_tuple.fee_pct
                                 + sl_price_new * static_variables_tuple.fee_pct
                             )
                         )
                     )
                     position_new = position_old + size_value
                     average_entry_new = (size_value + position_old) / (
-                        (size_value / prices.open) + (position_old / average_entry_new)
+                        (size_value / prices.entry) + (position_old / average_entry_new)
                     )
                     sl_pct_new = (average_entry_new - sl_price_new) / average_entry_new
+                else:
+                    sl_pct_new = (prices.entry - sl_price_new) / prices.entry
+                    size_value = (
+                        account_state.equity * order_settings.size_pct / sl_pct_new
+                    )
+                    possible_loss = size_value * sl_pct_new
+
+                    size_value = -possible_loss / (
+                        sl_price_new / prices.entry
+                        - 1
+                        - static_variables_tuple.fee_pct
+                        - sl_price_new * static_variables_tuple.fee_pct / prices.entry
+                    )
 
     elif static_variables_tuple.size_type == SizeType.Amount:
         size_value = order_settings.size_value
@@ -157,10 +178,10 @@ def long_increase_nb_testing(
     # Get average Entry
     if position_old != 0.0:
         average_entry_new = (size_value + position_old) / (
-            (size_value / prices.open) + (position_old / average_entry_new)
+            (size_value / prices.entry) + (position_old / average_entry_new)
         )
     else:
-        average_entry_new = prices.open
+        average_entry_new = prices.entry
 
     # setting new position_new
     position_new = position_old + size_value
@@ -184,7 +205,7 @@ def long_increase_nb_testing(
     )
 
     if is_stop_loss and is_max_risk:
-        # store temp sl prices.open
+        # store temp sl prices.entry
         if not np.isnan(sl_price_new):
             temp_price = sl_price_new
         elif not np.isnan(liq_price_new):
@@ -223,7 +244,7 @@ def long_increase_nb_testing(
                 order_type=static_variables_tuple.order_type,
                 pct_chg_trade=np.nan,
                 position=order_result.position,
-                price=prices.open,
+                price=prices.entry,
                 realized_pnl=np.nan,
                 size_value=np.nan,
                 sl_pct=order_result.sl_pct,
@@ -240,14 +261,10 @@ def long_increase_nb_testing(
             - average_entry_new  # TODO .2 is percent padding user wants
             - static_variables_tuple.mmr_pct * average_entry_new
         )  # math checked
-        if leverage_new > static_variables_tuple.max_lev:
-            leverage_new = static_variables_tuple.max_lev
-        elif leverage_new < 1:
-            leverage_new = 1
-    else:
-        raise RejectedOrderError(
-            "Long Increase - Either lev mode is nan or something is wrong with the leverage_new or leverage_new mode"
-        )
+    if leverage_new > static_variables_tuple.max_lev:
+        leverage_new = static_variables_tuple.max_lev
+    elif leverage_new < 1:
+        leverage_new = 1
 
     # Getting Order Cost
     # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001064&language=en_US
@@ -282,7 +299,7 @@ def long_increase_nb_testing(
         )  # math checked
 
     # Create take profits if requested
-    if not np.isnan(order_settings.risk_to_reward):
+    if not np.isnan(order_settings.risk_reward):
         coin_size = size_value / average_entry_new
 
         loss_no_fees = coin_size * (sl_pct_new - average_entry_new)
@@ -293,7 +310,7 @@ def long_increase_nb_testing(
 
         loss = loss_no_fees - fee_open - fee_close
 
-        profit = -loss * order_settings.risk_to_reward
+        profit = -loss * order_settings.risk_reward
 
         tp_price_new = (
             profit + size_value * static_variables_tuple.fee_pct + size_value
@@ -335,10 +352,10 @@ def long_increase_nb_testing(
         order_type=static_variables_tuple.order_type,
         pct_chg_trade=np.nan,
         position=position_new,
-        prices=prices.open,
+        price=prices.entry,
         realized_pnl=np.nan,
         size_value=size_value,
-        sl_init_pct=sl_pct_new,
+        sl_pct=sl_pct_new,
         sl_price=sl_price_new,
         tp_pct=tp_pct_new,
         tp_price=tp_price_new,

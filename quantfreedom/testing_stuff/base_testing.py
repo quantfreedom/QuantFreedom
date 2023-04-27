@@ -2,12 +2,18 @@ import numpy as np
 import pandas as pd
 
 from quantfreedom._typing import pdFrame
-from quantfreedom.testing_stuff.base_testing import *
-from quantfreedom.testing_stuff.buy_testing import *
-from quantfreedom.testing_stuff.enums_testing import *
-from quantfreedom.testing_stuff.execute_funcs_testing import *
-from quantfreedom.testing_stuff.helper_funcs_testing import *
-from quantfreedom.testing_stuff.simulate_testing import *
+from quantfreedom.testing_stuff.enums_testing import (
+    CandleBody,
+    StaticVariables,
+    OrderSettingsArrays,
+)
+from quantfreedom.testing_stuff.helper_funcs_testing import (
+    all_os_as_1d_arrays_nb_testing,
+    check_os_1d_arrays_nb_testing,
+    create_os_cart_product_nb_testing,
+    static_var_checker_nb_testing,
+)
+from quantfreedom.testing_stuff.simulate_testing import backtest_df_only_nb_testing
 
 
 def backtest_df_only_testing(
@@ -46,7 +52,7 @@ def backtest_df_only_testing(
     num_of_symbols = len(price_data.columns.levels[0])
 
     # Creating Settings Vars
-    total_order_settings = os_cart_arrays_tuple.sl_init_pct.shape[0]
+    total_order_settings = os_cart_arrays_tuple.sl_pct.shape[0]
 
     total_indicator_settings = entries.shape[1]
 
