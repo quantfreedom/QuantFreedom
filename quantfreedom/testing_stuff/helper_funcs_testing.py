@@ -698,9 +698,8 @@ def fill_order_records_nb_testing(
     order_records["price"] = order_result.price
     order_records["real_pnl"] = round(order_result.realized_pnl, 4)
     order_records["size_value"] = order_result.size_value
-    order_records["sl_prices"] = order_result.sl_prices
-    order_records["tp_prices"] = order_result.tp_prices
-    order_records["tsl_prices"] = order_result.tsl_prices
+    order_records["sl_prices"] = order_result.sl_price
+    order_records["tp_prices"] = order_result.tp_price
 
     order_records_id[0] += 1
 
