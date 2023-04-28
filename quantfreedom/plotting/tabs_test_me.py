@@ -40,6 +40,7 @@ def tabs_test_me(
     indicator_dict: dict,
     prices: pdFrame,
     order_records: RecordArray,
+    strat_num: int,
 ):
     amount_of_subplots = 0
 
@@ -111,7 +112,7 @@ def tabs_test_me(
     )
     candle_trades_and_ind = (
         html.H1(
-            "All Trades For This Strategy",
+            f"All Trades For Strategy {strat_num}",
             style={
                 "textAlign": "center",
                 "font-weight": "bold",

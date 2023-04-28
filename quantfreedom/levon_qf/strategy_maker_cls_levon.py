@@ -51,6 +51,28 @@ bg_color = "#0b0b18"
 np.set_printoptions(formatter={"float_kind": "{:.2f}".format})
 pd.options.display.float_format = "{:,.2f}".format
 
+tabs_styles = {
+    "height": "60px",
+    "borderBottom": "2px solid #d6d6d6",
+    'fontSize': '30px',
+}
+tab_style = {
+    "padding": "5px",
+    "fontWeight": "bold",
+    "backgroundColor": bg_color,
+    "color": "white",
+}
+
+tab_selected_style = {
+    "bordertop": "4px solid",
+    "borderleft": "1px solid #d6d6d6",
+    "borderright": "1px solid #d6d6d6",
+    "backgroundColor": "white",
+    "color": "black",
+    "fontWeight": "bold",
+    "padding": "5px",
+}
+
 
 class StrategyMaker:
     def __init__(self):
@@ -324,10 +346,13 @@ class StrategyMaker:
                         indicator_dict["indicator0"]["values0"].columns[0][0]
                     ],
                     order_records=order_records[order_records["order_set_id"] == count],
+                    strat_num=count+1,
                 )
                 dash_tab_list.append(
                     dcc.Tab(
-                        label=f"Tab {count}",
+                        label=f"Strategy {count+1}",
+                        style=tab_style,
+                        selected_style=tab_selected_style,
                         children=[
                             html.Div(candle),
                             html.Div(pnl),
@@ -337,7 +362,36 @@ class StrategyMaker:
                 )
         app.layout = html.Div(
             [
-                dcc.Tabs(dash_tab_list),
+                dcc.Tabs(
+                    style=tabs_styles,
+                    children=dash_tab_list,
+                ),
             ]
         )
+        #         dash_tab_list.append(
+        #             dcc.Tab(
+        #                 label=f"Tab {count}",
+        #                 className="custom-tab",
+        #                 selected_className="custom-tab--selected",
+        #                 children=[
+        #                     html.Div(candle),
+        #                     html.Div(pnl),
+        #                     html.Div(dtable),
+        #                 ],
+        #             )
+        #         )
+        # app.layout = html.Div(
+        #     [
+        #         dcc.Tabs(
+        #             className="custom-tabs-container",
+        #             parent_className="custom-tabs",
+        #             children=dash_tab_list,
+        #             colors={
+        #                 "border": "white",
+        #                 "primary": "gold",
+        #                 "background": bg_color,
+        #             },
+        #         ),
+        #     ]
+        # )
         return app.run_server(debug=False)
