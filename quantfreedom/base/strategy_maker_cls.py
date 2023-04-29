@@ -8,24 +8,12 @@ from dash import Dash, dcc, html
 from jupyter_dash import JupyterDash
 from dash_bootstrap_templates import load_figure_template
 
-from quantfreedom import (
-    combine_evals,
-    backtest_df_only,
-    CandleBody,
-    Arrays1dTuple,
-    pdFrame,
-    PossibleArray,
-    StaticVariables,
-    sim_6_base,
-    boradcast_to_1d_arrays_nb,
-    tabs_test_me,
-)
-from quantfreedom.levon_qf.talib_ind_levon import from_talib_levon
-
-from quantfreedom.plotting.tabs_test_me import tabs_test_me
+from quantfreedom._typing import pdFrame, PossibleArray
+from quantfreedom.evaluators.evaluators import _combine_evals
+from quantfreedom.indicators.talib_ind import from_talib
+from quantfreedom.plotting.strat_tabs import tabs_test_me
 from quantfreedom.base import backtest_df_only
-from quantfreedom.enums.enums import CandleBody
-from quantfreedom.plotting.strat_dashboard import strat_dashboard
+from quantfreedom.enums.enums import CandleBody, StaticVariables
 
 from IPython import get_ipython
 
@@ -54,7 +42,7 @@ pd.options.display.float_format = "{:,.2f}".format
 tabs_styles = {
     "height": "60px",
     "borderBottom": "2px solid #d6d6d6",
-    'fontSize': '30px',
+    "fontSize": "30px",
 }
 tab_style = {
     "padding": "5px",
@@ -94,7 +82,7 @@ class StrategyMaker:
         plot_on_data: bool = False,
         **kwargs,
     ):
-        indicator = from_talib_levon(
+        indicator = from_talib(
             func_name,
             price_data,
             indicator_data,
@@ -119,7 +107,7 @@ class StrategyMaker:
                 if b is None:
                     b = v
                 else:
-                    b = combine_evals(b, v)
+                    b = _combine_evals(b, v)
         self.combined_data = b
         return b
 
@@ -346,7 +334,7 @@ class StrategyMaker:
                         indicator_dict["indicator0"]["values0"].columns[0][0]
                     ],
                     order_records=order_records[order_records["order_set_id"] == count],
-                    strat_num=count+1,
+                    strat_num=count + 1,
                 )
                 dash_tab_list.append(
                     dcc.Tab(
@@ -368,30 +356,4 @@ class StrategyMaker:
                 ),
             ]
         )
-        #         dash_tab_list.append(
-        #             dcc.Tab(
-        #                 label=f"Tab {count}",
-        #                 className="custom-tab",
-        #                 selected_className="custom-tab--selected",
-        #                 children=[
-        #                     html.Div(candle),
-        #                     html.Div(pnl),
-        #                     html.Div(dtable),
-        #                 ],
-        #             )
-        #         )
-        # app.layout = html.Div(
-        #     [
-        #         dcc.Tabs(
-        #             className="custom-tabs-container",
-        #             parent_className="custom-tabs",
-        #             children=dash_tab_list,
-        #             colors={
-        #                 "border": "white",
-        #                 "primary": "gold",
-        #                 "background": bg_color,
-        #             },
-        #         ),
-        #     ]
-        # )
         return app.run_server(debug=False)

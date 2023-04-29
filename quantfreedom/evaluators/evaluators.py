@@ -6,7 +6,7 @@ from plotly.subplots import make_subplots
 from quantfreedom._typing import pdFrame, Union, Array1d
 
 
-def combine_evals(
+def _combine_evals(
     first_eval_data: pdFrame,
     second_eval_data: pdFrame,
     plot_results: bool = False,
@@ -310,7 +310,7 @@ def combine_evals(
     )
 
 
-def is_above(
+def _is_above(
     want_to_evaluate: pdFrame,
     user_args: Union[list[int, float], int, float, Array1d] = None,
     indicator_data: pdFrame = None,
@@ -617,7 +617,7 @@ def is_above(
     )
 
 
-def is_rising(
+def _is_rising(
     want_to_evaluate: pdFrame,
     user_args: Union[list[int, float], int, float, Array1d] = None,
     plot_results: bool = False,
@@ -719,7 +719,7 @@ def is_rising(
     )
 
 
-def is_below(
+def _is_below(
     want_to_evaluate: pdFrame,
     user_args: Union[list[int, float], int, float, Array1d] = None,
     indicator_data: pdFrame = None,
