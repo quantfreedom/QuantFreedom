@@ -241,14 +241,14 @@ def check_sl_tp_nb_testing(
 def process_order_nb_testing(
     account_state: AccountState,
     bar: int,
-    entries_col: int,
     order_result: OrderResult,
     order_settings_counter: int,
     order_settings: OrderSettings,
     order_type: int,
     prices: PriceTuple,
     static_variables_tuple: StaticVariables,
-    symbol_counter: int,
+    symbol_counter: Optional[int] = None,
+    entries_col: Optional[int] = None,
     order_records: Optional[RecordArray] = None,
     order_records_id: Optional[Array1d] = None,
     strat_records: Optional[RecordArray] = None,
@@ -301,11 +301,11 @@ def process_order_nb_testing(
 
         elif order_records is not None:
             fill_order_records_nb_testing(
+                account_state=account_state_new,
                 bar=bar,
                 order_records=order_records,
                 order_settings_counter=order_settings_counter,
                 order_records_id=order_records_id,
-                account_state=account_state_new,
                 order_result=order_result_new,
             )
 

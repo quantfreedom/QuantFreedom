@@ -4,3 +4,4 @@ from quantfreedom.testing_stuff.enums_testing import *
 from quantfreedom.testing_stuff.execute_funcs_testing import *
 from quantfreedom.testing_stuff.helper_funcs_testing import *
 from quantfreedom.testing_stuff.simulate_testing import *
+from quantfreedom.testing_stuff.strategy_maker_cls_testing import *

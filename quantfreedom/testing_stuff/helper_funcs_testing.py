@@ -576,50 +576,64 @@ def create_os_cart_product_nb_testing(
 
 @njit(cache=True)
 def boradcast_to_1d_arrays_nb_testing(
-    arrays_1d_tuple: OrderSettingsArrays,
+    order_settings_arrays: OrderSettingsArrays,
     entries: Array2d,
 ):
     x = 0
     biggest = 1
-    while x < 7:
-        if arrays_1d_tuple[x].size > 1:
-            biggest = arrays_1d_tuple[x].size
+    while x <= 6:
+        if order_settings_arrays[x].size > 1:
+            biggest = order_settings_arrays[x].size
             x += 1
             break
         x += 1
 
     while x < 7:
-        if arrays_1d_tuple[x].size > 1 and arrays_1d_tuple[x].size != biggest:
+        if (
+            order_settings_arrays[x].size > 1
+            and order_settings_arrays[x].size != biggest
+        ):
             raise ValueError("Size mismatch")
         x += 1
     if biggest > 6:
         raise ValueError("Total amount of tests must be <= 6")
 
-    leverage_braodcast_array = np.broadcast_to(arrays_1d_tuple[0], biggest)
-    max_equity_risk_pct_braodcast_array = np.broadcast_to(arrays_1d_tuple[1], biggest)
-    max_equity_risk_value_braodcast_array = np.broadcast_to(arrays_1d_tuple[2], biggest)
-    risk_reward_braodcast_array = np.broadcast_to(arrays_1d_tuple[3], biggest)
-    size_pct_braodcast_array = np.broadcast_to(arrays_1d_tuple[4], biggest)
-    size_value_braodcast_array = np.broadcast_to(arrays_1d_tuple[5], biggest)
-    sl_based_on_add_pct_braodcast_array = np.broadcast_to(arrays_1d_tuple[6], biggest)
-    sl_based_on_braodcast_array = np.broadcast_to(arrays_1d_tuple[7], biggest)
-    sl_pcts_braodcast_array = np.broadcast_to(arrays_1d_tuple[8], biggest)
-    sl_to_be_based_on_braodcast_array = np.broadcast_to(arrays_1d_tuple[9], biggest)
-    sl_to_be_trail_by_when_pct_from_avg_entry_braodcast_array = np.broadcast_to(
-        arrays_1d_tuple[10], biggest
+    leverage_broadcast_array = np.broadcast_to(order_settings_arrays[0], biggest)
+    max_equity_risk_pct_broadcast_array = np.broadcast_to(
+        order_settings_arrays[1], biggest
     )
-    sl_to_be_when_pct_from_avg_entry_braodcast_array = np.broadcast_to(
-        arrays_1d_tuple[11], biggest
+    max_equity_risk_value_broadcast_array = np.broadcast_to(
+        order_settings_arrays[2], biggest
     )
-    sl_to_be_zero_or_entry_braodcast_array = np.broadcast_to(
-        arrays_1d_tuple[12], biggest
+    risk_reward_broadcast_array = np.broadcast_to(order_settings_arrays[3], biggest)
+    size_pct_broadcast_array = np.broadcast_to(order_settings_arrays[4], biggest)
+    size_value_broadcast_array = np.broadcast_to(order_settings_arrays[5], biggest)
+    sl_based_on_broadcast_array = np.broadcast_to(order_settings_arrays[6], biggest)
+    sl_based_on_add_pct_broadcast_array = np.broadcast_to(
+        order_settings_arrays[7], biggest
     )
-    tp_pcts_braodcast_array = np.broadcast_to(arrays_1d_tuple[13], biggest)
-    tsl_based_on_braodcast_array = np.broadcast_to(arrays_1d_tuple[14], biggest)
-    tsl_pcts_init_braodcast_array = np.broadcast_to(arrays_1d_tuple[15], biggest)
-    tsl_trail_by_pct_braodcast_array = np.broadcast_to(arrays_1d_tuple[16], biggest)
-    tsl_when_pct_from_avg_entry_braodcast_array = np.broadcast_to(
-        arrays_1d_tuple[17], biggest
+    sl_based_on_lookback_broadcast_array = np.broadcast_to(
+        order_settings_arrays[8], biggest
+    )
+    sl_pct_broadcast_array = np.broadcast_to(order_settings_arrays[9], biggest)
+    sl_to_be_based_on_broadcast_array = np.broadcast_to(
+        order_settings_arrays[10], biggest
+    )
+    sl_to_be_when_pct_from_avg_entry_broadcast_array = np.broadcast_to(
+        order_settings_arrays[11], biggest
+    )
+    sl_to_be_zero_or_entry_broadcast_array = np.broadcast_to(
+        order_settings_arrays[12], biggest
+    )
+    tp_pct_broadcast_array = np.broadcast_to(order_settings_arrays[13], biggest)
+    trail_sl_based_on_broadcast_array = np.broadcast_to(
+        order_settings_arrays[14], biggest
+    )
+    trail_sl_by_pct_broadcast_array = np.broadcast_to(
+        order_settings_arrays[15], biggest
+    )
+    trail_sl_when_pct_from_avg_entry_broadcast_array = np.broadcast_to(
+        order_settings_arrays[16], biggest
     )
 
     if entries.shape[1] == 1:
@@ -628,24 +642,23 @@ def boradcast_to_1d_arrays_nb_testing(
         raise ValueError("Something is wrong with entries")
 
     return entries, OrderSettingsArrays(
-        leverage=leverage_braodcast_array,
-        max_equity_risk_pct=max_equity_risk_pct_braodcast_array,
-        max_equity_risk_value=max_equity_risk_value_braodcast_array,
-        risk_reward=risk_reward_braodcast_array,
-        size_pct=size_pct_braodcast_array,
-        size_value=size_value_braodcast_array,
-        sl_based_on_add_pct=sl_based_on_add_pct_braodcast_array,
-        sl_based_on=sl_based_on_braodcast_array,
-        sl_pcts=sl_pcts_braodcast_array,
-        sl_to_be_based_on=sl_to_be_based_on_braodcast_array,
-        sl_to_be_trail_by_when_pct_from_avg_entry=sl_to_be_trail_by_when_pct_from_avg_entry_braodcast_array,
-        sl_to_be_when_pct_from_avg_entry=sl_to_be_when_pct_from_avg_entry_braodcast_array,
-        sl_to_be_zero_or_entry=sl_to_be_zero_or_entry_braodcast_array,
-        tp_pcts=tp_pcts_braodcast_array,
-        tsl_based_on=tsl_based_on_braodcast_array,
-        tsl_pcts_init=tsl_pcts_init_braodcast_array,
-        tsl_trail_by_pct=tsl_trail_by_pct_braodcast_array,
-        tsl_when_pct_from_avg_entry=tsl_when_pct_from_avg_entry_braodcast_array,
+        leverage=leverage_broadcast_array,
+        max_equity_risk_pct=max_equity_risk_pct_broadcast_array,
+        max_equity_risk_value=max_equity_risk_value_broadcast_array,
+        risk_reward=risk_reward_broadcast_array,
+        size_pct=size_pct_broadcast_array,
+        size_value=size_value_broadcast_array,
+        sl_based_on=sl_based_on_broadcast_array,
+        sl_based_on_add_pct=sl_based_on_add_pct_broadcast_array,
+        sl_based_on_lookback=sl_based_on_lookback_broadcast_array,
+        sl_pct=sl_pct_broadcast_array,
+        sl_to_be_based_on=sl_to_be_based_on_broadcast_array,
+        sl_to_be_when_pct_from_avg_entry=sl_to_be_when_pct_from_avg_entry_broadcast_array,
+        sl_to_be_zero_or_entry=sl_to_be_zero_or_entry_broadcast_array,
+        tp_pct=tp_pct_broadcast_array,
+        trail_sl_based_on=trail_sl_based_on_broadcast_array,
+        trail_sl_by_pct=trail_sl_by_pct_broadcast_array,
+        trail_sl_when_pct_from_avg_entry=trail_sl_when_pct_from_avg_entry_broadcast_array,
     )
 
 
