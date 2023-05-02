@@ -70,7 +70,6 @@ def get_candle_trace_data(
     order_price_array = np.full(array_size, np.nan)
     avg_entry_array = np.full(array_size, np.nan)
     stop_loss_array = np.full(array_size, np.nan)
-    trailing_sl_array = np.full(array_size, np.nan)
     take_profit_array = np.full(array_size, np.nan)
 
     or_counter = 0
@@ -78,23 +77,20 @@ def get_candle_trace_data(
 
     avg_entry_current = np.array([0.0])
     stop_loss_current = np.array([0.0])
-    trailing_sl_current = np.array([0.0])
     take_profit_current = np.array([0.0])
 
     for i in range(array_size):
         if or_counter < order_records.size and order_records["bar"][or_counter] == i:
             fill_candle_trace_trades(
+                array_counter=array_counter,
+                avg_entry_array=avg_entry_array,
+                avg_entry_current=avg_entry_current,
                 order_records=order_records[or_counter],
                 order_price_array=order_price_array,
-                avg_entry_array=avg_entry_array,
                 stop_loss_array=stop_loss_array,
-                trailing_sl_array=trailing_sl_array,
-                take_profit_array=take_profit_array,
-                avg_entry_current=avg_entry_current,
                 stop_loss_current=stop_loss_current,
-                trailing_sl_current=trailing_sl_current,
+                take_profit_array=take_profit_array,
                 take_profit_current=take_profit_current,
-                array_counter=array_counter,
             )
             or_counter += 1
 
@@ -103,27 +99,24 @@ def get_candle_trace_data(
                 and order_records["bar"][or_counter] == i
             ):
                 fill_candle_trace_trades(
+                    array_counter=array_counter,
+                    avg_entry_array=avg_entry_array,
+                    avg_entry_current=avg_entry_current,
                     order_records=order_records[or_counter],
                     order_price_array=order_price_array,
-                    avg_entry_array=avg_entry_array,
                     stop_loss_array=stop_loss_array,
-                    trailing_sl_array=trailing_sl_array,
-                    take_profit_array=take_profit_array,
-                    avg_entry_current=avg_entry_current,
                     stop_loss_current=stop_loss_current,
-                    trailing_sl_current=trailing_sl_current,
+                    take_profit_array=take_profit_array,
                     take_profit_current=take_profit_current,
-                    array_counter=array_counter,
                 )
-            or_counter += 1
+                or_counter += 1
         array_counter += 1
     trace_data_list = cerate_candle_trace_trades_list(
-        index_prices=index_prices,
-        prices=prices,
-        order_price_array=order_price_array,
         avg_entry=avg_entry_array,
+        index_prices=index_prices,
+        order_price_array=order_price_array,
+        prices=prices,
         stop_loss=stop_loss_array,
-        trailing_sl=trailing_sl_array,
         take_profit=take_profit_array,
     )
     if list(indicator_dict.keys())[0] == "candle_chart":
@@ -143,18 +136,15 @@ def fill_candle_trace_trades(
     order_records: RecordArray,
     order_price_array: Array1d,
     avg_entry_array: Array1d,
-    stop_loss_array: Array1d,
-    trailing_sl_array: Array1d,
-    take_profit_array: Array1d,
     avg_entry_current: Array1d,
+    stop_loss_array: Array1d,
     stop_loss_current: Array1d,
-    trailing_sl_current: Array1d,
+    take_profit_array: Array1d,
     take_profit_current: Array1d,
     array_counter: int,
 ):
     temp_avg_entry = avg_entry_current[0]
     temp_stop_loss = stop_loss_current[0]
-    temp_trailing_sl = trailing_sl_current[0]
     temp_take_profit = take_profit_current[0]
 
     if temp_avg_entry != order_records["avg_entry"]:
@@ -162,18 +152,13 @@ def fill_candle_trace_trades(
     else:
         temp_avg_entry = np.nan
 
-    if temp_stop_loss != order_records["sl_prices"]:
-        temp_stop_loss = order_records["sl_prices"]
+    if temp_stop_loss != order_records["sl_price"]:
+        temp_stop_loss = order_records["sl_price"]
     else:
         temp_stop_loss = np.nan
 
-    if temp_trailing_sl != order_records["tsl_prices"]:
-        temp_trailing_sl = order_records["tsl_prices"]
-    else:
-        temp_trailing_sl = np.nan
-
-    if temp_take_profit != order_records["tp_prices"]:
-        temp_take_profit = order_records["tp_prices"]
+    if temp_take_profit != order_records["tp_price"]:
+        temp_take_profit = order_records["tp_price"]
     else:
         temp_take_profit = np.nan
 
@@ -181,7 +166,6 @@ def fill_candle_trace_trades(
         op = order_records["price"]
         ae = temp_avg_entry
         sl = temp_stop_loss
-        tsl = temp_trailing_sl
         tp = temp_take_profit
 
     elif order_records["real_pnl"] > 0 and (
@@ -191,36 +175,22 @@ def fill_candle_trace_trades(
         op = np.nan
         ae = np.nan
         sl = np.nan
-        tsl = np.nan
-        tp = order_records["tp_prices"]
+        tp = order_records["tp_price"]
 
-    elif order_records["real_pnl"] > 0 and (
-        order_records["order_type"] == OrderType.LongTSL
-        or order_records["order_type"] == OrderType.ShortTSL
-    ):
+    elif not np.isnan(order_records["real_pnl"]):
         op = np.nan
         ae = np.nan
-        sl = np.nan
-        tsl = order_records["tsl_prices"]
-        tp = np.nan
-
-    elif order_records["real_pnl"] <= 0:
-        op = np.nan
-        ae = np.nan
-        sl = order_records["sl_prices"]
-        tsl = order_records["tsl_prices"]
+        sl = order_records["sl_price"]
         tp = np.nan
 
     order_price_array[array_counter] = op
     avg_entry_array[array_counter] = ae
     stop_loss_array[array_counter] = sl
-    trailing_sl_array[array_counter] = tsl
     take_profit_array[array_counter] = tp
 
     avg_entry_current[0] = order_records["avg_entry"]
-    stop_loss_current[0] = order_records["sl_prices"]
-    trailing_sl_current[0] = order_records["tsl_prices"]
-    take_profit_current[0] = order_records["tp_prices"]
+    stop_loss_current[0] = order_records["sl_price"]
+    take_profit_current[0] = order_records["tp_price"]
 
 
 def cerate_candle_trace_trades_list(
@@ -229,7 +199,6 @@ def cerate_candle_trace_trades_list(
     order_price_array: Array1d,
     avg_entry: Array1d,
     stop_loss: Array1d,
-    trailing_sl: Array1d,
     take_profit: Array1d,
 ):
     open_prices = prices.open.values
@@ -284,19 +253,7 @@ def cerate_candle_trace_trades_list(
             ),
         ),
         go.Scatter(
-            name="Trailing SL",
-            x=index_prices,
-            y=trailing_sl,
-            mode="markers",
-            marker=dict(
-                color="orange",
-                size=10,
-                symbol="triangle-up",
-                line=dict(color="black", width=1),
-            ),
-        ),
-        go.Scatter(
-            name="Take Profits",
+            name="Take Profit",
             x=index_prices,
             y=take_profit,
             mode="markers",
@@ -365,6 +322,7 @@ def append_to_trace_data_list(
                 name="Signals",
             )
         )
+
 
 def strat_dashboard(
     indicator_dict: dict,
