@@ -6,7 +6,8 @@ from quantfreedom.enums.enums import (
     AccountState,
     OrderResult,
     OrderSettings,
-    PriceTuple,
+    PriceArrayTuple,
+    PriceFloatTuple,
     StaticVariables,
     OrderSettingsArrays,
     or_dt,
@@ -64,6 +65,7 @@ def backtest_df_only_nb(
     entries_start = 0
     entries_end = entries_per_symbol
     entries_col = 0
+    prices = 0
 
     for symbol_counter in range(num_of_symbols):
         open_prices = price_data[:, prices_start]
@@ -164,7 +166,7 @@ def backtest_df_only_nb(
                         if not np.isnan(order_settings.sl_based_on):
                             lb = int(bar - order_settings.sl_based_on_lookback)
                             if lb < 0:
-                                prices = PriceTuple(
+                                prices = PriceArrayTuple(
                                     entry=open_prices[bar],
                                     open=open_prices[0 : bar + 1],
                                     high=high_prices[0 : bar + 1],
@@ -172,7 +174,7 @@ def backtest_df_only_nb(
                                     close=close_prices[0 : bar + 1],
                                 )
                             else:
-                                prices = PriceTuple(
+                                prices = PriceArrayTuple(
                                     entry=open_prices[bar],
                                     open=open_prices[lb : bar + 1],
                                     high=high_prices[lb : bar + 1],
@@ -180,12 +182,12 @@ def backtest_df_only_nb(
                                     close=close_prices[lb : bar + 1],
                                 )
                         else:
-                            prices = PriceTuple(
+                            prices = PriceArrayTuple(
                                 entry=open_prices[bar],
-                                open=open_prices[bar],
-                                high=high_prices[bar],
-                                low=low_prices[bar],
-                                close=close_prices[bar],
+                                open=open_prices[0:1],
+                                high=open_prices[0:1],
+                                low=open_prices[0:1],
+                                close=open_prices[0:1],
                             )
                         # Process Order nb
                         account_state, order_result = process_order_nb(
@@ -203,7 +205,7 @@ def backtest_df_only_nb(
                             strat_records=strat_records[strat_records_filled[0]],
                         )
                     if order_result.position > 0:
-                        prices = PriceTuple(
+                        prices = PriceFloatTuple(
                             entry=open_prices[bar],
                             open=open_prices[bar],
                             high=high_prices[bar],
@@ -381,7 +383,7 @@ def _sim_6(
                 if not np.isnan(order_settings.sl_based_on):
                     lb = int(bar - order_settings.sl_based_on_lookback)
                     if lb < 0:
-                        prices = PriceTuple(
+                        prices = PriceArrayTuple(
                             entry=open_prices[bar],
                             open=open_prices[0 : bar + 1],
                             high=high_prices[0 : bar + 1],
@@ -389,7 +391,7 @@ def _sim_6(
                             close=close_prices[0 : bar + 1],
                         )
                     else:
-                        prices = PriceTuple(
+                        prices = PriceArrayTuple(
                             entry=open_prices[bar],
                             open=open_prices[lb : bar + 1],
                             high=high_prices[lb : bar + 1],
@@ -398,7 +400,7 @@ def _sim_6(
                         )
 
                 else:
-                    prices = PriceTuple(
+                    prices = PriceFloatTuple(
                         entry=open_prices[bar],
                         open=open_prices[bar],
                         high=high_prices[bar],
@@ -419,7 +421,7 @@ def _sim_6(
                     order_records=order_records[order_records_id[0]],
                 )
                 if order_result.position > 0:
-                    prices = PriceTuple(
+                    prices = PriceFloatTuple(
                         entry=open_prices[bar],
                         open=open_prices[bar],
                         high=high_prices[bar],

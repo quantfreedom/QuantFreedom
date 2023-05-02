@@ -10,7 +10,7 @@ from quantfreedom.enums.enums import (
     OrderSettings,
     OrderStatus,
     OrderStatusInfo,
-    PriceTuple,
+    PriceArrayTuple,
     RejectedOrderError,
     SizeType,
     StaticVariables,
@@ -21,7 +21,7 @@ from quantfreedom.enums.enums import (
 @njit(cache=True)
 def long_increase_nb(
     bar: int,
-    prices: PriceTuple,
+    prices: PriceArrayTuple,
     account_state: AccountState,
     order_settings: OrderSettings,
     order_result: OrderResult,

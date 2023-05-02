@@ -1,6 +1,6 @@
 import numpy as np
 
-from quantfreedom._typing import NamedTuple, PossibleArray
+from quantfreedom._typing import NamedTuple, Array1d
 
 __all__ = [
     "AccountState",
@@ -15,7 +15,8 @@ __all__ = [
     "StaticVariables",
     "OrderSettingsArrays",
     "OrderSettings",
-    "PriceTuple",
+    "PriceArrayTuple",
+    "PriceFloatTuple",
     "or_dt",
     "strat_df_array_dt",
     "order_settings_array_dt",
@@ -24,10 +25,10 @@ __all__ = [
 
 
 class AccountState(NamedTuple):
-    available_balance: float = 0.0
-    cash_borrowed: float = 0.0
-    cash_used: float = 0.0
-    equity: float = 0.0
+    available_balance: float
+    cash_borrowed: float
+    cash_used: float
+    equity: float
 
 
 class StaticVariables(NamedTuple):
@@ -49,71 +50,79 @@ class StaticVariables(NamedTuple):
 
 
 class OrderResult(NamedTuple):
-    average_entry: float = 0.0
-    fees_paid: float = 0.0
-    leverage: float = 0.0
-    liq_price: float = np.nan
-    moved_sl_to_be: bool = False
-    order_status: int = 0
-    order_status_info: int = 0
-    order_type: int = 0
-    pct_chg_trade: float = 0.0
-    position: float = 0.0
-    price: float = 0.0
-    realized_pnl: float = 0.0
-    size_value: float = 0.0
-    sl_pct: float = 0.0
-    sl_price: float = 0.0
-    tp_pct: float = 0.0
-    tp_price: float = 0.0
+    average_entry: float
+    fees_paid: float
+    leverage: float
+    liq_price: float
+    moved_sl_to_be: bool
+    order_status: int
+    order_status_info: int
+    order_type: int
+    pct_chg_trade: float
+    position: float
+    price: float
+    realized_pnl: float
+    size_value: float
+    sl_pct: float
+    sl_price: float
+    tp_pct: float
+    tp_price: float
 
 
-class PriceTuple(NamedTuple):
-    entry: PossibleArray = np.nan
-    open: PossibleArray = np.nan
-    high: PossibleArray = np.nan
-    low: PossibleArray = np.nan
-    close: PossibleArray = np.nan
+class PriceArrayTuple(NamedTuple):
+    entry: float
+    open: Array1d
+    high: Array1d
+    low: Array1d
+    close: Array1d
+
+
+class PriceFloatTuple(NamedTuple):
+    entry: float
+    open: float
+    high: float
+    low: float
+    close: float
 
 
 class OrderSettingsArrays(NamedTuple):
-    leverage: PossibleArray = np.nan
-    max_equity_risk_pct: PossibleArray = np.nan
-    max_equity_risk_value: PossibleArray = np.nan
-    risk_reward: PossibleArray = np.nan
-    size_pct: PossibleArray = np.nan
-    size_value: PossibleArray = np.nan
-    sl_based_on: PossibleArray = np.nan
-    sl_based_on_add_pct: PossibleArray = np.nan
-    sl_based_on_lookback: PossibleArray = np.nan
-    sl_pct: PossibleArray = np.nan
-    sl_to_be_based_on: PossibleArray = np.nan
-    sl_to_be_when_pct_from_avg_entry: PossibleArray = np.nan
-    sl_to_be_zero_or_entry: PossibleArray = np.nan
-    tp_pct: PossibleArray = np.nan
-    trail_sl_based_on: PossibleArray = np.nan
-    trail_sl_by_pct: PossibleArray = np.nan
-    trail_sl_when_pct_from_avg_entry: PossibleArray = np.nan
+    leverage: Array1d = np.nan
+    max_equity_risk_pct: Array1d = np.nan
+    max_equity_risk_value: Array1d = np.nan
+    risk_reward: Array1d = np.nan
+    size_pct: Array1d = np.nan
+    size_value: Array1d = np.nan
+    sl_based_on: Array1d = np.nan
+    sl_based_on_add_pct: Array1d = np.nan
+    sl_based_on_lookback: Array1d = np.nan
+    sl_pct: Array1d = np.nan
+    sl_to_be_based_on: Array1d = np.nan
+    sl_to_be_when_pct_from_avg_entry: Array1d = np.nan
+    sl_to_be_zero_or_entry: Array1d = np.nan
+    tp_pct: Array1d = np.nan
+    trail_sl_based_on: Array1d = np.nan
+    trail_sl_by_pct: Array1d = np.nan
+    trail_sl_when_pct_from_avg_entry: Array1d = np.nan
 
 
 class OrderSettings(NamedTuple):
-    leverage: float = np.nan
-    max_equity_risk_pct: float = np.nan
-    max_equity_risk_value: float = np.nan
-    risk_reward: float = np.nan
-    size_pct: float = np.nan
-    size_value: float = np.nan
-    sl_based_on: float = np.nan
-    sl_based_on_add_pct: float = np.nan
-    sl_based_on_lookback: float = np.nan
-    sl_pct: float = np.nan
-    sl_to_be_based_on: float = np.nan
-    sl_to_be_when_pct_from_avg_entry: PossibleArray = np.nan
-    sl_to_be_zero_or_entry: float = np.nan
-    tp_pct: float = np.nan
-    trail_sl_based_on: float = np.nan
-    trail_sl_by_pct: float = np.nan
-    trail_sl_when_pct_from_avg_entry: float = np.nan
+    leverage: float
+    max_equity_risk_pct: float
+    max_equity_risk_value: float
+    risk_reward: float
+    size_pct: float
+    size_value: float
+    sl_based_on: float
+    sl_based_on_add_pct: float
+    sl_based_on_lookback: float
+    sl_pct: float
+    sl_to_be_based_on: float
+    sl_to_be_when_pct_from_avg_entry: float
+    sl_to_be_zero_or_entry: float
+    tp_pct: float
+    trail_sl_based_on: float
+    trail_sl_by_pct: float
+    trail_sl_when_pct_from_avg_entry: float
 
 
 class LeverageModeT(NamedTuple):

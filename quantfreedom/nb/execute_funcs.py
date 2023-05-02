@@ -1,3 +1,4 @@
+from typing import Union
 import numpy as np
 from numba import njit
 from quantfreedom._typing import Optional, RecordArray, Array1d
@@ -12,7 +13,8 @@ from quantfreedom.enums.enums import (
     OrderSettings,
     OrderStatus,
     OrderType,
-    PriceTuple,
+    PriceArrayTuple,
+    PriceFloatTuple,
     StaticVariables,
 )
 from quantfreedom.nb.helper_funcs import (
@@ -28,7 +30,7 @@ def check_sl_tp_nb(
     order_result: OrderResult,
     order_settings_counter: int,
     order_settings_tuple: OrderSettings,
-    prices_tuple: PriceTuple,
+    prices_tuple: PriceFloatTuple,
     static_variables_tuple: StaticVariables,
     order_records_id: Optional[Array1d] = None,
     order_records: Optional[RecordArray] = None,
@@ -241,7 +243,7 @@ def process_order_nb(
     order_settings_counter: int,
     order_settings: OrderSettings,
     order_type: int,
-    prices: PriceTuple,
+    prices: Union[PriceFloatTuple,PriceArrayTuple],
     static_variables_tuple: StaticVariables,
     symbol_counter: Optional[int] = None,
     entries_col: Optional[int] = None,
