@@ -69,11 +69,11 @@ class OrderResult(NamedTuple):
 
 
 class PriceTuple(NamedTuple):
-    entry: float
-    open: PossibleArray
-    high: PossibleArray
-    low: PossibleArray
-    close: PossibleArray
+    entry: PossibleArray = np.nan
+    open: PossibleArray = np.nan
+    high: PossibleArray = np.nan
+    low: PossibleArray = np.nan
+    close: PossibleArray = np.nan
 
 
 class OrderSettingsArrays(NamedTuple):
