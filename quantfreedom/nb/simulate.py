@@ -400,12 +400,12 @@ def _sim_6(
                         )
 
                 else:
-                    prices = PriceFloatTuple(
+                    prices = PriceArrayTuple(
                         entry=open_prices[bar],
-                        open=open_prices[bar],
-                        high=high_prices[bar],
-                        low=low_prices[bar],
-                        close=close_prices[bar],
+                        open=open_prices[0:2],
+                        high=high_prices[0:2],
+                        low=low_prices[0:2],
+                        close=close_prices[0:2],
                     )
                 # Process Order nb
                 account_state, order_result = process_order_nb(
@@ -421,7 +421,7 @@ def _sim_6(
                     order_records=order_records[order_records_id[0]],
                 )
                 if order_result.position > 0:
-                    prices = PriceFloatTuple(
+                    prices_check_stops = PriceFloatTuple(
                         entry=open_prices[bar],
                         open=open_prices[bar],
                         high=high_prices[bar],
@@ -435,7 +435,7 @@ def _sim_6(
                         order_result=order_result,
                         order_settings_counter=settings_counter,
                         order_settings_tuple=order_settings,
-                        prices_tuple=prices,
+                        prices_tuple=prices_check_stops,
                         static_variables_tuple=static_variables_tuple,
                     )
                     # process stops
