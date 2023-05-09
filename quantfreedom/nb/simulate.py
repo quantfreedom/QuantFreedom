@@ -217,6 +217,13 @@ def backtest_df_only_nb(
                             prices_tuple=prices,
                             static_variables_tuple=static_variables_tuple,
                         )
+                        prices = PriceFloatTuple(
+                            entry=open_prices[bar],
+                            open=open_prices[bar:bar + 1],
+                            high=high_prices[bar:bar + 1],
+                            low=low_prices[bar:bar+1],
+                            close=close_prices[bar:bar+1],
+                        )
                         # process stops
                         if not np.isnan(order_result.size_value):
                             account_state, order_result = process_order_nb(
