@@ -39,6 +39,7 @@ def backtest_df_only_nb(
     static_variables_tuple: StaticVariables,
     os_cart_arrays_tuple: OrderSettingsArrays,
 ) -> Array1d[Array1d, Array1d]:
+    
     # Creating strat records
     array_size = int(
         num_of_symbols
@@ -127,6 +128,7 @@ def backtest_df_only_nb(
                         order_settings_counter
                     ],
                 )
+                
                 # Account State Reset
                 account_state = AccountState(
                     available_balance=static_variables_tuple.equity,
@@ -189,6 +191,7 @@ def backtest_df_only_nb(
                                 low=open_prices[0:1],
                                 close=open_prices[0:1],
                             )
+                            
                         # Process Order nb
                         account_state, order_result = process_order_nb(
                             account_state=account_state,
