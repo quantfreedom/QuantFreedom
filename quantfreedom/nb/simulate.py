@@ -25,6 +25,78 @@ from quantfreedom.nb.helper_funcs import (
     get_to_the_upside_nb,
 )
 
+@njit(cache=True)
+def generate_settings(n_settings: int, os_cart_arrays_tuple: OrderSettingsArrays) -> tuple[OrderSettings]:
+    settings_arr = tuple()
+    for settings_idx in range(n_settings):
+        order_settings = OrderSettings(
+            leverage=os_cart_arrays_tuple.leverage[settings_idx],
+            max_equity_risk_pct=os_cart_arrays_tuple.max_equity_risk_pct[
+                settings_idx
+            ],
+            max_equity_risk_value=os_cart_arrays_tuple.max_equity_risk_value[
+                settings_idx
+            ],
+            risk_reward=os_cart_arrays_tuple.risk_reward[
+                settings_idx
+            ],
+            size_pct=os_cart_arrays_tuple.size_pct[settings_idx],
+            size_value=os_cart_arrays_tuple.size_value[settings_idx],
+            sl_based_on=os_cart_arrays_tuple.sl_based_on[
+                settings_idx
+            ],
+            sl_based_on_add_pct=os_cart_arrays_tuple.sl_based_on_add_pct[
+                settings_idx
+            ],
+            sl_based_on_lookback=os_cart_arrays_tuple.sl_based_on_lookback[
+                settings_idx
+            ],
+            sl_pct=os_cart_arrays_tuple.sl_pct[settings_idx],
+            sl_to_be_based_on=os_cart_arrays_tuple.sl_to_be_based_on[
+                settings_idx
+            ],
+            sl_to_be_zero_or_entry=os_cart_arrays_tuple.sl_to_be_zero_or_entry[
+                settings_idx
+            ],
+            sl_to_be_when_pct_from_avg_entry=os_cart_arrays_tuple.sl_to_be_when_pct_from_avg_entry[
+                settings_idx
+            ],
+            tp_pct=os_cart_arrays_tuple.tp_pct[settings_idx],
+            trail_sl_based_on=os_cart_arrays_tuple.trail_sl_based_on[
+                settings_idx
+            ],
+            trail_sl_by_pct=os_cart_arrays_tuple.trail_sl_by_pct[
+                settings_idx
+            ],
+            trail_sl_when_pct_from_avg_entry=os_cart_arrays_tuple.trail_sl_when_pct_from_avg_entry[
+                settings_idx
+            ],
+        )
+        settings_arr = (*settings_arr, order_settings)
+    return settings_arr
+
+@njit(cache=True)
+def get_interest_prices(bar_idx: int, prices, settings: OrderSettings) -> PriceArrayTuple:
+    open_prices, high_prices, low_prices, close_prices = prices
+    if not np.isnan(settings.sl_based_on):
+        lb = max(int(bar_idx - settings.sl_based_on_lookback), 0)
+        prices = PriceArrayTuple(
+            entry=open_prices[bar_idx],
+            open=open_prices[lb : bar_idx + 1],
+            high=high_prices[lb : bar_idx + 1],
+            low=low_prices[lb : bar_idx + 1],
+            close=close_prices[lb : bar_idx + 1],
+        )
+    else:
+        prices = PriceArrayTuple(
+            entry=open_prices[bar_idx],
+            open=open_prices[0:1],
+            high=open_prices[0:1],
+            low=open_prices[0:1],
+            close=open_prices[0:1],
+        )        
+    return prices
+
 
 @njit(cache=True)
 def backtest_df_only_nb(
@@ -68,6 +140,8 @@ def backtest_df_only_nb(
     entries_col = 0
     prices = 0
 
+    all_settings = generate_settings(total_order_settings, os_cart_arrays_tuple)
+
     for symbol_counter in range(num_of_symbols):
         open_prices = price_data[:, prices_start]
         high_prices = price_data[:, prices_start + 1]
@@ -84,51 +158,7 @@ def backtest_df_only_nb(
         for indicator_settings_counter in range(entries_per_symbol):
             current_indicator_entries = symbol_entries[:, indicator_settings_counter]
 
-            for order_settings_counter in range(total_order_settings):
-                order_settings = OrderSettings(
-                    leverage=os_cart_arrays_tuple.leverage[order_settings_counter],
-                    max_equity_risk_pct=os_cart_arrays_tuple.max_equity_risk_pct[
-                        order_settings_counter
-                    ],
-                    max_equity_risk_value=os_cart_arrays_tuple.max_equity_risk_value[
-                        order_settings_counter
-                    ],
-                    risk_reward=os_cart_arrays_tuple.risk_reward[
-                        order_settings_counter
-                    ],
-                    size_pct=os_cart_arrays_tuple.size_pct[order_settings_counter],
-                    size_value=os_cart_arrays_tuple.size_value[order_settings_counter],
-                    sl_based_on=os_cart_arrays_tuple.sl_based_on[
-                        order_settings_counter
-                    ],
-                    sl_based_on_add_pct=os_cart_arrays_tuple.sl_based_on_add_pct[
-                        order_settings_counter
-                    ],
-                    sl_based_on_lookback=os_cart_arrays_tuple.sl_based_on_lookback[
-                        order_settings_counter
-                    ],
-                    sl_pct=os_cart_arrays_tuple.sl_pct[order_settings_counter],
-                    sl_to_be_based_on=os_cart_arrays_tuple.sl_to_be_based_on[
-                        order_settings_counter
-                    ],
-                    sl_to_be_zero_or_entry=os_cart_arrays_tuple.sl_to_be_zero_or_entry[
-                        order_settings_counter
-                    ],
-                    sl_to_be_when_pct_from_avg_entry=os_cart_arrays_tuple.sl_to_be_when_pct_from_avg_entry[
-                        order_settings_counter
-                    ],
-                    tp_pct=os_cart_arrays_tuple.tp_pct[order_settings_counter],
-                    trail_sl_based_on=os_cart_arrays_tuple.trail_sl_based_on[
-                        order_settings_counter
-                    ],
-                    trail_sl_by_pct=os_cart_arrays_tuple.trail_sl_by_pct[
-                        order_settings_counter
-                    ],
-                    trail_sl_when_pct_from_avg_entry=os_cart_arrays_tuple.trail_sl_when_pct_from_avg_entry[
-                        order_settings_counter
-                    ],
-                )
-                
+            for order_settings_idx, order_settings in enumerate(all_settings):
                 # Account State Reset
                 account_state = AccountState(
                     available_balance=static_variables_tuple.equity,
@@ -165,40 +195,18 @@ def backtest_df_only_nb(
                         break
 
                     if current_indicator_entries[bar]:
-                        if not np.isnan(order_settings.sl_based_on):
-                            lb = int(bar - order_settings.sl_based_on_lookback)
-                            if lb < 0:
-                                prices = PriceArrayTuple(
-                                    entry=open_prices[bar],
-                                    open=open_prices[0 : bar + 1],
-                                    high=high_prices[0 : bar + 1],
-                                    low=low_prices[0 : bar + 1],
-                                    close=close_prices[0 : bar + 1],
-                                )
-                            else:
-                                prices = PriceArrayTuple(
-                                    entry=open_prices[bar],
-                                    open=open_prices[lb : bar + 1],
-                                    high=high_prices[lb : bar + 1],
-                                    low=low_prices[lb : bar + 1],
-                                    close=close_prices[lb : bar + 1],
-                                )
-                        else:
-                            prices = PriceArrayTuple(
-                                entry=open_prices[bar],
-                                open=open_prices[0:1],
-                                high=open_prices[0:1],
-                                low=open_prices[0:1],
-                                close=open_prices[0:1],
-                            )
-                            
+                        prices = get_interest_prices(
+                            bar,
+                            (open_prices, high_prices, low_prices, close_prices),
+                            order_settings,
+                        )
                         # Process Order nb
                         account_state, order_result = process_order_nb(
                             account_state=account_state,
                             bar=bar,
                             entries_col=entries_col,
                             order_result=order_result,
-                            order_settings_counter=order_settings_counter,
+                            order_settings_counter=order_settings_idx,
                             order_settings=order_settings,
                             order_type=static_variables_tuple.order_type,
                             prices=prices,
@@ -220,7 +228,7 @@ def backtest_df_only_nb(
                             account_state=account_state,
                             bar=bar,
                             order_result=order_result,
-                            order_settings_counter=order_settings_counter,
+                            order_settings_counter=order_settings_idx,
                             order_settings_tuple=order_settings,
                             prices_tuple=prices,
                             static_variables_tuple=static_variables_tuple,
@@ -232,7 +240,7 @@ def backtest_df_only_nb(
                                 bar=bar,
                                 entries_col=entries_col,
                                 order_result=order_result,
-                                order_settings_counter=order_settings_counter,
+                                order_settings_counter=order_settings_idx,
                                 order_settings=order_settings,
                                 order_type=order_result.order_type,
                                 prices=prices,
