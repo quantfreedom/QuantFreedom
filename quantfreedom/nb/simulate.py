@@ -27,10 +27,8 @@ from quantfreedom.nb.helper_funcs import (
 
 
 @njit(cache=True)
-def generate_settings(
-    n_settings: int, os_cart_arrays_tuple: OrderSettingsArrays
-) -> tuple:
-    settings_arr = tuple()
+def generate_settings(n_settings: int, os_cart_arrays_tuple: OrderSettingsArrays) -> Array1d[OrderSettings]:
+    settings_arr = np.empty(n_settings, dtype=OrderSettings)
     for settings_idx in range(n_settings):
         order_settings = OrderSettings(
             leverage=os_cart_arrays_tuple.leverage[settings_idx],
@@ -61,7 +59,7 @@ def generate_settings(
                 settings_idx
             ],
         )
-        settings_arr = (*settings_arr, order_settings)
+        settings_arr[settings_idx] = order_settings
     return settings_arr
 
 
