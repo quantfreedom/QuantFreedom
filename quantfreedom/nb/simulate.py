@@ -25,36 +25,29 @@ from quantfreedom.nb.helper_funcs import (
     get_to_the_upside_nb,
 )
 
+
 @njit(cache=True)
-def generate_settings(n_settings: int, os_cart_arrays_tuple: OrderSettingsArrays) -> tuple[OrderSettings]:
+def generate_settings(
+    n_settings: int, os_cart_arrays_tuple: OrderSettingsArrays
+) -> tuple:
     settings_arr = tuple()
     for settings_idx in range(n_settings):
         order_settings = OrderSettings(
             leverage=os_cart_arrays_tuple.leverage[settings_idx],
-            max_equity_risk_pct=os_cart_arrays_tuple.max_equity_risk_pct[
-                settings_idx
-            ],
+            max_equity_risk_pct=os_cart_arrays_tuple.max_equity_risk_pct[settings_idx],
             max_equity_risk_value=os_cart_arrays_tuple.max_equity_risk_value[
                 settings_idx
             ],
-            risk_reward=os_cart_arrays_tuple.risk_reward[
-                settings_idx
-            ],
+            risk_reward=os_cart_arrays_tuple.risk_reward[settings_idx],
             size_pct=os_cart_arrays_tuple.size_pct[settings_idx],
             size_value=os_cart_arrays_tuple.size_value[settings_idx],
-            sl_based_on=os_cart_arrays_tuple.sl_based_on[
-                settings_idx
-            ],
-            sl_based_on_add_pct=os_cart_arrays_tuple.sl_based_on_add_pct[
-                settings_idx
-            ],
+            sl_based_on=os_cart_arrays_tuple.sl_based_on[settings_idx],
+            sl_based_on_add_pct=os_cart_arrays_tuple.sl_based_on_add_pct[settings_idx],
             sl_based_on_lookback=os_cart_arrays_tuple.sl_based_on_lookback[
                 settings_idx
             ],
             sl_pct=os_cart_arrays_tuple.sl_pct[settings_idx],
-            sl_to_be_based_on=os_cart_arrays_tuple.sl_to_be_based_on[
-                settings_idx
-            ],
+            sl_to_be_based_on=os_cart_arrays_tuple.sl_to_be_based_on[settings_idx],
             sl_to_be_zero_or_entry=os_cart_arrays_tuple.sl_to_be_zero_or_entry[
                 settings_idx
             ],
@@ -62,12 +55,8 @@ def generate_settings(n_settings: int, os_cart_arrays_tuple: OrderSettingsArrays
                 settings_idx
             ],
             tp_pct=os_cart_arrays_tuple.tp_pct[settings_idx],
-            trail_sl_based_on=os_cart_arrays_tuple.trail_sl_based_on[
-                settings_idx
-            ],
-            trail_sl_by_pct=os_cart_arrays_tuple.trail_sl_by_pct[
-                settings_idx
-            ],
+            trail_sl_based_on=os_cart_arrays_tuple.trail_sl_based_on[settings_idx],
+            trail_sl_by_pct=os_cart_arrays_tuple.trail_sl_by_pct[settings_idx],
             trail_sl_when_pct_from_avg_entry=os_cart_arrays_tuple.trail_sl_when_pct_from_avg_entry[
                 settings_idx
             ],
@@ -75,8 +64,11 @@ def generate_settings(n_settings: int, os_cart_arrays_tuple: OrderSettingsArrays
         settings_arr = (*settings_arr, order_settings)
     return settings_arr
 
+
 @njit(cache=True)
-def get_interest_prices(bar_idx: int, prices, settings: OrderSettings) -> PriceArrayTuple:
+def get_interest_prices(
+    bar_idx: int, prices, settings: OrderSettings
+) -> PriceArrayTuple:
     open_prices, high_prices, low_prices, close_prices = prices
     if not np.isnan(settings.sl_based_on):
         lb = max(int(bar_idx - settings.sl_based_on_lookback), 0)
@@ -94,7 +86,7 @@ def get_interest_prices(bar_idx: int, prices, settings: OrderSettings) -> PriceA
             high=open_prices[0:1],
             low=open_prices[0:1],
             close=open_prices[0:1],
-        )        
+        )
     return prices
 
 
@@ -111,7 +103,6 @@ def backtest_df_only_nb(
     static_variables_tuple: StaticVariables,
     os_cart_arrays_tuple: OrderSettingsArrays,
 ) -> Array1d[Array1d, Array1d]:
-    
     # Creating strat records
     array_size = int(
         num_of_symbols
