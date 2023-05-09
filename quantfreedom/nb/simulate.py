@@ -25,12 +25,9 @@ from quantfreedom.nb.helper_funcs import (
     get_to_the_upside_nb,
 )
 
-
 @njit(cache=True)
-def generate_settings(n_settings: int, os_cart_arrays_tuple: OrderSettingsArrays) -> Array1d[OrderSettings]:
-    settings_arr = np.empty(n_settings, dtype=OrderSettings)
-    for settings_idx in range(n_settings):
-        order_settings = OrderSettings(
+def get_order_settings(settings_idx: int, os_cart_arrays_tuple: OrderSettingsArrays) -> OrderSettings:
+    return OrderSettings(
             leverage=os_cart_arrays_tuple.leverage[settings_idx],
             max_equity_risk_pct=os_cart_arrays_tuple.max_equity_risk_pct[settings_idx],
             max_equity_risk_value=os_cart_arrays_tuple.max_equity_risk_value[
@@ -59,9 +56,6 @@ def generate_settings(n_settings: int, os_cart_arrays_tuple: OrderSettingsArrays
                 settings_idx
             ],
         )
-        settings_arr[settings_idx] = order_settings
-    return settings_arr
-
 
 @njit(cache=True)
 def get_interest_prices(
@@ -129,8 +123,6 @@ def backtest_df_only_nb(
     entries_col = 0
     prices = 0
 
-    all_settings = generate_settings(total_order_settings, os_cart_arrays_tuple)
-
     for symbol_counter in range(num_of_symbols):
         open_prices = price_data[:, prices_start]
         high_prices = price_data[:, prices_start + 1]
@@ -147,7 +139,10 @@ def backtest_df_only_nb(
         for indicator_settings_counter in range(entries_per_symbol):
             current_indicator_entries = symbol_entries[:, indicator_settings_counter]
 
-            for order_settings_idx, order_settings in enumerate(all_settings):
+            for order_settings_idx in range(total_order_settings):
+                order_settings = get_order_settings(
+                    order_settings_idx, os_cart_arrays_tuple
+                )
                 # Account State Reset
                 account_state = AccountState(
                     available_balance=static_variables_tuple.equity,
