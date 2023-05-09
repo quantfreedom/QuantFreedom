@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-import pip
 
 with open("README.md", "r", encoding="utf-8", errors="ignore") as fh:
     long_description = fh.read()
