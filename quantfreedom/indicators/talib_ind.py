@@ -5,7 +5,7 @@ import talib
 from talib.abstract import Function
 from talib import get_functions
 from itertools import product
-from quantfreedom._typing import pdFrame, Array1d
+from quantfreedom._typing import Array1d
 from quantfreedom.indicators.indicators_cls import Indicator
 from quantfreedom.plotting.simple_plots import (
     plot_on_candles_1_chart,
@@ -14,16 +14,31 @@ from quantfreedom.plotting.simple_plots import (
 
 # this is an update
 
+def validate(value, ref_name, ref_value):
+    if not isinstance(value, list):
+        raise ValueError(f"{ref_name} must be a list")
+
+    if not all(isinstance(x, str) for x in value):
+        raise ValueError(
+            f"{ref_name} your list has to be made up of strings"
+        )
+
+    if len(value) != len(ref_value):
+        raise ValueError(
+            f"{ref_name} your list length must be {len(ref_value)}"
+        )
+    
+
 def from_talib(
     func_name: str,
-    price_data: pdFrame = None,
-    indicator_data: pdFrame = None,
+    price_data: pd.DataFrame = None,
+    indicator_data: pd.DataFrame = None,
     all_possible_combos: bool = False,
     column_wise_combos: bool = False,
     plot_results: bool = False,
     plot_on_data: bool = False,
     **kwargs,
-) -> pdFrame:
+) -> pd.DataFrame:
     """
     Function Name
     -------------
@@ -42,9 +57,9 @@ def from_talib(
     ----------
     func_name : str
         the short form name of the function like dema for Double Exponential Moving Average. Please look at https://ta-lib.github.io/ta-lib-python/funcs.html for a list of all the short form function names
-    price_data : pdFrame, None
+    price_data : pd.DataFrame, None
         price data
-    indicator_data : pdFrame, None
+    indicator_data : pd.DataFrame, None
         indicator data like if you want to put an ema on the rsi you send the rsi indicator data here and ema the for func name
     all_possible_combos : bool, False
         If you want all possible combinations, aka the cartesian product, or not. Example of what the cart product does
@@ -64,70 +79,37 @@ def from_talib(
     ## Function returns
     Returns
     -------
-    pdFrame
+    pd.DataFrame
         Pandas Dataframe of indicator values
     """
     if all(x is None for x in (price_data, indicator_data)):
         raise ValueError(
-            f"You need to send either price_data = pdFrame or indicator_data = pdFrame"
+            f"You need to send either price_data = pd.DataFrame or indicator_data = pd.DataFrame"
         )
     elif all(x is not None for x in (price_data, indicator_data)):
         raise ValueError(
             f"You can't send both price_data and values ... please pick one or the other"
         )
-    elif (
-        not isinstance(indicator_data, pdFrame)
-        and indicator_data is not None
-        or not isinstance(price_data, pdFrame)
-        and price_data is not None
-    ):
-        raise ValueError(f"You must send this as a pandas dataframe")
-    elif isinstance(indicator_data, pdFrame):
-        pd_index = indicator_data.index
-    elif isinstance(price_data, pdFrame):
-        pd_index = price_data.index
-
-    users_args_list = []
-    biggest = 1
-    indicator_info = Function(func_name).info
-    in_names_key = ""
-    output_names = indicator_info["output_names"]
-    ind_params = list(indicator_info["parameters"].keys())
-    ind_name = indicator_info["name"]
-
     if all_possible_combos and column_wise_combos:
         raise ValueError(
             f"you can't have cart product and column_wise_combos both be true"
         )
-    if len(ind_params) == 1 and (all_possible_combos or column_wise_combos):
-        raise ValueError(
-            f"This indicator only has one paramater which is {ind_params[0]} therefore can't do column_wise_combos or cart product."
-        )
+
+    pd_index = indicator_data.index if indicator_data is not None else price_data.index
+
+    users_args_list = []
+    biggest = 1
+    indicator_info = Function(func_name).info
+    output_names = indicator_info["output_names"]
+    ind_params = list(indicator_info["parameters"].keys())
+    ind_name = indicator_info["name"]
 
     for in_names_key, in_names_values in indicator_info["input_names"].items():
         filled = False
         if isinstance(in_names_values, list):
             for kwarg_keys, kwarg_values in kwargs.items():
                 if in_names_key == kwarg_keys:
-                    if not isinstance(kwarg_values, list):
-                        raise ValueError(f"{in_names_key} must be a list of strings")
-
-                    if isinstance(kwarg_values, list):
-                        if not all(isinstance(x, str) for x in kwarg_values):
-                            raise ValueError(
-                                f"{in_names_key} your list has to be made up of strings"
-                            )
-
-                        if len(kwarg_values) == 1:
-                            raise ValueError(
-                                f"{in_names_key} your list length must be greater than 1"
-                            )
-
-                        if len(kwarg_values) != len(in_names_values):
-                            raise ValueError(
-                                f"your list of {in_names_key} must be exactly {len(in_names_values)}"
-                            )
-
+                    validate(kwarg_values, in_names_key, in_names_values)
                     input_names = kwarg_values
                     filled = True
                     break
