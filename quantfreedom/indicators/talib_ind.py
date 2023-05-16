@@ -14,21 +14,6 @@ from quantfreedom.plotting.simple_plots import (
 
 # this is an update
 
-def validate(value, ref_name, ref_value):
-    if not isinstance(value, list):
-        raise ValueError(f"{ref_name} must be a list")
-
-    if not all(isinstance(x, str) for x in value):
-        raise ValueError(
-            f"{ref_name} your list has to be made up of strings"
-        )
-
-    if len(value) != len(ref_value):
-        raise ValueError(
-            f"{ref_name} your list length must be {len(ref_value)}"
-        )
-    
-
 def from_talib(
     func_name: str,
     price_data: pd.DataFrame = None,
@@ -90,26 +75,61 @@ def from_talib(
         raise ValueError(
             f"You can't send both price_data and values ... please pick one or the other"
         )
-    if all_possible_combos and column_wise_combos:
-        raise ValueError(
-            f"you can't have cart product and column_wise_combos both be true"
-        )
-
-    pd_index = indicator_data.index if indicator_data is not None else price_data.index
+    elif (
+        not isinstance(indicator_data, pd.DataFrame)
+        and indicator_data is not None
+        or not isinstance(price_data, pd.DataFrame)
+        and price_data is not None
+    ):
+        raise ValueError(f"You must send this as a pandas dataframe")
+    
+    # get date index
+    elif isinstance(indicator_data, pd.DataFrame):
+        pd_index = indicator_data.index
+    elif isinstance(price_data, pd.DataFrame):
+        pd_index = price_data.index
 
     users_args_list = []
     biggest = 1
     indicator_info = Function(func_name).info
+    in_names_key = ""
     output_names = indicator_info["output_names"]
     ind_params = list(indicator_info["parameters"].keys())
     ind_name = indicator_info["name"]
+
+    if all_possible_combos and column_wise_combos:
+        raise ValueError(
+            f"you can't have cart product and column_wise_combos both be true"
+        )
+    if len(ind_params) == 1 and (all_possible_combos or column_wise_combos):
+        raise ValueError(
+            f"This indicator only has one paramater which is {ind_params[0]} therefore can't do column_wise_combos or cart product."
+        )
 
     for in_names_key, in_names_values in indicator_info["input_names"].items():
         filled = False
         if isinstance(in_names_values, list):
             for kwarg_keys, kwarg_values in kwargs.items():
                 if in_names_key == kwarg_keys:
-                    validate(kwarg_values, in_names_key, in_names_values)
+                    if not isinstance(kwarg_values, list):
+                        raise ValueError(f"{in_names_key} must be a list of strings")
+
+                    if isinstance(kwarg_values, list):
+                        if not all(isinstance(x, str) for x in kwarg_values):
+                            raise ValueError(
+                                f"{in_names_key} your list has to be made up of strings"
+                            )
+
+                        if len(kwarg_values) == 1:
+                            raise ValueError(
+                                f"{in_names_key} your list length must be greater than 1"
+                            )
+
+                        if len(kwarg_values) != len(in_names_values):
+                            raise ValueError(
+                                f"your list of {in_names_key} must be exactly {len(in_names_values)}"
+                            )
+
                     input_names = kwarg_values
                     filled = True
                     break
