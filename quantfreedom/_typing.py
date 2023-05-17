@@ -1,6 +1,5 @@
 import numpy as np
 from pandas import Series as pdSeries, DataFrame as pdFrame, Index as pdIndex
-from polars import Series as plSeries, DataFrame as plFrame
 from typing import *
 
 try:
@@ -17,9 +16,9 @@ Array = np.ndarray  # ready to be used for n-dim data
 Array1d = np.ndarray
 Array2d = np.ndarray
 RecordArray = np.ndarray
-AnyArray = Union[Array, pdSeries, pdFrame, plFrame, plSeries]
-AnyArray1d = Union[Array1d, pdSeries, plSeries]
-AnyArray2d = Union[Array2d, pdFrame, plFrame]
+AnyArray = Union[Array, pdSeries, pdFrame]
+AnyArray1d = Union[Array1d, pdSeries]
+AnyArray2d = Union[Array2d, pdFrame]
 _ArrayLike = Union[Scalar, Sequence[Scalar], Sequence[Sequence[Any]], SupportsArray]
-ArrayLike = Union[_ArrayLike, Array, pdIndex, pdSeries, pdFrame, plSeries, plFrame]
+ArrayLike = Union[_ArrayLike, Array, pdIndex, pdSeries, pdFrame]
 PossibleArray = Union[np.ndarray, int, float, bool]
