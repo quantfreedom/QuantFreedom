@@ -1,16 +1,32 @@
 # https://ta-lib.github.io/ta-lib-python/index.html
-import pandas as pd
-import numpy as np
-import talib
-from talib.abstract import Function
-from talib import get_functions
 from itertools import product
+
+import numpy as np
+import pandas as pd
+import talib
+from talib import get_functions
+from talib.abstract import Function
+
 from quantfreedom._typing import Array1d
 from quantfreedom.indicators.indicators_cls import Indicator
-from quantfreedom.plotting.simple_plots import (
-    plot_on_candles_1_chart,
-    plot_results_candles_and_chart,
-)
+from quantfreedom.plotting.simple_plots import (plot_on_candles_1_chart,
+                                                plot_results_candles_and_chart)
+
+# this is an update
+
+def validate(value, ref_name, ref_value):
+    if not isinstance(value, list):
+        raise ValueError(f"{ref_name} must be a list")
+
+    if not all(isinstance(x, str) for x in value):
+        raise ValueError(
+            f"{ref_name} your list has to be made up of strings"
+        )
+
+    if len(value) != len(ref_value):
+        raise ValueError(
+            f"{ref_name} your list length must be {len(ref_value)}"
+        )
 
 # this is an update
 
