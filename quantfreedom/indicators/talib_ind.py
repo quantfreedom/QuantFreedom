@@ -27,8 +27,7 @@ def validate(value, ref_name, ref_value):
         raise ValueError(
             f"{ref_name} your list length must be {len(ref_value)}"
         )
-
-# this is an update
+    
 
 def from_talib(
     func_name: str,
@@ -83,11 +82,14 @@ def from_talib(
     pd.DataFrame
         Pandas Dataframe of indicator values
     """
-    if all(x is None for x in (price_data, indicator_data)):
+    valid_price_data = price_data is not None
+    valid_indicator_data = indicator_data is not None
+
+    if not any([valid_price_data, valid_indicator_data]):
         raise ValueError(
             f"You need to send either price_data = pd.DataFrame or indicator_data = pd.DataFrame"
         )
-    elif all(x is not None for x in (price_data, indicator_data)):
+    elif all([valid_price_data, valid_indicator_data]):
         raise ValueError(
             f"You can't send both price_data and values ... please pick one or the other"
         )
@@ -96,111 +98,103 @@ def from_talib(
             f"you can't have cart product and column_wise_combos both be true"
         )
 
-    pd_index = indicator_data.index if indicator_data is not None else price_data.index
+    pd_index = indicator_data.index if indicator_data else price_data.index
 
     users_args_list = []
     biggest = 1
     indicator_info = Function(func_name).info
-    in_names_key = ""
     output_names = indicator_info["output_names"]
     ind_params = list(indicator_info["parameters"].keys())
     ind_name = indicator_info["name"]
 
-    if all_possible_combos and column_wise_combos:
-        raise ValueError(
-            f"you can't have cart product and column_wise_combos both be true"
-        )
-    if len(ind_params) == 1 and (all_possible_combos or column_wise_combos):
-        raise ValueError(
-            f"This indicator only has one paramater which is {ind_params[0]} therefore can't do column_wise_combos or cart product."
-        )
-
     for in_names_key, in_names_values in indicator_info["input_names"].items():
         filled = False
+        
         if isinstance(in_names_values, list):
-            for kwarg_keys, kwarg_values in kwargs.items():
-                if in_names_key == kwarg_keys:
-                    validate(kwarg_values, in_names_key, in_names_values)
-                    input_names = kwarg_values
-                    filled = True
-                    break
-                elif in_names_key == "price_data" and kwarg_keys == "price":
-                    raise ValueError(
-                        f"You need to provide price_data= instead of price="
-                    )
+            val_in_names_key = kwargs.get(in_names_key)
+            if val_in_names_key is not None:
+                validate(val_in_names_key, in_names_key, in_names_values)
+                input_names = val_in_names_key
+                filled = True
+
+            elif in_names_key == "prices" and ("price" in kwargs.keys()):
+                raise ValueError(
+                    f"You need to provide prices= instead of price="
+                )
 
             if not filled:
                 input_names = in_names_values
 
         elif isinstance(in_names_values, str):
-            for kwarg_keys, kwarg_values in kwargs.items():
-                if in_names_key == kwarg_keys:
-                    if not isinstance(kwarg_values, str):
-                        raise ValueError(
-                            f"{in_names_key} must be a string and not a list of strings"
-                        )
-
-                    input_names = [kwarg_values]
-                    filled = True
-                    break
-                elif in_names_key == "price" and kwarg_keys == "price_data":
+            val_in_names_key = kwargs.get(in_names_key)
+            if val_in_names_key is not None:
+                if not isinstance(val_in_names_key, str):
                     raise ValueError(
-                        f"You need to provide price= instead of price_data="
+                        f"{in_names_key} must be a string and not a list of strings"
                     )
+
+                input_names = [val_in_names_key]
+                filled = True
+
+            elif in_names_key == "price" and ("prices" in kwargs.keys()):
+                raise ValueError(
+                    f"You need to provide price= instead of prices="
+                )
 
             if not filled:
                 input_names = [in_names_values]
 
-    if bool(indicator_info["parameters"]):
+    params = indicator_info.get("parameters")
+    if params is not None:
         param_dict = {}
-        for param_names_key, param_names_values in indicator_info["parameters"].items():
+        valid_combo = all([not all_possible_combos,
+                           not column_wise_combos,
+                           len(params) > 1])
+        
+        for param_names_key, param_names_values in params.items():
             filled = False
-            for kwarg_keys, kwarg_values in kwargs.items():
-                if param_names_key == kwarg_keys:
-                    if not isinstance(kwarg_values, (int, float, list, Array1d)):
+            val_param_names_key = kwargs.get(param_names_key)
+            if val_param_names_key:
+                if isinstance(val_param_names_key, (int, float)):
+                    users_args_list.append(np.asarray([val_param_names_key]))
+
+                elif isinstance(val_param_names_key, (list, Array1d)):
+                    if valid_combo:
                         raise ValueError(
-                            f"{param_names_key} must be a int float or a list or np.array of ints or floats"
+                            f"you can't have list(s) as args when the {func_name} has mutiple params without doing a combo or cart product"
+                        )
+                    
+                    if len(val_param_names_key) == 1:
+                        raise ValueError(
+                            f"{param_names_key} your list or array length must be greater than 1")
+                    
+                    if not np.issubdtype(np.array(val_param_names_key).dtype, (np.integer, np.double)):
+                        raise ValueError(
+                            f"{param_names_key} your list has to be filled with ints or floats"
                         )
 
-                    if isinstance(kwarg_values, (int, float)):
-                        users_args_list.append(np.asarray([kwarg_values]))
+                    users_args_list.append(np.asarray(val_param_names_key))
+                else:
+                    raise ValueError(
+                        f"{param_names_key} must be a int float or a list or np.array of ints or floats"
+                    )
 
-                    elif isinstance(kwarg_values, (list, Array1d)):
-                        if (
-                            all_possible_combos == False
-                            and column_wise_combos == False
-                            and len(indicator_info["parameters"]) > 1
-                        ):
-                            raise ValueError(
-                                f"you can't have list(s) as args when the {func_name} has mutiple params without doing a combo or cart product"
-                            )
-                        if not all(
-                            isinstance(x, (int, float, np.int_, np.float_))
-                            for x in kwarg_values
-                        ):
-                            raise ValueError(
-                                f"{param_names_key} your list has to be filled with ints or floats"
-                            )
-                        if len(kwarg_values) == 1:
-                            raise ValueError(
-                                f"{param_names_key} your list or array length must be greater than 1"
-                            )
-                        if column_wise_combos or all_possible_combos:
-                            if biggest == 1 and len(kwarg_values) > 1:
-                                biggest = len(kwarg_values)
-                            if biggest != len(kwarg_values) and column_wise_combos:
-                                raise ValueError(
-                                    f"{param_names_key} when using column_wise_combos, all listed items must be same length"
-                                )
-
-                        users_args_list.append(np.asarray(kwarg_values))
-                    param_dict[param_names_key] = kwarg_values
-                    filled = True
-                    break
+                param_dict[param_names_key] = val_param_names_key
+                filled = True
+                break
 
             if not filled:
                 param_dict[param_names_key] = param_names_values
                 users_args_list.append(np.asarray([param_names_values]))
+
+        unique_length = set([x.size for x in users_args_list])
+        if 1 in unique_length:
+            unique_length.remove(1)
+        
+        if len(unique_length) > 1:
+                raise ValueError(
+                    f"{param_names_key} when using column_wise_combos, all listed items must be same length"
+                )
     else:
         param_dict = ()
 
