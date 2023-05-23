@@ -6,6 +6,7 @@ import pandas as pd
 import talib
 from talib import get_functions
 from talib.abstract import Function
+from collections.abc import Iterable
 
 from quantfreedom._typing import Array1d
 from quantfreedom.indicators.indicators_cls import Indicator
@@ -96,23 +97,32 @@ def from_talib(
 
     if indicator_info.get("parameters"):
         indicator_info["parameters"].update(parameters)
-
-    if biggest == 1 and (column_wise_combos or all_possible_combos):
-        raise ValueError(
-            f"You have to have a list for paramaters for {ind_params} to use cart product or column_wise_combos"
-        )
-
-    elif column_wise_combos:
-        final_user_args = []
-        for x in users_args_list:
-            if x.size == 1:
-                final_user_args.append(np.broadcast_to(x, biggest))
+    
+    
+    # TODO: Move to a new function
+    if column_wise_combos:
+        params_len = [len(p) for p in indicator_info["parameters"].values() if isinstance(p, list)]
+        lenghts = list(set(params_len))
+        if len(lenghts)>1:
+            raise ValueError("The length of the parameters needs to be the same.")
+        base_lenght = lenghts[0]
+        new_params = {}
+        for k, v in indicator_info["parameters"].items():
+            if not isinstance(v, list):
+                new_params[k] = [v] * base_lenght
             else:
-                final_user_args.append(x)
-        final_user_args = tuple(final_user_args)
+                new_params[k] = v
+        indicator_info["parameters"] = new_params
 
     elif all_possible_combos:
-        final_user_args = np.array(list(product(*users_args_list))).T
+        list_params = []
+        for k, v in indicator_info["parameters"].items():
+            if not isinstance(v, list):
+                list_params.append([v])
+            else:
+                list_params.append(v)
+
+        final_user_args = np.array(list(product(*list_params))).T
 
     else:
         final_user_args = tuple(users_args_list)
