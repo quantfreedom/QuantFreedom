@@ -34,7 +34,6 @@ def from_talib(
     func_name: str,
     price_data: pd.DataFrame = None,
     indicator_data: pd.DataFrame = None,
-    all_possible_combos: bool = False,
     column_wise_combos: bool = False,
     plot_results: bool = False,
     plot_on_data: bool = False,
@@ -86,9 +85,6 @@ def from_talib(
     """
 
     pd_index = indicator_data.index if indicator_data else price_data.index
-
-    users_args_list = []
-    biggest = 1
     indicator_info = Function(func_name).info
     output_names = indicator_info["output_names"]
     ind_params = list(indicator_info["parameters"].keys())
@@ -99,33 +95,28 @@ def from_talib(
         indicator_info["parameters"].update(parameters)
     
     
-    # TODO: Move to a new function
+    # Defaults to all possible combos, catesian product.
     if column_wise_combos:
         params_len = [len(p) for p in indicator_info["parameters"].values() if isinstance(p, list)]
         lenghts = list(set(params_len))
         if len(lenghts)>1:
             raise ValueError("The length of the parameters needs to be the same.")
         base_lenght = lenghts[0]
-        new_params = {}
-        for k, v in indicator_info["parameters"].items():
+        final_user_args = []
+        for v in indicator_info["parameters"].values():
             if not isinstance(v, list):
-                new_params[k] = [v] * base_lenght
+                final_user_args.append([v] * base_lenght)
             else:
-                new_params[k] = v
-        indicator_info["parameters"] = new_params
-
-    elif all_possible_combos:
+                final_user_args.append(v)
+    else:
         list_params = []
-        for k, v in indicator_info["parameters"].items():
+        for v in indicator_info["parameters"].values():
             if not isinstance(v, list):
                 list_params.append([v])
             else:
                 list_params.append(v)
 
-        final_user_args = np.array(list(product(*list_params))).T
-
-    else:
-        final_user_args = tuple(users_args_list)
+        final_user_args = [list(x) for x in zip(*product(*list_params))]
 
     ind_settings_tup = ()
     pd_multind_tuples = ()
