@@ -90,11 +90,9 @@ def from_talib(
     ind_params = list(indicator_info["parameters"].keys())
     ind_name = indicator_info["name"]
 
-
     if indicator_info.get("parameters"):
         indicator_info["parameters"].update(parameters)
-    
-    
+
     # Defaults to all possible combos, catesian product.
     if column_wise_combos:
         params_len = [len(p) for p in indicator_info["parameters"].values() if isinstance(p, list)]
@@ -108,6 +106,7 @@ def from_talib(
                 final_user_args.append([v] * base_lenght)
             else:
                 final_user_args.append(v)
+        final_user_args = [list(x) for x in zip(*final_user_args)]
     else:
         list_params = []
         for v in indicator_info["parameters"].values():
@@ -115,12 +114,11 @@ def from_talib(
                 list_params.append([v])
             else:
                 list_params.append(v)
-
-        final_user_args = [list(x) for x in zip(*product(*list_params))]
+        final_user_args = list(product(*list_params))
 
     ind_settings_tup = ()
     pd_multind_tuples = ()
-    ind_setings_len = final_user_args[0].size
+    ind_setings_len = len(final_user_args)
     output_names_len = len(output_names)
 
     # sending price data as your data to work with
@@ -145,21 +143,15 @@ def from_talib(
                         price_data[symbol][input_name].values,
                     )
 
-                for c in range(ind_setings_len):
-                    # x is the array object in the tuple (x,x)
-                    for x in final_user_args:
-                        if type(x[c]) == np.int_:
-                            ind_settings_tup = ind_settings_tup + (int(x[c]),)
-                        if type(x[c]) == np.float_:
-                            ind_settings_tup = ind_settings_tup + (float(x[c]),)
+                for args in final_user_args:
 
                     final_array[:, counter] = getattr(talib, func_name.upper())(
                         *temp_price_data_tuple,
-                        *ind_settings_tup,
+                        *args,
                     )
 
                     pd_multind_tuples = pd_multind_tuples + (
-                        (symbol,) + ind_settings_tup,
+                        (symbol,) + args,
                     )
 
                     ind_settings_tup = ()
@@ -183,24 +175,18 @@ def from_talib(
                 # these are the names called by the fun like talib('rsi').real - real is the output name
                 for out_name_count, out_name in enumerate(output_names):
                     # c is the indicator result of the array within the tuple (array[x], array[x])
-                    for c in range(ind_setings_len):
-                        # x is the array object in the tuple (x,x)
-                        for x in final_user_args:
-                            if type(x[c]) == np.int_:
-                                ind_settings_tup = ind_settings_tup + (int(x[c]),)
-                            if type(x[c]) == np.float_:
-                                ind_settings_tup = ind_settings_tup + (float(x[c]),)
+                    for args in final_user_args:
 
                         final_array[:, counter] = getattr(talib, func_name.upper())(
                             *temp_price_data_tuple,
-                            *ind_settings_tup,
+                            *args,
                         )[out_name_count]
 
                         pd_multind_tuples = pd_multind_tuples + (
-                            (symbol,) + (out_name,) + ind_settings_tup,
+                            (symbol,) + (out_name,) + args,
                         )
 
-                        ind_settings_tup = ()
+                        args = ()
                         counter += 1
 
         else:
