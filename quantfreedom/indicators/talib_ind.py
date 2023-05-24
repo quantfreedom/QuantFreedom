@@ -125,6 +125,7 @@ def from_talib(
     input_name_key = list(indicator_info["input_names"].keys())[0]
     if input_names is None:
         input_names_kwargs.append(indicator_info["input_names"])
+        input_names = indicator_info["input_names"]
     else:
         indicator_base_input_name = list(indicator_info["input_names"].values())[0]
         if isinstance(indicator_base_input_name, list):
