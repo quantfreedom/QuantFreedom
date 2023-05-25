@@ -29,8 +29,8 @@ setup(
         "tqdm",
         'numba>=0.53.1; python_version < "3.10"',
         'numba==0.56.4; python_version >= "3.10"',
-        "numpy==1.23.5",
-        "pandas==1.5.3",
+        "numpy==1.24.3",
+        "pandas==2.0.1",
     ],
     extras_require={
         "web": [

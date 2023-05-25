@@ -1,22 +1,22 @@
 # https://ta-lib.github.io/ta-lib-python/index.html
+import json
 from itertools import product
 
 import numpy as np
 import pandas as pd
 import talib
-import json
 from talib import get_functions
 from talib.abstract import Function
-from collections.abc import Iterable
 
-from quantfreedom._typing import Array1d
 from quantfreedom.indicators.indicators_cls import Indicator
+<<<<<<< HEAD
 from quantfreedom.plotting.simple_plots import (
     plot_on_candles_1_chart,
     plot_results_candles_and_chart,
 )
+=======
+>>>>>>> a5bc6cb18613f5934cacd72b23595bc0cf7ab925
 
-# this is an update
 
 
 def validate(value, ref_name, ref_value):
@@ -29,14 +29,40 @@ def validate(value, ref_name, ref_value):
     if len(value) != len(ref_value):
         raise ValueError(f"{ref_name} your list length must be {len(ref_value)}")
 
+<<<<<<< HEAD
+=======
+
+def column_wise_combos(parameters: dict) -> list:
+    params_len = [len(p) for p in parameters if isinstance(p, list)]
+    lenghts = list(set(params_len))
+    if len(lenghts) > 1:
+        raise ValueError("The length of the parameters needs to be the same.")
+    base_lenght = lenghts[0]
+    final_user_args = []
+    for v in parameters.values():
+        if not isinstance(v, list):
+            final_user_args.append([v] * base_lenght)
+        else:
+            final_user_args.append(v)
+    return [list(x) for x in zip(*final_user_args)]
+
+
+def catesian_product_combos(parameters: dict) -> list:
+    list_params = []
+    for v in parameters:
+        if not isinstance(v, list):
+            list_params.append([v])
+        else:
+            list_params.append(v)
+    return list(product(*list_params))
+
+>>>>>>> a5bc6cb18613f5934cacd72b23595bc0cf7ab925
 
 def from_talib(
     func_name: str,
     price_data: pd.DataFrame = None,
     indicator_data: pd.DataFrame = None,
     column_wise_combos: bool = False,
-    plot_results: bool = False,
-    plot_on_data: bool = False,
     input_names: list = None,
     parameters: dict = {},
 ) -> pd.DataFrame:
@@ -83,20 +109,26 @@ def from_talib(
     pd.DataFrame
         Pandas Dataframe of indicator values
     """
+<<<<<<< HEAD
     pd_index = (
         indicator_data.index
         if indicator_data is not None and not indicator_data.empty
         else price_data.index
     )
+=======
+>>>>>>> a5bc6cb18613f5934cacd72b23595bc0cf7ab925
     indicator_info = Function(func_name).info
     output_names = indicator_info["output_names"]
     talib_func = getattr(talib, func_name.upper())
 
+    # Update the parameters with the user input
     if indicator_info.get("parameters"):
         indicator_info["parameters"].update(parameters)
 
     # Defaults to all possible combos, catesian product.
+    param_values = indicator_info["parameters"].values()
     if column_wise_combos:
+<<<<<<< HEAD
         params_len = [
             len(p) for p in indicator_info["parameters"].values() if isinstance(p, list)
         ]
@@ -111,20 +143,18 @@ def from_talib(
             else:
                 final_user_args.append(v)
         final_user_args = [list(x) for x in zip(*final_user_args)]
+=======
+        final_user_args = column_wise_combos(param_values)
+>>>>>>> a5bc6cb18613f5934cacd72b23595bc0cf7ab925
     else:
-        list_params = []
-        for v in indicator_info["parameters"].values():
-            if not isinstance(v, list):
-                list_params.append([v])
-            else:
-                list_params.append(v)
-        final_user_args = list(product(*list_params))
+        final_user_args = catesian_product_combos(param_values)
 
     user_kwargs = []
     args_keys = indicator_info["parameters"].keys()
     for args in final_user_args:
         user_kwargs.append({k: v for k, v in zip(args_keys, args)})
 
+    # Prepare the input names
     input_names_kwargs = []
     input_name_key = list(indicator_info["input_names"].keys())[0]
     if input_names is None:
@@ -145,9 +175,7 @@ def from_talib(
                 input_name = [input_name]
             input_names_kwargs.append({input_name_key: input_name})
 
-    output_names_len = len(output_names)
-
-    # sending price data as your data to work with
+    # Apply indicator to price data
     if price_data is not None:
         symbols = list(price_data.columns.levels[0])
         parameters_values = [tuple(d.values()) for d in user_kwargs]
@@ -177,7 +205,11 @@ def from_talib(
                         **kwargs,
                     )
 
+<<<<<<< HEAD
                     if output_names_len == 1:
+=======
+                    if len(output_names) == 1:
+>>>>>>> a5bc6cb18613f5934cacd72b23595bc0cf7ab925
                         talib_output = (talib_output,)
 
                     for i, output_name in enumerate(output_names):
@@ -186,6 +218,12 @@ def from_talib(
                             (symbol, output_name, json.dumps(input_name))
                             + tuple(kwargs.values()),
                         ] = talib_output[i]
+<<<<<<< HEAD
+=======
+        ta_lib_data.index = price_data.index
+
+    # Apply indicator to indicator data
+>>>>>>> a5bc6cb18613f5934cacd72b23595bc0cf7ab925
     elif indicator_data is not None:
         symbols = list(indicator_data.columns.levels[0])
         parameters_values = [tuple(d.values()) for d in user_kwargs]
@@ -196,12 +234,17 @@ def from_talib(
 
         talib_out = []
         for kwarg in user_kwargs:
+<<<<<<< HEAD
             indicator_output = indicator_data.apply(
+=======
+            ind_output = indicator_data.apply(
+>>>>>>> a5bc6cb18613f5934cacd72b23595bc0cf7ab925
                 axis=0,
                 raw=True,
                 func=lambda x: talib_func(x.astype(np.float_), **kwarg),
             )
             index_values = [
+<<<<<<< HEAD
                 v + tuple(kwarg.values()) for v in indicator_output.columns.values
             ]
             param_names = [f"{func_name}_{a}" for a in kwarg.keys()]
@@ -210,12 +253,23 @@ def from_talib(
                 index_values, names=index_names
             )
             talib_out.append(indicator_output)
+=======
+                v + tuple(kwarg.values()) for v in ind_output.columns.values
+            ]
+            param_names = [f"{func_name}_{a}" for a in kwarg.keys()]
+            index_names = ind_output.columns.names + param_names
+            ind_output.columns = pd.MultiIndex.from_tuples(
+                index_values, names=index_names
+            )
+            talib_out.append(ind_output)
+>>>>>>> a5bc6cb18613f5934cacd72b23595bc0cf7ab925
         ta_lib_data = pd.concat(talib_out, axis=1)
 
-    ta_lib_data.index = pd_index
+    # Clean and sort the output data
     ta_lib_data.sort_index(axis=1, inplace=True)
     ta_lib_data.dropna(how="all", axis=0, inplace=True)
 
+<<<<<<< HEAD
     if plot_on_data:
         if price_data is not None:
             plot_on_candles_1_chart(
@@ -229,6 +283,8 @@ def from_talib(
                 price_data=price_data,
             )
 
+=======
+>>>>>>> a5bc6cb18613f5934cacd72b23595bc0cf7ab925
     ind = Indicator(data=ta_lib_data, name=func_name)
     return ind
 
