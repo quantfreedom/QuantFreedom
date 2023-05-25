@@ -155,7 +155,7 @@ def from_talib(
             for combination in input_combinations:
                 indexes.append(combination+parameter)
 
-        columns_index = pd.MultiIndex.from_tuples(indexes, names=("symbol", "output", "prices")+tuple(args_keys))
+        columns_index = pd.MultiIndex.from_tuples(indexes, names=("symbol", "output", "prices") + tuple(args_keys))
         ta_lib_data = pd.DataFrame(columns=columns_index)
 
         for symbol in symbols:
@@ -180,43 +180,16 @@ def from_talib(
             raise("Indicator data does not support multiple inputs yet")
         else:
             input_names_json = [json.dumps(input_names)]
-        
-        def func(x, user_kwargs):
-            return talib_func(x.astype(np.float_), **user_kwargs[0])
 
+
+        talib_out = []
         for kwarg in user_kwargs:
-            ta_lib_output = indicator_data.apply(axis=0, raw=True, func=lambda x: talib_func(x.astype(np.float_), **kwarg))
-
-        pd.MultiIndex.from_arrays([50, ta_lib_output.columns],names=["test"] + ta_lib_output.columns.names)
-
-        # talib_output = talib_func(
-        #     *temp_indicator_data_tuple,
-        #     **kwargs,
-        # )
-        # input_combinations = list(product(symbols, output_names, input_names_json))
-        # indexes = []
-        # for parameter in parameters_values:
-        #     for combination in input_combinations:
-        #         indexes.append(combination+parameter)
-
-        # columns_index = pd.MultiIndex.from_tuples(indexes, names=("symbol", "output", "prices")+tuple(args_keys))
-        # ta_lib_data = pd.DataFrame(columns=columns_index)
-
-        # for symbol in symbols:
-        #     for input_names in input_names_kwargs:
-        #         for input_name in input_names.values():
-        #             temp_indicator_data_tuple = indicator_data[symbol].values.T
-        #         for kwargs in user_kwargs:
-        #             talib_output = talib_func(
-        #                 *temp_indicator_data_tuple,
-        #                 **kwargs,
-        #             )
-
-        #             if output_names_len == 1:
-        #                 talib_output = (talib_output, )
-
-        #             for i, output_name in enumerate(output_names):
-        #                 ta_lib_data.loc[:, (symbol, output_name, json.dumps(input_name))+tuple(kwargs.values())] = talib_output[i]
+            indicator_output = indicator_data.apply(axis=0, raw=True, func=lambda x: talib_func(x.astype(np.float_), **kwarg))
+            index_values = [v + tuple(kwarg.values()) for v in indicator_output.columns.values]
+            index_names = indicator_output.columns.names+list(kwarg.keys())
+            indicator_output.columns = pd.MultiIndex.from_tuples(index_values, names=index_names)
+            talib_out.append(indicator_output)
+        ta_lib_data = pd.concat(talib_out, axis=1)
 
     ta_lib_data.index = pd_index
     ta_lib_data.sort_index(axis=1, inplace=True)
