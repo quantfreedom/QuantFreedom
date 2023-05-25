@@ -57,19 +57,7 @@ def from_talib(
     input_names: list = None,
     parameters: dict = {},
 ) -> pd.DataFrame:
-    """
-    Function Name
-    -------------
-    from_talib
 
-    Summary
-    -------
-    Using talib to create indicator data. If you need a list of the indicators visit the talib website https://ta-lib.github.io/ta-lib-python/funcs.html
-
-    Explainer Video
-    ---------------
-    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
-    """
     indicator_info = Function(func_name).info
     output_names = indicator_info["output_names"]
     talib_func = getattr(talib, func_name.upper())
