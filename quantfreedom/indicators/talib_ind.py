@@ -155,7 +155,8 @@ def from_talib(
             for combination in input_combinations:
                 indexes.append(combination+parameter)
 
-        columns_index = pd.MultiIndex.from_tuples(indexes, names=("symbol", "output", "prices") + tuple(args_keys))
+        param_names = [f"{func_name}_{a}" for a in args_keys]
+        columns_index = pd.MultiIndex.from_tuples(indexes, names=("symbol", "output", "candle_body") + tuple(param_names))
         ta_lib_data = pd.DataFrame(columns=columns_index)
 
         for symbol in symbols:
@@ -186,7 +187,8 @@ def from_talib(
         for kwarg in user_kwargs:
             indicator_output = indicator_data.apply(axis=0, raw=True, func=lambda x: talib_func(x.astype(np.float_), **kwarg))
             index_values = [v + tuple(kwarg.values()) for v in indicator_output.columns.values]
-            index_names = indicator_output.columns.names+list(kwarg.keys())
+            param_names = [f"{func_name}_{a}" for a in kwarg.keys()]
+            index_names = indicator_output.columns.names + param_names
             indicator_output.columns = pd.MultiIndex.from_tuples(index_values, names=index_names)
             talib_out.append(indicator_output)
         ta_lib_data = pd.concat(talib_out, axis=1)
