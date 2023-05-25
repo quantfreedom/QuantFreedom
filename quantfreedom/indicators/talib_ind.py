@@ -69,36 +69,6 @@ def from_talib(
     Explainer Video
     ---------------
     Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
-
-    ## Variables needed
-    Parameters
-    ----------
-    func_name : str
-        the short form name of the function like dema for Double Exponential Moving Average. Please look at https://ta-lib.github.io/ta-lib-python/funcs.html for a list of all the short form function names
-    price_data : pd.DataFrame, None
-        price data
-    indicator_data : pd.DataFrame, None
-        indicator data like if you want to put an ema on the rsi you send the rsi indicator data here and ema the for func name
-    all_possible_combos : bool, False
-        If you want all possible combinations, aka the cartesian product, or not. Example of what the cart product does
-        ```
-        [1,2]
-        [a,b]
-        answer: [(1,a), (1,b), (2,a), (2,b)]
-        ```
-    column_wise_combos : bool, False
-        Standard column wise combos. An example is
-        ```
-        [1,2,3]
-        [a,b,c]
-        answer: [(1,a), (2,b), (3,c)]
-        ```
-
-    ## Function returns
-    Returns
-    -------
-    pd.DataFrame
-        Pandas Dataframe of indicator values
     """
     indicator_info = Function(func_name).info
     output_names = indicator_info["output_names"]
