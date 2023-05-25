@@ -85,7 +85,7 @@ def from_talib(
     pd.DataFrame
         Pandas Dataframe of indicator values
     """
-    pd_index = indicator_data.index if not indicator_data.empty else price_data.index
+    pd_index = indicator_data.index if indicator_data is not None and not indicator_data.empty else price_data.index
     indicator_info = Function(func_name).info
     output_names = indicator_info["output_names"]
     talib_func = getattr(talib, func_name.upper())
