@@ -169,7 +169,6 @@ def from_talib(
 
     # Clean and sort the output data
     ta_lib_data.sort_index(axis=1, inplace=True)
-    ta_lib_data.dropna(how="all", axis=0, inplace=True)
 
     ind = Indicator(data=ta_lib_data, name=func_name)
     return ind
