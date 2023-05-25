@@ -85,7 +85,7 @@ def from_talib(
     pd.DataFrame
         Pandas Dataframe of indicator values
     """
-    pd_index = indicator_data.index if indicator_data else price_data.index
+    pd_index = indicator_data.index if not indicator_data.empty else price_data.index
     indicator_info = Function(func_name).info
     output_names = indicator_info["output_names"]
     talib_func = getattr(talib, func_name.upper())
@@ -125,7 +125,7 @@ def from_talib(
     input_name_key = list(indicator_info["input_names"].keys())[0]
     if input_names is None:
         input_names_kwargs.append(indicator_info["input_names"])
-        input_names = indicator_info["input_names"]
+        input_names = list(indicator_info["input_names"].values())
     else:
         indicator_base_input_name = list(indicator_info["input_names"].values())[0]
         if isinstance(indicator_base_input_name, list):
@@ -173,97 +173,55 @@ def from_talib(
 
                     for i, output_name in enumerate(output_names):
                         ta_lib_data.loc[:, (symbol, output_name, json.dumps(input_name))+tuple(kwargs.values())] = talib_output[i]
+    elif indicator_data is not None:
+        symbols = list(indicator_data.columns.levels[0])
+        parameters_values = [tuple(d.values()) for d in user_kwargs]
+        if isinstance(input_names[0], list):
+            raise("Indicator data does not support multiple inputs yet")
+        else:
+            input_names_json = [json.dumps(input_names)]
+        
+        def func(x, user_kwargs):
+            return talib_func(x.astype(np.float_), **user_kwargs[0])
 
-    # sending indicator data as the data you want to work with
-    # elif indicator_data is not None:
-    #     counter = 0
-    #     user_ind_settings = tuple(indicator_data.columns)
-    #     user_ind_values = indicator_data.values
-    #     user_ind_names = list(indicator_data.columns.names)
-    #     user_ind_name = user_ind_names[1].split("_")[0]
-    #     param_keys = [user_ind_name + "_" + ind_name + "_" + x for x in ind_params]
-    #     param_keys = user_ind_names + param_keys
-    #     final_array = np.empty(
-    #         (
-    #             indicator_data.shape[0],
-    #             ind_setings_len * output_names_len * indicator_data.shape[1],
-    #         )
-    #     )
-    #     if output_names_len == 1:
-    #         for col in range(user_ind_values.shape[1]):
-    #             # c is the indicator result of the array within the tuple (array[x], array[x])
-    #             for c in range(ind_setings_len):
-    #                 # x is the array object in the tuple (x,x)
-    #                 for x in final_user_args:
-    #                     if type(x[c]) == np.int_:
-    #                         ind_settings_tup = ind_settings_tup + (int(x[c]),)
-    #                     if type(x[c]) == np.float_:
-    #                         ind_settings_tup = ind_settings_tup + (float(x[c]),)
-    #                 final_array[:, counter] = getattr(talib, func_name.upper())(
-    #                     user_ind_values[:, col],
-    #                     *ind_settings_tup,
-    #                 )
+        for kwarg in user_kwargs:
+            ta_lib_output = indicator_data.apply(axis=0, raw=True, func=lambda x: talib_func(x.astype(np.float_), **kwarg))
 
-    #                 pd_multind_tuples = pd_multind_tuples + (
-    #                     user_ind_settings[col] + ind_settings_tup,
-    #                 )
+        pd.MultiIndex.from_arrays([50, ta_lib_output.columns],names=["test"] + ta_lib_output.columns.names)
 
-    #                 counter += 1
-    #                 ind_settings_tup = ()
+        # talib_output = talib_func(
+        #     *temp_indicator_data_tuple,
+        #     **kwargs,
+        # )
+        # input_combinations = list(product(symbols, output_names, input_names_json))
+        # indexes = []
+        # for parameter in parameters_values:
+        #     for combination in input_combinations:
+        #         indexes.append(combination+parameter)
 
-    #     elif output_names_len > 1:
-    #         user_ind_col_names = []
-    #         for col_name in list(indicator_data.columns.names):
-    #             user_ind_col_names.append(col_name)
-    #         param_keys = (
-    #             user_ind_col_names
-    #             + [ind_name + "_output_names"]
-    #             + [ind_name + "_" + x for x in ind_params]
-    #         )
+        # columns_index = pd.MultiIndex.from_tuples(indexes, names=("symbol", "output", "prices")+tuple(args_keys))
+        # ta_lib_data = pd.DataFrame(columns=columns_index)
 
-    #         # these are the names called by the fun like talib('rsi').real - real is the output name
-    #         for col in range(user_ind_values.shape[1]):
-    #             for out_name_count, out_name in enumerate(output_names):
-    #                 # c is the indicator result of the array within the tuple (array[x], array[x])
-    #                 for c in range(ind_setings_len):
-    #                     # x is the array object in the tuple (x,x)
-    #                     for x in final_user_args:
-    #                         if type(x[c]) == np.int_:
-    #                             ind_settings_tup = ind_settings_tup + (int(x[c]),)
-    #                         if type(x[c]) == np.float_:
-    #                             ind_settings_tup = ind_settings_tup + (float(x[c]),)
+        # for symbol in symbols:
+        #     for input_names in input_names_kwargs:
+        #         for input_name in input_names.values():
+        #             temp_indicator_data_tuple = indicator_data[symbol].values.T
+        #         for kwargs in user_kwargs:
+        #             talib_output = talib_func(
+        #                 *temp_indicator_data_tuple,
+        #                 **kwargs,
+        #             )
 
-    #                     final_array[:, counter] = getattr(talib, func_name.upper())(
-    #                         user_ind_values[:, col],
-    #                         *ind_settings_tup,
-    #                     )[out_name_count]
+        #             if output_names_len == 1:
+        #                 talib_output = (talib_output, )
 
-    #                     pd_multind_tuples = pd_multind_tuples + (
-    #                         user_ind_settings[col] + (out_name,) + ind_settings_tup,
-    #                     )
+        #             for i, output_name in enumerate(output_names):
+        #                 ta_lib_data.loc[:, (symbol, output_name, json.dumps(input_name))+tuple(kwargs.values())] = talib_output[i]
 
-    #                     counter += 1
-    #                     ind_settings_tup = ()
-
-    #     else:
-    #         raise ValueError(
-    #             "Something is wrong with the output name length for user ind data"
-    #         )
-    # else:
-    #     raise ValueError(
-    #         "Something is wrong with either df price_data or user indicator"
-    #     )
     ta_lib_data.index = pd_index
     ta_lib_data.sort_index(axis=1, inplace=True)
     ta_lib_data.dropna(how="all", axis=0, inplace=True)
-    # ta_lib_data = pd.DataFrame(
-    #     final_array,
-    #     index=pd_index,
-    #     columns=pd.MultiIndex.from_tuples(
-    #         tuples=list(pd_multind_tuples),
-    #         names=param_keys,
-    #     ),
-    # )
+
 
     if plot_on_data:
         if price_data is not None:
