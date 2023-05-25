@@ -725,7 +725,6 @@ def _is_below(
     indicator_data: pdFrame = None,
     price_data: pdFrame = None,
     candle_ohlc: str = None,
-    plot_results: bool = False,
 ) -> pdFrame:
     """
     Function Name
@@ -765,64 +764,29 @@ def _is_below(
     if not isinstance(want_to_evaluate, pdFrame):
         raise ValueError("Data must be a dataframe with multindex")
 
-    want_to_evaluate_values = want_to_evaluate.values
+    # want_to_evaluate_values = want_to_evaluate.values
     want_to_evaluate_name = want_to_evaluate.columns.names[1].split("_")[0]
     pd_col_names = list(want_to_evaluate.columns.names) + [
         want_to_evaluate_name + "_is_below"
     ]
     pd_multind_tuples = ()
 
+    # Evaluate numeric indicators
+    if isinstance(user_args, (float, int)):
+        user_args = [user_args]
+
     if isinstance(user_args, (list, Array1d)):
-        if not all(isinstance(x, (int, float, np.int_, np.float_)) for x in user_args):
-            raise ValueError("user_args must be a list of ints or floats")
-        user_args = np.asarray(user_args)
+        is_below_dfs = []
+        for arg in user_args:
+            is_below_df = want_to_evaluate<arg
 
-        eval_array = np.empty(
-            (want_to_evaluate.shape[0], want_to_evaluate.shape[1] * user_args.size),
-            dtype=np.bool_,
-        )
+            index_values = [v + (arg, ) for v in want_to_evaluate.columns.values]
 
-        eval_array_counter = 0
-        temp_want_to_eval_values = want_to_evaluate.values.T
-        for count, value in enumerate(want_to_evaluate.values.T):
-            for eval_col in range(user_args.size):
-                eval_array[:, eval_array_counter] = np.where(
-                    value < user_args[eval_col], True, False
-                )
-                eval_array_counter += 1
-
-                pd_multind_tuples = pd_multind_tuples + (
-                    want_to_evaluate.columns[count] + (user_args[eval_col],),
-                )
-
-        if plot_results:
-            temp_want_to_eval_values = want_to_evaluate.iloc[:, -1].values
-            plot_index = want_to_evaluate.index
-
-            fig = go.Figure(
-                data=[
-                    go.Scatter(
-                        x=plot_index,
-                        y=temp_want_to_eval_values,
-                        mode="lines",
-                        line=dict(width=2),
-                        name=want_to_evaluate_name,
-                    ),
-                    go.Scatter(
-                        x=plot_index,
-                        y=np.where(
-                            eval_array[:, -1],
-                            temp_want_to_eval_values,
-                            np.nan,
-                        ),
-                        mode="markers",
-                        marker=dict(size=4),
-                        name="Signals",
-                    ),
-                ]
+            is_below_df.columns = pd.MultiIndex.from_tuples(
+                index_values, names=pd_col_names
             )
-            fig.update_layout(height=500, title="Last Column of the Results")
-            fig.show()
+            is_below_dfs.append(is_below_df)
+        is_below_dfs = pd.concat(is_below_dfs, axis=1).sort_index(axis=1)
 
     elif isinstance(price_data, pdFrame):
         if candle_ohlc == None or candle_ohlc.lower() not in (
@@ -835,74 +799,19 @@ def _is_below(
                 "candle_ohlc must be open, high, low or close when sending price data"
             )
 
-        eval_array = np.empty_like(want_to_evaluate, dtype=np.bool_)
         symbols = list(price_data.columns.levels[0])
-        eval_array_counter = 0
 
+        is_below_dfs = []
         for symbol in symbols:
-            temp_prices_values = price_data[symbol][candle_ohlc].values
-            if not all(isinstance(x, (np.int_, np.float_)) for x in temp_prices_values):
-                raise ValueError("price data must be ints or floats")
+            is_below_df = want_to_evaluate[symbol].gt(price_data[symbol][candle_ohlc], axis=0)
 
-            temp_want_to_eval_values = want_to_evaluate[symbol].values.T
+            index_values = [v + (candle_ohlc,) for v in want_to_evaluate[[symbol]].columns.values]
 
-            for values in temp_want_to_eval_values:
-                eval_array[:, eval_array_counter] = np.where(
-                    values < temp_prices_values, True, False
-                )
-
-                pd_multind_tuples = pd_multind_tuples + (
-                    want_to_evaluate.columns[eval_array_counter] + (candle_ohlc,),
-                )
-                eval_array_counter += 1
-
-        if plot_results:
-            temp_prices = price_data[price_data.columns.levels[0][-1]]
-            temp_want_to_eval_values = want_to_evaluate.iloc[:, -1].values
-            plot_index = want_to_evaluate.index
-
-            fig = go.Figure(
-                data=[
-                    go.Candlestick(
-                        x=plot_index,
-                        open=temp_prices.open,
-                        high=temp_prices.high,
-                        low=temp_prices.low,
-                        close=temp_prices.close,
-                        name="Candles",
-                    ),
-                    go.Scatter(
-                        x=plot_index,
-                        y=temp_want_to_eval_values,
-                        mode="lines",
-                        line=dict(width=4, color="lightblue"),
-                        name=want_to_evaluate_name,
-                    ),
-                    go.Scatter(
-                        x=plot_index,
-                        y=np.where(
-                            eval_array[:, -1],
-                            temp_want_to_eval_values,
-                            np.nan,
-                        ),
-                        mode="markers",
-                        marker=dict(size=3, color="yellow"),
-                        name="Signals",
-                    ),
-                ]
+            is_below_df.columns = pd.MultiIndex.from_tuples(
+                index_values, names=pd_col_names
             )
-            fig.update_xaxes(rangeslider_visible=False)
-            fig.update_layout(height=500, title="Last Column of the Results")
-            fig.show()
-
-        return pd.DataFrame(
-            eval_array,
-            index=want_to_evaluate.index,
-            columns=pd.MultiIndex.from_tuples(
-                tuples=list(pd_multind_tuples),
-                names=pd_col_names,
-            ),
-        ).swaplevel(1, -1, axis=1)
+            is_below_dfs.append(is_below_df)
+        is_below_dfs = pd.concat(is_below_dfs, axis=1).sort_index(axis=1)
 
     elif isinstance(indicator_data, pdFrame):
         want_to_evaluate_name = want_to_evaluate.columns.names[-1].split("_")[1]
@@ -923,6 +832,8 @@ def _is_below(
         indicator_data_levels = list(indicator_data.columns)
         eval_array_counter = 0
 
+        # want_to_evaluate<indicator_data
+
         for level in indicator_data_levels:
             temp_indicator_values = indicator_data[level].values
             temp_evaluate_values = want_to_evaluate[level].values.T
@@ -939,89 +850,9 @@ def _is_below(
                 )
                 eval_array_counter += 1
 
-        if plot_results:
-            temp_want_to_eval_values = want_to_evaluate.iloc[:, -1].values
-            temp_ind_values = indicator_data.iloc[:, -1].values
-            plot_index = want_to_evaluate.index
-
-            fig = go.Figure(
-                data=[
-                    go.Scatter(
-                        x=plot_index,
-                        y=temp_ind_values,
-                        mode="lines",
-                        line=dict(width=2),
-                        name=want_to_evaluate_name,
-                    ),
-                    go.Scatter(
-                        x=plot_index,
-                        y=temp_want_to_eval_values,
-                        mode="lines",
-                        line=dict(width=2),
-                        name=want_to_evaluate_name,
-                    ),
-                    go.Scatter(
-                        x=plot_index,
-                        y=np.where(
-                            eval_array[:, -1],
-                            temp_want_to_eval_values,
-                            np.nan,
-                        ),
-                        mode="markers",
-                        marker=dict(size=4),
-                        name="Signals",
-                    ),
-                ]
-            )
-            fig.update_layout(height=500, title="Last Column of the Results")
-            fig.show()
-
-    elif isinstance(user_args, (int, float)):
-        eval_array = np.where(want_to_evaluate_values < user_args, True, False)
-
-        for col in range(want_to_evaluate.shape[1]):
-            pd_multind_tuples = pd_multind_tuples + (
-                want_to_evaluate.columns[col] + (user_args,),
-            )
-
-        if plot_results:
-            temp_want_to_eval_values = want_to_evaluate.iloc[:, -1].values
-            plot_index = want_to_evaluate.index
-
-            fig = go.Figure(
-                data=[
-                    go.Scatter(
-                        x=plot_index,
-                        y=temp_want_to_eval_values,
-                        mode="lines",
-                        line=dict(width=2),
-                        name=want_to_evaluate_name,
-                    ),
-                    go.Scatter(
-                        x=plot_index,
-                        y=np.where(
-                            eval_array[:, -1],
-                            temp_want_to_eval_values,
-                            np.nan,
-                        ),
-                        mode="markers",
-                        marker=dict(size=4),
-                        name="Signals",
-                    ),
-                ]
-            )
-            fig.update_layout(height=500, title="Last Column of the Results")
-            fig.show()
     else:
         raise ValueError(
             "something is wrong with what you sent please make sure the type of variable you are sending matches with the type required"
         )
-    return pd.DataFrame(
-        eval_array,
-        index=want_to_evaluate.index,
-        columns=pd.MultiIndex.from_tuples(
-            tuples=list(pd_multind_tuples),
-            names=pd_col_names,
-        ),
-    )
+    return is_below_dfs
 
