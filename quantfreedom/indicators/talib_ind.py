@@ -33,6 +33,7 @@ def validate(value, ref_name, ref_value):
 =======
 
 def column_wise_combos(parameters: dict) -> list:
+    """Create the column wise combos for the parameters"""
     params_len = [len(p) for p in parameters if isinstance(p, list)]
     lenghts = list(set(params_len))
     if len(lenghts) > 1:
@@ -48,6 +49,7 @@ def column_wise_combos(parameters: dict) -> list:
 
 
 def catesian_product_combos(parameters: dict) -> list:
+    """Create the cartesian product for the parameters"""
     list_params = []
     for v in parameters:
         if not isinstance(v, list):
