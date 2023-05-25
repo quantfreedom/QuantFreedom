@@ -14,7 +14,6 @@ from quantfreedom.indicators.indicators_cls import Indicator
 from quantfreedom.plotting.simple_plots import (plot_on_candles_1_chart,
                                                 plot_results_candles_and_chart)
 
-
 # this is an update
 
 def validate(value, ref_name, ref_value):
