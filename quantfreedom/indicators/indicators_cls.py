@@ -3,12 +3,13 @@ from quantfreedom.evaluators.evaluators import _combine_evals, _is_below
 
 
 class Indicator:
-    def __init__(self, data=None, name=""):
+    def __init__(self, data=None, name="", nickname=""):
         self.data = data
         self.name = name
         self.evaluators = []
         self.eval_to_data = {}
         self.counter = 0
+        self.nickname = nickname
 
     def set_data_frame(self, df):
         self.data = df

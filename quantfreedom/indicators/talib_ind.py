@@ -51,11 +51,13 @@ def catesian_product_combos(parameters: dict) -> list:
 
 def from_talib(
     func_name: str,
+    nickname: str,
     price_data: pd.DataFrame = None,
     indicator_data: pd.DataFrame = None,
     column_wise_combos: bool = False,
     input_names: list = None,
     parameters: dict = {},
+    
 ) -> pd.DataFrame:
 
     indicator_info = Function(func_name).info
@@ -113,10 +115,11 @@ def from_talib(
             for combination in input_combinations:
                 indexes.append(combination + parameter)
 
-        param_names = [f"{func_name}_{a}" for a in args_keys]
-        columns_index = pd.MultiIndex.from_tuples(
-            indexes, names=("symbol", "output", "candle_body") + tuple(param_names)
-        )
+        param_names = ("output", "candle_body") + tuple(args_keys)
+        names = [f"{nickname}_{a}" for a in param_names]
+        names = ["symbol"] + names
+
+        columns_index = pd.MultiIndex.from_tuples(indexes, names=names)
         ta_lib_data = pd.DataFrame(columns=columns_index)
 
         for symbol in symbols:
@@ -170,7 +173,7 @@ def from_talib(
     # Clean and sort the output data
     ta_lib_data.sort_index(axis=1, inplace=True)
 
-    ind = Indicator(data=ta_lib_data, name=func_name)
+    ind = Indicator(data=ta_lib_data, name=func_name, nickname=nickname)
     return ind
 
 
