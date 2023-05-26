@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import json
 import plotly.graph_objects as go
 from itertools import product
 from plotly.subplots import make_subplots
@@ -769,7 +770,6 @@ def _is_below(
     pd_col_names = list(want_to_evaluate.columns.names) + [
         want_to_evaluate_name + "_is_below"
     ]
-    pd_multind_tuples = ()
 
     # Evaluate numeric indicators
     if isinstance(user_args, (float, int)):
@@ -814,41 +814,71 @@ def _is_below(
         is_below_dfs = pd.concat(is_below_dfs, axis=1).sort_index(axis=1)
 
     elif isinstance(indicator_data, pdFrame):
-        want_to_evaluate_name = want_to_evaluate.columns.names[-1].split("_")[1]
-        indicator_data_name = indicator_data.columns.names[-1].split("_")[0]
+        symbols = indicator_data.columns.levels[0]
 
-        pd_col_names = list(want_to_evaluate.columns.names) + [
-            want_to_evaluate_name + "_is_below"
-        ]
+        ind_cols_names = indicator_data.columns.names
+        existing_columns = want_to_evaluate.columns.names
 
-        want_to_evaluate_settings_tuple_list = want_to_evaluate.columns.to_list()
+        new_columns = [v for v in ind_cols_names if v not in existing_columns]
+        n_new_columns = len(new_columns)
+        new_indexes = [indicator_data.columns.get_level_values(i).unique().values for i in new_columns]
+        
+        index_values = []
+        for mi in want_to_evaluate.columns.values:
+            for ni in new_indexes:
+                for i in tuple(ni):
+                    index_values.append(mi + (i, ) + ("rsi",))
+        
+        pd_col_names = existing_columns + new_columns + ["ema" + "_is_below"]
+        is_below_df = pd.DataFrame(columns=pd.MultiIndex.from_tuples(index_values, names=pd_col_names))
 
-        eval_array = np.empty_like(
-            want_to_evaluate,
-            dtype=np.bool_,
-        )
-        pd_multind_tuples = ()
+        for symbol in symbols:
+            param_levels = indicator_data[symbol].columns
+            for params in param_levels:
+                is_below = want_to_evaluate[symbol].gt(indicator_data[symbol][params], axis=0)
 
-        indicator_data_levels = list(indicator_data.columns)
-        eval_array_counter = 0
+                # is_below_index = []
+                # for idx in is_below.columns.values:
+                #     is_below_index.append(idx + n_new_columns + ("rsi",))
+                
 
-        # want_to_evaluate<indicator_data
+                is_below_df.loc[:, (symbol, params, "ema" + "_is_below")] = is_below_df
 
-        for level in indicator_data_levels:
-            temp_indicator_values = indicator_data[level].values
-            temp_evaluate_values = want_to_evaluate[level].values.T
+        # want_to_evaluate_name = want_to_evaluate.columns.names[-1].split("_")[1]
+        # indicator_data_name = indicator_data.columns.names[-1].split("_")[0]
 
-            for values in temp_evaluate_values:
-                eval_array[:, eval_array_counter] = np.where(
-                    values < temp_indicator_values,
-                    True,
-                    False,
-                )
-                pd_multind_tuples = pd_multind_tuples + (
-                    want_to_evaluate_settings_tuple_list[eval_array_counter]
-                    + (indicator_data_name,),
-                )
-                eval_array_counter += 1
+        # pd_col_names = list(want_to_evaluate.columns.names) + [
+        #     want_to_evaluate_name + "_is_below"
+        # ]
+
+        # want_to_evaluate_settings_tuple_list = want_to_evaluate.columns.to_list()
+
+        # eval_array = np.empty_like(
+        #     want_to_evaluate,
+        #     dtype=np.bool_,
+        # )
+        # pd_multind_tuples = ()
+
+        # indicator_data_levels = list(indicator_data.columns)
+        # eval_array_counter = 0
+
+        # # want_to_evaluate<indicator_data
+
+        # for level in indicator_data_levels:
+        #     temp_indicator_values = indicator_data[level].values
+        #     temp_evaluate_values = want_to_evaluate[level].values.T
+
+        #     for values in temp_evaluate_values:
+        #         eval_array[:, eval_array_counter] = np.where(
+        #             values < temp_indicator_values,
+        #             True,
+        #             False,
+        #         )
+        #         pd_multind_tuples = pd_multind_tuples + (
+        #             want_to_evaluate_settings_tuple_list[eval_array_counter]
+        #             + (indicator_data_name,),
+        #         )
+        #         eval_array_counter += 1
 
     else:
         raise ValueError(
