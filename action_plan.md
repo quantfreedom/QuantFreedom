@@ -70,3 +70,8 @@ def deal_with_exit(index_start_iteration, sparce_list, all_bars, context, config
 def want_to_close_position():
     return check_sl_tp_nb()
 ```
+
+## Notes from 7/19
+Code pending tasks:
+* make sure to check for errors and correct completion of callback invokation (example : self.close_position(...))
+* BUG : is not hopping through candels that got a True evaluation, instead, it is iterating over all of them.
