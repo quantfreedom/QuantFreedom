@@ -75,3 +75,8 @@ def want_to_close_position():
 Code pending tasks:
 * make sure to check for errors and correct completion of callback invokation (example : self.close_position(...))
 * BUG : is not hopping through candels that got a True evaluation, instead, it is iterating over all of them.
+
+## Notes from 7/20
+* check that using 'name' to get the index column is the right way to do it
+* where we left on : iteration seems to be working, but we want to test it with real candles and signals, so next step is to
+plugin the iteration into the real base code.
