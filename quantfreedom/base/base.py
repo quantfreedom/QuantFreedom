@@ -12,7 +12,7 @@ from quantfreedom.nb.helper_funcs import (
     create_os_cart_product_nb,
     static_var_checker_nb,
 )
-from quantfreedom.nb.simulate import backtest_df_only_nb
+from quantfreedom.nb.simulate_diff_iteration import backtest_df_only_nb
 
 
 def backtest_df_only(

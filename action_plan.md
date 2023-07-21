@@ -80,3 +80,8 @@ Code pending tasks:
 * check that using 'name' to get the index column is the right way to do it
 * where we left on : iteration seems to be working, but we want to test it with real candles and signals, so next step is to
 plugin the iteration into the real base code.
+
+## Notes 7/21
+* changing base.py (not duplicating) to import our own version of **backtet_df_only_nb**
+* next steps:
+    * since there seems to be an issue with the way that signals are being calculated, we are going to create synthetic data for that only (with 20% of trues) and continue "porting" the logic, starting by "evaluate_entry_signal"
