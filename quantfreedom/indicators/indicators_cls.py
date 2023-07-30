@@ -47,7 +47,6 @@ class Indicator:
                 user_args=user_args,
                 want_to_evaluate=indicator_data,
                 indicator_data=self.data,
-                plot_results=plot_results,
                 price_data=price_data,
                 candle_ohlc=candle_ohlc,
             )
@@ -56,7 +55,6 @@ class Indicator:
                 want_to_evaluate=self.data,
                 user_args=user_args,
                 indicator_data=indicator_data,
-                plot_results=plot_results,
                 price_data=price_data,
                 candle_ohlc=candle_ohlc,
             )
