@@ -25,37 +25,37 @@ from quantfreedom.nb.helper_funcs import (
     get_to_the_upside_nb,
 )
 
+
 @njit(cache=True)
-def get_order_settings(settings_idx: int, os_cart_arrays_tuple: OrderSettingsArrays) -> OrderSettings:
+def get_order_settings(
+    settings_idx: int, os_cart_arrays_tuple: OrderSettingsArrays
+) -> OrderSettings:
     return OrderSettings(
-            leverage=os_cart_arrays_tuple.leverage[settings_idx],
-            max_equity_risk_pct=os_cart_arrays_tuple.max_equity_risk_pct[settings_idx],
-            max_equity_risk_value=os_cart_arrays_tuple.max_equity_risk_value[
-                settings_idx
-            ],
-            risk_reward=os_cart_arrays_tuple.risk_reward[settings_idx],
-            size_pct=os_cart_arrays_tuple.size_pct[settings_idx],
-            size_value=os_cart_arrays_tuple.size_value[settings_idx],
-            sl_based_on=os_cart_arrays_tuple.sl_based_on[settings_idx],
-            sl_based_on_add_pct=os_cart_arrays_tuple.sl_based_on_add_pct[settings_idx],
-            sl_based_on_lookback=os_cart_arrays_tuple.sl_based_on_lookback[
-                settings_idx
-            ],
-            sl_pct=os_cart_arrays_tuple.sl_pct[settings_idx],
-            sl_to_be_based_on=os_cart_arrays_tuple.sl_to_be_based_on[settings_idx],
-            sl_to_be_zero_or_entry=os_cart_arrays_tuple.sl_to_be_zero_or_entry[
-                settings_idx
-            ],
-            sl_to_be_when_pct_from_avg_entry=os_cart_arrays_tuple.sl_to_be_when_pct_from_avg_entry[
-                settings_idx
-            ],
-            tp_pct=os_cart_arrays_tuple.tp_pct[settings_idx],
-            trail_sl_based_on=os_cart_arrays_tuple.trail_sl_based_on[settings_idx],
-            trail_sl_by_pct=os_cart_arrays_tuple.trail_sl_by_pct[settings_idx],
-            trail_sl_when_pct_from_avg_entry=os_cart_arrays_tuple.trail_sl_when_pct_from_avg_entry[
-                settings_idx
-            ],
-        )
+        leverage=os_cart_arrays_tuple.leverage[settings_idx],
+        max_equity_risk_pct=os_cart_arrays_tuple.max_equity_risk_pct[settings_idx],
+        max_equity_risk_value=os_cart_arrays_tuple.max_equity_risk_value[settings_idx],
+        risk_reward=os_cart_arrays_tuple.risk_reward[settings_idx],
+        size_pct=os_cart_arrays_tuple.size_pct[settings_idx],
+        size_value=os_cart_arrays_tuple.size_value[settings_idx],
+        sl_based_on=os_cart_arrays_tuple.sl_based_on[settings_idx],
+        sl_based_on_add_pct=os_cart_arrays_tuple.sl_based_on_add_pct[settings_idx],
+        sl_based_on_lookback=os_cart_arrays_tuple.sl_based_on_lookback[settings_idx],
+        sl_pct=os_cart_arrays_tuple.sl_pct[settings_idx],
+        sl_to_be_based_on=os_cart_arrays_tuple.sl_to_be_based_on[settings_idx],
+        sl_to_be_zero_or_entry=os_cart_arrays_tuple.sl_to_be_zero_or_entry[
+            settings_idx
+        ],
+        sl_to_be_when_pct_from_avg_entry=os_cart_arrays_tuple.sl_to_be_when_pct_from_avg_entry[
+            settings_idx
+        ],
+        tp_pct=os_cart_arrays_tuple.tp_pct[settings_idx],
+        trail_sl_based_on=os_cart_arrays_tuple.trail_sl_based_on[settings_idx],
+        trail_sl_by_pct=os_cart_arrays_tuple.trail_sl_by_pct[settings_idx],
+        trail_sl_when_pct_from_avg_entry=os_cart_arrays_tuple.trail_sl_when_pct_from_avg_entry[
+            settings_idx
+        ],
+    )
+
 
 @njit(cache=True)
 def get_interest_prices(
@@ -219,10 +219,10 @@ def backtest_df_only_nb(
                         )
                         prices = PriceFloatTuple(
                             entry=open_prices[bar],
-                            open=open_prices[bar:bar + 1],
-                            high=high_prices[bar:bar + 1],
-                            low=low_prices[bar:bar+1],
-                            close=close_prices[bar:bar+1],
+                            open=open_prices[bar : bar + 1],
+                            high=high_prices[bar : bar + 1],
+                            low=low_prices[bar : bar + 1],
+                            close=close_prices[bar : bar + 1],
                         )
                         # process stops
                         if not np.isnan(order_result.size_value):

@@ -28,37 +28,37 @@ from quantfreedom.nb.helper_funcs import (
     get_to_the_upside_nb,
 )
 
+
 @njit(cache=True)
-def get_order_settings(settings_idx: int, os_cart_arrays_tuple: OrderSettingsArrays) -> OrderSettings:
+def get_order_settings(
+    settings_idx: int, os_cart_arrays_tuple: OrderSettingsArrays
+) -> OrderSettings:
     return OrderSettings(
-            leverage=os_cart_arrays_tuple.leverage[settings_idx],
-            max_equity_risk_pct=os_cart_arrays_tuple.max_equity_risk_pct[settings_idx],
-            max_equity_risk_value=os_cart_arrays_tuple.max_equity_risk_value[
-                settings_idx
-            ],
-            risk_reward=os_cart_arrays_tuple.risk_reward[settings_idx],
-            size_pct=os_cart_arrays_tuple.size_pct[settings_idx],
-            size_value=os_cart_arrays_tuple.size_value[settings_idx],
-            sl_based_on=os_cart_arrays_tuple.sl_based_on[settings_idx],
-            sl_based_on_add_pct=os_cart_arrays_tuple.sl_based_on_add_pct[settings_idx],
-            sl_based_on_lookback=os_cart_arrays_tuple.sl_based_on_lookback[
-                settings_idx
-            ],
-            sl_pct=os_cart_arrays_tuple.sl_pct[settings_idx],
-            sl_to_be_based_on=os_cart_arrays_tuple.sl_to_be_based_on[settings_idx],
-            sl_to_be_zero_or_entry=os_cart_arrays_tuple.sl_to_be_zero_or_entry[
-                settings_idx
-            ],
-            sl_to_be_when_pct_from_avg_entry=os_cart_arrays_tuple.sl_to_be_when_pct_from_avg_entry[
-                settings_idx
-            ],
-            tp_pct=os_cart_arrays_tuple.tp_pct[settings_idx],
-            trail_sl_based_on=os_cart_arrays_tuple.trail_sl_based_on[settings_idx],
-            trail_sl_by_pct=os_cart_arrays_tuple.trail_sl_by_pct[settings_idx],
-            trail_sl_when_pct_from_avg_entry=os_cart_arrays_tuple.trail_sl_when_pct_from_avg_entry[
-                settings_idx
-            ],
-        )
+        leverage=os_cart_arrays_tuple.leverage[settings_idx],
+        max_equity_risk_pct=os_cart_arrays_tuple.max_equity_risk_pct[settings_idx],
+        max_equity_risk_value=os_cart_arrays_tuple.max_equity_risk_value[settings_idx],
+        risk_reward=os_cart_arrays_tuple.risk_reward[settings_idx],
+        size_pct=os_cart_arrays_tuple.size_pct[settings_idx],
+        size_value=os_cart_arrays_tuple.size_value[settings_idx],
+        sl_based_on=os_cart_arrays_tuple.sl_based_on[settings_idx],
+        sl_based_on_add_pct=os_cart_arrays_tuple.sl_based_on_add_pct[settings_idx],
+        sl_based_on_lookback=os_cart_arrays_tuple.sl_based_on_lookback[settings_idx],
+        sl_pct=os_cart_arrays_tuple.sl_pct[settings_idx],
+        sl_to_be_based_on=os_cart_arrays_tuple.sl_to_be_based_on[settings_idx],
+        sl_to_be_zero_or_entry=os_cart_arrays_tuple.sl_to_be_zero_or_entry[
+            settings_idx
+        ],
+        sl_to_be_when_pct_from_avg_entry=os_cart_arrays_tuple.sl_to_be_when_pct_from_avg_entry[
+            settings_idx
+        ],
+        tp_pct=os_cart_arrays_tuple.tp_pct[settings_idx],
+        trail_sl_based_on=os_cart_arrays_tuple.trail_sl_based_on[settings_idx],
+        trail_sl_by_pct=os_cart_arrays_tuple.trail_sl_by_pct[settings_idx],
+        trail_sl_when_pct_from_avg_entry=os_cart_arrays_tuple.trail_sl_when_pct_from_avg_entry[
+            settings_idx
+        ],
+    )
+
 
 @njit(cache=True)
 def get_interest_prices(
@@ -133,8 +133,11 @@ def backtest_df_only_nb(
         close_prices = price_data[:, prices_start + 3]
 
         # create Df from two-dimensional ndarray
-        candles = pd.DataFrame(price_data[:, prices_start:prices_start+4], columns=['open', 'high', 'low', 'close'])
-        candles['timestamp'] = np.repeat(datetime.now(), candles.shape[0])
+        candles = pd.DataFrame(
+            price_data[:, prices_start : prices_start + 4],
+            columns=["open", "high", "low", "close"],
+        )
+        candles["timestamp"] = np.repeat(datetime.now(), candles.shape[0])
 
         prices_start += 4
 
@@ -145,7 +148,9 @@ def backtest_df_only_nb(
         # ind set loop
         for indicator_settings_counter in range(entries_per_symbol):
             current_indicator_entries = symbol_entries[:, indicator_settings_counter]
-            print(f'[NUMBER_TRUE_ENTRIES={np.count_nonzero(current_indicator_entries)}]')
+            print(
+                f"[NUMBER_TRUE_ENTRIES={np.count_nonzero(current_indicator_entries)}]"
+            )
 
             for order_settings_idx in range(total_order_settings):
                 order_settings = get_order_settings(
@@ -181,21 +186,27 @@ def backtest_df_only_nb(
                 )
                 strat_records_filled[0] = 0
 
-                logging.info(f'[STARTING_ITERATION] [SYMBOL={symbol_counter}] INDICATOR=[{indicator_settings_counter}] [ORDER_SETTING={order_settings_idx}]')
-                logging.info(f'[NUMBER_CANDLES={candles.shape[0]}] [NUMBER_TRUE_SIGNALS={np.count_nonzero(current_indicator_entries)}]')
+                logging.info(
+                    f"[STARTING_ITERATION] [SYMBOL={symbol_counter}] INDICATOR=[{indicator_settings_counter}] [ORDER_SETTING={order_settings_idx}]"
+                )
+                logging.info(
+                    f"[NUMBER_CANDLES={candles.shape[0]}] [NUMBER_TRUE_SIGNALS={np.count_nonzero(current_indicator_entries)}]"
+                )
 
                 # entries loop
-                iteration = CandleIteration(user_configuration={},
-                            candles=candles,
-                            entry_signals=current_indicator_entries,
-                            evaluate_entry_signal=evaluate_entry_signal,
-                            evaluate_increase_position=evaluate_increase_position,
-                            evaluate_stop_loss=evaluate_stop_loss,
-                            evaluate_take_profit=evaluate_take_profit,
-                            place_entry=place_entry,
-                            close_position=close_position,
-                            adjust_stop_loss_trailing=adjust_stop_loss_trailing)
-                
+                iteration = CandleIteration(
+                    user_configuration={},
+                    candles=candles,
+                    entry_signals=current_indicator_entries,
+                    evaluate_entry_signal=evaluate_entry_signal,
+                    evaluate_increase_position=evaluate_increase_position,
+                    evaluate_stop_loss=evaluate_stop_loss,
+                    evaluate_take_profit=evaluate_take_profit,
+                    place_entry=place_entry,
+                    close_position=close_position,
+                    adjust_stop_loss_trailing=adjust_stop_loss_trailing,
+                )
+
                 iteration.iterate()
 
     return (
@@ -285,8 +296,6 @@ def _sim_6(
             tp_pct=0.0,
             tp_price=0.0,
         )
-
-
 
         # entries loop
         for bar in range(total_bars):

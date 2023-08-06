@@ -243,7 +243,7 @@ def process_order_nb(
     order_settings_counter: int,
     order_settings: OrderSettings,
     order_type: int,
-    prices: Union[PriceFloatTuple,PriceArrayTuple],
+    prices: Union[PriceFloatTuple, PriceArrayTuple],
     static_variables_tuple: StaticVariables,
     symbol_counter: Optional[int] = None,
     entries_col: Optional[int] = None,

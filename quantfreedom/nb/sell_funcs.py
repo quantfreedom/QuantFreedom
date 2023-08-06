@@ -9,7 +9,7 @@
 #     OrderResult,
 #     RejectedOrderError,
 #     StaticVariables,
-    
+
 #     OrderStatus,
 #     OrderStatusInfo,
 #     LeverageMode,
@@ -26,7 +26,7 @@
 #     order_result: OrderResult,
 #     static_variables_tuple: StaticVariables,
 # ) -> Tuple[AccountState, OrderResult]:
-    
+
 #     # new cash borrowed needs to be returned
 #     available_balance_new = account_state.available_balance
 #     cash_used_new = account_state.cash_used
@@ -367,7 +367,7 @@
 #     order_result: OrderResult,
 #     account_state: AccountState,
 # ):
-    
+
 #     """
 #     This is where the long position gets decreased or closed out.
 #     """
