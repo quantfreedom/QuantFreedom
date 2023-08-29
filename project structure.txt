@@ -1,0 +1,54 @@
+exchange settings
+    fee pct
+    mmr pct
+    max leverage
+    max order size pct
+    max order size value
+    min order size pct
+    min order size value
+
+record keeping settings
+    divide records array size by
+    gains pct filter
+    total trade filter
+    upside filter
+
+user settings
+    risk reward
+    equity
+    max equity risk pct
+    max equity risk value
+
+size type
+    amount                      # 20 dollar position sizes
+    percent of account          # i want my position size to be 10% of my account so if i have 100 i want to have a p size of 10
+    risk amount                 # risk 10 dollars per trade
+    risk percent of account     # i want to risk 1% of my account every trade
+
+order type
+    long
+    short
+    both
+
+leverage mode
+    static
+    auto adjust for liq price to be below sl
+
+stop loss settings
+    stop loss based on (open high low close)
+        based on lookback
+        add percent to sl
+
+    stop loss pct below entry
+
+        move stop loss to break even
+            when price moves pct away from entry
+            
+        trailing stop loss
+            when price moves pct away from entry
+            based on (open high low close)
+            add percent to trailing sl
+
+take profit
+    pct away from entry
+    risk to reward
