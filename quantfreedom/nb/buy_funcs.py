@@ -87,7 +87,7 @@ def long_increase_nb(
 
             if static_variables_tuple.size_type == SizeType.RiskPercentOfAccount:
                 if position_old != 0:
-                    tpl = -(  # total possible loss no fees on second trade
+                    possible_loss = -(  # total possible loss no fees on second trade
                         (
                             (order_result.position / order_result.average_entry)
                             * (order_result.sl_price - order_result.average_entry)
@@ -106,7 +106,7 @@ def long_increase_nb(
                     )
 
                     size_value = (
-                        -tpl * prices.entry * order_result.average_entry
+                        -possible_loss * prices.entry * order_result.average_entry
                         + prices.entry
                         * order_result.position
                         * order_result.average_entry

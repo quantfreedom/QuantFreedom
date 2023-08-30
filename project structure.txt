@@ -22,6 +22,7 @@ user settings
 size type
     amount                      # 20 dollar position sizes
     percent of account          # i want my position size to be 10% of my account so if i have 100 i want to have a p size of 10
+    
     risk amount                 # risk 10 dollars per trade
     risk percent of account     # i want to risk 1% of my account every trade
 
@@ -44,11 +45,32 @@ stop loss settings
         move stop loss to break even
             when price moves pct away from entry
             
-        trailing stop loss
-            when price moves pct away from entry
-            based on (open high low close)
-            add percent to trailing sl
+            trailing stop loss
+                when price moves pct away from entry
+                based on (open high low close)
+                add percent to trailing sl
 
 take profit
     pct away from entry
     risk to reward
+
+
+2 symbols
+4 indicator settings
+8 order settings
+
+grab W symbol
+    grab column N of entries for indicator
+        grab order settings X
+            cycle through bar by bar to see if there is an entry or exit
+                check if our availble balance is less than 5
+                    if it is break and go to the next order settings
+                
+                if entry & (equity < 5 or not max risk) 
+                    process (long, short, both) order
+                        calc position size (size type)
+                            if size type risk 
+                                calc sl (based on or pct) then position size
+                            if amount
+                                calc position size
+                            
