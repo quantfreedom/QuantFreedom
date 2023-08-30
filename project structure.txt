@@ -74,3 +74,92 @@ grab W symbol
                             if amount
                                 calc position size
                             
+
+# object-oriented description
+
+
+position_holder = [in_position | not_in_position]
+record_keeper = [strategy_record | strategy_result | order_record | order_setting_record]
+risk_taker
+
+# MAIN ITERATION
+iterate over symbols
+    iterate over entry_evaluation
+        iterate over order settings             # keep in mind that user settings may depend on the indicator
+            strategy_record.clear()
+            we_are_not_broke and iterate over each bar
+                we_are_not_broke = backtesting_min_condition_checker.are_we_broke():
+
+                if entry_evaluation[current_bar]:
+                    entry_processor.process_entry(order_record_keeper, risk_taker)             # new entity : entry_processor
+
+                position_holder.check_brackets()        #exit evaluation?
+            
+            if filter_checker.pass_filter():
+                order_setting_record_keeper.process()
+                strategy_result.process()
+
+return (strategy_result.get_result(), order_setting_record_keeper.get_result())
+        
+tp_handler = [risk_reward | pct]
+leverage_handler = [fixed | dynamic]
+sizer = [amount | pct account | risk amount | risk pct account]
+# PROCESS ENTRY = [long, short, both]
+    # IN_POSITION 
+        if risk_taker.at_max():
+            return  # do nothing
+        else:
+            size = sizer.calculate()               # new entity : sizer
+            if size > 1 and in_between(exchange.min, exchange.max):
+                avg_entry = position_holder.get_avg_entry(size)                 
+                position_holder.set_position_size(size)
+                # NOT SURE -> create SL if requested
+
+                leverage, cash_borrowed, cash_used, equity = leverage_handler.calculate()              # calculate: also sets liquidation price
+                exchange.set_leverage(leverage)             
+                tp = tp_handler.calculate()                                     # new entity
+
+             if account.balance - cash_used < 0:
+                raise Error
+
+            account.update(available_balance, cash_borrowed, cash_used, equity)
+            order_result = self.create_order_result(...)
+            record_keeper.fill_strategy_record(order_result)
+            record_keeper.fill_order_record(order_result)
+
+    # NOT_IN_POSITION 
+        do nothing  
+
+
+class Sizer:
+    def calculate():
+        pass
+
+class AmountSizer(Sizer):
+    def calculate():
+        return config.fixed_amount
+
+class PctAccountSizer(Sizer):
+    def calculate():
+        return account.available_equity * config.sizer_pct_account 
+
+
+class RiskAmountSizer(Sizer):
+    def calculate():
+        sl = self.calculate_sl()
+        return self.do_math(sl)
+
+class RiskPctAccountSizer(Sizer):
+    def calculate():
+        sl = self.calculate_sl()
+        return self.calculate_position_size(sl)
+
+
+
+# CHECK_BRACKETS
+    # IN POSITION 
+        # TO BE CONTINUED..
+
+
+    # NOT IN POSITION
+        do nothing
