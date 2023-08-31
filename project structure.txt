@@ -104,7 +104,8 @@ return (strategy_result.get_result(), order_setting_record_keeper.get_result())
 tp_handler = [risk_reward | pct]
 leverage_handler = [fixed | dynamic]
 sizer = [amount | pct account | risk amount | risk pct account]
-# PROCESS ENTRY = [long, short, both]
+position_holder = [long, short, both]
+# PROCESS ENTRY
     # IN_POSITION 
         if risk_taker.at_max():
             return  # do nothing
@@ -135,31 +136,106 @@ class Sizer:
     def calculate():
         pass
 
-class AmountSizer(Sizer):
-    def calculate():
-        return config.fixed_amount
+    class AmountSizer(Sizer):
+        def calculate():
+            return config.fixed_amount
 
-class PctAccountSizer(Sizer):
-    def calculate():
-        return account.available_equity * config.sizer_pct_account 
-
-
-class RiskAmountSizer(Sizer):
-    def calculate():
-        sl = self.calculate_sl()
-        return self.do_math(sl)
-
-class RiskPctAccountSizer(Sizer):
-    def calculate():
-        sl = self.calculate_sl()
-        return self.calculate_position_size(sl)
+    class PctAccountSizer(Sizer):
+        def calculate():
+            return account.available_equity * config.sizer_pct_account 
 
 
+    class RiskAmountSizer(Sizer):
+        def calculate():
+            sl = self.calculate_sl()
+            return self.do_math(sl)
+
+    class RiskPctAccountSizer(Sizer):
+        def calculate():
+            sl = self.calculate_sl()
+            return self.calculate_position_size(sl)
+
+
+# STOP LOSS
+class StopLoss()
+    def thing()
+        pass
+    
+    class SLBasedOn(StopLoss) 
+        def calculate()                 # somehow we hav to know if we are in a long or a short to do the calculation
+            return stop_loss_price
+    
+    class SLPct(StopLoss)
+        def calculate()                 # somehow we hav to know if we are in a long or a short to do the calculation
+            return stop_loss_price
+
+# TAKE PROFIT
+class TakeProfit()
+    def thing()
+        pass
+    
+    class TPPct(TakeProfit)
+        def calculate()
+            return take_profit_price
+    
+    class TPRiskReward(TakeProfit)
+        def calculate()
+            return take_profit_price
 
 # CHECK_BRACKETS
-    # IN POSITION 
-        # TO BE CONTINUED..
+    # IN POSITION
+    class CheckBrackets 
+        def check_sl_hit()
+            return true / false
+
+        def check_tp_hit()
+            return true / false
+        
+        def check_move_sl_be() # where do i set this to be true 
+            return new sl
+        
+        def check_trail_sl() # where do i set this to be true 
+            return new sl
 
 
     # NOT IN POSITION
         do nothing
+
+# POSITION HOLDER
+    class PositionHolder()
+        def average_entry()
+            return average_entry
+
+        def new_position_size()
+            return position size
+            
+    class LongTrades()
+        def calc_possible_loss()
+            return possible loss
+
+        def calculate_posotion_size()
+            return position size
+
+        def increase_position()
+            return order_results
+        
+        def decrease_position()
+            return order_results
+
+        def calc_leverage()
+            return leverage
+        
+        def calc liq price()
+            return liq price
+        
+    
+process entry
+new entry
+    stop loss (1,2)
+    entry size (1,2,3,4)
+combined entry
+    average entry
+    new position size
+    stop loss (1,2)
+    set leverage (1,2)
+    set take profit(1,2)

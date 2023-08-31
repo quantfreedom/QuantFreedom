@@ -148,11 +148,12 @@ def long_increase_nb(
                             tp_pct=order_result.tp_pct,
                             tp_price=order_result.tp_price,
                         )
-                    position_new = position_old + size_value
-                    average_entry_new = (size_value + position_old) / (
-                        (size_value / prices.entry) + (position_old / average_entry_new)
-                    )
-                    sl_pct_new = (average_entry_new - sl_price_new) / average_entry_new
+                    # don't think i need this becuase it happens again later on in the code and this postion size and average entry has nothing to do with what is needed in this if
+                    # position_new = position_old + size_value
+                    # average_entry_new = (size_value + position_old) / (
+                    #     (size_value / prices.entry) + (position_old / average_entry_new)
+                    # )
+                    # sl_pct_new = (average_entry_new - sl_price_new) / average_entry_new
                 else:
                     sl_pct_new = (prices.entry - sl_price_new) / prices.entry
                     size_value = (
