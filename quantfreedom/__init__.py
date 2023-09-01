@@ -17,6 +17,7 @@ from quantfreedom.nb import *
 from quantfreedom.indicators import *
 from quantfreedom.evaluators import *
 from quantfreedom.plotting import *
+from quantfreedom.poly import *
 
 # silence NumbaExperimentalFeatureWarning
 import warnings
