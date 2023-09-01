@@ -237,7 +237,7 @@ backtester
     ....
     long
         stop loss
-            SLBasedOn
+            SLBasedOnCandleBody
                 calc stop loss()
             SLPct
                 calc stop loss()
