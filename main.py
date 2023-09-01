@@ -19,12 +19,6 @@ from quantfreedom.enums.enums import (
     StaticVariables,
 )
 
-
-
-
-
-
-
 def configure_logging():
     root = logging.getLogger()
 

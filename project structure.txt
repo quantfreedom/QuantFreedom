@@ -230,6 +230,34 @@ class TakeProfit()
         
     
 process entry
+backtester
+    average entry
+    new position
+    long
+        stop loss
+            calc stop loss(1-2)
+        entry size
+            calc entry(1-4)
+        
+        combine entry
+            backtester.average entry
+            backtester.new position size
+            calc stop loss (1 - 2)
+            set leverage (1 - 2)
+            set take profit(1 - 2)
+    short
+        stop loss
+            calc stop loss(1 - 2)
+        entry size
+            calc entry(1 - 4)
+        
+        combine entry
+            backtester.average entry
+            backtester.new position size
+            calc stop loss (1 - 2)
+            set leverage (1 - 2)
+            set take profit (1 - 2)
+
 new entry
     stop loss (1,2)
     entry size (1,2,3,4)
