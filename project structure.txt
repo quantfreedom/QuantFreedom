@@ -230,12 +230,17 @@ class TakeProfit()
         
     
 process entry
+
 backtester
-    average entry
-    new position
+    average entry()
+    new position()
+    ....
     long
         stop loss
-            calc stop loss(1-2)
+            SLBasedOn
+                calc stop loss()
+            SLPct
+                calc stop loss()
         entry size
             calc entry(1-4)
         
