@@ -1,5 +1,5 @@
 
-
+from quantfreedom.poly.sizer import Sizer, SizerType
 from enum import Enum
 
 class StopLossType(Enum):
@@ -13,19 +13,22 @@ class TakeProfitType(Enum):
 class Order:
     sl_calculator = None
     tp_calculator = None
+    sizer = None
 
-    def __init__(self, sl_type : StopLossType, tp_type : TakeProfitType):
+    def __init__(self, sl_type : StopLossType, tp_type : TakeProfitType, sizer_type : SizerType):
         self.sl_calculator = StopLossCalculator.create(sl_type)
         self.tp_calculator = TakeProfitCalculator.create(tp_type)
+        self.sizer = Sizer(self.sl_calculator, sizer_type)
 
-    def stop_loss():
+    def stop_loss(self):
         raise NotImplemented()
     
-    def take_profit():
+    def take_profit(self):
         raise NotImplemented()
 
-    def entry_size():
-        raise NotImplemented()
+    def entry_size(self):
+        print('Order::entry_size')
+        self.sizer.calculate()
 
 class StopLossCalculator:
     def create(type : StopLossType):
@@ -34,13 +37,16 @@ class StopLossCalculator:
     def calculate(self):
         raise NotImplemented()
     
+    def get_result(self):
+        raise NotImplemented()
+    
 class TakeProfitCalculator:
     def create(type : TakeProfitType):
          return RiskReward() if type == TakeProfitType.RiskReward else TPPCt()
    
     def calculate(self):
         raise NotImplemented()
-    
+        
 
 class RiskReward(TakeProfitCalculator):
     def calculate(self):
@@ -54,9 +60,15 @@ class SLBasedOnCandleBody(StopLossCalculator):
     def calculate(self):
         print('SLBasedOnCandleBody')
 
+    def get_result(self):
+        return 'SLBasedOnCandleBody::get_result'   
+
 class SLPct(StopLossCalculator):
     def calculate(self):
         print('SLPct')
+
+    def get_result(self):
+        return 'SLPct::get_result'
 
 class LongOrder(Order):
     def stop_loss(self):
@@ -67,8 +79,6 @@ class LongOrder(Order):
         print('LongOrder::take_profit')
         self.tp_calculator.calculate()
 
-    def entry_size():
-        pass
     
 class ShortOrder(Order):
     def stop_loss(self):
@@ -79,22 +89,4 @@ class ShortOrder(Order):
         print('ShortORder::take_profit')
         self.tp_calculator.calculate()
 
-    def entry_size():
-        pass
 
-
-def test_long(sl_type : StopLossType, tp_type : TakeProfitType) -> None:
-    order = LongOrder(sl_type, tp_type)
-    order.stop_loss()
-    order.take_profit()
-
-def test_short(sl_type : StopLossType, tp_type : TakeProfitType) -> None:
-    order = ShortOrder(sl_type, tp_type)
-    order.stop_loss()
-    order.take_profit()
-
-if __name__ == '__main__':
-    test_long(StopLossType.SLBasedOnCandleBody, TakeProfitType.RiskReward)
-    test_long(StopLossType.SLPct, TakeProfitType.TPPCt)
-    test_short(StopLossType.SLBasedOnCandleBody, TakeProfitType.RiskReward)
-    test_short(StopLossType.SLPct, TakeProfitType.TPPCt)
