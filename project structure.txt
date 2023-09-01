@@ -103,14 +103,14 @@ return (strategy_result.get_result(), order_setting_record_keeper.get_result())
         
 tp_handler = [risk_reward | pct]
 leverage_handler = [fixed | dynamic]
-sizer = [amount | pct account | risk amount | risk pct account]
+entry_size = [amount | pct account | risk amount | risk pct account]
 position_holder = [long, short, both]
 # PROCESS ENTRY
     # IN_POSITION 
         if risk_taker.at_max():
             return  # do nothing
         else:
-            size = sizer.calculate()               # new entity : sizer
+            size = entry_size.calculate()               # new entity : entry_size
             if size > 1 and in_between(exchange.min, exchange.max):
                 avg_entry = position_holder.get_avg_entry(size)                 
                 position_holder.set_position_size(size)
@@ -132,25 +132,25 @@ position_holder = [long, short, both]
         do nothing  
 
 
-class Sizer:
+class EntrySize:
     def calculate():
         pass
 
-    class AmountSizer(Sizer):
+    class AmountEntrySize(EntrySize):
         def calculate():
             return config.fixed_amount
 
-    class PctAccountSizer(Sizer):
+    class PctAccountEntrySize(EntrySize):
         def calculate():
-            return account.available_equity * config.sizer_pct_account 
+            return account.available_equity * config.entry_size_pct_account 
 
 
-    class RiskAmountSizer(Sizer):
+    class RiskAmountEntrySize(EntrySize):
         def calculate():
             sl = self.calculate_sl()
             return self.do_math(sl)
 
-    class RiskPctAccountSizer(Sizer):
+    class RiskPctAccountEntrySize(EntrySize):
         def calculate():
             sl = self.calculate_sl()
             return self.calculate_position_size(sl)

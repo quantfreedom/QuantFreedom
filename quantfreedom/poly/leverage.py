@@ -4,7 +4,6 @@ class LeverageType(Enum):
     Static = 1
     Dynamic = 2
 
-
 class Leverage:
     calculators = {}
     calculate_function = None
