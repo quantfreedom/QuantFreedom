@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 class LeverageType(Enum):
     Static = 1
     Dynamic = 2
