@@ -11,7 +11,7 @@ class EntrySizeType(Enum):
 class EntrySize:
     stop_loss_info = None
     init_size_value = None
-    calculators = ()
+    calculators = {}
     calculate_function = None
 
     def __init__(
@@ -45,9 +45,30 @@ class EntrySize:
         print(f"riskAmount_based")
 
     def risk_pct_of_account(self):
+        trade_possible_loss = -(equity * risk_pct_of_account_value)
         if position_size == 0:
-            print("created a position")
+            size_value = trade_possible_loss / (
+                sl_price / entry - 1 - fee_pct - sl_price * fee_pct / entry
+            )
+            position_possible_loss = trade_possible_loss
         elif position_size > 0:
-            print("already in a positon and added to that position")
+            position_possible_loss = trade_possible_loss + position_possible_loss
+            size_value = (
+                position_possible_loss
+                * trade_entry
+                * average_entry
+                + trade_entry * position_size * average_entry
+                - sl_price_new * trade_entry * position_size
+                + sl_price_new * trade_entry * position_size * fee_pct
+                + trade_entry * position_size * average_entry * fee_pct
+            ) / (
+                average_entry
+                * (
+                    trade_entry
+                    - sl_price_new
+                    + trade_entry * fee_pct
+                    + sl_price_new * fee_pct
+                )
+            )
 
         print(f"riskPct_based")

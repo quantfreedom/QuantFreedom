@@ -1,3 +1,6 @@
+import numpy as np
+from typing import NamedTuple
+
 from quantfreedom.poly.stop_loss import StopLossCalculator, StopLossType
 from quantfreedom.poly.leverage import Leverage, LeverageType
 from quantfreedom.poly.entry_size import EntrySize, EntrySizeType
@@ -16,8 +19,14 @@ class Order:
         leverage_type: LeverageType,
         entry_size_type: EntrySizeType,
         tp_type: TakeProfitType,
+        order_info: NamedTuple,
+        current_candle: NamedTuple,
     ):
-        self.stop_loss = StopLossCalculator(sl_type)
+        self.stop_loss = StopLossCalculator(
+            sl_type=sl_type,
+            sl_pct=order_info.sl_pct,
+            current_candle=current_candle,
+        )
         self.leverage = Leverage(leverage_type)
         self.entry_size = EntrySize(self.stop_loss, entry_size_type)
         self.take_profit = TakeProfit(tp_type)
