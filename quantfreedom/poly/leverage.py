@@ -17,11 +17,11 @@ class Leverage:
         except KeyError as e:
             print(f"Calculator not found -> {repr(e)}")
 
-    def calculate(self, **vargs):
-        self.calculate_function(**vargs)
+    def calculate(self):
+        self.calculate_function()
 
-    def static(self, sl_price):
+    def static(self):
         print("static leverage")
 
-    def dynamic(self, sl_price):
-        print("dynamic leverage and sl price is: ", sl_price)
+    def dynamic(self):
+        print("dynamic leverage and sl price is: ")

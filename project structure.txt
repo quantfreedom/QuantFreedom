@@ -272,3 +272,23 @@ combined entry
     stop loss (1,2)
     set leverage (1,2)
     set take profit(1,2)
+
+user
+size type
+size pct
+stop loss at low
+stop loss based on
+risk percent of account
+equity
+fee
+
+order
+entry
+average entry
+position size
+
+candle body info
+available_balance
+cash_borrowed
+cash_used
+equity

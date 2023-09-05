@@ -1,6 +1,9 @@
 import numpy as np
+from math import floor
 from enum import Enum
 from collections import namedtuple
+
+from quantfreedom.poly.enums import OrderSettings
 
 
 class StopLossType(Enum):
@@ -16,56 +19,49 @@ class CandleBody(Enum):
 
 
 class StopLossCalculator:
+    calculator = None
     sl_price = None
-    sl_pct = None
-    candles = None
-    calculate_function = None
-    calculators = ()
+    order_settings = None
 
     def __init__(
         self,
         sl_type: StopLossType,
-        candle_body: CandleBody = None,
-        sl_pct: np.array = None,
-        current_candle: NamedTuple = None,
+        candle_body: CandleBody,
+        order_settings: OrderSettings,
     ):
         if sl_type == StopLossType.SLBasedOnCandleBody:
             if candle_body == CandleBody.Open:
-                self.calculators[CandleBody.Open] = self.sl_based_on_open
+                self.calculator = self.sl_based_on_open
             elif candle_body == CandleBody.High:
-                self.calculators[CandleBody.High] = self.sl_based_on_high
+                self.calculator = self.sl_based_on_high
             elif candle_body == CandleBody.Low:
-                self.calculators[CandleBody.Low] = self.sl_based_on_low
+                self.calculator = self.sl_based_on_low
             elif candle_body == CandleBody.Close:
-                self.calculators[CandleBody.Close] = self.sl_based_on_close
+                self.calculator = self.sl_based_on_close
         else:
-            self.calculators[StopLossType.SLPct] = self.sl_pct_calc
-        self.sl_pct = sl_pct
+            self.calculator = self.sl_pct_calc
 
+        self.order_settings = order_settings
 
-        try:
-            self.calculate_function = self.calculators[sl_type]
-        except KeyError as e:
-            print(f"Calculator not found -> {repr(e)}")
+    def calculate(self, **vargs):
+        return self.calculator(**vargs)
 
-    def calculate(self):
-        self.calculate_function()
+    def sl_based_on_open(self, **vargs):
+        pass
 
-    def sl_based_on_open(self, candles):
-        self.sl_price = candles.low.min() - (candles.low.min() * sl_based_on_add_pct)
+    def sl_based_on_high(self, **vargs):
+        pass
 
-    def sl_based_on_high(self, candles):
-        self.sl_price = candles.high.min() - (candles.high.min() * sl_based_on_add_pct)
-
-    def sl_based_on_low(self, candles):
-        self.sl_price = candles.low.min() - (candles.low.min() * sl_based_on_add_pct)
-
-    def sl_based_on_close(self, candles):
-        self.sl_price = candles.close.min() - (
-            candles.close.min() * sl_based_on_add_pct
+    def sl_based_on_low(self, **vargs):
+        candle_low = vargs["price_data"].low.values.min()
+        self.sl_price = floor(
+            candle_low - (candle_low * self.order_settings.sl_based_on_add_pct)
         )
+        print("sl price is ", self.sl_price)
+        return float(self.sl_price)
 
-    def sl_pct_calc(self):
-        print("Stop loss percent")
-        self.sl_pct = 6
-        self.sl_price = 2
+    def sl_based_on_close(self, **vargs):
+        pass
+
+    def sl_pct_calc(self, **vargs):
+        pass

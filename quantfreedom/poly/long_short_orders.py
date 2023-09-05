@@ -1,7 +1,7 @@
 import numpy as np
-from typing import NamedTuple
-
-from quantfreedom.poly.stop_loss import StopLossCalculator, StopLossType
+import pandas as pd
+from quantfreedom.poly.enums import AccountState, OrderSettings, ExchangeSettings
+from quantfreedom.poly.stop_loss import StopLossCalculator, StopLossType, CandleBody
 from quantfreedom.poly.leverage import Leverage, LeverageType
 from quantfreedom.poly.entry_size import EntrySize, EntrySizeType
 from quantfreedom.poly.take_profit import TakeProfit, TakeProfitType
@@ -12,23 +12,37 @@ class Order:
     leverage = None
     entry_size = None
     take_profit = None
+    account_state = None
+    price_data = None
+    exchange_settings = None
 
     def __init__(
         self,
         sl_type: StopLossType,
+        candle_body: CandleBody,
         leverage_type: LeverageType,
         entry_size_type: EntrySizeType,
         tp_type: TakeProfitType,
-        order_info: NamedTuple,
-        current_candle: NamedTuple,
+        account_state: AccountState,
+        order_settings: OrderSettings,
+        price_data: pd.DataFrame,
+        exchange_settings: ExchangeSettings,
     ):
+        self.account_state = account_state
+        self.exchange_settings = exchange_settings
+        self.price_data = price_data
+
         self.stop_loss = StopLossCalculator(
             sl_type=sl_type,
-            sl_pct=order_info.sl_pct,
-            current_candle=current_candle,
+            candle_body=candle_body,
+            order_settings=order_settings,
         )
         self.leverage = Leverage(leverage_type)
-        self.entry_size = EntrySize(self.stop_loss, entry_size_type)
+        self.entry_size = EntrySize(
+            entry_size_type=entry_size_type,
+            order_settings=order_settings,
+            exchange_settings=exchange_settings,
+        )
         self.take_profit = TakeProfit(tp_type)
 
     def calc_stop_loss(self):
@@ -47,34 +61,19 @@ class Order:
 class LongOrder(Order):
     def calc_stop_loss(self):
         print("LongOrder::stop_loss")
-        self.stop_loss.calculate()
+        return self.stop_loss.calculate(price_data=self.price_data)
 
     def calc_leverage(self):
         print("LongOrder::leverage")
-        self.leverage.calculate(sl_price=self.stop_loss.sl_price)
+        self.leverage.calculate()
 
-    def calc_entry_size(self):
+    def calc_entry_size(self, **vargs):
         print("LongOrder::entry")
-        self.entry_size.calculate()
+        self.entry_size.calculate(
+            account_state_equity=self.account_state.equity,
+            **vargs,
+        )
 
     def calc_take_profit(self):
         print("LongOrder::take_profit")
-        self.take_profit.calculate()
-
-
-class ShortOrder(Order):
-    def calc_stop_loss(self):
-        print("ShortOrder::stop_loss")
-        self.stop_loss.calculate()
-
-    def calc_leverage(self):
-        print("ShortOrder::leverage")
-        self.leverage.calculate(sl_price=self.stop_loss.sl_price)
-
-    def calc_entry_size(self):
-        print("ShortOrder::entry")
-        self.entry_size.calculate()
-
-    def calc_take_profit(self):
-        print("ShortOrder::take_profit")
         self.take_profit.calculate()

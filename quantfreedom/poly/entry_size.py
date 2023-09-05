@@ -1,4 +1,5 @@
 from enum import Enum
+from quantfreedom.poly.enums import ExchangeSettings, OrderSettings
 
 
 class EntrySizeType(Enum):
@@ -9,45 +10,55 @@ class EntrySizeType(Enum):
 
 
 class EntrySize:
-    stop_loss_info = None
-    init_size_value = None
-    calculators = ()
-    calculate_function = None
+    calculator = None
+    order_settings = None
+    exchange_settings = None
 
     def __init__(
         self,
-        stop_loss_info,
         entry_size_type: EntrySizeType,
+        exchange_settings: ExchangeSettings,
+        order_settings: OrderSettings,
     ):
-        self.stop_loss_info = stop_loss_info
-        self.calculators[EntrySizeType.AmountEntrySize] = self.amount_based
-        self.calculators[EntrySizeType.PctAccountEntrySize] = self.pctAccount_based
-        self.calculators[EntrySizeType.RiskAmountEntrySize] = self.riskAmount_based
-        self.calculators[
-            EntrySizeType.RiskPctAccountEntrySize
-        ] = self.risk_pct_of_account
+        if entry_size_type == EntrySizeType.AmountEntrySize:
+            self.calculator = self.amount_based
+        elif entry_size_type == EntrySizeType.PctAccountEntrySize:
+            self.calculator = self.pctAccount_based
+        elif entry_size_type == EntrySizeType.RiskAmountEntrySize:
+            self.calculator = self.riskAmount_based
+        elif entry_size_type == EntrySizeType.RiskPctAccountEntrySize:
+            self.calculator = self.risk_pct_of_account
 
-        try:
-            self.calculate_function = self.calculators[entry_size_type]
-        except KeyError as e:
-            print(f"Calculator not found -> {repr(e)}")
+        self.order_settings = order_settings
+        self.exchange_settings = exchange_settings
 
-    def calculate(self):
-        self.calculate_function()
+    def calculate(self, **vargs):
+        self.calculator(**vargs)
 
-    def amount_based(self):
+    def amount_based(self, **vargs):
         print("amount_based")
 
-    def pctAccount_based(self):
+    def pctAccount_based(self, **vargs):
         print("pctAccount_based")
 
-    def riskAmount_based(self):
+    def riskAmount_based(self, **vargs):
         print(f"riskAmount_based")
 
-    def risk_pct_of_account(self):
-        if position_size == 0:
-            print("created a position")
-        elif position_size > 0:
-            print("already in a positon and added to that position")
+    def risk_pct_of_account(self, **vargs):
+        print("risk_pct_of_account\n")
+        possible_loss = (
+            vargs["account_state_equity"] * self.order_settings.risk_account_pct_size
+        )
+        sl_price = vargs["sl_price"]
+        entry_price = vargs["entry_price"]
+        market_fee_pct = self.exchange_settings.market_fee_pct
 
-        print(f"riskPct_based")
+        size_value = -possible_loss / (
+            sl_price / entry_price
+            - 1
+            - market_fee_pct
+            - sl_price * market_fee_pct / entry_price
+        )
+        print("Here is the possible loss: ", possible_loss)
+        print("the size to use is: ", size_value)
+        print("the ")
