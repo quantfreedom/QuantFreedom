@@ -1,8 +1,5 @@
-from enum import Enum
+from quantfreedom.poly.enums import LeverageType
 
-class LeverageType(Enum):
-    Static = 1
-    Dynamic = 2
 
 class Leverage:
     calculators = {}

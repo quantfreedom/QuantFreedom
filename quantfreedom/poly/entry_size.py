@@ -1,12 +1,4 @@
-from enum import Enum
-from quantfreedom.poly.enums import ExchangeSettings, OrderSettings
-
-
-class EntrySizeType(Enum):
-    AmountEntrySize = 1
-    PctAccountEntrySize = 2
-    RiskAmountEntrySize = 3
-    RiskPctAccountEntrySize = 4
+from quantfreedom.poly.enums import ExchangeSettings, OrderSettings, EntrySizeType
 
 
 class EntrySize:

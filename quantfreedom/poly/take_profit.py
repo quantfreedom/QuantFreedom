@@ -1,9 +1,4 @@
-from enum import Enum
-
-
-class TakeProfitType(Enum):
-    RiskReward = 1
-    TPPct = 2
+from quantfreedom.poly.enums import TakeProfitType
 
 
 class TakeProfit:

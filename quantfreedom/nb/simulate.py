@@ -2,6 +2,8 @@ import numpy as np
 from numba import njit
 
 from quantfreedom._typing import PossibleArray, Array1d, RecordArray
+from quantfreedom.poly.enums import *
+from quantfreedom.poly.long_short_orders import Order
 from quantfreedom.enums.enums import (
     AccountState,
     OrderResult,
@@ -84,23 +86,31 @@ def get_interest_prices(
 
 @njit(cache=True)
 def backtest_df_only_nb(
+    entry_size_type: EntrySizeType,
+    order_type: OrderType,
+    sl_type: StopLossType,
+    candle_body: CandleBody,
+    tp_type: TakeProfitType,
+    leverage_type: LeverageType,
+    account_state: AccountState,
+    order_settings: OrderSettings,
+    exchange_settings: ExchangeSettings,
+    backtest_settings: BacktestSettings,
+    order: Order,
     num_of_symbols: int,
     total_indicator_settings: int,
     total_order_settings: int,
     total_bars: int,
-    # entry info
     entries: PossibleArray,
     price_data: PossibleArray,
-    # Tuples
-    static_variables_tuple: StaticVariables,
-    os_cart_arrays_tuple: OrderSettingsArrays,
 ) -> Array1d[Array1d, Array1d]:
+
     # Creating strat records
     array_size = int(
         num_of_symbols
         * total_indicator_settings
         * total_order_settings
-        / static_variables_tuple.divide_records_array_size_by
+        / backtest_settings.divide_records_array_size_by
     )
 
     strategy_result_records = np.empty(

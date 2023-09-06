@@ -1,7 +1,5 @@
 import pandas as pd
 
-from quantfreedom.poly.enums import *
-from quantfreedom.poly.long_short_orders import LongOrder
 from quantfreedom._typing import pdFrame
 from quantfreedom.enums.enums import (
     CandleBody,
@@ -18,36 +16,42 @@ from quantfreedom.nb.simulate import backtest_df_only_nb
 
 
 def backtest_df_only(
-    entry_size_type: EntrySizeType,
-    order_type: OrderType,
-    sl_type: StopLossType,
-    candle_body: CandleBody,
-    tp_type: TakeProfitType,
-    leverage_type: LeverageType,
-    account_state: AccountState,
-    order_settings: OrderSettings,
-    backtest_settings: BacktestSettings,
-    exchange_settings: ExchangeSettings,
+    # entry info
     price_data: pdFrame,
     entries: pdFrame,
+    static_variables_tuple: StaticVariables,
+    order_settings_arrays_tuple: OrderSettingsArrays,
 ) -> tuple[pdFrame, pdFrame]:
-    if order_type == OrderType.Long:
-        order = LongOrder(
-            sl_type=sl_type,
-            candle_body=candle_body,
-            tp_type=tp_type,
-            entry_size_type=entry_size_type,
-            leverage_type=leverage_type,
-            order_settings=order_settings,
-            exchange_settings=exchange_settings,
-            backtest_settings=backtest_settings,
-        )
-        
+    print("Checking static variables for errors or conflicts.")
+    # Static checks
+    static_variables_tuple = static_var_checker_nb(
+        static_variables_tuple=static_variables_tuple,
+    )
+    print("Turning all variables into arrays.")
+    # Create 1d Arrays
+    order_settings_arrays_tuple = all_os_as_1d_arrays_nb(
+        order_settings_arrays_tuple=order_settings_arrays_tuple,
+    )
+    print(
+        "Checking arrays for errors or conflicts ... the backtest will begin shortly, please hold."
+    )
+    # Checking all new arrays
+    check_os_1d_arrays_nb(
+        order_settings_arrays_tuple=order_settings_arrays_tuple,
+        static_variables_tuple=static_variables_tuple,
+    )
+
+    print(
+        "Creating cartesian product ... after this the backtest will start, I promise :).\n"
+    )
+    os_cart_arrays_tuple = create_os_cart_product_nb(
+        order_settings_arrays_tuple=order_settings_arrays_tuple,
+    )
+
     num_of_symbols = len(price_data.columns.levels[0])
 
     # Creating Settings Vars
-    # total_order_settings = os_cart_arrays_tuple.sl_pct.shape[0]
-    total_order_settings = 1
+    total_order_settings = os_cart_arrays_tuple.sl_pct.shape[0]
 
     total_indicator_settings = entries.shape[1]
 
@@ -73,7 +77,6 @@ def backtest_df_only(
     )
 
     strat_array, settings_array = backtest_df_only_nb(
-        order=order,
         entries=entries.values,
         num_of_symbols=num_of_symbols,
         os_cart_arrays_tuple=os_cart_arrays_tuple,
@@ -110,13 +113,13 @@ def backtest_df_only(
 
     return strat_results_df, setting_results_df
 
-
 def sim_6(
     entries,
     price_data,
     static_variables_tuple: StaticVariables,
     broadcast_arrays: OrderSettingsArrays,
 ) -> tuple[pdFrame, pdFrame]:
+    
     order_records = _sim_6(
         price_data=price_data,
         entries=entries,
