@@ -168,66 +168,73 @@ def backtest_df_only_nb(
 
                 # entries loop
                 for bar_index in range(total_bars):
-                    if current_indicator_entries[bar_index]: # add in that we are also not at max entry amount 
+                    if current_indicator_entries[
+                        bar_index
+                    ]:  # add in that we are also not at max entry amount
                         sl_price = order.calc_stop_loss(
                             symbol_price_data=symbol_price_data,
                             bar_index=bar_index,
                         )
-                        order.calc_entry_size(
+                        size_value, average_entry = order.calc_entry_size(
                             sl_price=sl_price,
-                            entry_price=symbol_price_data[bar_index,3],
+                            entry_price=symbol_price_data[bar_index, 3],
                             market_fee_pct=exchange_settings.market_fee_pct,
                         )
-                        order.calc_leverage()
+                        order.calc_leverage(
+                            average_entry=average_entry,
+                            sl_price=sl_price,
+                            market_fee_pct=exchange_settings.market_fee_pct,
+                            size_value=size_value,
+                        )
                         order.calc_take_profit()
 
                 # Checking if gains
-                gains_pct = (
-                    (account_state.equity - static_variables_tuple.equity)
-                    / static_variables_tuple.equity
-                ) * 100
-                if gains_pct > static_variables_tuple.gains_pct_filter:
-                    temp_strat_records = strat_records[0 : strat_records_filled[0]]
-                    wins_and_losses_array = temp_strat_records["real_pnl"][
-                        ~np.isnan(temp_strat_records["real_pnl"])
-                    ]
+            #     gains_pct = (
+            #         (account_state.equity - static_variables_tuple.equity)
+            #         / static_variables_tuple.equity
+            #     ) * 100
+            #     if gains_pct > static_variables_tuple.gains_pct_filter:
+            #         temp_strat_records = strat_records[0 : strat_records_filled[0]]
+            #         wins_and_losses_array = temp_strat_records["real_pnl"][
+            #             ~np.isnan(temp_strat_records["real_pnl"])
+            #         ]
 
-                    # Checking total trade filter
-                    if (
-                        wins_and_losses_array.size
-                        > static_variables_tuple.total_trade_filter
-                    ):
-                        wins_and_losses_array_no_be = wins_and_losses_array[
-                            wins_and_losses_array != 0
-                        ]
-                        to_the_upside = get_to_the_upside_nb(
-                            gains_pct=gains_pct,
-                            wins_and_losses_array_no_be=wins_and_losses_array_no_be,
-                        )
+            #         # Checking total trade filter
+            #         if (
+            #             wins_and_losses_array.size
+            #             > static_variables_tuple.total_trade_filter
+            #         ):
+            #             wins_and_losses_array_no_be = wins_and_losses_array[
+            #                 wins_and_losses_array != 0
+            #             ]
+            #             to_the_upside = get_to_the_upside_nb(
+            #                 gains_pct=gains_pct,
+            #                 wins_and_losses_array_no_be=wins_and_losses_array_no_be,
+            #             )
 
-                        # Checking to the upside filter
-                        if to_the_upside > static_variables_tuple.upside_filter:
-                            fill_strategy_result_records_nb(
-                                gains_pct=gains_pct,
-                                strategy_result_records=strategy_result_records[
-                                    result_records_filled
-                                ],
-                                temp_strat_records=temp_strat_records,
-                                to_the_upside=to_the_upside,
-                                total_trades=wins_and_losses_array.size,
-                                wins_and_losses_array_no_be=wins_and_losses_array_no_be,
-                            )
+            #             # Checking to the upside filter
+            #             if to_the_upside > static_variables_tuple.upside_filter:
+            #                 fill_strategy_result_records_nb(
+            #                     gains_pct=gains_pct,
+            #                     strategy_result_records=strategy_result_records[
+            #                         result_records_filled
+            #                     ],
+            #                     temp_strat_records=temp_strat_records,
+            #                     to_the_upside=to_the_upside,
+            #                     total_trades=wins_and_losses_array.size,
+            #                     wins_and_losses_array_no_be=wins_and_losses_array_no_be,
+            #                 )
 
-                            fill_order_settings_result_records_nb(
-                                entries_col=entries_col,
-                                order_settings_result_records=order_settings_result_records[
-                                    result_records_filled
-                                ],
-                                symbol_counter=symbol_counter,
-                                order_settings_tuple=order_settings,
-                            )
-                            result_records_filled += 1
-            entries_col += 1
+            #                 fill_order_settings_result_records_nb(
+            #                     entries_col=entries_col,
+            #                     order_settings_result_records=order_settings_result_records[
+            #                         result_records_filled
+            #                     ],
+            #                     symbol_counter=symbol_counter,
+            #                     order_settings_tuple=order_settings,
+            #                 )
+            #                 result_records_filled += 1
+            # entries_col += 1
     return (
         strategy_result_records[:result_records_filled],
         order_settings_result_records[:result_records_filled],

@@ -1,6 +1,11 @@
 import numpy as np
 import pandas as pd
-from quantfreedom.poly.enums import AccountState, OrderSettings, ExchangeSettings, OrderType
+from quantfreedom.poly.enums import (
+    AccountState,
+    OrderSettings,
+    ExchangeSettings,
+    OrderType,
+)
 from quantfreedom.poly.stop_loss import StopLossCalculator, StopLossType, CandleBody
 from quantfreedom.poly.leverage import Leverage, LeverageType
 from quantfreedom.poly.entry_size import EntrySize, EntrySizeType
@@ -16,10 +21,9 @@ class Order:
     price_data = None
     exchange_settings = None
 
-    def instantiate(order_type : OrderType, **vargs):
+    def instantiate(order_type: OrderType, **vargs):
         if order_type == OrderType.Long:
             return LongOrder(**vargs)
-
 
     def __init__(
         self,
@@ -40,7 +44,10 @@ class Order:
             candle_body=candle_body,
             order_settings=order_settings,
         )
-        self.leverage = Leverage(leverage_type)
+        self.leverage = Leverage(
+            leverage_type=leverage_type,
+            max_leverage=exchange_settings.max_lev,
+        )
         self.entry_size = EntrySize(
             entry_size_type=entry_size_type,
             order_settings=order_settings,
@@ -60,15 +67,18 @@ class Order:
     def calc_take_profit(self):
         pass
 
+    def calc_average_entry(self):
+        pass
+
 
 class LongOrder(Order):
     def calc_stop_loss(self, symbol_price_data):
         print("LongOrder::stop_loss")
         return self.stop_loss.sl_calculator(symbol_price_data=symbol_price_data)
 
-    def calc_leverage(self):
+    def calc_leverage(self, **vargs):
         print("LongOrder::leverage")
-        self.leverage.calculate()
+        self.leverage.calculate(**vargs)
 
     def calc_entry_size(self, **vargs):
         print("LongOrder::entry")
@@ -80,3 +90,11 @@ class LongOrder(Order):
     def calc_take_profit(self):
         print("LongOrder::take_profit")
         self.take_profit.calculate()
+
+    def calc_average_entry(self, average_entry):
+        if position_old != 0.0:
+            average_entry_new = (size_value + position_old) / (
+                (size_value / prices.entry) + (position_old / average_entry_new)
+            )
+        else:
+            average_entry_new = prices.entry

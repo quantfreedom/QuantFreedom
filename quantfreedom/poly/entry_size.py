@@ -1,4 +1,10 @@
-from quantfreedom.poly.enums import ExchangeSettings, OrderSettings, EntrySizeType, StopLossType
+from quantfreedom.enums.enums import RejectedOrderError
+from quantfreedom.poly.enums import (
+    ExchangeSettings,
+    OrderSettings,
+    EntrySizeType,
+    StopLossType,
+)
 
 
 class EntrySize:
@@ -10,7 +16,7 @@ class EntrySize:
         self,
         entry_size_type: EntrySizeType,
         exchange_settings: ExchangeSettings,
-        order_settings: OrderSettings
+        order_settings: OrderSettings,
     ):
         if entry_size_type == EntrySizeType.AmountEntrySize:
             self.calculator_in_pos = self.amount_based
@@ -21,27 +27,54 @@ class EntrySize:
         elif entry_size_type == EntrySizeType.RiskPctAccountEntrySize:
             if order_settings.stop_loss_type == StopLossType.SLBasedOnCandleBody:
                 self.calculator_in_pos = self.risk_pct_of_account_and_sl_based_on_in_pos
-                self.calculator_not_in_pos = self.risk_pct_of_account_and_sl_based_on_not_in_pos
+                self.calculator_not_in_pos = (
+                    self.risk_pct_of_account_and_sl_based_on_not_in_pos
+                )
             else:
-                raise NotImplementedError('EntrySizeType=RiskPctAccountEntrySize and not StopLossType=SLBasedOnCandleBody')
+                raise NotImplementedError(
+                    "EntrySizeType=RiskPctAccountEntrySize and not StopLossType=SLBasedOnCandleBody"
+                )
 
         self.order_settings = order_settings
         self.exchange_settings = exchange_settings
 
     def calculate(self, **vargs):
-        if vargs['in_pos']:
-            self.calculator_in_pos(**vargs)
+        if vargs["in_pos"]:
+            size_value = self.calculator_in_pos(**vargs)
         else:
-            self.calculator_not_in_pos(**vargs)
+            size_value = self.calculator_not_in_pos(**vargs)
+
+        self.__check_size_value(size_value=size_value)
+        return size_value
 
     def __get_possible_loss(self, **vargs):
+        account_state_equity = vargs["account_state_equity"]
+        
         possible_loss = (
-            vargs["account_state_equity"] * self.order_settings.risk_account_pct_size
+            account_state_equity * self.order_settings.risk_account_pct_size
+        ) + vargs["order_result"].possible_loss
+        
+        if possible_loss > account_state_equity * self.order_settings.max_equity_risk_pct:
+            raise RejectedOrderError(
+                "possible loss too big"
+            )
+        return (
+            possible_loss,
+            vargs["sl_price"],
+            vargs["entry_price"],
+            self.exchange_settings.market_fee_pct,
         )
-        sl_price = vargs["sl_price"]
-        entry_price = vargs["entry_price"]
-        market_fee_pct = self.exchange_settings.market_fee_pct
-    
+
+    def __check_size_value(self, size_value):
+        if (
+            size_value < 1
+            or size_value > self.exchange_settings.max_order_size_value
+            or size_value < self.exchange_settings.min_order_size_value
+        ):
+            raise RejectedOrderError(
+                "Long Increase - Size Value is either to big or too small"
+            )
+
     def amount_based(self, **vargs):
         print("amount_based")
 
@@ -53,13 +86,10 @@ class EntrySize:
 
     def risk_pct_of_account_and_sl_based_on_not_in_pos(self, **vargs):
         print("risk_pct_of_account and sl_based and not_in_pos\n")
-        possible_loss = (
-            vargs["account_state_equity"] * self.order_settings.risk_account_pct_size
+        possible_loss, sl_price, entry_price, market_fee_pct = self.__get_possible_loss(
+            **vargs
         )
-        sl_price = vargs["sl_price"]
-        entry_price = vargs["entry_price"]
-        market_fee_pct = self.exchange_settings.market_fee_pct
-        
+
         size_value = -possible_loss / (
             sl_price / entry_price
             - 1
@@ -67,15 +97,30 @@ class EntrySize:
             - sl_price * market_fee_pct / entry_price
         )
         
-        print("Here is the possible loss: ", possible_loss)
-        print("the size to use is: ", size_value)
+        return size_value, entry_price
 
     def risk_pct_of_account_and_sl_based_on_in_pos(self, **vargs):
-        print("risk_pct_of_account and sl_based and in_pos\n")
-
-        possible_loss = (
-            vargs["account_state_equity"] * self.order_settings.risk_account_pct_size
+        possible_loss, sl_price, entry_price, market_fee_pct = self.__get_possible_loss(
+            **vargs
         )
-        sl_price = vargs["sl_price"]
-        entry_price = vargs["entry_price"]
-        market_fee_pct = self.exchange_settings.market_fee_pct
+        average_entry = vargs["order_result"].average_entry
+        current_pos_size = vargs["order_result"].position_size
+        size_value = (
+            -possible_loss * entry_price * average_entry
+            + entry_price * current_pos_size * average_entry
+            - sl_price * entry_price * current_pos_size
+            + sl_price * entry_price * current_pos_size * market_fee_pct
+            + entry_price * current_pos_size * average_entry * market_fee_pct
+        ) / (
+            average_entry
+            * (
+                entry_price
+                - sl_price
+                + entry_price * market_fee_pct
+                + sl_price * market_fee_pct
+            )
+        )
+        average_entry_new = (size_value + current_pos_size) / (
+            (size_value / entry_price) + (current_pos_size / average_entry_new)
+        )
+        return size_value, average_entry_new

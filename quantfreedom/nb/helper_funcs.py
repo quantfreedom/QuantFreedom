@@ -36,6 +36,7 @@ def create_os_cart_product_nb(
         entry_size_type=out.T[6],
         stop_loss_type=out.T[7],
         take_profit_type=out.T[8],
+        max_equity_risk_pct=out.T[9],
     )
 
 
