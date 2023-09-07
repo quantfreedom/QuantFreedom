@@ -168,7 +168,7 @@ def backtest_df_only_nb(
 
                 # entries loop
                 for bar_index in range(total_bars):
-                    if current_indicator_entries[bar_index]:
+                    if current_indicator_entries[bar_index]: # add in that we are also not at max entry amount 
                         sl_price = order.calc_stop_loss(
                             symbol_price_data=symbol_price_data,
                             bar_index=bar_index,
