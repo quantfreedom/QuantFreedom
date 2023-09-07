@@ -1,8 +1,8 @@
-from quantfreedom.poly.enums import ExchangeSettings, OrderSettings, EntrySizeType
+from quantfreedom.poly.enums import ExchangeSettings, OrderSettings, EntrySizeType, StopLossType
 
 
 class EntrySize:
-    calculator = None
+    calculator_in_pos = None
     order_settings = None
     exchange_settings = None
 
@@ -10,22 +10,29 @@ class EntrySize:
         self,
         entry_size_type: EntrySizeType,
         exchange_settings: ExchangeSettings,
-        order_settings: OrderSettings,
+        order_settings: OrderSettings
     ):
         if entry_size_type == EntrySizeType.AmountEntrySize:
-            self.calculator = self.amount_based
+            self.calculator_in_pos = self.amount_based
         elif entry_size_type == EntrySizeType.PctAccountEntrySize:
-            self.calculator = self.pctAccount_based
+            self.calculator_in_pos = self.pctAccount_based
         elif entry_size_type == EntrySizeType.RiskAmountEntrySize:
-            self.calculator = self.riskAmount_based
+            self.calculator_in_pos = self.riskAmount_based
         elif entry_size_type == EntrySizeType.RiskPctAccountEntrySize:
-            self.calculator = self.risk_pct_of_account
+            if order_settings.stop_loss_type == StopLossType.SLBasedOnCandleBody:
+                self.calculator_in_pos = self.risk_pct_of_account_and_sl_based_on_in_pos
+                self.calculator_not_in_pos = self.risk_pct_of_account_and_sl_based_on_not_in_pos
+            else:
+                raise NotImplementedError('EntrySizeType=RiskPctAccountEntrySize and not StopLossType=SLBasedOnCandleBody')
 
         self.order_settings = order_settings
         self.exchange_settings = exchange_settings
 
     def calculate(self, **vargs):
-        self.calculator(**vargs)
+        if vargs['in_pos']:
+            self.calculator_in_pos(**vargs)
+        else:
+            self.calculator_not_in_pos(**vargs)
 
     def amount_based(self, **vargs):
         print("amount_based")
@@ -36,8 +43,8 @@ class EntrySize:
     def riskAmount_based(self, **vargs):
         print(f"riskAmount_based")
 
-    def risk_pct_of_account(self, **vargs):
-        print("risk_pct_of_account\n")
+    def risk_pct_of_account_and_sl_based_on_not_in_pos(self, **vargs):
+        print("risk_pct_of_account and sl_based and not_in_pos\n")
         possible_loss = (
             vargs["account_state_equity"] * self.order_settings.risk_account_pct_size
         )
@@ -54,3 +61,13 @@ class EntrySize:
         
         print("Here is the possible loss: ", possible_loss)
         print("the size to use is: ", size_value)
+
+    def risk_pct_of_account_and_sl_based_on_in_pos(self, **vargs):
+        print("risk_pct_of_account and sl_based and in_pos\n")
+
+        possible_loss = (
+            vargs["account_state_equity"] * self.order_settings.risk_account_pct_size
+        )
+        sl_price = vargs["sl_price"]
+        entry_price = vargs["entry_price"]
+        market_fee_pct = self.exchange_settings.market_fee_pct
