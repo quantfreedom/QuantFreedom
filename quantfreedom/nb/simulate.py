@@ -2,7 +2,7 @@ import numpy as np
 from numba import njit
 
 from quantfreedom._typing import PossibleArray, Array1d, RecordArray
-from quantfreedom.poly.enums import *
+from quantfreedom.poly.enums import BacktestSettings, ExchangeSettings, OrderSettingsArrays
 from quantfreedom.poly.long_short_orders import Order
 from quantfreedom.enums.enums import (
     AccountState,
@@ -30,32 +30,18 @@ from quantfreedom.nb.helper_funcs import (
 
 @njit(cache=True)
 def get_order_settings(
-    settings_idx: int, os_cart_arrays_tuple: OrderSettingsArrays
+    settings_idx: int, os_cart_arrays: OrderSettingsArrays
 ) -> OrderSettings:
     return OrderSettings(
-        leverage=os_cart_arrays_tuple.leverage[settings_idx],
-        max_equity_risk_pct=os_cart_arrays_tuple.max_equity_risk_pct[settings_idx],
-        max_equity_risk_value=os_cart_arrays_tuple.max_equity_risk_value[settings_idx],
-        risk_reward=os_cart_arrays_tuple.risk_reward[settings_idx],
-        size_pct=os_cart_arrays_tuple.size_pct[settings_idx],
-        size_value=os_cart_arrays_tuple.size_value[settings_idx],
-        sl_based_on=os_cart_arrays_tuple.sl_based_on[settings_idx],
-        sl_based_on_add_pct=os_cart_arrays_tuple.sl_based_on_add_pct[settings_idx],
-        sl_based_on_lookback=os_cart_arrays_tuple.sl_based_on_lookback[settings_idx],
-        sl_pct=os_cart_arrays_tuple.sl_pct[settings_idx],
-        sl_to_be_based_on=os_cart_arrays_tuple.sl_to_be_based_on[settings_idx],
-        sl_to_be_zero_or_entry=os_cart_arrays_tuple.sl_to_be_zero_or_entry[
-            settings_idx
-        ],
-        sl_to_be_when_pct_from_avg_entry=os_cart_arrays_tuple.sl_to_be_when_pct_from_avg_entry[
-            settings_idx
-        ],
-        tp_pct=os_cart_arrays_tuple.tp_pct[settings_idx],
-        trail_sl_based_on=os_cart_arrays_tuple.trail_sl_based_on[settings_idx],
-        trail_sl_by_pct=os_cart_arrays_tuple.trail_sl_by_pct[settings_idx],
-        trail_sl_when_pct_from_avg_entry=os_cart_arrays_tuple.trail_sl_when_pct_from_avg_entry[
-            settings_idx
-        ],
+        risk_account_pct_size=os_cart_arrays.risk_account_pct_size[settings_idx],
+        sl_based_on_add_pct=os_cart_arrays.risk_account_pct_size[settings_idx],
+        sl_based_on_lookback=os_cart_arrays.sl_based_on_lookback[settings_idx],
+        risk_reward=os_cart_arrays.risk_reward[settings_idx],
+        leverage_type=os_cart_arrays.leverage_type[settings_idx],
+        candle_body=os_cart_arrays.candle_body[settings_idx],
+        entry_size_type=os_cart_arrays.entry_size_type[settings_idx],
+        stop_loss_type=os_cart_arrays.stop_loss_type[settings_idx],
+        take_profit_type=os_cart_arrays.take_profit_type[settings_idx],
     )
 
 
@@ -86,17 +72,10 @@ def get_interest_prices(
 
 @njit(cache=True)
 def backtest_df_only_nb(
-    entry_size_type: EntrySizeType,
-    order_type: OrderType,
-    sl_type: StopLossType,
-    candle_body: CandleBody,
-    tp_type: TakeProfitType,
-    leverage_type: LeverageType,
-    account_state: AccountState,
-    order_settings: OrderSettings,
+    og_account_state: AccountState,
+    os_cart_arrays: OrderSettings,
     exchange_settings: ExchangeSettings,
     backtest_settings: BacktestSettings,
-    order: Order,
     num_of_symbols: int,
     total_indicator_settings: int,
     total_order_settings: int,
@@ -104,7 +83,6 @@ def backtest_df_only_nb(
     entries: PossibleArray,
     price_data: PossibleArray,
 ) -> Array1d[Array1d, Array1d]:
-
     # Creating strat records
     array_size = int(
         num_of_symbols
@@ -134,10 +112,7 @@ def backtest_df_only_nb(
     prices = 0
 
     for symbol_counter in range(num_of_symbols):
-        open_prices = price_data[:, prices_start]
-        high_prices = price_data[:, prices_start + 1]
-        low_prices = price_data[:, prices_start + 2]
-        close_prices = price_data[:, prices_start + 3]
+        symbol_price_data = price_data[:, prices_start : prices_start + 3]
 
         prices_start += 4
 
@@ -150,17 +125,15 @@ def backtest_df_only_nb(
             current_indicator_entries = symbol_entries[:, indicator_settings_counter]
 
             for order_settings_idx in range(total_order_settings):
-                order.order_settings = get_order_settings(
-                    order_settings_idx, os_cart_arrays_tuple
-                )
+                order_settings = get_order_settings(order_settings_idx, os_cart_arrays)
                 # Account State Reset
                 account_state = AccountState(
-                    available_balance=static_variables_tuple.equity,
+                    available_balance=og_account_state.equity,
                     cash_borrowed=0.0,
                     cash_used=0.0,
-                    equity=static_variables_tuple.equity,
+                    equity=og_account_state.equity,
                 )
-
+                
                 # Order Result Reset
                 order_result = OrderResult(
                     average_entry=0.0,
@@ -170,7 +143,6 @@ def backtest_df_only_nb(
                     moved_sl_to_be=False,
                     order_status=0,
                     order_status_info=0,
-                    order_type=static_variables_tuple.order_type,
                     pct_chg_trade=0.0,
                     position=0.0,
                     price=0.0,
@@ -185,71 +157,9 @@ def backtest_df_only_nb(
 
                 # entries loop
                 for bar in range(total_bars):
-                    if account_state.available_balance < 5:
-                        break
-
                     if current_indicator_entries[bar]:
-                        prices = get_interest_prices(
-                            bar,
-                            (open_prices, high_prices, low_prices, close_prices),
-                            order_settings,
-                        )
-                        # Process Order nb
-                        account_state, order_result = process_order_nb(
-                            account_state=account_state,
-                            bar=bar,
-                            entries_col=entries_col,
-                            order_result=order_result,
-                            order_settings_counter=order_settings_idx,
-                            order_settings=order_settings,
-                            order_type=static_variables_tuple.order_type,
-                            prices=prices,
-                            static_variables_tuple=static_variables_tuple,
-                            symbol_counter=symbol_counter,
-                            strat_records_filled=strat_records_filled,
-                            strat_records=strat_records[strat_records_filled[0]],
-                        )
-                    if order_result.position > 0:
-                        prices = PriceFloatTuple(
-                            entry=open_prices[bar],
-                            open=open_prices[bar],
-                            high=high_prices[bar],
-                            low=low_prices[bar],
-                            close=close_prices[bar],
-                        )
-                        # Check Stops
-                        order_result = check_sl_tp_nb(
-                            account_state=account_state,
-                            bar=bar,
-                            order_result=order_result,
-                            order_settings_counter=order_settings_idx,
-                            order_settings_tuple=order_settings,
-                            prices_tuple=prices,
-                            static_variables_tuple=static_variables_tuple,
-                        )
-                        prices = PriceFloatTuple(
-                            entry=open_prices[bar],
-                            open=open_prices[bar : bar + 1],
-                            high=high_prices[bar : bar + 1],
-                            low=low_prices[bar : bar + 1],
-                            close=close_prices[bar : bar + 1],
-                        )
-                        # process stops
-                        if not np.isnan(order_result.size_value):
-                            account_state, order_result = process_order_nb(
-                                account_state=account_state,
-                                bar=bar,
-                                entries_col=entries_col,
-                                order_result=order_result,
-                                order_settings_counter=order_settings_idx,
-                                order_settings=order_settings,
-                                order_type=order_result.order_type,
-                                prices=prices,
-                                static_variables_tuple=static_variables_tuple,
-                                symbol_counter=symbol_counter,
-                                strat_records_filled=strat_records_filled,
-                                strat_records=strat_records[strat_records_filled[0]],
-                            )
+                    
+                        pass
 
                 # Checking if gains
                 gains_pct = (

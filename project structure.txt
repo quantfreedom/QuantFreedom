@@ -292,3 +292,6 @@ available_balance
 cash_borrowed
 cash_used
 equity
+
+for prices per symbol
+    for settings per user settings
