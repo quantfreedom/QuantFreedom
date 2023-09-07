@@ -34,6 +34,14 @@ class EntrySize:
         else:
             self.calculator_not_in_pos(**vargs)
 
+    def __get_possible_loss(self, **vargs):
+        possible_loss = (
+            vargs["account_state_equity"] * self.order_settings.risk_account_pct_size
+        )
+        sl_price = vargs["sl_price"]
+        entry_price = vargs["entry_price"]
+        market_fee_pct = self.exchange_settings.market_fee_pct
+    
     def amount_based(self, **vargs):
         print("amount_based")
 
