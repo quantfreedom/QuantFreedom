@@ -155,6 +155,9 @@ def backtest_df_only_nb(
                 )
                 strat_records_filled[0] = 0
 
+                order_type_class = Order.instantiate(backtest_settings.order_type, order_settings.sl.ty)        # FIXME : complete
+
+
                 # entries loop
                 for bar in range(total_bars):
                     if current_indicator_entries[bar]:
