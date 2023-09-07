@@ -163,15 +163,13 @@ def backtest_df_only_nb(
                     tp_type=order_settings.take_profit_type,
                     account_state=account_state,
                     order_settings=order_settings,
-                    price_data=symbol_price_data,
                     exchange_settings=exchange_settings,
                 )
 
                 # entries loop
-                for bar in range(total_bars):
-                    if current_indicator_entries[bar]:
-                        temp_price_data = order.symbol_price_data[:,]
-                        sl_price = order.calc_stop_loss(price_data=temp_price_data)
+                for bar_index in range(total_bars):
+                    if current_indicator_entries[bar_index]:
+                        sl_price = order.calc_stop_loss(price_data=symbol_price_data, bar_index=bar_index)
                         order.calc_entry_size(
                             sl_price=sl_price,
                             entry_price=price_data.close[-1],
