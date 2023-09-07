@@ -150,7 +150,7 @@ def backtest_df_only_nb(
             current_indicator_entries = symbol_entries[:, indicator_settings_counter]
 
             for order_settings_idx in range(total_order_settings):
-                order_settings = get_order_settings(
+                order.order_settings = get_order_settings(
                     order_settings_idx, os_cart_arrays_tuple
                 )
                 # Account State Reset
