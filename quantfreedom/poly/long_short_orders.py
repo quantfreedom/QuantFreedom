@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from quantfreedom.poly.enums import AccountState, OrderSettings, ExchangeSettings
+from quantfreedom.poly.enums import AccountState, OrderSettings, ExchangeSettings, OrderType
 from quantfreedom.poly.stop_loss import StopLossCalculator, StopLossType, CandleBody
 from quantfreedom.poly.leverage import Leverage, LeverageType
 from quantfreedom.poly.entry_size import EntrySize, EntrySizeType
@@ -15,6 +15,11 @@ class Order:
     account_state = None
     price_data = None
     exchange_settings = None
+
+    def instantiate(order_type : OrderType, **vargs):
+        if order_type == OrderType.Long:
+            return LongOrder(**vargs)
+
 
     def __init__(
         self,
