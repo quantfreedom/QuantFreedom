@@ -169,10 +169,13 @@ def backtest_df_only_nb(
                 # entries loop
                 for bar_index in range(total_bars):
                     if current_indicator_entries[bar_index]:
-                        sl_price = order.calc_stop_loss(price_data=symbol_price_data, bar_index=bar_index)
+                        sl_price = order.calc_stop_loss(
+                            symbol_price_data=symbol_price_data,
+                            bar_index=bar_index,
+                        )
                         order.calc_entry_size(
                             sl_price=sl_price,
-                            entry_price=price_data.close[-1],
+                            entry_price=symbol_price_data[bar_index,3],
                             market_fee_pct=exchange_settings.market_fee_pct,
                         )
                         order.calc_leverage()

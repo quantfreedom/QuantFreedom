@@ -44,13 +44,13 @@ class EntrySize:
         sl_price = vargs["sl_price"]
         entry_price = vargs["entry_price"]
         market_fee_pct = self.exchange_settings.market_fee_pct
-
+        
         size_value = -possible_loss / (
             sl_price / entry_price
             - 1
             - market_fee_pct
             - sl_price * market_fee_pct / entry_price
         )
+        
         print("Here is the possible loss: ", possible_loss)
         print("the size to use is: ", size_value)
-        print("the ")

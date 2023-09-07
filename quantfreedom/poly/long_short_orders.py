@@ -62,9 +62,9 @@ class Order:
 
 
 class LongOrder(Order):
-    def calc_stop_loss(self, price_data):
+    def calc_stop_loss(self, symbol_price_data):
         print("LongOrder::stop_loss")
-        return self.stop_loss.sl_calculator(price_data=price_data)
+        return self.stop_loss.sl_calculator(symbol_price_data=symbol_price_data)
 
     def calc_leverage(self):
         print("LongOrder::leverage")
