@@ -2,16 +2,15 @@ import numpy as np
 from numba import njit
 
 from quantfreedom._typing import PossibleArray, Array1d, RecordArray
-from quantfreedom.poly.enums import BacktestSettings, ExchangeSettings, OrderSettingsArrays
+from quantfreedom.poly.enums import (
+    BacktestSettings,
+    ExchangeSettings,
+    OrderSettingsArrays,
+    OrderSettings,
+    AccountState,
+)
 from quantfreedom.poly.long_short_orders import Order
 from quantfreedom.enums.enums import (
-    AccountState,
-    OrderResult,
-    OrderSettings,
-    PriceArrayTuple,
-    PriceFloatTuple,
-    StaticVariables,
-    OrderSettingsArrays,
     or_dt,
     order_settings_array_dt,
     strat_df_array_dt,
@@ -133,7 +132,7 @@ def backtest_df_only_nb(
                     cash_used=0.0,
                     equity=og_account_state.equity,
                 )
-                
+
                 # Order Result Reset
                 order_result = OrderResult(
                     average_entry=0.0,
@@ -155,14 +154,31 @@ def backtest_df_only_nb(
                 )
                 strat_records_filled[0] = 0
 
-                order_type_class = Order.instantiate(backtest_settings.order_type, order_settings.sl.ty)        # FIXME : complete
-
+                order = Order.instantiate(
+                    backtest_settings.order_type,
+                    sl_type=order_settings.stop_loss_type,
+                    candle_body=order_settings.candle_body,
+                    leverage_type=order_settings.leverage_type,
+                    entry_size_type=order_settings.entry_size_type,
+                    tp_type=order_settings.take_profit_type,
+                    account_state=account_state,
+                    order_settings=order_settings,
+                    price_data=symbol_price_data,
+                    exchange_settings=exchange_settings,
+                )
 
                 # entries loop
                 for bar in range(total_bars):
                     if current_indicator_entries[bar]:
-                    
-                        pass
+                        temp_price_data = order.symbol_price_data[:,]
+                        sl_price = order.calc_stop_loss(price_data=temp_price_data)
+                        order.calc_entry_size(
+                            sl_price=sl_price,
+                            entry_price=price_data.close[-1],
+                            market_fee_pct=exchange_settings.market_fee_pct,
+                        )
+                        order.calc_leverage()
+                        order.calc_take_profit()
 
                 # Checking if gains
                 gains_pct = (

@@ -30,12 +30,10 @@ class Order:
         tp_type: TakeProfitType,
         account_state: AccountState,
         order_settings: OrderSettings,
-        price_data: pd.DataFrame,
         exchange_settings: ExchangeSettings,
     ):
         self.account_state = account_state
         self.exchange_settings = exchange_settings
-        self.price_data = price_data
 
         self.stop_loss = StopLossCalculator(
             sl_type=sl_type,
@@ -64,9 +62,9 @@ class Order:
 
 
 class LongOrder(Order):
-    def calc_stop_loss(self):
+    def calc_stop_loss(self, price_data):
         print("LongOrder::stop_loss")
-        return self.stop_loss.calculate(price_data=self.price_data)
+        return self.stop_loss.sl_calculator(price_data=price_data)
 
     def calc_leverage(self):
         print("LongOrder::leverage")
