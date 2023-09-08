@@ -101,7 +101,6 @@ class Order:
             leverage=self.leverage,
             liq_price=self.liq_price,
             order_status=OrderStatus.Filled,
-            order_status_info=OrderStatus.HopefullyNoProblems,
             possible_loss=self.possible_loss,
             pct_chg_trade=np.nan,
             entry_size=self.entry_size,
@@ -114,10 +113,31 @@ class Order:
             tp_price=self.take_profit_price,
         )
 
-    def fill_ignored_order_result_entry(self, order_status : OrderStatus):
-        pass
-
-
+    def fill_ignored_order_result_entry(self, order_status: OrderStatus):
+        # self.account_state = AccountState(
+        #     available_balance=self.account_state.available_balance,
+        #     cash_borrowed=self.account_state.cash_borrowed,
+        #     cash_used=self.account_state.cash_used,
+        #     equity=self.account_state.equity,
+        # )
+        # self.order_result = OrderResult(
+        #     average_entry=self.order_result.average_entry,
+        #     fees_paid=self.order_result.fees_paid,
+        #     leverage=self.order_result.leverage,
+        #     liq_price=self.order_result.liq_price,
+        #     order_status=order_status,
+        #     possible_loss=self.order_result.possible_loss,
+        #     pct_chg_trade=self.order_result.pct_chg_trade,
+        #     entry_size=self.order_result.entry_size,
+        #     entry_price=self.order_result.entry_price,
+        #     position_size=self.order_result.position_size,
+        #     realized_pnl=self.order_result.realized_pnl,
+        #     sl_pct=self.order_result.sl_pct,
+        #     sl_price=self.order_result.sl_price,
+        #     tp_pct=self.order_result.tp_pct,
+        #     tp_price=self.order_result.tp_price,
+        # )
+        self.order_result.order_status = order_status
 
 class LongOrder(Order):
     def calc_stop_loss(self, **vargs):
@@ -143,7 +163,7 @@ class LongOrder(Order):
             possible_loss=self.order_result.possible_loss,
             average_entry=self.order_result.average_entry,
             position_size=self.order_result.position_size,
-            entry_price=vargs['entry_price'],
+            entry_price=vargs["entry_price"],
         )
         return self.entry_size, self.average_entry, self.possible_loss
 

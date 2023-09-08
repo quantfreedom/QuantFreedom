@@ -159,6 +159,7 @@ def backtest_df_only_nb(
                         except RejectedOrderError as e:
                             print(f'Skipping iteration -> {repr(e)}')
                             order.fill_ignored_order_result_entry(e.order_status)
+                        order.fill_order_recrods
                         
 
                 # Checking if gains
