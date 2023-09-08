@@ -1,5 +1,4 @@
-from quantfreedom.enums.enums import RejectedOrderError
-from quantfreedom.poly.enums import LeverageType
+from quantfreedom.poly.enums import LeverageType, RejectedOrderError, OrderStatus
 
 
 class Leverage:
@@ -42,15 +41,8 @@ class Leverage:
             initial_margin + fee_to_open + possible_bankruptcy_fee
         )  # math checked
 
-        if cash_used_new > account_state_available_balance * leverage:
-            raise RejectedOrderError(
-                "long inrease iso lev - cash used greater than available balance * lev ... entry_size is too big"
-            )
-
-        elif cash_used_new > account_state_available_balance:
-            raise RejectedOrderError(
-                "long inrease iso lev - cash used greater than available balance ... maybe increase lev"
-            )
+        if cash_used_new > account_state_available_balance * leverage or cash_used_new > account_state_available_balance:
+            raise RejectedOrderError(order_status=OrderStatus.CashUsedExceed)
 
         else:
             # liq formula

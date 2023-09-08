@@ -14,6 +14,7 @@ from quantfreedom.poly.enums import (
     OrderSettingsArrays,
     OrderSettings,
     AccountState,
+    RejectedOrderError
 )
 from quantfreedom.poly.long_short_orders import Order
 
@@ -140,18 +141,25 @@ def backtest_df_only_nb(
                     if current_indicator_entries[
                         bar_index
                     ]:  # add in that we are also not at max entry amount
-                        order.calc_stop_loss(
-                            symbol_price_data=symbol_price_data,
-                            bar_index=bar_index,
-                        )
-                        order.calc_entry_size(
-                            entry_price=symbol_price_data[bar_index, 3],
-                        )
-                        order.calc_leverage()
-                        order.calc_take_profit()
-                        order.fill_order_result_entry()
-                        print(order.order_result)
-                        print("test")
+                        try:
+                            order.calc_stop_loss(
+                                symbol_price_data=symbol_price_data,
+                                bar_index=bar_index,
+                            )
+                            order.calc_entry_size(
+                                entry_price=symbol_price_data[bar_index, 3],
+                            )
+                            order.calc_leverage()
+                            order.calc_take_profit()
+                            
+                            # all went ok, we are ready to update order_result with the new calculated values
+                            order.fill_order_result_entry()
+                            print(order.order_result)
+                            print("test")
+                        except RejectedOrderError as e:
+                            print(f'Skipping iteration -> {repr(e)}')
+                            order.fill_ignored_order_result_entry(e.order_status)
+                        
 
                 # Checking if gains
             #     gains_pct = (

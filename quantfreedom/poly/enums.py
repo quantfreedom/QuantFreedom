@@ -94,7 +94,6 @@ class OrderResult(NamedTuple):
     leverage: float
     liq_price: float
     order_status: int
-    order_status_info: int
     possible_loss: float
     pct_chg_trade: float
     entry_size: float
@@ -107,10 +106,18 @@ class OrderResult(NamedTuple):
     tp_price: float
 
 
-class OrderStatusInfo(NamedTuple):
+class OrderStatus(NamedTuple):
     Filled: int = 0
     Ignored: int = 1
     Rejected: int = 2
     HopefullyNoProblems: int = 3
     MaxEquityRisk: int = 4
     RiskToBig: int = 5
+    CashUsedExceed: int = 6
+
+class RejectedOrderError(Exception):
+    """Rejected order error."""
+    order_status = None
+
+    def __init__(self, order_status : OrderStatus):
+        self.order_status = order_status

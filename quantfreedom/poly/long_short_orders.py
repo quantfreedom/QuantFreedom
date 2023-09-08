@@ -6,7 +6,7 @@ from quantfreedom.poly.enums import (
     ExchangeSettings,
     OrderType,
     OrderResult,
-    OrderStatusInfo,
+    OrderStatus,
 )
 from quantfreedom.poly.stop_loss import StopLossCalculator, StopLossType, CandleBody
 from quantfreedom.poly.leverage import Leverage, LeverageType
@@ -100,8 +100,8 @@ class Order:
             fees_paid=np.nan,
             leverage=self.leverage,
             liq_price=self.liq_price,
-            order_status=OrderStatusInfo.Filled,
-            order_status_info=OrderStatusInfo.HopefullyNoProblems,
+            order_status=OrderStatus.Filled,
+            order_status_info=OrderStatus.HopefullyNoProblems,
             possible_loss=self.possible_loss,
             pct_chg_trade=np.nan,
             entry_size=self.entry_size,
@@ -113,6 +113,10 @@ class Order:
             tp_pct=self.take_profit_pct,
             tp_price=self.take_profit_price,
         )
+
+    def fill_ignored_order_result_entry(self, order_status : OrderStatus):
+        pass
+
 
 
 class LongOrder(Order):
