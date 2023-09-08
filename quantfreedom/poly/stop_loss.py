@@ -31,9 +31,9 @@ class StopLossCalculator:
     def calc_stop_loss(self, **vargs):
         return self.sl_calculator(**vargs)
 
-    def __get_sl_based_on_candles(self, symbol_price_data, bar_idx):
-        lb = max(int(bar_idx - self.order_settings.sl_based_on_lookback), 0)
-        return symbol_price_data[lb : bar_idx + 1, :]
+    def __get_sl_based_on_candles(self, symbol_price_data, bar_index):
+        lb = max(int(bar_index - self.order_settings.sl_based_on_lookback), 0)
+        return symbol_price_data[lb : bar_index + 1, :]
 
     def sl_based_on_open(self, **vargs):
         pass
@@ -42,7 +42,9 @@ class StopLossCalculator:
         pass
 
     def sl_based_on_low(self, **vargs):
-        candle_low = self.__get_sl_based_on_candles(vargs["symbol_price_data"], vargs["bar_idx"])[:,2].min()
+        candle_low = self.__get_sl_based_on_candles(
+            vargs["symbol_price_data"], vargs["bar_index"]
+        )[:, 2].min()
 
         self.sl_price = floor(
             candle_low - (candle_low * self.order_settings.sl_based_on_add_pct)

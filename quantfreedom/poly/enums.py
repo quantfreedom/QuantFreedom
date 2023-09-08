@@ -44,11 +44,11 @@ class AccountState(NamedTuple):
 
 
 class BacktestSettings(NamedTuple):
+    order_type: int
     divide_records_array_size_by: float = 1.0
     gains_pct_filter: float = -np.inf
     total_trade_filter: int = 0
     upside_filter: float = -1.0
-    order_type: int
 
 
 class ExchangeSettings(NamedTuple):
@@ -74,6 +74,7 @@ class OrderSettingsArrays(NamedTuple):
     take_profit_type: np.array = np.array(np.nan)
     max_equity_risk_pct: np.array = np.array(np.nan)
 
+
 class OrderSettings(NamedTuple):
     risk_account_pct_size: float
     sl_based_on_add_pct: float
@@ -85,3 +86,31 @@ class OrderSettings(NamedTuple):
     stop_loss_type: float
     take_profit_type: float
     max_equity_risk_pct: float
+
+
+class OrderResult(NamedTuple):
+    average_entry: float
+    fees_paid: float
+    leverage: float
+    liq_price: float
+    order_status: int
+    order_status_info: int
+    possible_loss: float
+    pct_chg_trade: float
+    entry_size: float
+    entry_price: float
+    position_size: float
+    realized_pnl: float
+    sl_pct: float
+    sl_price: float
+    tp_pct: float
+    tp_price: float
+
+
+class OrderStatusInfo(NamedTuple):
+    Filled: int = 0
+    Ignored: int = 1
+    Rejected: int = 2
+    HopefullyNoProblems: int = 3
+    MaxEquityRisk: int = 4
+    RiskToBig: int = 5

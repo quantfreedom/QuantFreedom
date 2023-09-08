@@ -39,37 +39,58 @@ class EntrySize:
         self.exchange_settings = exchange_settings
 
     def calculate(self, **vargs):
-        if vargs["in_pos"]:
-            size_value = self.calculator_in_pos(**vargs)
+        if vargs["in_position"]:
+            (
+                entry_size,
+                position_size,
+                entry_price,
+                average_entry,
+                possible_loss,
+                sl_pct,
+            ) = self.calculator_in_pos(**vargs)
         else:
-            size_value = self.calculator_not_in_pos(**vargs)
+            (
+                entry_size,
+                position_size,
+                entry_price,
+                average_entry,
+                possible_loss,
+                sl_pct,
+            ) = self.calculator_not_in_pos(**vargs)
 
-        self.__check_size_value(size_value=size_value)
-        return size_value
+        self.__check_size_value(entry_size=entry_size)
+        return (
+            entry_size,
+            position_size,
+            entry_price,
+            average_entry,
+            possible_loss,
+            sl_pct,
+        )
 
     def __get_possible_loss(self, **vargs):
         account_state_equity = vargs["account_state_equity"]
-        
+
         possible_loss = (
             account_state_equity * self.order_settings.risk_account_pct_size
-        ) + vargs["order_result"].possible_loss
-        
-        if possible_loss > account_state_equity * self.order_settings.max_equity_risk_pct:
-            raise RejectedOrderError(
-                "possible loss too big"
-            )
+        ) + vargs["possible_loss"]
+
+        if (
+            possible_loss
+            > account_state_equity * self.order_settings.max_equity_risk_pct
+        ):
+            raise RejectedOrderError("possible loss too big")
         return (
             possible_loss,
             vargs["sl_price"],
             vargs["entry_price"],
-            self.exchange_settings.market_fee_pct,
         )
 
-    def __check_size_value(self, size_value):
+    def __check_size_value(self, entry_size):
         if (
-            size_value < 1
-            or size_value > self.exchange_settings.max_order_size_value
-            or size_value < self.exchange_settings.min_order_size_value
+            entry_size < 1
+            or entry_size > self.exchange_settings.max_order_size_value
+            or entry_size < self.exchange_settings.min_order_size_value
         ):
             raise RejectedOrderError(
                 "Long Increase - Size Value is either to big or too small"
@@ -85,32 +106,40 @@ class EntrySize:
         print(f"riskAmount_based")
 
     def risk_pct_of_account_and_sl_based_on_not_in_pos(self, **vargs):
-        print("risk_pct_of_account and sl_based and not_in_pos\n")
-        possible_loss, sl_price, entry_price, market_fee_pct = self.__get_possible_loss(
-            **vargs
-        )
-
-        size_value = -possible_loss / (
+        possible_loss, sl_price, entry_price = self.__get_possible_loss(**vargs)
+        market_fee_pct = self.exchange_settings.market_fee_pct
+        entry_size = -possible_loss / (
             sl_price / entry_price
             - 1
             - market_fee_pct
             - sl_price * market_fee_pct / entry_price
         )
-        
-        return size_value, entry_price
+        entry_size = round(entry_size, 2)
+        average_entry = entry_price
+        sl_pct = 100 - sl_price * 100 / average_entry
+        sl_pct = round(sl_pct,2)
+        position_size = entry_size
+        return (
+            entry_size,
+            position_size,
+            entry_price,
+            average_entry,
+            possible_loss,
+            sl_pct,
+        )
 
     def risk_pct_of_account_and_sl_based_on_in_pos(self, **vargs):
-        possible_loss, sl_price, entry_price, market_fee_pct = self.__get_possible_loss(
-            **vargs
-        )
-        average_entry = vargs["order_result"].average_entry
-        current_pos_size = vargs["order_result"].position_size
-        size_value = (
+        possible_loss, sl_price, entry_price = self.__get_possible_loss(**vargs)
+        market_fee_pct = self.exchange_settings.market_fee_pct
+        average_entry = vargs["average_entry"]
+        position_size = vargs["position_size"]
+
+        entry_size = (
             -possible_loss * entry_price * average_entry
-            + entry_price * current_pos_size * average_entry
-            - sl_price * entry_price * current_pos_size
-            + sl_price * entry_price * current_pos_size * market_fee_pct
-            + entry_price * current_pos_size * average_entry * market_fee_pct
+            + entry_price * position_size * average_entry
+            - sl_price * entry_price * position_size
+            + sl_price * entry_price * position_size * market_fee_pct
+            + entry_price * position_size * average_entry * market_fee_pct
         ) / (
             average_entry
             * (
@@ -120,7 +149,16 @@ class EntrySize:
                 + sl_price * market_fee_pct
             )
         )
-        average_entry_new = (size_value + current_pos_size) / (
-            (size_value / entry_price) + (current_pos_size / average_entry_new)
+        average_entry_new = (entry_size + position_size) / (
+            (entry_size / entry_price) + (position_size / average_entry)
         )
-        return size_value, average_entry_new
+        sl_pct = 100 - sl_price * 100 / average_entry
+        position_size += entry_size
+        return (
+            entry_size,
+            position_size,
+            entry_price,
+            average_entry_new,
+            possible_loss,
+            sl_pct,
+        )

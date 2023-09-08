@@ -1,3 +1,4 @@
+from quantfreedom.enums.enums import RejectedOrderError
 from quantfreedom.poly.enums import LeverageType
 
 
@@ -18,31 +19,35 @@ class Leverage:
             print(f"Calculator not found -> {repr(e)}")
 
     def calculate(self, **vargs):
-        self.calculate_function()
+        return self.calculate_function(**vargs)
 
-    def __calc_liq_price(self, leverage_new, size_value):
-        if leverage_new > self.max_leverage:
-            leverage_new = self.max_leverage
-        elif leverage_new < 1:
-            leverage_new = 1
+    def __calc_liq_price(self, **vargs):
+        entry_size = vargs["entry_size"]
+        market_fee_pct = vargs["market_fee_pct"]
+        leverage = vargs["leverage"]
+        average_entry = vargs["average_entry"]
+        account_state_cash_used = vargs["account_state_cash_used"]
+        account_state_cash_borrowed = vargs["account_state_cash_borrowed"]
+        account_state_available_balance = vargs["account_state_available_balance"]
+        exchange_settings_mmr_pct = vargs["exchange_settings_mmr_pct"]
 
         # Getting Order Cost
         # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001064&language=en_US
-        initial_margin = size_value / leverage_new
-        fee_to_open = size_value * static_variables_tuple.fee_pct  # math checked
+        initial_margin = entry_size / leverage
+        fee_to_open = entry_size * market_fee_pct  # math checked
         possible_bankruptcy_fee = (
-            size_value * (leverage_new - 1) / leverage_new * static_variables_tuple.fee_pct
+            entry_size * (leverage - 1) / leverage * market_fee_pct
         )
         cash_used_new = (
             initial_margin + fee_to_open + possible_bankruptcy_fee
         )  # math checked
 
-        if cash_used_new > available_balance_new * leverage_new:
+        if cash_used_new > account_state_available_balance * leverage:
             raise RejectedOrderError(
-                "long inrease iso lev - cash used greater than available balance * lev ... size_value is too big"
+                "long inrease iso lev - cash used greater than available balance * lev ... entry_size is too big"
             )
 
-        elif cash_used_new > available_balance_new:
+        elif cash_used_new > account_state_available_balance:
             raise RejectedOrderError(
                 "long inrease iso lev - cash used greater than available balance ... maybe increase lev"
             )
@@ -50,15 +55,21 @@ class Leverage:
         else:
             # liq formula
             # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001067&language=en_US
-            available_balance_new = available_balance_new - cash_used_new
-            cash_used_new = account_state.cash_used + cash_used_new
-            cash_borrowed_new = account_state.cash_borrowed + size_value - cash_used_new
+            available_balance_new = account_state_available_balance - cash_used_new
+            cash_used_new = account_state_cash_used + cash_used_new
+            cash_borrowed_new = account_state_cash_borrowed + entry_size - cash_used_new
 
-            liq_price_new = average_entry_new * (
-                1 - (1 / leverage_new) + static_variables_tuple.mmr_pct
+            liq_price_new = average_entry * (
+                1 - (1 / leverage) + exchange_settings_mmr_pct
             )  # math checked
-            return leverage_new, liq_price_new
-        
+            return (
+                leverage,
+                liq_price_new,
+                available_balance_new,
+                cash_used_new,
+                cash_borrowed_new,
+            )
+
     def static(self, **vargs):
         self.__calc_liq_price(self.leverage)
 
@@ -66,8 +77,23 @@ class Leverage:
         average_entry = vargs["average_entry"]
         sl_price = vargs["sl_price"]
         market_fee_pct = vargs["market_fee_pct"]
-        leverage= round(-average_entry / (
-            sl_price - sl_price * 0.001 - average_entry - market_fee_pct * average_entry
-            #TODO: revisit the .001 to add to the sl if you make this backtester have the ability to go live
-        ),1)
-        self.__calc_liq_price(leverage_new=leverage, size_value=vargs['size_value'])
+
+        leverage = round(
+            -average_entry
+            / (
+                sl_price
+                - sl_price * 0.001
+                - average_entry
+                - market_fee_pct * average_entry
+                # TODO: revisit the .001 to add to the sl if you make this backtester have the ability to go live
+            ),
+            1,
+        )
+        if leverage > self.max_leverage:
+            leverage = self.max_leverage
+        elif leverage < 1:
+            leverage = 1
+        vargs["leverage"] = leverage
+        return self.__calc_liq_price(
+            **vargs,
+        )

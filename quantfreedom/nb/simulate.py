@@ -2,15 +2,14 @@ import numpy as np
 from numba import njit
 
 from quantfreedom._typing import PossibleArray, Array1d, RecordArray
-from quantfreedom.poly.enums import (
-    BacktestSettings,
-    ExchangeSettings,
-    OrderSettingsArrays,
-    OrderSettings,
-    AccountState,
-)
-from quantfreedom.poly.long_short_orders import Order
 from quantfreedom.enums.enums import (
+    AccountState,
+    OrderResult,
+    OrderSettings,
+    PriceArrayTuple,
+    PriceFloatTuple,
+    StaticVariables,
+    OrderSettingsArrays,
     or_dt,
     order_settings_array_dt,
     strat_df_array_dt,
@@ -29,18 +28,32 @@ from quantfreedom.nb.helper_funcs import (
 
 @njit(cache=True)
 def get_order_settings(
-    settings_idx: int, os_cart_arrays: OrderSettingsArrays
+    settings_idx: int, os_cart_arrays_tuple: OrderSettingsArrays
 ) -> OrderSettings:
     return OrderSettings(
-        risk_account_pct_size=os_cart_arrays.risk_account_pct_size[settings_idx],
-        sl_based_on_add_pct=os_cart_arrays.risk_account_pct_size[settings_idx],
-        sl_based_on_lookback=os_cart_arrays.sl_based_on_lookback[settings_idx],
-        risk_reward=os_cart_arrays.risk_reward[settings_idx],
-        leverage_type=os_cart_arrays.leverage_type[settings_idx],
-        candle_body=os_cart_arrays.candle_body[settings_idx],
-        entry_size_type=os_cart_arrays.entry_size_type[settings_idx],
-        stop_loss_type=os_cart_arrays.stop_loss_type[settings_idx],
-        take_profit_type=os_cart_arrays.take_profit_type[settings_idx],
+        leverage=os_cart_arrays_tuple.leverage[settings_idx],
+        max_equity_risk_pct=os_cart_arrays_tuple.max_equity_risk_pct[settings_idx],
+        max_equity_risk_value=os_cart_arrays_tuple.max_equity_risk_value[settings_idx],
+        risk_reward=os_cart_arrays_tuple.risk_reward[settings_idx],
+        size_pct=os_cart_arrays_tuple.size_pct[settings_idx],
+        size_value=os_cart_arrays_tuple.size_value[settings_idx],
+        sl_based_on=os_cart_arrays_tuple.sl_based_on[settings_idx],
+        sl_based_on_add_pct=os_cart_arrays_tuple.sl_based_on_add_pct[settings_idx],
+        sl_based_on_lookback=os_cart_arrays_tuple.sl_based_on_lookback[settings_idx],
+        sl_pct=os_cart_arrays_tuple.sl_pct[settings_idx],
+        sl_to_be_based_on=os_cart_arrays_tuple.sl_to_be_based_on[settings_idx],
+        sl_to_be_zero_or_entry=os_cart_arrays_tuple.sl_to_be_zero_or_entry[
+            settings_idx
+        ],
+        sl_to_be_when_pct_from_avg_entry=os_cart_arrays_tuple.sl_to_be_when_pct_from_avg_entry[
+            settings_idx
+        ],
+        tp_pct=os_cart_arrays_tuple.tp_pct[settings_idx],
+        trail_sl_based_on=os_cart_arrays_tuple.trail_sl_based_on[settings_idx],
+        trail_sl_by_pct=os_cart_arrays_tuple.trail_sl_by_pct[settings_idx],
+        trail_sl_when_pct_from_avg_entry=os_cart_arrays_tuple.trail_sl_when_pct_from_avg_entry[
+            settings_idx
+        ],
     )
 
 
@@ -71,23 +84,23 @@ def get_interest_prices(
 
 @njit(cache=True)
 def backtest_df_only_nb(
-    og_account_state: AccountState,
-    os_cart_arrays: OrderSettings,
-    exchange_settings: ExchangeSettings,
-    backtest_settings: BacktestSettings,
     num_of_symbols: int,
     total_indicator_settings: int,
     total_order_settings: int,
     total_bars: int,
+    # entry info
     entries: PossibleArray,
     price_data: PossibleArray,
+    # Tuples
+    static_variables_tuple: StaticVariables,
+    os_cart_arrays_tuple: OrderSettingsArrays,
 ) -> Array1d[Array1d, Array1d]:
     # Creating strat records
     array_size = int(
         num_of_symbols
         * total_indicator_settings
         * total_order_settings
-        / backtest_settings.divide_records_array_size_by
+        / static_variables_tuple.divide_records_array_size_by
     )
 
     strategy_result_records = np.empty(
@@ -111,7 +124,10 @@ def backtest_df_only_nb(
     prices = 0
 
     for symbol_counter in range(num_of_symbols):
-        symbol_price_data = price_data[:, prices_start : prices_start + 3]
+        open_prices = price_data[:, prices_start]
+        high_prices = price_data[:, prices_start + 1]
+        low_prices = price_data[:, prices_start + 2]
+        close_prices = price_data[:, prices_start + 3]
 
         prices_start += 4
 
@@ -124,13 +140,15 @@ def backtest_df_only_nb(
             current_indicator_entries = symbol_entries[:, indicator_settings_counter]
 
             for order_settings_idx in range(total_order_settings):
-                order_settings = get_order_settings(order_settings_idx, os_cart_arrays)
+                order_settings = get_order_settings(
+                    order_settings_idx, os_cart_arrays_tuple
+                )
                 # Account State Reset
                 account_state = AccountState(
-                    available_balance=og_account_state.equity,
+                    available_balance=static_variables_tuple.equity,
                     cash_borrowed=0.0,
                     cash_used=0.0,
-                    equity=og_account_state.equity,
+                    equity=static_variables_tuple.equity,
                 )
 
                 # Order Result Reset
@@ -142,6 +160,7 @@ def backtest_df_only_nb(
                     moved_sl_to_be=False,
                     order_status=0,
                     order_status_info=0,
+                    order_type=static_variables_tuple.order_type,
                     pct_chg_trade=0.0,
                     position=0.0,
                     price=0.0,
@@ -154,87 +173,121 @@ def backtest_df_only_nb(
                 )
                 strat_records_filled[0] = 0
 
-                order = Order.instantiate(
-                    backtest_settings.order_type,
-                    sl_type=order_settings.stop_loss_type,
-                    candle_body=order_settings.candle_body,
-                    leverage_type=order_settings.leverage_type,
-                    entry_size_type=order_settings.entry_size_type,
-                    tp_type=order_settings.take_profit_type,
-                    account_state=account_state,
-                    order_settings=order_settings,
-                    exchange_settings=exchange_settings,
-                )
-
                 # entries loop
-                for bar_index in range(total_bars):
-                    if current_indicator_entries[
-                        bar_index
-                    ]:  # add in that we are also not at max entry amount
-                        sl_price = order.calc_stop_loss(
-                            symbol_price_data=symbol_price_data,
-                            bar_index=bar_index,
+                for bar in range(total_bars):
+                    if account_state.available_balance < 5:
+                        break
+
+                    if current_indicator_entries[bar]:
+                        prices = get_interest_prices(
+                            bar,
+                            (open_prices, high_prices, low_prices, close_prices),
+                            order_settings,
                         )
-                        size_value, average_entry = order.calc_entry_size(
-                            sl_price=sl_price,
-                            entry_price=symbol_price_data[bar_index, 3],
-                            market_fee_pct=exchange_settings.market_fee_pct,
+                        # Process Order nb
+                        account_state, order_result = process_order_nb(
+                            account_state=account_state,
+                            bar=bar,
+                            entries_col=entries_col,
+                            order_result=order_result,
+                            order_settings_counter=order_settings_idx,
+                            order_settings=order_settings,
+                            order_type=static_variables_tuple.order_type,
+                            prices=prices,
+                            static_variables_tuple=static_variables_tuple,
+                            symbol_counter=symbol_counter,
+                            strat_records_filled=strat_records_filled,
+                            strat_records=strat_records[strat_records_filled[0]],
                         )
-                        order.calc_leverage(
-                            average_entry=average_entry,
-                            sl_price=sl_price,
-                            market_fee_pct=exchange_settings.market_fee_pct,
-                            size_value=size_value,
+                    if order_result.position > 0:
+                        prices = PriceFloatTuple(
+                            entry=open_prices[bar],
+                            open=open_prices[bar],
+                            high=high_prices[bar],
+                            low=low_prices[bar],
+                            close=close_prices[bar],
                         )
-                        order.calc_take_profit()
+                        # Check Stops
+                        order_result = check_sl_tp_nb(
+                            account_state=account_state,
+                            bar=bar,
+                            order_result=order_result,
+                            order_settings_counter=order_settings_idx,
+                            order_settings_tuple=order_settings,
+                            prices_tuple=prices,
+                            static_variables_tuple=static_variables_tuple,
+                        )
+                        prices = PriceFloatTuple(
+                            entry=open_prices[bar],
+                            open=open_prices[bar : bar + 1],
+                            high=high_prices[bar : bar + 1],
+                            low=low_prices[bar : bar + 1],
+                            close=close_prices[bar : bar + 1],
+                        )
+                        # process stops
+                        if not np.isnan(order_result.size_value):
+                            account_state, order_result = process_order_nb(
+                                account_state=account_state,
+                                bar=bar,
+                                entries_col=entries_col,
+                                order_result=order_result,
+                                order_settings_counter=order_settings_idx,
+                                order_settings=order_settings,
+                                order_type=order_result.order_type,
+                                prices=prices,
+                                static_variables_tuple=static_variables_tuple,
+                                symbol_counter=symbol_counter,
+                                strat_records_filled=strat_records_filled,
+                                strat_records=strat_records[strat_records_filled[0]],
+                            )
 
                 # Checking if gains
-            #     gains_pct = (
-            #         (account_state.equity - static_variables_tuple.equity)
-            #         / static_variables_tuple.equity
-            #     ) * 100
-            #     if gains_pct > static_variables_tuple.gains_pct_filter:
-            #         temp_strat_records = strat_records[0 : strat_records_filled[0]]
-            #         wins_and_losses_array = temp_strat_records["real_pnl"][
-            #             ~np.isnan(temp_strat_records["real_pnl"])
-            #         ]
+                gains_pct = (
+                    (account_state.equity - static_variables_tuple.equity)
+                    / static_variables_tuple.equity
+                ) * 100
+                if gains_pct > static_variables_tuple.gains_pct_filter:
+                    temp_strat_records = strat_records[0 : strat_records_filled[0]]
+                    wins_and_losses_array = temp_strat_records["real_pnl"][
+                        ~np.isnan(temp_strat_records["real_pnl"])
+                    ]
 
-            #         # Checking total trade filter
-            #         if (
-            #             wins_and_losses_array.size
-            #             > static_variables_tuple.total_trade_filter
-            #         ):
-            #             wins_and_losses_array_no_be = wins_and_losses_array[
-            #                 wins_and_losses_array != 0
-            #             ]
-            #             to_the_upside = get_to_the_upside_nb(
-            #                 gains_pct=gains_pct,
-            #                 wins_and_losses_array_no_be=wins_and_losses_array_no_be,
-            #             )
+                    # Checking total trade filter
+                    if (
+                        wins_and_losses_array.size
+                        > static_variables_tuple.total_trade_filter
+                    ):
+                        wins_and_losses_array_no_be = wins_and_losses_array[
+                            wins_and_losses_array != 0
+                        ]
+                        to_the_upside = get_to_the_upside_nb(
+                            gains_pct=gains_pct,
+                            wins_and_losses_array_no_be=wins_and_losses_array_no_be,
+                        )
 
-            #             # Checking to the upside filter
-            #             if to_the_upside > static_variables_tuple.upside_filter:
-            #                 fill_strategy_result_records_nb(
-            #                     gains_pct=gains_pct,
-            #                     strategy_result_records=strategy_result_records[
-            #                         result_records_filled
-            #                     ],
-            #                     temp_strat_records=temp_strat_records,
-            #                     to_the_upside=to_the_upside,
-            #                     total_trades=wins_and_losses_array.size,
-            #                     wins_and_losses_array_no_be=wins_and_losses_array_no_be,
-            #                 )
+                        # Checking to the upside filter
+                        if to_the_upside > static_variables_tuple.upside_filter:
+                            fill_strategy_result_records_nb(
+                                gains_pct=gains_pct,
+                                strategy_result_records=strategy_result_records[
+                                    result_records_filled
+                                ],
+                                temp_strat_records=temp_strat_records,
+                                to_the_upside=to_the_upside,
+                                total_trades=wins_and_losses_array.size,
+                                wins_and_losses_array_no_be=wins_and_losses_array_no_be,
+                            )
 
-            #                 fill_order_settings_result_records_nb(
-            #                     entries_col=entries_col,
-            #                     order_settings_result_records=order_settings_result_records[
-            #                         result_records_filled
-            #                     ],
-            #                     symbol_counter=symbol_counter,
-            #                     order_settings_tuple=order_settings,
-            #                 )
-            #                 result_records_filled += 1
-            # entries_col += 1
+                            fill_order_settings_result_records_nb(
+                                entries_col=entries_col,
+                                order_settings_result_records=order_settings_result_records[
+                                    result_records_filled
+                                ],
+                                symbol_counter=symbol_counter,
+                                order_settings_tuple=order_settings,
+                            )
+                            result_records_filled += 1
+            entries_col += 1
     return (
         strategy_result_records[:result_records_filled],
         order_settings_result_records[:result_records_filled],
