@@ -134,6 +134,7 @@ def backtest_df_only_nb(
                     order_settings=order_settings,
                     exchange_settings=exchange_settings,
                     order_result=order_result,
+                    entries_col=entries_col,
                 )
 
                 # entries loop
@@ -154,12 +155,10 @@ def backtest_df_only_nb(
                             
                             # all went ok, we are ready to update order_result with the new calculated values
                             order.fill_order_result_entry()
-                            print(order.order_result)
-                            print("test")
                         except RejectedOrderError as e:
                             print(f'Skipping iteration -> {repr(e)}')
-                            order.fill_ignored_order_result_entry(e.order_status)
-                        order.fill_order_recrods
+                        if order.order_result.position_size > 0:
+                            pass                        
                         
 
                 # Checking if gains

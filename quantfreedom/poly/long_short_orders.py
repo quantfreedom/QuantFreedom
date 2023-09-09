@@ -23,9 +23,16 @@ class Order:
     price_data = None
     exchange_settings = None
 
+    # record vars
+    order_records = None
+    order_records_id = None
+    strat_records = None
+    strat_recrods_filled_counter = None
+    rejected_order_records = None
+    rejected_order_records_id = None
+
     leverage = None
     liq_price = None
-    take_profit = None
     entry_size = None
     entry_price = None
     possible_loss = None
@@ -38,8 +45,12 @@ class Order:
     account_state_cash_borrowed = None
     take_profit_price = None
     take_profit_pct = None
+    fees_paid = None
+    order_status = None
 
-    def instantiate(order_type: OrderType, **vargs):
+    def instantiate(
+        order_type: OrderType, **vargs
+    ):  # TODO: we should only have to do this once not everytime
         if order_type == OrderType.Long:
             return LongOrder(**vargs)
 
@@ -54,11 +65,18 @@ class Order:
         order_settings: OrderSettings,
         exchange_settings: ExchangeSettings,
         order_result: OrderResult,
+        strat_records: np.array,
+        entries_col: int,
     ):
         self.account_state = account_state
         self.exchange_settings = exchange_settings
         self.order_settings = order_settings
         self.order_result = order_result
+
+        # Record variables
+        self.strat_records = strat_records
+        self.strat_recrods_filled_counter = 0
+        self.entries_col = entries_col
 
         self.obj_stop_loss = StopLossCalculator(
             sl_type=sl_type,
@@ -88,6 +106,9 @@ class Order:
     def calc_take_profit(self):
         pass
 
+    def check_stop_loss(self):
+        pass
+
     def fill_order_result_entry(self):
         self.account_state = AccountState(
             available_balance=self.account_state_available_balance,
@@ -113,31 +134,20 @@ class Order:
             tp_price=self.take_profit_price,
         )
 
-    def fill_ignored_order_result_entry(self, order_status: OrderStatus):
-        # self.account_state = AccountState(
-        #     available_balance=self.account_state.available_balance,
-        #     cash_borrowed=self.account_state.cash_borrowed,
-        #     cash_used=self.account_state.cash_used,
-        #     equity=self.account_state.equity,
-        # )
-        # self.order_result = OrderResult(
-        #     average_entry=self.order_result.average_entry,
-        #     fees_paid=self.order_result.fees_paid,
-        #     leverage=self.order_result.leverage,
-        #     liq_price=self.order_result.liq_price,
-        #     order_status=order_status,
-        #     possible_loss=self.order_result.possible_loss,
-        #     pct_chg_trade=self.order_result.pct_chg_trade,
-        #     entry_size=self.order_result.entry_size,
-        #     entry_price=self.order_result.entry_price,
-        #     position_size=self.order_result.position_size,
-        #     realized_pnl=self.order_result.realized_pnl,
-        #     sl_pct=self.order_result.sl_pct,
-        #     sl_price=self.order_result.sl_price,
-        #     tp_pct=self.order_result.tp_pct,
-        #     tp_price=self.order_result.tp_price,
-        # )
-        self.order_result.order_status = order_status
+    def fill_rejected_order_record(self, order_status: OrderStatus, bar_index: int):
+        self.rejected_order_records["bar_index"] = bar_index
+        self.rejected_order_records["order_status"] = order_status
+        self.rejected_order_records_id += 1
+
+    def fill_strat_records_nb(self, order_settings_idx, symbol_counter):
+        self.strat_records["equity"] = self.account_state.equity
+        self.strat_records["entries_col"] = self.entries_col
+        self.strat_records["or_set"] = order_settings_idx
+        self.strat_records["symbol"] = symbol_counter
+        self.strat_records["real_pnl"] = round(self.order_result.realized_pnl, 4)
+
+        self.strat_recrods_filled_counter += 1
+
 
 class LongOrder(Order):
     def calc_stop_loss(self, **vargs):
@@ -146,6 +156,26 @@ class LongOrder(Order):
             bar_index=vargs["bar_index"],
         )
         return self.sl_price
+
+    def check_exits(self, **vargs):
+        # checking if we hit our stop loss
+        if self.price_data[-1, 2] <= self.sl_price:
+            self.fees_paid, self.order_status,  =self.obj_entry_size.decrease_position_size(
+                self,
+                position_size=self.order_result.position_size,
+                entry_price=self.order_result.sl_price,
+                average_entry=self.order_result.average_entry,
+                market_fee_pct=self.exchange_settings.market_fee_pct,
+                limit_fee_pct=self.exchange_settings.limit_fee_pct,
+            )
+        # will need to add this in if the users selects no sl but wants to use leverage
+        # elif self.price_data[-1, 2] <= self.liq_price:
+        #     pass
+        elif self.price_data[-1, 1] <= self.take_profit_price:
+            pass
+        elif self.price_data[-1, 1] <= self.take_profit_price:
+            pass
+        
 
     def calc_entry_size(self, **vargs):
         print("LongOrder::entry")

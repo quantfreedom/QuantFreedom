@@ -1,0 +1,30 @@
+order
+    long
+    short
+    both
+
+        stop loss
+            none
+            sl
+                based on (open, high, low, close)
+                pct
+                    sl to be
+                        trailing
+                    trailing
+                    none
+            liq
+
+        take profit
+            risk reward
+            tp pct
+
+        entry type
+            amount
+            pct account
+            risk amount
+            risk pct account
+        
+        leverage
+            static
+            dynamic
+            none aka lev = 1

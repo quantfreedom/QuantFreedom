@@ -3,6 +3,7 @@ from quantfreedom.poly.enums import (
     ExchangeSettings,
     OrderSettings,
     EntrySizeType,
+    OrderStatus,
     StopLossType,
 )
 
@@ -68,6 +69,31 @@ class EntrySize:
             sl_pct,
         )
 
+    def decrease_position_size(self, **vargs):
+        """
+        This is where the long position gets decreased or closed out.
+        """
+        position_size = vargs['position_size']
+        entry_price = vargs['entry_price']
+        average_entry = vargs['average_entry']
+        market_fee_pct = vargs['market_fee_pct']
+        limit_fee_pct = vargs['limit_fee_pct']
+
+        # profit and loss calulation
+        coin_size = position_size / average_entry  # math checked
+        pnl = coin_size * (
+            entry_price - average_entry
+        )  # math checked
+        fee_open = coin_size * average_entry * market_fee_pct  # math checked
+        fee_close = coin_size * entry_price * limit_fee_pct  # math checked
+        fees_paid = fee_open + fee_close  # math checked
+        realized_pnl = pnl - fees_paid  # math checked
+        
+        position_size = 0.
+        
+        return fees_paid, OrderStatus.Filled, position_size, realized_pnl
+        
+
     def __get_possible_loss(self, **vargs):
         account_state_equity = vargs["account_state_equity"]
 
@@ -117,7 +143,7 @@ class EntrySize:
         entry_size = round(entry_size, 2)
         average_entry = entry_price
         sl_pct = 100 - sl_price * 100 / average_entry
-        sl_pct = round(sl_pct,2)
+        sl_pct = round(sl_pct, 2)
         position_size = entry_size
         return (
             entry_size,

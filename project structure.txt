@@ -295,3 +295,16 @@ equity
 
 for prices per symbol
     for settings per user settings
+
+
+check sl tp
+    check sl hit
+        return order result
+    check liq hit
+        return order result
+    check tp hit
+        return order result
+    check move sl be
+        return order result
+    check trail sl
+        return order result
