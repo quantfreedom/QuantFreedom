@@ -9,7 +9,6 @@ order
                 based on (open, high, low, close)
                 pct
                     sl to be
-                        trailing
                     trailing
                     none
             liq

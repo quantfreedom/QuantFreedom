@@ -1,4 +1,5 @@
 from math import floor
+from quantfreedom.class_practice.enums import OrderType
 
 from quantfreedom.poly.enums import OrderSettings, StopLossType, CandleBody
 
@@ -10,21 +11,23 @@ class StopLossCalculator:
 
     def __init__(
         self,
+        order_type: OrderType,
         sl_type: StopLossType,
         candle_body: CandleBody,
         order_settings: OrderSettings,
     ):
-        if sl_type == StopLossType.SLBasedOnCandleBody:
-            if candle_body == CandleBody.Open:
-                self.sl_calculator = self.sl_based_on_open
-            elif candle_body == CandleBody.High:
-                self.sl_calculator = self.sl_based_on_high
-            elif candle_body == CandleBody.Low:
-                self.sl_calculator = self.sl_based_on_low
-            elif candle_body == CandleBody.Close:
-                self.sl_calculator = self.sl_based_on_close
-        else:
-            self.calculator = self.sl_pct_calc
+        if order_type == OrderType.Long:    
+            if sl_type == StopLossType.SLBasedOnCandleBody:
+                if candle_body == CandleBody.Open:
+                    self.sl_calculator = self.sl_based_on_open_long
+                elif candle_body == CandleBody.High:
+                    self.sl_calculator = self.sl_based_on_high_long
+                elif candle_body == CandleBody.Low:
+                    self.sl_calculator = self.sl_based_on_low_long
+                elif candle_body == CandleBody.Close:
+                    self.sl_calculator = self.sl_based_on_close_long
+            else:
+                self.calculator = self.sl_pct_calc_long
 
         self.order_settings = order_settings
 

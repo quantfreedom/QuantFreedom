@@ -24,6 +24,12 @@ class LeverageType(NamedTuple):
     Dynamic: int = 2.0
 
 
+class SLToBeZeroOrEntryType(NamedTuple):
+    Nothing = 0
+    ZeroLoss = 1
+    AverageEntry = 2
+
+
 class OrderStatus(NamedTuple):
     Nothing: int = 0
     EntryFilled: int = 1
@@ -92,6 +98,13 @@ class OrderSettingsArrays(NamedTuple):
     take_profit_type: np.array
     max_equity_risk_pct: np.array
     order_type: np.array
+    sl_to_be_based_on_candle_body: np.array
+    sl_to_be_when_pct_from_avg_entry: np.array
+    sl_to_be_zero_or_entry: np.array
+    trail_sl_based_on_candle_body: np.array
+    trail_sl_by_pct: np.array
+    trail_sl_when_pct_from_avg_entry: np.array
+
 
 
 class OrderSettings(NamedTuple):
@@ -106,6 +119,12 @@ class OrderSettings(NamedTuple):
     take_profit_type: int
     max_equity_risk_pct: float
     order_type: int
+    sl_to_be_based_on_candle_body: int
+    sl_to_be_when_pct_from_avg_entry: float
+    sl_to_be_zero_or_entry: int
+    trail_sl_based_on_candle_body: int
+    trail_sl_by_pct: float
+    trail_sl_when_pct_from_avg_entry: float
 
 
 class OrderResult(NamedTuple):

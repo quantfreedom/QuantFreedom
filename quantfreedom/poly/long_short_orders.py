@@ -22,6 +22,7 @@ class Order:
     account_state = None
     price_data = None
     exchange_settings = None
+    order_result = None
 
     # record vars
     order_records = None
