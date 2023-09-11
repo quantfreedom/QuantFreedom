@@ -1,3 +1,6 @@
+from quantfreedom.class_practice.enums import EntrySizeType, ExchangeSettings, OrderSettings, OrderStatus, RejectedOrderError, StopLossType
+
+
 class EntrySizeLong:
     calculator_in_pos = None
     order_settings = None

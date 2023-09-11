@@ -1,6 +1,7 @@
 import numpy as np
 from numba import njit
 
+from quantfreedom.class_practice.enums import OrderSettingsArrays
 
 
 @njit(cache=True)
@@ -31,10 +32,16 @@ def create_os_cart_product_nb(
         sl_based_on_lookback=out.T[2],
         risk_reward=out.T[3],
         leverage_type=out.T[4],
-        candle_body=out.T[5],
+        sl_candle_body_type=out.T[5],
         entry_size_type=out.T[6],
         stop_loss_type=out.T[7],
         take_profit_type=out.T[8],
         max_equity_risk_pct=out.T[9],
+        order_type=out.T[10],
+        sl_to_be_based_on_candle_body_type=out.T[11],
+        sl_to_be_when_pct_from_candle_body=out.T[12],
+        sl_to_be_zero_or_entry=out.T[13],
+        trail_sl_based_on_candle_body_type=out.T[14],
+        trail_sl_by_pct=out.T[15],
+        trail_sl_when_pct_from_candle_body=out.T[16],
     )
-

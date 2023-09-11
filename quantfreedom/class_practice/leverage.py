@@ -1,5 +1,8 @@
 
 
+from quantfreedom.class_practice.enums import LeverageType, OrderStatus, RejectedOrderError
+
+
 class LeverageLong:
     calculators = {}
     calculate_function = None

@@ -2,7 +2,7 @@ import numpy as np
 from quantfreedom._typing import NamedTuple
 
 
-class CandleBodyType(NamedTuple):
+class CandleBodyTypeT(NamedTuple):
     Nothing: int = 0
     Open: int = 1
     High: int = 2
@@ -10,7 +10,10 @@ class CandleBodyType(NamedTuple):
     Close: int = 4
 
 
-class EntrySizeType(NamedTuple):
+CandleBodyType = CandleBodyTypeT()
+
+
+class EntrySizeTypeT(NamedTuple):
     Nothing: int = 0
     AmountEntrySize: int = 1
     PctAccountEntrySize: int = 2
@@ -18,19 +21,28 @@ class EntrySizeType(NamedTuple):
     RiskPctAccountEntrySize: int = 4
 
 
-class LeverageType(NamedTuple):
+EntrySizeType = EntrySizeTypeT()
+
+
+class LeverageTypeT(NamedTuple):
     Nothing: int = 0
-    Static: int = 1.0
-    Dynamic: int = 2.0
+    Static: int = 1
+    Dynamic: int = 2
 
 
-class SLToBeZeroOrEntryType(NamedTuple):
+LeverageType = LeverageTypeT()
+
+
+class SLToBeZeroOrEntryTypeT(NamedTuple):
     Nothing = 0
     ZeroLoss = 1
     AverageEntry = 2
 
 
-class OrderStatus(NamedTuple):
+SLToBeZeroOrEntryType = SLToBeZeroOrEntryTypeT()
+
+
+class OrderStatusT(NamedTuple):
     Nothing: int = 0
     EntryFilled: int = 1
     StopLossFilled: int = 2
@@ -42,23 +54,35 @@ class OrderStatus(NamedTuple):
     CashUsedExceed: int = 8
 
 
-class OrderType(NamedTuple):
+OrderStatus = OrderStatusT()
+
+
+class OrderTypeT(NamedTuple):
     Nothing: int = 0
     Long: int = 1
     Short: int = 2
     Both: int = 3
 
 
-class StopLossType(NamedTuple):
+OrderType = OrderTypeT()
+
+
+class StopLossTypeT(NamedTuple):
     Nothing: int = 0
     SLBasedOnCandleBody: int = 1
     SLPct: int = 2
 
 
-class TakeProfitType(NamedTuple):
+StopLossType = StopLossTypeT()
+
+
+class TakeProfitTypeT(NamedTuple):
     Nothing: int = 0
     RiskReward: int = 1
     TPPct: int = 2
+
+
+TakeProfitType = TakeProfitTypeT()
 
 
 class AccountState(NamedTuple):
@@ -92,39 +116,39 @@ class OrderSettingsArrays(NamedTuple):
     sl_based_on_lookback: np.array
     risk_reward: np.array
     leverage_type: np.array
-    candle_body_type: np.array
+    sl_candle_body_type: np.array
     entry_size_type: np.array
     stop_loss_type: np.array
     take_profit_type: np.array
     max_equity_risk_pct: np.array
     order_type: np.array
-    sl_to_be_based_on_candle_body: np.array
-    sl_to_be_when_pct_from_avg_entry: np.array
+    sl_to_be_based_on_candle_body_type: np.array
+    sl_to_be_when_pct_from_candle_body: np.array
     sl_to_be_zero_or_entry: np.array
-    trail_sl_based_on_candle_body: np.array
+    trail_sl_based_on_candle_body_type: np.array
     trail_sl_by_pct: np.array
-    trail_sl_when_pct_from_avg_entry: np.array
-
+    trail_sl_when_pct_from_candle_body: np.array
 
 
 class OrderSettings(NamedTuple):
     risk_account_pct_size: float
     sl_based_on_add_pct: float
-    sl_based_on_lookback: float
+    sl_based_on_lookback: int
     risk_reward: float
     leverage_type: int
-    candle_body_type: int
+    sl_candle_body_type: int
     entry_size_type: int
     stop_loss_type: int
     take_profit_type: int
     max_equity_risk_pct: float
     order_type: int
-    sl_to_be_based_on_candle_body: int
-    sl_to_be_when_pct_from_avg_entry: float
+    sl_to_be_based_on_candle_body_type: int
+    sl_to_be_when_pct_from_candle_body: float
     sl_to_be_zero_or_entry: int
-    trail_sl_based_on_candle_body: int
+    trail_sl_based_on_candle_body_type: int
     trail_sl_by_pct: float
-    trail_sl_when_pct_from_avg_entry: float
+    trail_sl_when_pct_from_candle_body: float
+
 
 
 class OrderResult(NamedTuple):

@@ -42,10 +42,16 @@ class Order:
         self.order_result = order_result
 
         if self.order_settings.order_type == OrderType.Long:
-            self.obj_stop_loss = StopLossLong()
-            self.obj_entry_size = EntrySizeLong()
-            self.obj_leverage = LeverageLong()
-            self.obj_take_profit = TakeProfitLong()
+            self.obj_stop_loss = StopLossLong(
+                sl_type=self.order_settings.stop_loss_type,
+                sl_candle_body_type=self.order_settings.sl_candle_body_type,
+                sl_to_be_based_on_candle_body_type=self.order_settings.sl_to_be_based_on_candle_body_type,
+                sl_to_be_when_pct_from_candle_body=self.order_settings.sl_to_be_when_pct_from_candle_body,
+                sl_to_be_zero_or_entry=self.order_settings.sl_to_be_zero_or_entry,
+            )
+            # self.obj_entry_size = EntrySizeLong()
+            # self.obj_leverage = LeverageLong()
+            # self.obj_take_profit = TakeProfitLong()
         elif self.order_settings.order_type == OrderType.Short:
             pass
 
@@ -76,13 +82,16 @@ class Order:
 
 class LongOrder(Order):
     def calc_stop_loss(self, **vargs):
-        print("Long Order - calc_stop_loss")
+        self.obj_stop_loss.sl_calculator()
+
+    def check_stop_loss_hit(self, **vargs):
+        self.obj_stop_loss.sl_to_be_checker()
 
     def calc_entry_size(self, **vargs):
-        print("Long Order - calc_entry_size")
+        pass
 
     def calc_leverage(self, **vargs):
-        print("Long Order - calc_leverage")
+        pass
 
     def calc_take_profit(self, **vargs):
-        print("Long Order - calc_take_profit")
+        pass

@@ -2,12 +2,21 @@ import numpy as np
 from numba import njit
 
 from quantfreedom._typing import PossibleArray, Array1d
+from quantfreedom.class_practice.enums import (
+    AccountState,
+    BacktestSettings,
+    ExchangeSettings,
+    OrderResult,
+    OrderSettingsArrays,
+    OrderSettings,
+    RejectedOrderError,
+)
+from quantfreedom.class_practice.long_short_orders import Order
 from quantfreedom.enums.enums import (
     order_settings_array_dt,
     strat_df_array_dt,
     strat_records_dt,
 )
-
 
 
 @njit(cache=True)
@@ -20,11 +29,26 @@ def get_order_settings(
         sl_based_on_lookback=os_cart_arrays.sl_based_on_lookback[settings_idx],
         risk_reward=os_cart_arrays.risk_reward[settings_idx],
         leverage_type=os_cart_arrays.leverage_type[settings_idx],
-        candle_body=os_cart_arrays.candle_body[settings_idx],
+        sl_candle_body_type=os_cart_arrays.sl_candle_body_type[settings_idx],
         entry_size_type=os_cart_arrays.entry_size_type[settings_idx],
         stop_loss_type=os_cart_arrays.stop_loss_type[settings_idx],
         take_profit_type=os_cart_arrays.take_profit_type[settings_idx],
         max_equity_risk_pct=os_cart_arrays.max_equity_risk_pct[settings_idx],
+        order_type=os_cart_arrays.order_type[settings_idx],
+        sl_to_be_based_on_candle_body_type=os_cart_arrays.sl_to_be_based_on_candle_body_type[
+            settings_idx
+        ],
+        sl_to_be_when_pct_from_candle_body=os_cart_arrays.sl_to_be_when_pct_from_candle_body[
+            settings_idx
+        ],
+        sl_to_be_zero_or_entry=os_cart_arrays.sl_to_be_zero_or_entry[settings_idx],
+        trail_sl_based_on_candle_body_type=os_cart_arrays.trail_sl_based_on_candle_body_type[
+            settings_idx
+        ],
+        trail_sl_by_pct=os_cart_arrays.trail_sl_by_pct[settings_idx],
+        trail_sl_when_pct_from_candle_body=os_cart_arrays.trail_sl_when_pct_from_candle_body[
+            settings_idx
+        ],
     )
 
 
@@ -95,17 +119,15 @@ def backtest_df_only_nb(
 
                 # Order Result Reset
                 order_result = OrderResult(
-                    average_entry=0.,
+                    average_entry=0.0,
                     fees_paid=np.nan,
-                    leverage=1.,
+                    leverage=1.0,
                     liq_price=np.nan,
                     order_status=0,
-                    order_status_info=0,
-                    possible_loss=0.,
-                    pct_chg_trade=np.nan,
-                    entry_size=0.,
-                    entry_price=0.,
-                    position_size=0.,
+                    possible_loss=0.0,
+                    entry_size=0.0,
+                    entry_price=0.0,
+                    position_size=0.0,
                     realized_pnl=np.nan,
                     sl_pct=np.nan,
                     sl_price=np.nan,
@@ -115,17 +137,11 @@ def backtest_df_only_nb(
                 strat_records_filled[0] = 0
 
                 order = Order.instantiate(
-                    backtest_settings.order_type,
-                    sl_type=order_settings.stop_loss_type,
-                    candle_body=order_settings.candle_body,
-                    leverage_type=order_settings.leverage_type,
-                    entry_size_type=order_settings.entry_size_type,
-                    tp_type=order_settings.take_profit_type,
                     account_state=account_state,
                     order_settings=order_settings,
                     exchange_settings=exchange_settings,
                     order_result=order_result,
-                    entries_col=entries_col,
+                    order_type=order_settings.order_type,
                 )
 
                 # entries loop
@@ -133,24 +149,8 @@ def backtest_df_only_nb(
                     if current_indicator_entries[
                         bar_index
                     ]:  # add in that we are also not at max entry amount
-                        try:
-                            order.calc_stop_loss(
-                                symbol_price_data=symbol_price_data,
-                                bar_index=bar_index,
-                            )
-                            order.calc_entry_size(
-                                entry_price=symbol_price_data[bar_index, 3],
-                            )
-                            order.calc_leverage()
-                            order.calc_take_profit()
-                            
-                            # all went ok, we are ready to update order_result with the new calculated values
-                            order.fill_order_result_entry()
-                        except RejectedOrderError as e:
-                            print(f'Skipping iteration -> {repr(e)}')
-                        if order.order_result.position_size > 0:
-                            pass                        
-                        
+                        order.calc_stop_loss()
+                        order.check_stop_loss_hit()
 
                 # Checking if gains
             #     gains_pct = (
