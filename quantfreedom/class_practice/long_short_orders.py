@@ -57,10 +57,11 @@ class Order:
                 stop_loss_type=self.order_settings.stop_loss_type,
             )
             self.obj_leverage = LeverageLong(
-                leverage_type=self.order_settings.leverage_type
+                leverage_type=self.order_settings.leverage_type,
             )
-            1 == 1
-            # self.obj_take_profit = TakeProfitLong()
+            self.obj_take_profit = TakeProfitLong(
+                take_profit_type=self.order_settings.take_profit_type,
+            )
         elif self.order_settings.order_type == OrderType.Short:
             pass
 
@@ -73,7 +74,7 @@ class Order:
     def calculate_increase_posotion(self):
         pass
 
-    def calc_take_profit(self):
+    def calculate_take_profit(self):
         pass
 
     def check_stop_loss(self):
@@ -101,8 +102,8 @@ class LongOrder(Order):
     def calculate_leverage(self, **vargs):
         self.order_result_position_size = self.obj_leverage.leverage_calculator()
 
-    def calc_take_profit(self, **vargs):
-        pass
+    def calculate_take_profit(self, **vargs):
+        self.obj_take_profit.take_profit_calculator()
 
     def check_stop_loss_hit(self, **vargs):
         self.obj_stop_loss.sl_to_be_checker()

@@ -156,8 +156,11 @@ def backtest_df_only_nb(
                         order.calculate_increase_posotion(in_position=order.order_result.position_size>0)
                         order.calculate_leverage()
                         order.fill_order_result_entry()
+                        order.calculate_take_profit()
+                        
                         order.check_stop_loss_hit()
-                        print('test')
+                        
+                        print('\nGetting New entry')
 
                 # Checking if gains
             #     gains_pct = (
