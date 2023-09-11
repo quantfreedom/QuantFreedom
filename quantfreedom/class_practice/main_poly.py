@@ -24,7 +24,7 @@ def test_long(
     sl_type: StopLossType,
     candle_body: CandleBody,
     tp_type: TakeProfitType,
-    entry_size_type: EntrySizeType,
+    increase_position_type: IncreasePositionType,
     leverage_type: LeverageType,
     account_state: AccountState,
     order_settings: OrderSettings,
@@ -35,7 +35,7 @@ def test_long(
         sl_type=sl_type,
         candle_body=candle_body,
         tp_type=tp_type,
-        entry_size_type=entry_size_type,
+        increase_position_type=increase_position_type,
         leverage_type=leverage_type,
         account_state=account_state,
         order_settings=order_settings,
@@ -55,7 +55,7 @@ def test_long(
 
 if __name__ == "__main__":
     test_long(
-        entry_size_type=EntrySizeType.RiskPctAccountEntrySize,
+        increase_position_type=IncreasePositionType.RiskPctAccountEntrySize,
         sl_type=StopLossType.SLBasedOnCandleBody,
         candle_body=CandleBody.Low,
         leverage_type=LeverageType.Dynamic,

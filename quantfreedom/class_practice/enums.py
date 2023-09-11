@@ -13,7 +13,7 @@ class CandleBodyTypeT(NamedTuple):
 CandleBodyType = CandleBodyTypeT()
 
 
-class EntrySizeTypeT(NamedTuple):
+class IncreasePositionTypeT(NamedTuple):
     Nothing: int = 0
     AmountEntrySize: int = 1
     PctAccountEntrySize: int = 2
@@ -21,8 +21,7 @@ class EntrySizeTypeT(NamedTuple):
     RiskPctAccountEntrySize: int = 4
 
 
-EntrySizeType = EntrySizeTypeT()
-
+IncreasePositionType = IncreasePositionTypeT()
 
 class LeverageTypeT(NamedTuple):
     Nothing: int = 0
@@ -80,6 +79,7 @@ class TakeProfitTypeT(NamedTuple):
     Nothing: int = 0
     RiskReward: int = 1
     TPPct: int = 2
+    Provided: int = 3
 
 
 TakeProfitType = TakeProfitTypeT()
@@ -117,7 +117,7 @@ class OrderSettingsArrays(NamedTuple):
     risk_reward: np.array
     leverage_type: np.array
     sl_candle_body_type: np.array
-    entry_size_type: np.array
+    increase_position_type: np.array
     stop_loss_type: np.array
     take_profit_type: np.array
     max_equity_risk_pct: np.array
@@ -137,7 +137,7 @@ class OrderSettings(NamedTuple):
     risk_reward: float
     leverage_type: int
     sl_candle_body_type: int
-    entry_size_type: int
+    increase_position_type: int
     stop_loss_type: int
     take_profit_type: int
     max_equity_risk_pct: float
@@ -152,20 +152,20 @@ class OrderSettings(NamedTuple):
 
 
 class OrderResult(NamedTuple):
-    average_entry: float
-    fees_paid: float
-    leverage: float
-    liq_price: float
-    order_status: int
-    possible_loss: float
-    entry_size: float
-    entry_price: float
-    position_size: float
-    realized_pnl: float
-    sl_pct: float
-    sl_price: float
-    tp_pct: float
-    tp_price: float
+    average_entry: float = 0.0
+    fees_paid: float = 0.0
+    leverage: float = 1.0
+    liq_price: float = 0.0
+    order_status: int = 0
+    possible_loss: float = 0.0
+    entry_size: float = 0.0
+    entry_price: float = 0.0
+    position_size: float = 0.0
+    realized_pnl: float = 0.0
+    sl_pct: float = 0.0
+    sl_price: float = 0.0
+    tp_pct: float = 0.0
+    tp_price: float = 0.0
 
 
 class RejectedOrderError(Exception):

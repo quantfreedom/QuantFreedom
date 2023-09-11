@@ -33,7 +33,7 @@ def create_os_cart_product_nb(
         risk_reward=out.T[3],
         leverage_type=out.T[4],
         sl_candle_body_type=out.T[5],
-        entry_size_type=out.T[6],
+        increase_position_type=out.T[6],
         stop_loss_type=out.T[7],
         take_profit_type=out.T[8],
         max_equity_risk_pct=out.T[9],

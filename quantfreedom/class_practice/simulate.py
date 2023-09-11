@@ -30,7 +30,7 @@ def get_order_settings(
         risk_reward=os_cart_arrays.risk_reward[settings_idx],
         leverage_type=os_cart_arrays.leverage_type[settings_idx],
         sl_candle_body_type=os_cart_arrays.sl_candle_body_type[settings_idx],
-        entry_size_type=os_cart_arrays.entry_size_type[settings_idx],
+        increase_position_type=os_cart_arrays.increase_position_type[settings_idx],
         stop_loss_type=os_cart_arrays.stop_loss_type[settings_idx],
         take_profit_type=os_cart_arrays.take_profit_type[settings_idx],
         max_equity_risk_pct=os_cart_arrays.max_equity_risk_pct[settings_idx],
@@ -95,6 +95,7 @@ def backtest_df_only_nb(
     prices = 0
 
     for symbol_counter in range(num_of_symbols):
+        print('\nNew Symbol')
         symbol_price_data = price_data[:, prices_start : prices_start + 4]
 
         prices_start += 4
@@ -105,9 +106,11 @@ def backtest_df_only_nb(
 
         # ind set loop
         for indicator_settings_counter in range(entries_per_symbol):
+            print('\nNew Indicator Setting')
             current_indicator_entries = symbol_entries[:, indicator_settings_counter]
 
             for order_settings_idx in range(total_order_settings):
+                print('\nNew Order Setting')
                 order_settings = get_order_settings(order_settings_idx, os_cart_arrays)
                 # Account State Reset
                 account_state = AccountState(
@@ -120,19 +123,19 @@ def backtest_df_only_nb(
                 # Order Result Reset
                 order_result = OrderResult(
                     average_entry=0.0,
-                    fees_paid=np.nan,
+                    fees_paid=0.0,
                     leverage=1.0,
-                    liq_price=np.nan,
+                    liq_price=0.0,
                     order_status=0,
                     possible_loss=0.0,
                     entry_size=0.0,
                     entry_price=0.0,
                     position_size=0.0,
-                    realized_pnl=np.nan,
-                    sl_pct=np.nan,
-                    sl_price=np.nan,
-                    tp_pct=np.nan,
-                    tp_price=np.nan,
+                    realized_pnl=0.0,
+                    sl_pct=0.0,
+                    sl_price=0.0,
+                    tp_pct=0.0,
+                    tp_price=0.0,
                 )
                 strat_records_filled[0] = 0
 
@@ -149,8 +152,12 @@ def backtest_df_only_nb(
                     if current_indicator_entries[
                         bar_index
                     ]:  # add in that we are also not at max entry amount
-                        order.calc_stop_loss()
+                        order.calculate_stop_loss()
+                        order.calculate_increase_posotion(in_position=order.order_result.position_size>0)
+                        order.calculate_leverage()
+                        order.fill_order_result_entry()
                         order.check_stop_loss_hit()
+                        print('test')
 
                 # Checking if gains
             #     gains_pct = (

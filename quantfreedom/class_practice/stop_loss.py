@@ -63,11 +63,11 @@ class StopLossLong:
                 self.sl_to_be_z_or_e = self.__sl_to_be_entry
                 
     # main functions
-    def calc_stop_loss(self, **vargs):
+    def calculate_stop_loss(self, **vargs):
         self.sl_calculator(**vargs)
     
     def check_stop_loss_hit(self, **vargs):
-        print('Long Order - Stop Loss - check_stop_loss_hit')
+        print('Long Order - Stop Loss Checker - check_stop_loss_hit')
 
     def check_sl_to_be(self, **vargs):
         self.sl_to_be_checker(**vargs)
@@ -77,46 +77,46 @@ class StopLossLong:
 
     # Stop loss based on
     def sl_based_on_open(self, **vargs):
-        print('Long Order - Stop Loss - sl_based_on_open')
+        print('Long Order - Calculate Stop Loss - sl_based_on_open')
 
     def sl_based_on_high(self, **vargs):
-        print('Long Order - Stop Loss - sl_based_on_high')
+        print('Long Order - Calculate Stop Loss - sl_based_on_high')
 
     def sl_based_on_low(self, **vargs):
-        print('Long Order - Stop Loss - sl_based_on_low')
+        print('Long Order - Calculate Stop Loss - sl_based_on_low')
 
     def sl_based_on_close(self, **vargs):
-        print('Long Order - Stop Loss - sl_based_on_close')
+        print('Long Order - Calculate Stop Loss - sl_based_on_close')
 
     def sl_pct_calc(self, **vargs):
-        print('Long Order - Stop Loss - sl_pct_calc')
+        print('Long Order - Calculate Stop Loss - sl_pct_calc')
     
     # Stop loss to break even based on
 
     def sl_to_be_based_on_open(self, **vargs):
-        print('Long Order - Stop Loss - sl_to_be_based_on_open')
-        print('Long Order - Stop Loss - sl_to_be_move_when_pct=', self.sl_to_be_move_when_pct)
+        print('Long Order - Stop Loss Checker - sl_to_be_based_on_open')
+        print('Long Order - Stop Loss Checker - sl_to_be_move_when_pct=', self.sl_to_be_move_when_pct)
         self.sl_to_be_z_or_e()
 
     def sl_to_be_based_on_high(self, **vargs):
-        print('Long Order - Stop Loss - sl_to_be_based_on_high')
-        print('Long Order - Stop Loss - sl_to_be_move_when_pct=', self.sl_to_be_move_when_pct)
+        print('Long Order - Stop Loss Checker - sl_to_be_based_on_high')
+        print('Long Order - Stop Loss Checker - sl_to_be_move_when_pct=', self.sl_to_be_move_when_pct)
         self.sl_to_be_z_or_e()
 
     def sl_to_be_based_on_low(self, **vargs):
-        print('Long Order - Stop Loss - sl_to_be_based_on_low')
-        print('Long Order - Stop Loss - sl_to_be_move_when_pct=', self.sl_to_be_move_when_pct)
+        print('Long Order - Stop Loss Checker - sl_to_be_based_on_low')
+        print('Long Order - Stop Loss Checker - sl_to_be_move_when_pct=', self.sl_to_be_move_when_pct)
         self.sl_to_be_z_or_e()
 
     def sl_to_be_based_on_close(self, **vargs):
-        print('Long Order - Stop Loss - sl_to_be_based_on_close')
-        print('Long Order - Stop Loss - sl_to_be_move_when_pct=', self.sl_to_be_move_when_pct)
+        print('Long Order - Stop Loss Checker - sl_to_be_based_on_close')
+        print('Long Order - Stop Loss Checker - sl_to_be_move_when_pct=', self.sl_to_be_move_when_pct)
         self.sl_to_be_z_or_e()
     
     # stop loss to break even zero or entry
     def __sl_to_be_zero(self, **vargs):
-        print('Long Order - Stop Loss - __sl_to_be_zero')
+        print('Long Order - Stop Loss Checker - __sl_to_be_zero')
     
     def __sl_to_be_entry(self, **vargs):
-        print('Long Order - Stop Loss - __sl_to_be_entry')
+        print('Long Order - Stop Loss Checker - __sl_to_be_entry')
     

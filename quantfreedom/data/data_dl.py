@@ -26,7 +26,7 @@ def _fetch(
                 timeframe=freq.replace("min", "m").replace("T", "m"),
                 since=start,
                 limit=bars_per_loop,
-                params={"end": temp_end},
+                # params={"end": temp_end},
             )
             all_ohlcvs += ohlcvs
             if len(ohlcvs):
