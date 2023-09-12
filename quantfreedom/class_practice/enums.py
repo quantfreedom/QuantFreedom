@@ -23,6 +23,7 @@ class IncreasePositionTypeT(NamedTuple):
 
 IncreasePositionType = IncreasePositionTypeT()
 
+
 class LeverageTypeT(NamedTuple):
     Nothing: int = 0
     Static: int = 1
@@ -126,8 +127,8 @@ class OrderSettingsArrays(NamedTuple):
     sl_to_be_when_pct_from_candle_body: np.array
     sl_to_be_zero_or_entry: np.array
     trail_sl_based_on_candle_body_type: np.array
-    trail_sl_by_pct: np.array
     trail_sl_when_pct_from_candle_body: np.array
+    trail_sl_by_pct: np.array
 
 
 class OrderSettings(NamedTuple):
@@ -146,9 +147,8 @@ class OrderSettings(NamedTuple):
     sl_to_be_when_pct_from_candle_body: float
     sl_to_be_zero_or_entry: int
     trail_sl_based_on_candle_body_type: int
-    trail_sl_by_pct: float
     trail_sl_when_pct_from_candle_body: float
-
+    trail_sl_by_pct: float
 
 
 class OrderResult(NamedTuple):
@@ -160,6 +160,7 @@ class OrderResult(NamedTuple):
     possible_loss: float = 0.0
     entry_size: float = 0.0
     entry_price: float = 0.0
+    exit_price: float = 0.0
     position_size: float = 0.0
     realized_pnl: float = 0.0
     sl_pct: float = 0.0
@@ -175,3 +176,18 @@ class RejectedOrderError(Exception):
 
     def __init__(self, order_status: OrderStatus):
         self.order_status = order_status
+
+
+class DecreasePosition(Exception):
+    """Rejected order error."""
+
+    order_status = None
+    exit_price = None
+
+    def __init__(
+        self,
+        order_status: OrderStatus,
+        exit_price: float,
+    ):
+        self.exit_price = order_status
+        self.order_status = exit_price

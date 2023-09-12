@@ -20,8 +20,12 @@ class TakeProfitLong:
     def calculate_risk_reward(self, **vargs):
         print("Long Order - Calculate Take Profit - calculate_risk_reward")
 
-    def calculate_take_profit_pct(self):
+    def calculate_take_profit_pct(self, **vargs):
         print("Long Order - Calculate Take Profit - calculate_take_profit_pct")
 
-    def calculate_take_profit_provided(self):
+    def calculate_take_profit_provided(self, **vargs):
         pass
+
+    def check_take_profit_hit(self, **vargs):
+        print("Long Order - Take Profit Checker - check_take_profit_hit")
+

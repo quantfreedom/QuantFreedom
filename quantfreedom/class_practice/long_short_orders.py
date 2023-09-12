@@ -51,6 +51,9 @@ class Order:
                 sl_to_be_based_on_candle_body_type=self.order_settings.sl_to_be_based_on_candle_body_type,
                 sl_to_be_when_pct_from_candle_body=self.order_settings.sl_to_be_when_pct_from_candle_body,
                 sl_to_be_zero_or_entry=self.order_settings.sl_to_be_zero_or_entry,
+                trail_sl_based_on_candle_body_type=self.order_settings.trail_sl_based_on_candle_body_type,
+                trail_sl_when_pct_from_candle_body=self.order_settings.trail_sl_when_pct_from_candle_body,
+                trail_sl_by_pct=self.order_settings.trail_sl_by_pct,
             )
             self.obj_increase_posotion = IncreasePositionLong(
                 increase_position_type=self.order_settings.increase_position_type,
@@ -58,6 +61,7 @@ class Order:
             )
             self.obj_leverage = LeverageLong(
                 leverage_type=self.order_settings.leverage_type,
+                sl_type=self.order_settings.stop_loss_type,
             )
             self.obj_take_profit = TakeProfitLong(
                 take_profit_type=self.order_settings.take_profit_type,
@@ -65,25 +69,39 @@ class Order:
         elif self.order_settings.order_type == OrderType.Short:
             pass
 
-    def calculate_stop_loss(self):
+    def calculate_stop_loss(self, **vargs):
         pass
 
-    def calculate_leverage(self):
+    def calculate_leverage(self, **vargs):
         pass
 
-    def calculate_increase_posotion(self):
+    def calculate_increase_posotion(self, **vargs):
         pass
 
-    def calculate_take_profit(self):
+    def calculate_take_profit(self, **vargs):
         pass
 
-    def check_stop_loss(self):
+    def check_stop_loss_hit(self, **vargs):
+        pass
+
+    def check_liq_hit(self, **vargs):
+        pass
+
+    def check_take_profit_hit(self, **vargs):
+        pass
+
+    def check_move_stop_loss_to_be(self, **vargs):
+        pass
+
+    def check_move_trailing_stop_loss(self, **vargs):
         pass
 
     def fill_order_result_entry(self, **vargs):
-        print("Order - fill_order_result_entry")
         self.order_result = OrderResult(position_size=self.order_result_position_size)
-        print("the order result position size is =", self.order_result.position_size)
+        print(
+            "Order - fill_order_result_entry - position size =",
+            self.order_result.position_size,
+        )
 
     def fill_rejected_order_record(self, **vargs):
         print("Order - fill_rejected_order_record")
@@ -94,7 +112,7 @@ class Order:
 
 class LongOrder(Order):
     def calculate_stop_loss(self, **vargs):
-        self.obj_stop_loss.sl_calculator()
+        self.obj_stop_loss.calculate_stop_loss()
 
     def calculate_increase_posotion(self, **vargs):
         self.obj_increase_posotion.calculate_increase_posotion(**vargs)
@@ -106,4 +124,16 @@ class LongOrder(Order):
         self.obj_take_profit.take_profit_calculator()
 
     def check_stop_loss_hit(self, **vargs):
-        self.obj_stop_loss.sl_to_be_checker()
+        self.obj_stop_loss.check_stop_loss_hit()
+
+    def check_liq_hit(self, **vargs):
+        self.obj_leverage.liq_hit_checker()
+
+    def check_take_profit_hit(self, **vargs):
+        self.obj_take_profit.check_take_profit_hit()
+
+    def check_move_stop_loss_to_be(self, **vargs):
+        self.obj_stop_loss.check_move_stop_loss_to_be()
+
+    def check_move_trailing_stop_loss(self, **vargs):
+        self.obj_stop_loss.check_move_trailing_stop_loss()

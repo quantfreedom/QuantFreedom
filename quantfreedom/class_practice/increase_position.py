@@ -39,10 +39,10 @@ class IncreasePositionLong:
         self.__check_size_value()
 
     def __get_possible_loss(self, **vargs):
-        print("Long Order - increase position - __get_possible_loss")
+        print("Long Order - Increase Position - __get_possible_loss")
 
     def __check_size_value(self):
-        print("Long Order - increase position - __check_size_value")
+        print("Long Order - Increase Position - __check_size_value")
 
     def amount_based(self, **vargs):
         print("amount_based")
@@ -56,9 +56,9 @@ class IncreasePositionLong:
     def risk_pct_of_account_and_sl_based_on_not_in_pos(self, **vargs):
         self.__get_possible_loss(**vargs)
         print(
-            "Long Order - increase position - risk_pct_of_account_and_sl_based_on_not_in_pos"
+            "Long Order - Increase Position - risk_pct_of_account_and_sl_based_on_not_in_pos"
         )
 
     def risk_pct_of_account_and_sl_based_on_in_pos(self, **vargs):
         self.__get_possible_loss(**vargs)
-        print("Long Order - increase position - risk_pct_of_account_and_sl_based_on_in_pos")
+        print("Long Order - Increase Position - risk_pct_of_account_and_sl_based_on_in_pos")

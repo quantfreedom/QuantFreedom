@@ -5,6 +5,7 @@ from quantfreedom._typing import PossibleArray, Array1d
 from quantfreedom.class_practice.enums import (
     AccountState,
     BacktestSettings,
+    DecreasePosition,
     ExchangeSettings,
     OrderResult,
     OrderSettingsArrays,
@@ -45,10 +46,10 @@ def get_order_settings(
         trail_sl_based_on_candle_body_type=os_cart_arrays.trail_sl_based_on_candle_body_type[
             settings_idx
         ],
-        trail_sl_by_pct=os_cart_arrays.trail_sl_by_pct[settings_idx],
         trail_sl_when_pct_from_candle_body=os_cart_arrays.trail_sl_when_pct_from_candle_body[
             settings_idx
         ],
+        trail_sl_by_pct=os_cart_arrays.trail_sl_by_pct[settings_idx],
     )
 
 
@@ -95,7 +96,7 @@ def backtest_df_only_nb(
     prices = 0
 
     for symbol_counter in range(num_of_symbols):
-        print('\nNew Symbol')
+        print("\nNew Symbol")
         symbol_price_data = price_data[:, prices_start : prices_start + 4]
 
         prices_start += 4
@@ -106,11 +107,11 @@ def backtest_df_only_nb(
 
         # ind set loop
         for indicator_settings_counter in range(entries_per_symbol):
-            print('\nNew Indicator Setting')
+            print("\nNew Indicator Setting")
             current_indicator_entries = symbol_entries[:, indicator_settings_counter]
 
             for order_settings_idx in range(total_order_settings):
-                print('\nNew Order Setting')
+                print("\nNew Order Setting")
                 order_settings = get_order_settings(order_settings_idx, os_cart_arrays)
                 # Account State Reset
                 account_state = AccountState(
@@ -130,6 +131,7 @@ def backtest_df_only_nb(
                     possible_loss=0.0,
                     entry_size=0.0,
                     entry_price=0.0,
+                    exit_price=0.0,
                     position_size=0.0,
                     realized_pnl=0.0,
                     sl_pct=0.0,
@@ -152,15 +154,35 @@ def backtest_df_only_nb(
                     if current_indicator_entries[
                         bar_index
                     ]:  # add in that we are also not at max entry amount
-                        order.calculate_stop_loss()
-                        order.calculate_increase_posotion(in_position=order.order_result.position_size>0)
-                        order.calculate_leverage()
+                        try:
+                            order.calculate_stop_loss()
+                            order.calculate_increase_posotion(
+                                in_position=order.order_result.position_size > 0
+                            )
+                            order.calculate_leverage()
+                            order.calculate_take_profit()
+                        except RejectedOrderError as e:
+                            print(f"Skipping iteration -> {repr(e)}")
                         order.fill_order_result_entry()
-                        order.calculate_take_profit()
-                        
-                        order.check_stop_loss_hit()
-                        
-                        print('\nGetting New entry')
+
+                    if order.order_result.position_size > 0:
+                        try:
+                            # need to figure out a way that if any of these are hit i get kicked out and then return the order result 
+                            # need to add in filling in the strat records
+                            # do all of this through printing before you add any real code or you will hate your life
+                            order.check_stop_loss_hit()
+                            order.check_liq_hit()
+                            order.check_take_profit_hit()
+                            # need to figure out a way to say if one of these three are hit then kick me out and go to decrease the position size
+                            order.check_move_stop_loss_to_be()
+                            order.check_move_trailing_stop_loss()
+                        except RejectedOrderError as e:
+                            print(f"Skipping iteration -> {repr(e.order_status)}")
+                        except DecreasePosition as e:
+                            print(f"Decrease Position -> {repr(e.order_status)}")
+                        order.fill_order_result_entry()
+
+                    print("\nChecking Next Bar for entry or exit")
 
                 # Checking if gains
             #     gains_pct = (

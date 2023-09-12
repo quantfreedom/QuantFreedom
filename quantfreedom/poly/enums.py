@@ -117,6 +117,7 @@ class OrderResult(NamedTuple):
     possible_loss: float
     entry_size: float
     entry_price: float
+    exit_price: float
     position_size: float
     realized_pnl: float
     sl_pct: float
