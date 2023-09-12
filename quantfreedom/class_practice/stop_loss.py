@@ -22,6 +22,7 @@ class StopLossLong:
     trail_sl_by_pct = None
     
     order_result_sl_price = None
+    order_result_sl_pct = None
 
     def __init__(
         self,
@@ -115,6 +116,10 @@ class StopLossLong:
         print("Long Order - Calculate Stop Loss - calculate_stop_loss")
         self.sl_price_getter(**vargs)
         self.order_result_sl_price = np.random.randint(20)
+        self.order_result_sl_pct = np.random.randint(20)
+        print(f"Long Order - Calculate Stop Loss - sl_price={self.order_result_sl_price} - sl_pct={self.order_result_sl_pct}")
+        return self.order_result_sl_price, self.order_result_sl_pct
+
 
     def check_move_stop_loss_to_be(self, **vargs):
         print("Long Order - Check Move Stop Loss to BE - check_move_stop_loss_to_be")
@@ -124,6 +129,14 @@ class StopLossLong:
             self.sl_to_be_when_pct_from_candle_body,
         )
         self.sl_to_be_z_or_e(**vargs)
+        rand_num = np.random.randint(10)
+        if rand_num > self.order_result_sl_price:
+            print(f"Long Order - Check Move Stop Loss to BE - rand_num={rand_num} > sl_price={self.order_result_sl_price}")
+            self.order_result_sl_price = np.random.randint(20)
+            self.order_result_sl_pct = 0.0
+            print(f"Long Order - Check Move Stop Loss to BE - sl_price={self.order_result_sl_price} - sl_pct={self.order_result_sl_pct}")
+        return self.order_result_sl_price, self.order_result_sl_pct
+        
 
     def check_move_trailing_stop_loss(self, **vargs):
         print(
@@ -144,7 +157,7 @@ class StopLossLong:
         rand_num = np.random.randint(10)
         if self.order_result_sl_price <= rand_num:
             print(f'Long Order - Stop Loss Checker - SL hit {self.order_result_sl_price} <= {rand_num}')
-            raise DecreasePosition(order_status=OrderStatus.StopLossFilled)
+            raise DecreasePosition(order_status=OrderStatus.StopLossFilled, exit_price=self.order_result_sl_price)
 
     # Stop loss based on
     def sl_pct_calc(self, **vargs):

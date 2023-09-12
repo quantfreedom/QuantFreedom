@@ -7,6 +7,7 @@ from quantfreedom.class_practice.enums import (
     BacktestSettings,
     DecreasePosition,
     ExchangeSettings,
+    MoveStopLoss,
     OrderResult,
     OrderSettingsArrays,
     OrderSettings,
@@ -167,7 +168,7 @@ def backtest_df_only_nb(
 
                     if order.order_result.position_size > 0:
                         try:
-                            # need to figure out a way that if any of these are hit i get kicked out and then return the order result 
+                            # need to figure out a way that if any of these are hit i get kicked out and then return the order result
                             # need to add in filling in the strat records
                             # do all of this through printing before you add any real code or you will hate your life
                             order.check_stop_loss_hit()
@@ -179,6 +180,8 @@ def backtest_df_only_nb(
                         except RejectedOrderError as e:
                             print(f"Skipping iteration -> {repr(e.order_status)}")
                         except DecreasePosition as e:
+                            print(f"Decrease Position -> {repr(e.order_status)}")
+                        except MoveStopLoss as e:
                             print(f"Decrease Position -> {repr(e.order_status)}")
                         order.fill_order_result_entry()
 

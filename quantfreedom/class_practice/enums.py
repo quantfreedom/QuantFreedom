@@ -47,11 +47,12 @@ class OrderStatusT(NamedTuple):
     EntryFilled: int = 1
     StopLossFilled: int = 2
     TakeProfitFilled: int = 3
-    MovedStopLossToBE: int = 4
-    MovedTrailingStopLoss: int = 5
-    MaxEquityRisk: int = 6
-    RiskToBig: int = 7
-    CashUsedExceed: int = 8
+    LiquidationFilled: int = 4
+    MovedStopLossToBE: int = 5
+    MovedTrailingStopLoss: int = 6
+    MaxEquityRisk: int = 7
+    RiskToBig: int = 8
+    CashUsedExceed: int = 9
 
 
 OrderStatus = OrderStatusT()
@@ -189,5 +190,19 @@ class DecreasePosition(Exception):
         order_status: OrderStatus,
         exit_price: float,
     ):
-        self.exit_price = order_status
-        self.order_status = exit_price
+        self.exit_price = exit_price
+        self.order_status = order_status
+
+class MoveStopLoss(Exception):
+    """Rejected order error."""
+
+    order_status = None
+    exit_price = None
+
+    def __init__(
+        self,
+        order_status: OrderStatus,
+        exit_price: float,
+    ):
+        self.exit_price = exit_price
+        self.order_status = order_status
