@@ -54,14 +54,12 @@ class Order:
         exchange_settings: ExchangeSettings,
         order_result: OrderResult,
         symbol_price_data: np.array,
-        exit_signals: np.array,
     ):
         self.order_settings = order_settings
         self.account_state = account_state
         self.exchange_settings = exchange_settings
         self.order_result = order_result
         self.symbol_price_data = symbol_price_data
-        self.exit_signals = exit_signals
 
         if self.order_settings.order_type == OrderType.Long:
             self.obj_stop_loss = StopLossLong(
@@ -97,7 +95,6 @@ class Order:
                 take_profit_type=self.order_settings.take_profit_type,
                 risk_reward=self.order_settings.risk_reward,
                 limit_fee_pct=self.exchange_settings.limit_fee_pct,
-                exit_signals=self.exit_signals,
             )
         elif self.order_settings.order_type == OrderType.Short:
             pass
@@ -216,8 +213,8 @@ class LongOrder(Order):
     def check_liq_hit(self, **vargs):
         self.obj_leverage.liq_hit_checker()
 
-    def check_take_profit_hit(self, **vargs):
-        self.obj_take_profit.tp_checker()
+    def check_take_profit_hit(self, bar_index, exit_signal):
+        self.obj_take_profit.tp_checker(bar_index=bar_index, exit_signal=exit_signal)
 
     def check_move_stop_loss_to_be(self, **vargs):
         self.obj_stop_loss.check_move_stop_loss_to_be()

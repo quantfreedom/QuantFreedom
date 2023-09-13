@@ -83,6 +83,7 @@ class TakeProfitTypeT(NamedTuple):
     TPPct: int = 2
     Provided: int = 3
     ProvidedandPct: int = 4
+    ProvidedandRR: int = 5
 
 
 TakeProfitType = TakeProfitTypeT()

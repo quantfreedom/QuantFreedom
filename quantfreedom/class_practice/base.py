@@ -1,4 +1,5 @@
 import pandas as pd
+from typing import Optional
 
 from quantfreedom.class_practice.enums import (
     AccountState,
@@ -18,6 +19,7 @@ def backtest_df_only(
     exchange_settings: ExchangeSettings,
     price_data: pd.DataFrame,
     entries: pd.DataFrame,
+    exit_signals: Optional[pd.DataFrame] = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     print(
         "Creating cartesian product ... after this the backtest will start, I promise :).\n"
@@ -61,6 +63,7 @@ def backtest_df_only(
         exchange_settings=exchange_settings,
         price_data=price_data.values,
         entries=entries.values,
+        exit_signals=exit_signals.values,
         num_of_symbols=num_of_symbols,
         total_bars=total_bars,
         total_indicator_settings=total_indicator_settings,

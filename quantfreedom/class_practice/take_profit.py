@@ -16,11 +16,9 @@ class TakeProfitLong:
         take_profit_type: TakeProfitType,
         risk_reward: float,
         limit_fee_pct: float,
-        exit_signals: np.array,
     ):
         self.risk_reward = risk_reward
         self.limit_fee_pct = limit_fee_pct
-        self.exit_signals = exit_signals
 
         if take_profit_type != TakeProfitType.Nothing:
             if take_profit_type == TakeProfitType.RiskReward:
@@ -35,6 +33,9 @@ class TakeProfitLong:
             elif take_profit_type == TakeProfitType.ProvidedandPct:
                 self.take_profit_calculator = self.calculate_take_profit_pct
                 self.tp_checker = self.check_take_profit_hit_provided_pct
+            elif take_profit_type == TakeProfitType.ProvidedandRR:
+                self.take_profit_calculator = self.calculate_risk_reward
+                self.tp_checker = self.check_take_profit_hit_provided_rr
 
     def calculate_take_profit(self, possible_loss, position_size, average_entry):
         return self.take_profit_calculator(
@@ -42,9 +43,10 @@ class TakeProfitLong:
             position_size=position_size,
             average_entry=average_entry,
         )
-    def pass_fucntion(self):
-        pass
-    
+
+    def pass_fucntion(self, possible_loss, position_size, average_entry):
+        return 0.0, 0.0
+
     def calculate_risk_reward(self, possible_loss, position_size, average_entry):
         print("Long Order - Calculate Take Profit - calculate_risk_reward")
         profit = possible_loss * self.risk_reward
@@ -69,17 +71,21 @@ class TakeProfitLong:
     def calculate_take_profit_provided(self, **vargs):
         pass
 
-    def check_take_profit_hit(self, **vargs):
-        return self.tp_checker()
+    def check_take_profit_hit(self, bar_index, exit_signal):
         print("Long Order - Take Profit Checker - check_take_profit_hit")
-        
-    def check_take_profit_hit_provided(self, bar_index):
-        if self.exit_signals[bar_index]:
-            raise DecreasePosition()
-        print("Long Order - Take Profit Checker - check_take_profit_hit")
-        
-    def check_take_profit_hit_provided_pct(self, bar_index):
+        return self.tp_checker(bar_index=bar_index, exit_signal=exit_signal)
+
+    def check_take_profit_hit_provided(self, bar_index, exit_signal):
+        print("Long Order - Take Profit Checker - check_take_profit_hit_provided")
+        if exit_signal:
+            print("Long Order - Take Profit Checker - exit_signal=True")
         pass
-        
-    def check_take_profit_hit_regular(self, **vargs):
+
+    def check_take_profit_hit_provided_pct(self, bar_index, exit_signal):
+        pass
+
+    def check_take_profit_hit_provided_rr(self, bar_index, exit_signal):
+        pass
+
+    def check_take_profit_hit_regular(self, bar_index, exit_signal):
         pass

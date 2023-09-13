@@ -1,3 +1,4 @@
+from typing import Optional
 import numpy as np
 from numba import njit
 
@@ -66,8 +67,9 @@ def backtest_df_only_nb(
     total_indicator_settings: int,
     total_order_settings: int,
     total_bars: int,
-    entries: PossibleArray,
-    price_data: PossibleArray,
+    entries: np.array,
+    price_data: np.array,
+    exit_signals: Optional[np.array] = None,
 ) -> Array1d[Array1d, Array1d]:
     og_account_state = account_state
     # Creating strat records
@@ -97,8 +99,6 @@ def backtest_df_only_nb(
     entries_end = entries_per_symbol
     entries_col = 0
     prices = 0
-    
-    exit_signals = np.array([0,1])
 
     for symbol_counter in range(num_of_symbols):
         print("\nNew Symbol")
@@ -114,6 +114,7 @@ def backtest_df_only_nb(
         for indicator_settings_counter in range(entries_per_symbol):
             print("\nNew Indicator Setting")
             current_indicator_entries = symbol_entries[:, indicator_settings_counter]
+            current_exit_signals = exit_signals[:, indicator_settings_counter]
 
             for order_settings_idx in range(total_order_settings):
                 print("\nNew Order Setting")
@@ -153,7 +154,6 @@ def backtest_df_only_nb(
                     order_result=order_result,
                     order_type=order_settings.order_type,
                     symbol_price_data=symbol_price_data,
-                    exit_signals=exit_signals,
                 )
 
                 # entries loop
@@ -171,7 +171,7 @@ def backtest_df_only_nb(
                             order.fill_order_result_successful_entry()
                         except RejectedOrderError as e:
                             print(f"Skipping iteration -> {repr(e)}")
-                            order.fill_order_result_rejected_entry()
+                            # order.fill_order_result_rejected_entry()
 
                     if order.order_result.position_size > 0:
                         try:
@@ -180,19 +180,22 @@ def backtest_df_only_nb(
                             # do all of this through printing before you add any real code or you will hate your life
                             order.check_stop_loss_hit()
                             order.check_liq_hit()
-                            order.check_take_profit_hit()
+                            order.check_take_profit_hit(
+                                bar_index=bar_index,
+                                exit_signal=current_exit_signals[bar_index],
+                            )
                             # need to figure out a way to say if one of these three are hit then kick me out and go to decrease the position size
                             order.check_move_stop_loss_to_be()
                             order.check_move_trailing_stop_loss()
                         except RejectedOrderError as e:
                             print(f"Skipping iteration -> {repr(e.order_status)}")
-                            order.fill_order_result_rejected_exit()
+                            # order.fill_order_result_rejected_exit()
                         except DecreasePosition as e:
                             print(f"Decrease Position -> {repr(e.order_status)}")
-                            order.fill_order_result_successful_exit()
+                            # order.fill_order_result_successful_exit()
                         except MoveStopLoss as e:
                             print(f"Decrease Position -> {repr(e.order_status)}")
-                            order.fill_order_result_successful_move_sl()
+                            # order.fill_order_result_successful_move_sl()
 
                     print("\nChecking Next Bar for entry or exit")
 
