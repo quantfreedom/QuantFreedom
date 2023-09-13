@@ -77,6 +77,15 @@ class StopLossTypeT(NamedTuple):
 StopLossType = StopLossTypeT()
 
 
+class TakeProfitFeeTypeT(NamedTuple):
+    Nothing: int = 0
+    Limit: int = 1
+    Market: int = 2
+
+
+TakeProfitFeeType = TakeProfitFeeTypeT()
+
+
 class TakeProfitTypeT(NamedTuple):
     Nothing: int = 0
     RiskReward: int = 1
@@ -133,6 +142,7 @@ class OrderSettingsArrays(NamedTuple):
     trail_sl_when_pct_from_candle_body: np.array
     trail_sl_by_pct: np.array
     static_leverage: np.array
+    tp_fee_type: np.array
 
 
 class OrderSettings(NamedTuple):
@@ -154,6 +164,7 @@ class OrderSettings(NamedTuple):
     trail_sl_when_pct_from_candle_body: float
     trail_sl_by_pct: float
     static_leverage: float
+    tp_fee_type: int
 
 
 class OrderResult(NamedTuple):
@@ -194,20 +205,20 @@ class DecreasePosition(Exception):
         order_status: OrderStatus,
         exit_price: float,
     ):
-        self.exit_price = exit_price
         self.order_status = order_status
+        self.exit_price = exit_price
 
 
 class MoveStopLoss(Exception):
     """Rejected order error."""
 
     order_status = None
-    exit_price = None
+    sl_price = None
 
     def __init__(
         self,
         order_status: OrderStatus,
-        exit_price: float,
+        sl_price: float,
     ):
-        self.exit_price = exit_price
         self.order_status = order_status
+        self.sl_price = sl_price

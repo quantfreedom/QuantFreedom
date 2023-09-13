@@ -20,6 +20,9 @@ class LeverageLong:
     mmr_pct = None
     static_leverage = None
 
+    liq_price = None
+    leverage = None
+
     def __init__(
         self,
         leverage_type: LeverageType,
@@ -75,17 +78,17 @@ class LeverageLong:
 
         # Getting Order Cost
         # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001064&language=en_US
-        initial_margin = entry_size / leverage
+        initial_margin = entry_size / self.leverage
         fee_to_open = entry_size * self.market_fee_pct  # math checked
         possible_bankruptcy_fee = (
-            entry_size * (leverage - 1) / leverage * self.market_fee_pct
+            entry_size * (self.leverage - 1) / self.leverage * self.market_fee_pct
         )
         cash_used_new = (
             initial_margin + fee_to_open + possible_bankruptcy_fee
         )  # math checked
 
         if (
-            cash_used_new > account_state.available_balance * leverage
+            cash_used_new > account_state.available_balance * self.leverage
             or cash_used_new > account_state.available_balance
         ):
             raise RejectedOrderError(order_status=OrderStatus.CashUsedExceed)
@@ -97,16 +100,16 @@ class LeverageLong:
             cash_used_new = account_state.cash_used + cash_used_new
             cash_borrowed_new = account_state.cash_borrowed + entry_size - cash_used_new
 
-            liq_price_new = average_entry * (
-                1 - (1 / leverage) + self.mmr_pct
+            self.liq_price = average_entry * (
+                1 - (1 / self.leverage) + self.mmr_pct
             )  # math checked
-        leverage = round(leverage, 2)
-        liq_price_new = round(liq_price_new, 2)
+        self.leverage = round(self.leverage, 2)
+        self.liq_price = round(self.liq_price, 2)
         available_balance_new = round(available_balance_new, 2)
         cash_used_new = round(cash_used_new, 2)
         cash_borrowed_new = round(cash_borrowed_new, 2)
         print(
-            f"Long Order - Calculate Leverage - leverage= {leverage} liq_price= {liq_price_new}"
+            f"Long Order - Calculate Leverage - leverage= {self.leverage} liq_price= {self.liq_price}"
         )
         print(
             f"Long Order - Calculate Leverage - available_balance= {available_balance_new}"
@@ -115,8 +118,8 @@ class LeverageLong:
             f"Long Order - Calculate Leverage - cash_used= {cash_used_new} cash_borrowed= {cash_borrowed_new}"
         )
         return (
-            leverage,
-            liq_price_new,
+            self.leverage,
+            self.liq_price,
             available_balance_new,
             cash_used_new,
             cash_borrowed_new,
@@ -125,9 +128,9 @@ class LeverageLong:
     def set_static_leverage(
         self,
         account_state: AccountState,
-        sl_price: float,
         average_entry: float,
         entry_size: float,
+        **vargs,
     ):
         print("Long Order - Calculate Leverage - set_static_leverage")
         return self.__calc_liq_price(
@@ -145,7 +148,7 @@ class LeverageLong:
         entry_size: float,
     ):
         print("Long Order - Calculate Leverage - calculate_dynamic_leverage")
-        leverage = round(
+        self.leverage = round(
             -average_entry
             / (
                 sl_price
@@ -156,17 +159,20 @@ class LeverageLong:
             ),
             1,
         )
-        if leverage > self.max_leverage:
-            leverage = self.max_leverage
-        elif leverage < 1:
-            leverage = 1
+        if self.leverage > self.max_leverage:
+            self.leverage = self.max_leverage
+        elif self.leverage < 1:
+            self.leverage = 1
 
         return self.__calc_liq_price(
             entry_size=entry_size,
-            leverage=leverage,
+            leverage=self.leverage,
             average_entry=average_entry,
             account_state=account_state,
         )
 
-    def check_liq_hit(self, **vargs):
-        print("Long Order - Liqidation Hit Checker - check_liq_hit")
+    def check_liq_hit(self, liq_hit):
+        if liq_hit:
+            raise DecreasePosition(
+                exit_price=self.liq_price, order_status=OrderStatus.LiquidationFilled
+            )

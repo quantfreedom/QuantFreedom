@@ -152,15 +152,15 @@ class IncreasePositionLong:
             - sl_price * self.market_fee_pct / entry_price
         )
         average_entry = entry_price
-        sl_pct = 100 - sl_price * 100 / average_entry
+        sl_pct = (average_entry - sl_price) / average_entry
         position_size = entry_size
-        
+
         entry_size = round(entry_size, 2)
         position_size = round(position_size, 2)
         entry_price = round(entry_price, 2)
         average_entry = round(average_entry, 2)
         possible_loss = round(possible_loss, 2)
-        sl_pct = round(sl_pct, 2)
+        sl_pct = round(sl_pct * 100, 2)
         print(
             f"Long Order - Increase Position - entry_size= {entry_size} position_size= {position_size}"
         )
@@ -211,17 +211,18 @@ class IncreasePositionLong:
                 + sl_price * self.market_fee_pct
             )
         )
-        average_entry_new = (entry_size + position_size) / (
+        average_entry = (entry_size + position_size) / (
             (entry_size / entry_price) + (position_size / average_entry)
         )
-        sl_pct = 100 - sl_price * 100 / average_entry_new
+        sl_pct = (average_entry - sl_price) / average_entry
+
         position_size += entry_size
         entry_size = round(entry_size, 2)
         position_size = round(position_size, 2)
         entry_price = round(entry_price, 2)
         average_entry = round(average_entry, 2)
         possible_loss = round(possible_loss, 2)
-        sl_pct = round(sl_pct, 2)
+        sl_pct = round(sl_pct * 100, 2)
         print(
             f"Long Order - Increase Position - entry_size= {entry_size} position_size= {position_size}"
         )

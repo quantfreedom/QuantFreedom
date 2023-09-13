@@ -9,16 +9,19 @@ from quantfreedom.class_practice.enums import (
 class TakeProfitLong:
     take_profit_calculator = None
     risk_reward = None
-    limit_fee_pct = None
+    tp_fee_pct = None
+    
+    tp_price = None
+    tp_pct = None
 
     def __init__(
         self,
         take_profit_type: TakeProfitType,
         risk_reward: float,
-        limit_fee_pct: float,
+        tp_fee_pct: float,
     ):
         self.risk_reward = risk_reward
-        self.limit_fee_pct = limit_fee_pct
+        self.tp_fee_pct = tp_fee_pct
 
         if take_profit_type != TakeProfitType.Nothing:
             if take_profit_type == TakeProfitType.RiskReward:
@@ -44,38 +47,38 @@ class TakeProfitLong:
             average_entry=average_entry,
         )
 
-    def pass_fucntion(self, possible_loss, position_size, average_entry):
+    def pass_fucntion(self, **vargs):
         return 0.0, 0.0
 
     def calculate_risk_reward(self, possible_loss, position_size, average_entry):
         print("Long Order - Calculate Take Profit - calculate_risk_reward")
         profit = possible_loss * self.risk_reward
-        tp_price = (profit + position_size * self.limit_fee_pct + position_size) * (
-            average_entry / (position_size - position_size * self.limit_fee_pct)
+        self.tp_price = (profit + position_size * self.tp_fee_pct + position_size) * (
+            average_entry / (position_size - position_size * self.tp_fee_pct)
         )  # math checked
 
-        tp_pct = (tp_price - average_entry) / average_entry  # math checked
-        tp_pct = round(tp_pct * 100, 2)
-        tp_price = round(tp_price, 2)
+        self.tp_pct = (self.tp_price - average_entry) / average_entry  # math checked
+        self.tp_pct = round(self.tp_pct * 100, 2)
+        self.tp_price = round(self.tp_price, 2)
         print(
-            f"Long Order - Calculate Take Profit - tp_price= {tp_price} tp_pct= {tp_pct}"
+            f"Long Order - Calculate Take Profit - tp_price= {self.tp_price} tp_pct= {self.tp_pct}"
         )
         return (
-            tp_price,
-            tp_pct,
+            self.tp_price,
+            self.tp_pct,
         )
 
     def calculate_take_profit_pct(self, **vargs):
         print("Long Order - Calculate Take Profit - calculate_take_profit_pct")
 
-    def calculate_take_profit_provided(self, **vargs):
-        pass
-
-    def check_take_profit_hit(self, bar_index, exit_signal):
+    def check_take_profit_hit_regular(self, tp_hit, **vargs):
         print("Long Order - Take Profit Checker - check_take_profit_hit")
-        return self.tp_checker(bar_index=bar_index, exit_signal=exit_signal)
-
-    def check_take_profit_hit_provided(self, bar_index, exit_signal):
+        if tp_hit:
+            raise DecreasePosition(
+                exit_price=self.tp_price, order_status=OrderStatus.TakeProfitFilled
+            )
+            
+    def check_take_profit_hit_provided(self, exit_signal, **vargs):
         print("Long Order - Take Profit Checker - check_take_profit_hit_provided")
         if exit_signal:
             print("Long Order - Take Profit Checker - exit_signal=True")
@@ -87,5 +90,3 @@ class TakeProfitLong:
     def check_take_profit_hit_provided_rr(self, bar_index, exit_signal):
         pass
 
-    def check_take_profit_hit_regular(self, bar_index, exit_signal):
-        pass

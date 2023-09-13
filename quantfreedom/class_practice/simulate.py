@@ -54,6 +54,7 @@ def get_order_settings(
         ],
         trail_sl_by_pct=os_cart_arrays.trail_sl_by_pct[settings_idx],
         static_leverage=os_cart_arrays.static_leverage[settings_idx],
+        tp_fee_type=os_cart_arrays.tp_fee_type[settings_idx],
     )
 
 
@@ -178,24 +179,35 @@ def backtest_df_only_nb(
                             # need to figure out a way that if any of these are hit i get kicked out and then return the order result
                             # need to add in filling in the strat records
                             # do all of this through printing before you add any real code or you will hate your life
-                            order.check_stop_loss_hit()
-                            order.check_liq_hit()
+                            order.check_stop_loss_hit(
+                                current_candle=symbol_price_data[bar_index, :]
+                            )
+                            order.check_liq_hit(
+                                current_candle=symbol_price_data[bar_index, :]
+                            )
                             order.check_take_profit_hit(
-                                bar_index=bar_index,
                                 exit_signal=current_exit_signals[bar_index],
+                                current_candle=symbol_price_data[bar_index, :],
                             )
                             # need to figure out a way to say if one of these three are hit then kick me out and go to decrease the position size
-                            order.check_move_stop_loss_to_be()
-                            order.check_move_trailing_stop_loss()
+                            order.check_move_stop_loss_to_be(
+                                bar_index=bar_index, symbol_price_data=symbol_price_data
+                            )
+                            order.check_move_trailing_stop_loss(
+                                bar_index=bar_index, symbol_price_data=symbol_price_data
+                            )
                         except RejectedOrderError as e:
                             print(f"Skipping iteration -> {repr(e.order_status)}")
                             # order.fill_order_result_rejected_exit()
                         except DecreasePosition as e:
-                            print(f"Decrease Position -> {repr(e.order_status)}")
-                            # order.fill_order_result_successful_exit()
+                            print(
+                                "Order - DecreasePosition - Decreasing the position from simulate"
+                            )
+                            order.decrease_position(
+                                order_status=e.order_status, exit_price=e.exit_price
+                            )
                         except MoveStopLoss as e:
                             print(f"Decrease Position -> {repr(e.order_status)}")
-                            # order.fill_order_result_successful_move_sl()
 
                     print("\nChecking Next Bar for entry or exit")
 

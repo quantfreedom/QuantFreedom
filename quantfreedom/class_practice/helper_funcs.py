@@ -45,4 +45,5 @@ def create_os_cart_product_nb(
         trail_sl_when_pct_from_candle_body=out.T[15],
         trail_sl_by_pct=out.T[16],
         static_leverage=out.T[17],
+        tp_fee_type=out.T[18],
     )

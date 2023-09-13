@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from typing import Optional
 
 from quantfreedom.class_practice.enums import (
@@ -28,7 +29,7 @@ def backtest_df_only(
         order_settings_arrays=order_settings_arrays,
     )
 
-    num_of_symbols = int(price_data.values.shape[1]/4)
+    num_of_symbols = int(price_data.values.shape[1] / 4)
 
     # Creating Settings Vars
     total_order_settings = os_cart_arrays.risk_account_pct_size.shape[0]
@@ -36,6 +37,9 @@ def backtest_df_only(
     total_indicator_settings = entries.shape[1]
 
     total_bars = entries.shape[0]
+
+    if exit_signals == None:
+        exit_signals = pd.DataFrame(np.zeros_like(entries.values))
 
     # Printing out total numbers of things
     print(
