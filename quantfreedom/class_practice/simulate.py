@@ -97,6 +97,8 @@ def backtest_df_only_nb(
     entries_end = entries_per_symbol
     entries_col = 0
     prices = 0
+    
+    exit_signals = np.array([0,1])
 
     for symbol_counter in range(num_of_symbols):
         print("\nNew Symbol")
@@ -151,6 +153,7 @@ def backtest_df_only_nb(
                     order_result=order_result,
                     order_type=order_settings.order_type,
                     symbol_price_data=symbol_price_data,
+                    exit_signals=exit_signals,
                 )
 
                 # entries loop
@@ -168,6 +171,7 @@ def backtest_df_only_nb(
                             order.fill_order_result_successful_entry()
                         except RejectedOrderError as e:
                             print(f"Skipping iteration -> {repr(e)}")
+                            order.fill_order_result_rejected_entry()
 
                     if order.order_result.position_size > 0:
                         try:
@@ -182,10 +186,13 @@ def backtest_df_only_nb(
                             order.check_move_trailing_stop_loss()
                         except RejectedOrderError as e:
                             print(f"Skipping iteration -> {repr(e.order_status)}")
+                            order.fill_order_result_rejected_exit()
                         except DecreasePosition as e:
                             print(f"Decrease Position -> {repr(e.order_status)}")
+                            order.fill_order_result_successful_exit()
                         except MoveStopLoss as e:
                             print(f"Decrease Position -> {repr(e.order_status)}")
+                            order.fill_order_result_successful_move_sl()
 
                     print("\nChecking Next Bar for entry or exit")
 
