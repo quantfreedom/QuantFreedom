@@ -28,7 +28,7 @@ def backtest_df_only(
         order_settings_arrays=order_settings_arrays,
     )
 
-    num_of_symbols = len(price_data.columns.levels[0])
+    num_of_symbols = int(price_data.values.shape[1]/4)
 
     # Creating Settings Vars
     total_order_settings = os_cart_arrays.risk_account_pct_size.shape[0]
