@@ -196,7 +196,7 @@ class LongOrder(Order):
             entry_size=self.entry_size,
         )
 
-    def calculate_take_profit(self, **vargs):
+    def calculate_take_profit(self):
         (
             self.tp_price,
             self.tp_pct,
