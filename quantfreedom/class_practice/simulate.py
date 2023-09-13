@@ -23,7 +23,8 @@ from quantfreedom.enums.enums import (
 
 @njit(cache=True)
 def get_order_settings(
-    settings_idx: int, os_cart_arrays: OrderSettingsArrays
+    settings_idx: int,
+    os_cart_arrays: OrderSettingsArrays,
 ) -> OrderSettings:
     return OrderSettings(
         risk_account_pct_size=os_cart_arrays.risk_account_pct_size[settings_idx],
@@ -51,6 +52,7 @@ def get_order_settings(
             settings_idx
         ],
         trail_sl_by_pct=os_cart_arrays.trail_sl_by_pct[settings_idx],
+        static_leverage=os_cart_arrays.static_leverage[settings_idx],
     )
 
 
@@ -148,6 +150,7 @@ def backtest_df_only_nb(
                     exchange_settings=exchange_settings,
                     order_result=order_result,
                     order_type=order_settings.order_type,
+                    symbol_price_data=symbol_price_data,
                 )
 
                 # entries loop
@@ -156,15 +159,15 @@ def backtest_df_only_nb(
                         bar_index
                     ]:  # add in that we are also not at max entry amount
                         try:
-                            order.calculate_stop_loss()
+                            order.calculate_stop_loss(bar_index=bar_index)
                             order.calculate_increase_posotion(
-                                in_position=order.order_result.position_size > 0
+                                entry_price=symbol_price_data[bar_index, 3]
                             )
                             order.calculate_leverage()
                             order.calculate_take_profit()
+                            order.fill_order_result_successful_entry()
                         except RejectedOrderError as e:
                             print(f"Skipping iteration -> {repr(e)}")
-                        order.fill_order_result_entry()
 
                     if order.order_result.position_size > 0:
                         try:
@@ -183,7 +186,6 @@ def backtest_df_only_nb(
                             print(f"Decrease Position -> {repr(e.order_status)}")
                         except MoveStopLoss as e:
                             print(f"Decrease Position -> {repr(e.order_status)}")
-                        order.fill_order_result_entry()
 
                     print("\nChecking Next Bar for entry or exit")
 

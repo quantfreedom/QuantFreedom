@@ -4,6 +4,7 @@ import numpy as np
 from quantfreedom.class_practice.enums import (
     CandleBodyType,
     DecreasePosition,
+    OrderSettings,
     OrderStatus,
     SLToBeZeroOrEntryType,
     StopLossType,
@@ -16,30 +17,36 @@ class StopLossLong:
     sl_to_be_price_getter = None
     tsl_price_getter = None
 
+    sl_based_on_lookback = None
+    sl_based_on_add_pct = None
     sl_to_be_move_when_pct = None
     sl_to_be_z_or_e = None
     trail_sl_when_pct_from_candle_body = None
     trail_sl_by_pct = None
-    
-    order_result_sl_price = None
-    order_result_sl_pct = None
+
+    sl_price = None
+    sl_pct = None
 
     def __init__(
         self,
-        sl_type: int,
+        sl_based_on_add_pct: float,
+        sl_based_on_lookback: int,
         sl_candle_body_type: CandleBodyType,
         sl_to_be_based_on_candle_body_type: CandleBodyType,
         sl_to_be_when_pct_from_candle_body: float,
         sl_to_be_zero_or_entry: int,
+        sl_type: int,
         trail_sl_based_on_candle_body_type: CandleBodyType,
-        trail_sl_when_pct_from_candle_body: float,
         trail_sl_by_pct: float,
+        trail_sl_when_pct_from_candle_body: float,
     ):
         # variables
         self.sl_to_be_when_pct_from_candle_body = sl_to_be_when_pct_from_candle_body
         self.sl_to_be_move_when_pct = sl_to_be_when_pct_from_candle_body
         self.trail_sl_when_pct_from_candle_body = trail_sl_when_pct_from_candle_body
         self.trail_sl_by_pct = trail_sl_by_pct
+        self.sl_based_on_lookback = sl_based_on_lookback
+        self.sl_based_on_add_pct = sl_based_on_add_pct
 
         # setting up trailing stop loss
         self.sl_hit_checker = self.check_stop_loss_hit
@@ -92,72 +99,58 @@ class StopLossLong:
         elif trail_sl_based_on_candle_body_type == CandleBodyType.Close:
             self.tsl_price_getter = self.__get_candle_body_price_close
 
-    def __get_candle_body_price_open(self, **vargs):
-        # return price_data.open.min()
+    def __get_candle_body_price_open(self, lookback, bar_index, symbol_price_data):
         print("Long Order - Candle Body Getter - __get_candle_body_price_open")
+        # column 2 is the low because it is open high low close
+        return symbol_price_data[lookback : bar_index + 1, 0].min()
 
-    def __get_candle_body_price_high(self, **vargs):
-        # return price_data.high.min()
+    def __get_candle_body_price_high(self, lookback, bar_index, symbol_price_data):
         print("Long Order - Candle Body Getter - __get_candle_body_price_high")
+        # column 2 is the low because it is open high low close
+        return symbol_price_data[lookback : bar_index + 1, 1].min()
 
-    def __get_candle_body_price_low(self, **vargs):
-        # return price_data.low.min()
+    def __get_candle_body_price_low(self, lookback, bar_index, symbol_price_data):
         print("Long Order - Candle Body Getter - __get_candle_body_price_low")
+        # column 2 is the low because it is open high low close
+        return symbol_price_data[lookback : bar_index + 1, 2].min()
 
-    def __get_candle_body_price_close(self, **vargs):
-        # return price_data.close.min()
+    def __get_candle_body_price_close(self, lookback, bar_index, symbol_price_data):
         print("Long Order - Candle Body Getter - __get_candle_body_price_close")
+        # column 2 is the low because it is open high low close
+        return symbol_price_data[lookback : bar_index + 1, 3].min()
 
     # main functions
     def pass_function(self, **vargs):
         pass
 
-    def calculate_stop_loss(self, **vargs):
+    def calculate_stop_loss(self, bar_index, symbol_price_data):
         print("Long Order - Calculate Stop Loss - calculate_stop_loss")
-        self.sl_price_getter(**vargs)
-        self.order_result_sl_price = np.random.randint(20)
-        self.order_result_sl_pct = np.random.randint(20)
-        print(f"Long Order - Calculate Stop Loss - sl_price={self.order_result_sl_price} - sl_pct={self.order_result_sl_pct}")
-        return self.order_result_sl_price, self.order_result_sl_pct
-
+        # lb will be bar index if sl isn't based on lookback because look back will be 0
+        lookback = max(int(bar_index - self.sl_based_on_lookback), 0)
+        candle_body = self.sl_price_getter(
+            lookback=lookback,
+            bar_index=bar_index,
+            symbol_price_data=symbol_price_data,
+        )
+        self.sl_price = float(
+            floor(candle_body - (candle_body * self.sl_based_on_add_pct))
+        )
+        print(f"Long Order - Calculate Stop Loss - sl_price= {self.sl_price}")
+        return self.sl_price
 
     def check_move_stop_loss_to_be(self, **vargs):
         print("Long Order - Check Move Stop Loss to BE - check_move_stop_loss_to_be")
-        self.sl_to_be_price_getter(**vargs)
-        print(
-            "Long Order - Check Move Stop Loss to BE - sl_to_be_when_pct_from_candle_body=",
-            self.sl_to_be_when_pct_from_candle_body,
-        )
-        self.sl_to_be_z_or_e(**vargs)
-        rand_num = np.random.randint(10)
-        if rand_num > self.order_result_sl_price:
-            print(f"Long Order - Check Move Stop Loss to BE - rand_num={rand_num} > sl_price={self.order_result_sl_price}")
-            self.order_result_sl_price = np.random.randint(20)
-            self.order_result_sl_pct = 0.0
-            print(f"Long Order - Check Move Stop Loss to BE - sl_price={self.order_result_sl_price} - sl_pct={self.order_result_sl_pct}")
-        return self.order_result_sl_price, self.order_result_sl_pct
         
 
     def check_move_trailing_stop_loss(self, **vargs):
         print(
             "Long Order - Check Move Trailing Stop Loss - check_move_trailing_stop_loss"
         )
-        self.tsl_price_getter(**vargs)
-        print(
-            "Long Order - Move Trailing Stop Checker - trail_sl_when_pct_from_candle_body=",
-            self.trail_sl_when_pct_from_candle_body,
-        )
-        print(
-            "Long Order - Move Trailing Stop Checker - trail_sl_by_pct=",
-            self.trail_sl_by_pct,
-        )
+        
 
     def check_stop_loss_hit(self, **vargs):
         print("Long Order - Stop Loss Checker - check_stop_loss_hit")
-        rand_num = np.random.randint(10)
-        if self.order_result_sl_price <= rand_num:
-            print(f'Long Order - Stop Loss Checker - SL hit {self.order_result_sl_price} <= {rand_num}')
-            raise DecreasePosition(order_status=OrderStatus.StopLossFilled, exit_price=self.order_result_sl_price)
+       
 
     # Stop loss based on
     def sl_pct_calc(self, **vargs):

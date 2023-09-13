@@ -5,6 +5,7 @@ from quantfreedom.class_practice.stop_loss import StopLossLong
 from quantfreedom.class_practice.take_profit import TakeProfitLong
 from quantfreedom.class_practice.enums import (
     AccountState,
+    OrderStatus,
     OrderType,
     OrderSettings,
     ExchangeSettings,
@@ -18,13 +19,26 @@ class Order:
     obj_increase_posotion = None
     obj_take_profit = None
     account_state = None
-    price_data = None
+    symbol_price_data = None
     exchange_settings = None
     order_result = None
     order_settings = None
 
     # order result variables
-    order_result_position_size = None
+    sl_price = None
+    entry_size = None
+    position_size = None
+    entry_price = None
+    average_entry = None
+    possible_loss = None
+    sl_pct = None
+    liq_price = None
+    available_balance = None
+    cash_used = None
+    cash_borrowed = None
+    tp_pct = None
+    tp_price = None
+    leverage = None
 
     def instantiate(
         order_type: OrderType, **vargs
@@ -38,33 +52,48 @@ class Order:
         order_settings: OrderSettings,
         exchange_settings: ExchangeSettings,
         order_result: OrderResult,
+        symbol_price_data: np.array,
     ):
         self.order_settings = order_settings
         self.account_state = account_state
         self.exchange_settings = exchange_settings
         self.order_result = order_result
+        self.symbol_price_data = symbol_price_data
 
         if self.order_settings.order_type == OrderType.Long:
             self.obj_stop_loss = StopLossLong(
-                sl_type=self.order_settings.stop_loss_type,
+                sl_based_on_add_pct=self.order_settings.sl_based_on_add_pct,
+                sl_based_on_lookback=self.order_settings.sl_based_on_lookback,
                 sl_candle_body_type=self.order_settings.sl_candle_body_type,
                 sl_to_be_based_on_candle_body_type=self.order_settings.sl_to_be_based_on_candle_body_type,
                 sl_to_be_when_pct_from_candle_body=self.order_settings.sl_to_be_when_pct_from_candle_body,
                 sl_to_be_zero_or_entry=self.order_settings.sl_to_be_zero_or_entry,
+                sl_type=self.order_settings.stop_loss_type,
                 trail_sl_based_on_candle_body_type=self.order_settings.trail_sl_based_on_candle_body_type,
-                trail_sl_when_pct_from_candle_body=self.order_settings.trail_sl_when_pct_from_candle_body,
                 trail_sl_by_pct=self.order_settings.trail_sl_by_pct,
+                trail_sl_when_pct_from_candle_body=self.order_settings.trail_sl_when_pct_from_candle_body,
             )
             self.obj_increase_posotion = IncreasePositionLong(
                 increase_position_type=self.order_settings.increase_position_type,
                 stop_loss_type=self.order_settings.stop_loss_type,
+                market_fee_pct=self.exchange_settings.market_fee_pct,
+                max_equity_risk_pct=self.order_settings.max_equity_risk_pct,
+                risk_account_pct_size=self.order_settings.risk_account_pct_size,
+                max_order_size_value=self.exchange_settings.max_order_size_value,
+                min_order_size_value=self.exchange_settings.min_order_size_value,
             )
             self.obj_leverage = LeverageLong(
                 leverage_type=self.order_settings.leverage_type,
                 sl_type=self.order_settings.stop_loss_type,
+                market_fee_pct=self.exchange_settings.market_fee_pct,
+                max_leverage=self.exchange_settings.max_leverage,
+                static_leverage=self.order_settings.static_leverage,
+                mmr_pct=self.exchange_settings.mmr_pct,
             )
             self.obj_take_profit = TakeProfitLong(
                 take_profit_type=self.order_settings.take_profit_type,
+                risk_reward=self.order_settings.risk_reward,
+                limit_fee_pct=self.exchange_settings.limit_fee_pct,
             )
         elif self.order_settings.order_type == OrderType.Short:
             pass
@@ -96,11 +125,29 @@ class Order:
     def check_move_trailing_stop_loss(self, **vargs):
         pass
 
-    def fill_order_result_entry(self, **vargs):
-        self.order_result = OrderResult(position_size=self.order_result_position_size)
-        print(
-            "Order - fill_order_result_entry - position size =",
-            self.order_result.position_size,
+    def fill_order_result_successful_entry(self, **vargs):
+        self.account_state = AccountState(
+            available_balance=self.available_balance,
+            cash_borrowed=self.cash_borrowed,
+            cash_used=self.cash_used,
+            equity=self.account_state.equity,
+        )
+        self.order_result = OrderResult(
+            average_entry=self.average_entry,
+            fees_paid=0.0,
+            leverage=self.leverage,
+            liq_price=self.liq_price,
+            order_status=OrderStatus.EntryFilled,
+            possible_loss=self.possible_loss,
+            entry_size=self.entry_size,
+            entry_price=self.entry_price,
+            exit_price=0.0,
+            position_size=self.position_size,
+            realized_pnl=0.0,
+            sl_pct=self.sl_pct,
+            sl_price=self.sl_price,
+            tp_pct=self.tp_pct,
+            tp_price=self.tp_price,
         )
 
     def fill_rejected_order_record(self, **vargs):
@@ -111,17 +158,53 @@ class Order:
 
 
 class LongOrder(Order):
-    def calculate_stop_loss(self, **vargs):
-        self.obj_stop_loss.calculate_stop_loss()
+    def calculate_stop_loss(self, bar_index):
+        self.sl_price = self.obj_stop_loss.calculate_stop_loss(
+            bar_index=bar_index,
+            symbol_price_data=self.symbol_price_data,
+        )
 
-    def calculate_increase_posotion(self, **vargs):
-        self.obj_increase_posotion.calculate_increase_posotion(**vargs)
+    def calculate_increase_posotion(self, entry_price):
+        (
+            self.average_entry,
+            self.entry_price,
+            self.entry_size,
+            self.position_size,
+            self.possible_loss,
+            self.sl_pct,
+        ) = self.obj_increase_posotion.calculate_increase_posotion(
+            account_state_equity=self.account_state.equity,
+            average_entry=self.order_result.average_entry,
+            entry_price=entry_price,
+            in_position=self.order_result.position_size > 0,
+            position_size=self.order_result.position_size,
+            possible_loss=self.order_result.possible_loss,
+            sl_price=self.sl_price,
+        )
 
-    def calculate_leverage(self, **vargs):
-        self.order_result_position_size = self.obj_leverage.leverage_calculator()
+    def calculate_leverage(self):
+        (
+            self.leverage,
+            self.liq_price,
+            self.available_balance,
+            self.cash_used,
+            self.cash_borrowed,
+        ) = self.obj_leverage.leverage_calculator(
+            average_entry=self.average_entry,
+            sl_price=self.sl_price,
+            account_state=self.account_state,
+            entry_size=self.entry_size,
+        )
 
     def calculate_take_profit(self, **vargs):
-        self.obj_take_profit.take_profit_calculator()
+        (
+            self.tp_price,
+            self.tp_pct,
+        ) = self.obj_take_profit.take_profit_calculator(
+            possible_loss=self.possible_loss,
+            position_size=self.position_size,
+            average_entry=self.average_entry,
+        )
 
     def check_stop_loss_hit(self, **vargs):
         self.obj_stop_loss.check_stop_loss_hit()

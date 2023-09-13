@@ -105,7 +105,7 @@ class ExchangeSettings(NamedTuple):
     market_fee_pct: float = 0.06 / 100
     limit_fee_pct: float = 0.02 / 100
     mmr_pct: float = 0.5 / 100
-    max_lev: float = 100.0
+    max_leverage: float = 100.0
     max_order_size_pct: float = 100.0
     max_order_size_value: float = np.inf
     min_order_size_pct: float = 0.01
@@ -130,6 +130,7 @@ class OrderSettingsArrays(NamedTuple):
     trail_sl_based_on_candle_body_type: np.array
     trail_sl_when_pct_from_candle_body: np.array
     trail_sl_by_pct: np.array
+    static_leverage: np.array
 
 
 class OrderSettings(NamedTuple):
@@ -150,6 +151,7 @@ class OrderSettings(NamedTuple):
     trail_sl_based_on_candle_body_type: int
     trail_sl_when_pct_from_candle_body: float
     trail_sl_by_pct: float
+    static_leverage: float
 
 
 class OrderResult(NamedTuple):
@@ -192,6 +194,7 @@ class DecreasePosition(Exception):
     ):
         self.exit_price = exit_price
         self.order_status = order_status
+
 
 class MoveStopLoss(Exception):
     """Rejected order error."""
