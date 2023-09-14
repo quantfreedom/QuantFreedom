@@ -286,29 +286,29 @@ class LongOrder(Order):
         realized_pnl = pnl - fees_paid  # math checked
 
         # Setting new account_state.equity
-        equity_new = self.account_state.equity + realized_pnl
-        available_balance_new = equity_new
+        equity = self.account_state.equity + realized_pnl
 
+        print(f"Order - Decrease Position - equity= {equity}")
         self.account_state = AccountState(
-            available_balance=available_balance_new,
+            available_balance=equity,
             cash_borrowed=0.0,
             cash_used=0.0,
-            equity=equity_new,
+            equity=equity,
         )
         self.order_result = OrderResult(
-            average_entry=self.average_entry,
+            average_entry=0.0,
             fees_paid=fees_paid,
-            leverage=self.leverage,
-            liq_price=self.liq_price,
+            leverage=0.0,
+            liq_price=0.0,
             order_status=order_status,
-            possible_loss=self.possible_loss,
-            entry_size=self.entry_size,
-            entry_price=self.entry_price,
+            possible_loss=0.0,
+            entry_size=0.0,
+            entry_price=0.0,
             exit_price=exit_price,
-            position_size=self.position_size,
+            position_size=0.0,
             realized_pnl=realized_pnl,
-            sl_pct=self.sl_pct,
-            sl_price=self.sl_price,
-            tp_pct=self.tp_pct,
-            tp_price=self.tp_price,
+            sl_pct=0.0,
+            sl_price=0.0,
+            tp_pct=0.0,
+            tp_price=0.0,
         )

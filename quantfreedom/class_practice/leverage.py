@@ -70,7 +70,6 @@ class LeverageLong:
     def __calc_liq_price(
         self,
         entry_size: float,
-        leverage: float,
         average_entry: float,
         account_state: AccountState,
     ):
@@ -83,22 +82,22 @@ class LeverageLong:
         possible_bankruptcy_fee = (
             entry_size * (self.leverage - 1) / self.leverage * self.market_fee_pct
         )
-        cash_used_new = (
+        cash_used = (
             initial_margin + fee_to_open + possible_bankruptcy_fee
         )  # math checked
 
         if (
-            cash_used_new > account_state.available_balance * self.leverage
-            or cash_used_new > account_state.available_balance
+            cash_used > account_state.available_balance * self.leverage
+            or cash_used > account_state.available_balance
         ):
             raise RejectedOrderError(order_status=OrderStatus.CashUsedExceed)
 
         else:
             # liq formula
             # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001067&language=en_US
-            available_balance_new = account_state.available_balance - cash_used_new
-            cash_used_new = account_state.cash_used + cash_used_new
-            cash_borrowed_new = account_state.cash_borrowed + entry_size - cash_used_new
+            available_balance_new = account_state.available_balance - cash_used
+            cash_used = account_state.cash_used + cash_used
+            cash_borrowed = account_state.cash_borrowed + entry_size - cash_used
 
             self.liq_price = average_entry * (
                 1 - (1 / self.leverage) + self.mmr_pct
@@ -106,8 +105,8 @@ class LeverageLong:
         self.leverage = round(self.leverage, 2)
         self.liq_price = round(self.liq_price, 2)
         available_balance_new = round(available_balance_new, 2)
-        cash_used_new = round(cash_used_new, 2)
-        cash_borrowed_new = round(cash_borrowed_new, 2)
+        cash_used = round(cash_used, 2)
+        cash_borrowed = round(cash_borrowed, 2)
         print(
             f"Long Order - Calculate Leverage - leverage= {self.leverage} liq_price= {self.liq_price}"
         )
@@ -115,14 +114,14 @@ class LeverageLong:
             f"Long Order - Calculate Leverage - available_balance= {available_balance_new}"
         )
         print(
-            f"Long Order - Calculate Leverage - cash_used= {cash_used_new} cash_borrowed= {cash_borrowed_new}"
+            f"Long Order - Calculate Leverage - cash_used= {cash_used} cash_borrowed= {cash_borrowed}"
         )
         return (
             self.leverage,
             self.liq_price,
             available_balance_new,
-            cash_used_new,
-            cash_borrowed_new,
+            cash_used,
+            cash_borrowed,
         )
 
     def set_static_leverage(
@@ -166,7 +165,6 @@ class LeverageLong:
 
         return self.__calc_liq_price(
             entry_size=entry_size,
-            leverage=self.leverage,
             average_entry=average_entry,
             account_state=account_state,
         )

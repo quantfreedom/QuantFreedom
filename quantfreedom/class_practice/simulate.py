@@ -2,7 +2,6 @@ from typing import Optional
 import numpy as np
 from numba import njit
 
-from quantfreedom._typing import PossibleArray, Array1d
 from quantfreedom.class_practice.enums import (
     AccountState,
     BacktestSettings,
@@ -13,6 +12,7 @@ from quantfreedom.class_practice.enums import (
     OrderSettingsArrays,
     OrderSettings,
     RejectedOrderError,
+    OrderStatus,
 )
 from quantfreedom.class_practice.long_short_orders import Order
 from quantfreedom.enums.enums import (
@@ -71,7 +71,7 @@ def backtest_df_only_nb(
     entries: np.array,
     price_data: np.array,
     exit_signals: Optional[np.array] = None,
-) -> Array1d[Array1d, Array1d]:
+):
     og_account_state = account_state
     # Creating strat records
     array_size = int(
@@ -165,7 +165,9 @@ def backtest_df_only_nb(
                         try:
                             order.calculate_stop_loss(bar_index=bar_index)
                             order.calculate_increase_posotion(
-                                entry_price=symbol_price_data[bar_index, 3]
+                                entry_price=symbol_price_data[
+                                    bar_index, 0
+                                ]  # entry price is open because we are getting the signal from the close of the previous candle
                             )
                             order.calculate_leverage()
                             order.calculate_take_profit()
@@ -201,7 +203,7 @@ def backtest_df_only_nb(
                             # order.fill_order_result_rejected_exit()
                         except DecreasePosition as e:
                             print(
-                                "Order - DecreasePosition - Decreasing the position from simulate"
+                                f"Order - Decrease Position - order_status= {OrderStatus._fields[e.order_status]} exit_price= {e.exit_price}"
                             )
                             order.decrease_position(
                                 order_status=e.order_status, exit_price=e.exit_price

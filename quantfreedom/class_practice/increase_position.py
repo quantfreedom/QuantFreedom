@@ -107,7 +107,7 @@ class IncreasePositionLong:
         if possible_loss > account_state_equity * self.max_equity_risk_pct:
             raise RejectedOrderError("possible loss too big")
         print(f"Long Order - Increase Position - __get_possible_loss= {possible_loss}")
-        return possible_loss
+        return round(possible_loss,2)
 
     def __check_size_value(self, entry_size):
         print("Long Order - Increase Position - __check_size_value")
@@ -188,6 +188,7 @@ class IncreasePositionLong:
         possible_loss,
         account_state_equity,
     ):
+        # need to put in checks to make sure the size isn't too big or goes over or something
         print(
             "Long Order - Increase Position - risk_pct_of_account_and_sl_based_on_in_pos"
         )

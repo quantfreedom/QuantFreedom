@@ -22,6 +22,7 @@ def backtest_df_only(
     entries: pd.DataFrame,
     exit_signals: Optional[pd.DataFrame] = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
+    entries = entries.shift(1, fill_value=False)
     print(
         "Creating cartesian product ... after this the backtest will start, I promise :).\n"
     )

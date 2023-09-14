@@ -115,22 +115,22 @@ class StopLossLong:
     def __get_candle_body_price_open(self, lookback, bar_index, symbol_price_data):
         print("Long Order - Candle Body Getter - __get_candle_body_price_open")
         # column 2 is the low because it is open high low close
-        return symbol_price_data[lookback : bar_index + 1, 0].min()
+        return symbol_price_data[lookback : bar_index, 0].min()
 
     def __get_candle_body_price_high(self, lookback, bar_index, symbol_price_data):
         print("Long Order - Candle Body Getter - __get_candle_body_price_high")
         # column 2 is the low because it is open high low close
-        return symbol_price_data[lookback : bar_index + 1, 1].min()
+        return symbol_price_data[lookback : bar_index, 1].min()
 
     def __get_candle_body_price_low(self, lookback, bar_index, symbol_price_data):
         print("Long Order - Candle Body Getter - __get_candle_body_price_low")
         # column 2 is the low because it is open high low close
-        return symbol_price_data[lookback : bar_index + 1, 2].min()
+        return symbol_price_data[lookback : bar_index, 2].min()
 
     def __get_candle_body_price_close(self, lookback, bar_index, symbol_price_data):
         print("Long Order - Candle Body Getter - __get_candle_body_price_close")
         # column 2 is the low because it is open high low close
-        return symbol_price_data[lookback : bar_index + 1, 3].min()
+        return symbol_price_data[lookback : bar_index, 3].min()
 
     # main functions
     def pass_function(self, **vargs):
@@ -139,7 +139,7 @@ class StopLossLong:
     def calculate_stop_loss(self, bar_index, symbol_price_data):
         print("Long Order - Calculate Stop Loss - calculate_stop_loss")
         # lb will be bar index if sl isn't based on lookback because look back will be 0
-        lookback = max(int(bar_index - self.sl_based_on_lookback), 0)
+        lookback = max(int((bar_index-1) - self.sl_based_on_lookback), 0)
         candle_body = self.sl_price_getter(
             lookback=lookback,
             bar_index=bar_index,
@@ -172,7 +172,7 @@ class StopLossLong:
         # Stop Loss to break even
         candle_body_ohlc = self.sl_to_be_price_getter(
             lookback=bar_index,
-            bar_index=bar_index,
+            bar_index=bar_index+1,
             symbol_price_data=symbol_price_data,
         )
         pct_from_ae = (candle_body_ohlc - average_entry) / average_entry
@@ -194,7 +194,7 @@ class StopLossLong:
         )
         candle_body_ohlc = self.tsl_price_getter(
             lookback=bar_index,
-            bar_index=bar_index,
+            bar_index=bar_index+1,
             symbol_price_data=symbol_price_data,
         )
         pct_from_ae = (candle_body_ohlc - average_entry) / average_entry
