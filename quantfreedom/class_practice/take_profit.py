@@ -83,10 +83,20 @@ class TakeProfitLong:
                 exit_fee_pct=exit_fee_pct,
             )
 
-    def check_take_profit_hit_provided(self, exit_signal, **vargs):
+    def check_take_profit_hit_provided(
+        self,
+        exit_signal: bool,
+        exit_fee_pct: float,
+        current_candle: np.array,
+        **vargs,
+    ):
         print("Long Order - Take Profit Checker - check_take_profit_hit_provided")
         if exit_signal:
-            print("Long Order - Take Profit Checker - exit_signal=True")
+            raise DecreasePosition(
+                exit_price=current_candle[3], # sending the close of the current candle for now as exit price
+                order_status=OrderStatus.TakeProfitFilled,
+                exit_fee_pct=exit_fee_pct,
+            )
         pass
 
     def check_take_profit_hit_provided_pct(self, bar_index, exit_signal):

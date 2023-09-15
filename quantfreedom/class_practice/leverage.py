@@ -102,13 +102,13 @@ class LeverageLong:
                 1 - (1 / self.leverage) + self.mmr_pct
             )  # math checked
         print(
-            f"Long Order - Calculate Leverage - leverage= {self.leverage} liq_price= {self.liq_price}"
+            f"Long Order - Calculate Leverage - leverage= {round(self.leverage,2)} liq_price= {round(self.liq_price,2)}"
         )
         print(
-            f"Long Order - Calculate Leverage - available_balance= {available_balance}"
+            f"Long Order - Calculate Leverage - available_balance= {round(available_balance,2)}"
         )
         print(
-            f"Long Order - Calculate Leverage - cash_used= {cash_used} cash_borrowed= {cash_borrowed}"
+            f"Long Order - Calculate Leverage - cash_used= {round(cash_used,2)} cash_borrowed= {round(cash_borrowed,2)}"
         )
         return (
             self.leverage,

@@ -262,7 +262,7 @@ class LongOrder(Order):
         self.equity += self.realized_pnl
 
         print(
-            f"Order - Decrease Position - equity= {round(self.equity,2)} pnl={self.realized_pnl} fees= {self.fees_paid}"
+            f"Order - Decrease Position - equity= {round(self.equity,2)} pnl={round(pnl,2)} fees_paid= {round(self.fees_paid,2)} realized_pnl={round(self.realized_pnl,2)}"
         )
         self.available_balance = self.equity
         self.cash_borrowed = 0.0

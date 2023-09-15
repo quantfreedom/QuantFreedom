@@ -162,6 +162,7 @@ def backtest_df_only_nb(
                     if current_indicator_entries[
                         bar_index
                     ]:  # add in that we are also not at max entry amount
+                        print(f"Order - Try to Enter Trade - bar_index= {bar_index}")
                         try:
                             order.calculate_stop_loss(bar_index=bar_index)
                             order.calculate_increase_posotion(
