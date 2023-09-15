@@ -12,6 +12,7 @@ numba_cache
 thinking.txt
 .mustache
 strategy/
+full class test_gonzalo.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
