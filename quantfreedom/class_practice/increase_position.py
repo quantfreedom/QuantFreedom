@@ -1,5 +1,6 @@
 from quantfreedom.class_practice.enums import (
     IncreasePositionType,
+    OrderStatus,
     RejectedOrderError,
     StopLossType,
 )
@@ -106,8 +107,10 @@ class IncreasePositionLong:
 
         if possible_loss > account_state_equity * self.max_equity_risk_pct:
             raise RejectedOrderError("possible loss too big")
-        print(f"Long Order - Increase Position - __get_possible_loss= {possible_loss}")
-        return round(possible_loss,2)
+        print(
+            f"Long Order - Increase Position - __get_possible_loss= {round(possible_loss,2)}"
+        )
+        return round(possible_loss, 2)
 
     def __check_size_value(self, entry_size):
         print("Long Order - Increase Position - __check_size_value")
@@ -155,20 +158,14 @@ class IncreasePositionLong:
         sl_pct = (average_entry - sl_price) / average_entry
         position_size = entry_size
 
-        entry_size = round(entry_size, 2)
-        position_size = round(position_size, 2)
-        entry_price = round(entry_price, 2)
-        average_entry = round(average_entry, 2)
-        possible_loss = round(possible_loss, 2)
-        sl_pct = round(sl_pct * 100, 2)
         print(
-            f"Long Order - Increase Position - entry_size= {entry_size} position_size= {position_size}"
+            f"Long Order - Increase Position - entry_size= {round(entry_size,2)} position_size= {round(position_size,2)}"
         )
         print(
-            f"Long Order - Increase Position - entry_price= {entry_price} average_entry= {average_entry}"
+            f"Long Order - Increase Position - entry_price= {round(entry_price,2)} average_entry= {round(average_entry,2)}"
         )
         print(
-            f"Long Order - Increase Position - possible_loss= {possible_loss} sl_pct= {sl_pct}"
+            f"Long Order - Increase Position - possible_loss= {round(possible_loss,2)} sl_pct= {round(sl_pct*100,2)}"
         )
         return (
             entry_size,
@@ -212,26 +209,23 @@ class IncreasePositionLong:
                 + sl_price * self.market_fee_pct
             )
         )
+        if entry_size < 1:
+            raise RejectedOrderError(order_status=OrderStatus.EntrySizeTooSmall)
         average_entry = (entry_size + position_size) / (
             (entry_size / entry_price) + (position_size / average_entry)
         )
         sl_pct = (average_entry - sl_price) / average_entry
 
         position_size += entry_size
-        entry_size = round(entry_size, 2)
-        position_size = round(position_size, 2)
-        entry_price = round(entry_price, 2)
-        average_entry = round(average_entry, 2)
-        possible_loss = round(possible_loss, 2)
-        sl_pct = round(sl_pct * 100, 2)
+
         print(
-            f"Long Order - Increase Position - entry_size= {entry_size} position_size= {position_size}"
+            f"Long Order - Increase Position - entry_size= {round(entry_size,2)} position_size= {round(position_size,2)}"
         )
         print(
-            f"Long Order - Increase Position - entry_price= {entry_price} average_entry= {average_entry}"
+            f"Long Order - Increase Position - entry_price= {round(entry_price,2)} average_entry= {round(average_entry,2)}"
         )
         print(
-            f"Long Order - Increase Position - possible_loss= {possible_loss} sl_pct= {sl_pct}"
+            f"Long Order - Increase Position - possible_loss= {round(possible_loss,2)} sl_pct= {round(sl_pct*100,2)}"
         )
         return (
             entry_size,

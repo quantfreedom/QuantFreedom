@@ -274,8 +274,7 @@ def long_increase_nb(
     # check if leverage_new amount is possible with size_value and free cash
     if static_variables_tuple.lev_mode == LeverageMode.LeastFreeCashUsed:
         leverage_new = -average_entry_new / (
-            sl_price_new
-            - sl_price_new * 0.001
+            (sl_price_new - sl_price_new * 0.001)
             - average_entry_new  # TODO .2 is percent padding user wants
             - static_variables_tuple.mmr_pct * average_entry_new
         )  # math checked

@@ -24,26 +24,27 @@ class Order:
     symbol_price_data = None
     exit_signals = None
     exchange_settings = None
-    order_result = None
     order_settings = None
     tp_fee_pct = None
 
     # order result variables
-    sl_price = None
+    sl_price = 0.0
     entry_size = None
     position_size = 0.0
     entry_price = None
     exit_price = None
-    average_entry = None
-    possible_loss = None
+    average_entry = 0.0
+    possible_loss = 0.0
     sl_pct = None
     liq_price = None
     available_balance = None
-    cash_used = None
-    cash_borrowed = None
+    cash_used = 0.0
+    cash_borrowed = 0.0
     tp_pct = None
     tp_price = None
-    leverage = None
+    leverage = 1.0
+    equity = None
+    order_status = None
 
     def instantiate(
         order_type: OrderType, **vargs
@@ -62,8 +63,9 @@ class Order:
         self.order_settings = order_settings
         self.account_state = account_state
         self.exchange_settings = exchange_settings
-        self.order_result = order_result
         self.symbol_price_data = symbol_price_data
+        self.equity = account_state.equity
+        self.available_balance = account_state.equity
 
         if self.order_settings.tp_fee_type == TakeProfitFeeType.Nothing:
             self.tp_fee_pct = 0.0
@@ -144,48 +146,9 @@ class Order:
     def move_stop_loss(self, sl_price):
         self.sl_price = sl_price
         self.sl_pct = sl_price
-        self.order_result = OrderResult(
-            average_entry=self.average_entry,
-            fees_paid=0.0,
-            leverage=self.leverage,
-            liq_price=self.liq_price,
-            order_status=OrderStatus.EntryFilled,
-            possible_loss=self.possible_loss,
-            entry_size=self.entry_size,
-            entry_price=self.entry_price,
-            exit_price=0.0,
-            position_size=self.position_size,
-            realized_pnl=0.0,
-            sl_pct=self.sl_pct,
-            sl_price=self.sl_price,
-            tp_pct=self.tp_pct,
-            tp_price=self.tp_price,
-        )
 
     def fill_order_result_successful_entry(self, **vargs):
-        self.account_state = AccountState(
-            available_balance=self.available_balance,
-            cash_borrowed=self.cash_borrowed,
-            cash_used=self.cash_used,
-            equity=self.account_state.equity,
-        )
-        self.order_result = OrderResult(
-            average_entry=self.average_entry,
-            fees_paid=0.0,
-            leverage=self.leverage,
-            liq_price=self.liq_price,
-            order_status=OrderStatus.EntryFilled,
-            possible_loss=self.possible_loss,
-            entry_size=self.entry_size,
-            entry_price=self.entry_price,
-            exit_price=0.0,
-            position_size=self.position_size,
-            realized_pnl=0.0,
-            sl_pct=self.sl_pct,
-            sl_price=self.sl_price,
-            tp_pct=self.tp_pct,
-            tp_price=self.tp_price,
-        )
+        pass
 
     def fill_rejected_order_record(self, **vargs):
         print("Order - fill_rejected_order_record")
@@ -210,12 +173,12 @@ class LongOrder(Order):
             self.possible_loss,
             self.sl_pct,
         ) = self.obj_increase_posotion.calculate_increase_posotion(
-            account_state_equity=self.account_state.equity,
+            account_state_equity=self.equity,
             average_entry=self.average_entry,
             entry_price=entry_price,
             in_position=self.position_size > 0,
             position_size=self.position_size,
-            possible_loss=self.order_result.possible_loss,
+            possible_loss=self.possible_loss,
             sl_price=self.sl_price,
         )
 
@@ -229,7 +192,9 @@ class LongOrder(Order):
         ) = self.obj_leverage.leverage_calculator(
             average_entry=self.average_entry,
             sl_price=self.sl_price,
-            account_state=self.account_state,
+            available_balance=self.available_balance,
+            cash_used=self.cash_used,
+            cash_borrowed=self.cash_borrowed,
             entry_size=self.entry_size,
         )
 
@@ -246,11 +211,13 @@ class LongOrder(Order):
     def check_stop_loss_hit(self, current_candle):
         self.obj_stop_loss.sl_hit_checker(
             sl_hit=current_candle[2] < self.sl_price,
+            exit_fee_pct=self.exchange_settings.market_fee_pct,
         )
 
     def check_liq_hit(self, current_candle):
         self.obj_leverage.liq_hit_checker(
             liq_hit=current_candle[2] < self.liq_price,
+            exit_fee_pct=self.exchange_settings.market_fee_pct,
         )
 
     def check_take_profit_hit(self, current_candle, exit_signal):
@@ -258,6 +225,7 @@ class LongOrder(Order):
             current_candle=current_candle,
             tp_hit=current_candle[1] > self.tp_price,
             exit_signal=exit_signal,
+            exit_fee_pct=self.tp_fee_pct,
         )
 
     def check_move_stop_loss_to_be(self, bar_index, symbol_price_data):
@@ -274,41 +242,42 @@ class LongOrder(Order):
             symbol_price_data=symbol_price_data,
         )
 
-    def decrease_position(self, order_status: OrderStatus, exit_price: float):
+    def decrease_position(
+        self,
+        order_status: OrderStatus,
+        exit_price: float,
+        exit_fee_pct: float,
+    ):
         # profit and loss calulation
         coin_size = self.position_size / self.average_entry  # math checked
         pnl = coin_size * (exit_price - self.average_entry)  # math checked
         fee_open = (
             coin_size * self.average_entry * self.exchange_settings.market_fee_pct
         )  # math checked
-        fee_close = coin_size * exit_price * self.tp_fee_pct  # math checked
-        fees_paid = fee_open + fee_close  # math checked
-        realized_pnl = pnl - fees_paid  # math checked
+        fee_close = coin_size * exit_price * exit_fee_pct  # math checked
+        self.fees_paid = fee_open + fee_close  # math checked
+        self.realized_pnl = pnl - self.fees_paid  # math checked
 
-        # Setting new account_state.equity
-        equity = self.account_state.equity + realized_pnl
+        # Setting new equity
+        self.equity += self.realized_pnl
 
-        print(f"Order - Decrease Position - equity= {equity}")
-        self.account_state = AccountState(
-            available_balance=equity,
-            cash_borrowed=0.0,
-            cash_used=0.0,
-            equity=equity,
+        print(
+            f"Order - Decrease Position - equity= {round(self.equity,2)} pnl={self.realized_pnl} fees= {self.fees_paid}"
         )
-        self.order_result = OrderResult(
-            average_entry=0.0,
-            fees_paid=fees_paid,
-            leverage=0.0,
-            liq_price=0.0,
-            order_status=order_status,
-            possible_loss=0.0,
-            entry_size=0.0,
-            entry_price=0.0,
-            exit_price=exit_price,
-            position_size=0.0,
-            realized_pnl=realized_pnl,
-            sl_pct=0.0,
-            sl_price=0.0,
-            tp_pct=0.0,
-            tp_price=0.0,
-        )
+        self.available_balance = self.equity
+        self.cash_borrowed = 0.0
+        self.cash_used = 0.0
+        self.average_entry = 0.0
+        self.leverage = 0.0
+        self.liq_price = 0.0
+        self.order_status = order_status
+        self.possible_loss = 0.0
+        self.entry_size = 0.0
+        self.entry_price = 0.0
+        self.exit_price = exit_price
+        self.position_size = 0.0
+        self.sl_pct = 0.0
+        self.sl_price = 0.0
+        self.tp_pct = 0.0
+        self.tp_price = 0.0
+        print(f"Order - Decrease Position - rest all order results")

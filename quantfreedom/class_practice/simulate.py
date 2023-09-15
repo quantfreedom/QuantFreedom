@@ -176,7 +176,7 @@ def backtest_df_only_nb(
                             print(f"Skipping iteration -> {repr(e)}")
                             # order.fill_order_result_rejected_entry()
 
-                    if order.order_result.position_size > 0:
+                    if order.position_size > 0:
                         try:
                             # need to figure out a way that if any of these are hit i get kicked out and then return the order result
                             # need to add in filling in the strat records
@@ -206,7 +206,9 @@ def backtest_df_only_nb(
                                 f"Order - Decrease Position - order_status= {OrderStatus._fields[e.order_status]} exit_price= {e.exit_price}"
                             )
                             order.decrease_position(
-                                order_status=e.order_status, exit_price=e.exit_price
+                                order_status=e.order_status,
+                                exit_price=e.exit_price,
+                                exit_fee_pct=e.exit_fee_pct,
                             )
                         except MoveStopLoss as e:
                             print(f"Decrease Position -> {repr(e.order_status)}")

@@ -53,6 +53,7 @@ class OrderStatusT(NamedTuple):
     MaxEquityRisk: int = 7
     RiskToBig: int = 8
     CashUsedExceed: int = 9
+    EntrySizeTooSmall: int = 10
 
 
 OrderStatus = OrderStatusT()
@@ -204,9 +205,11 @@ class DecreasePosition(Exception):
         self,
         order_status: OrderStatus,
         exit_price: float,
+        exit_fee_pct: float,
     ):
         self.order_status = order_status
         self.exit_price = exit_price
+        self.exit_fee_pct = exit_fee_pct
 
 
 class MoveStopLoss(Exception):

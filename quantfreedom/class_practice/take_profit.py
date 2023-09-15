@@ -10,7 +10,7 @@ class TakeProfitLong:
     take_profit_calculator = None
     risk_reward = None
     tp_fee_pct = None
-    
+
     tp_price = None
     tp_pct = None
 
@@ -58,10 +58,8 @@ class TakeProfitLong:
         )  # math checked
 
         self.tp_pct = (self.tp_price - average_entry) / average_entry  # math checked
-        self.tp_pct = round(self.tp_pct * 100, 2)
-        self.tp_price = round(self.tp_price, 2)
         print(
-            f"Long Order - Calculate Take Profit - tp_price= {self.tp_price} tp_pct= {self.tp_pct}"
+            f"Long Order - Calculate Take Profit - tp_price= {round(self.tp_price,2)} tp_pct= {round(self.tp_pct*100,2)}"
         )
         return (
             self.tp_price,
@@ -71,13 +69,20 @@ class TakeProfitLong:
     def calculate_take_profit_pct(self, **vargs):
         print("Long Order - Calculate Take Profit - calculate_take_profit_pct")
 
-    def check_take_profit_hit_regular(self, tp_hit, **vargs):
+    def check_take_profit_hit_regular(
+        self,
+        tp_hit: bool,
+        exit_fee_pct: float,
+        **vargs,
+    ):
         print("Long Order - Take Profit Checker - check_take_profit_hit")
         if tp_hit:
             raise DecreasePosition(
-                exit_price=self.tp_price, order_status=OrderStatus.TakeProfitFilled
+                exit_price=self.tp_price,
+                order_status=OrderStatus.TakeProfitFilled,
+                exit_fee_pct=exit_fee_pct,
             )
-            
+
     def check_take_profit_hit_provided(self, exit_signal, **vargs):
         print("Long Order - Take Profit Checker - check_take_profit_hit_provided")
         if exit_signal:
@@ -89,4 +94,3 @@ class TakeProfitLong:
 
     def check_take_profit_hit_provided_rr(self, bar_index, exit_signal):
         pass
-
