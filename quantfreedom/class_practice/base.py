@@ -39,7 +39,7 @@ def backtest_df_only(
 
     total_bars = entries.shape[0]
 
-    if exit_signals == None:
+    if exit_signals is None:
         exit_signals = pd.DataFrame(np.zeros_like(entries.values))
 
     # Printing out total numbers of things
