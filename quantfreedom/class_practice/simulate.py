@@ -72,7 +72,6 @@ def backtest_df_only_nb(
     price_data: np.array,
     exit_signals: Optional[np.array] = None,
 ):
-    og_account_state = account_state
     # Creating strat records
     array_size = int(
         num_of_symbols
@@ -122,10 +121,10 @@ def backtest_df_only_nb(
                 order_settings = get_order_settings(order_settings_idx, os_cart_arrays)
                 # Account State Reset
                 account_state = AccountState(
-                    available_balance=og_account_state.equity,
+                    available_balance=account_state.equity,
                     cash_borrowed=0.0,
                     cash_used=0.0,
-                    equity=og_account_state.equity,
+                    equity=account_state.equity,
                 )
 
                 # Order Result Reset
@@ -218,10 +217,10 @@ def backtest_df_only_nb(
 
                 # Checking if gains
             #     gains_pct = (
-            #         (account_state.equity - static_variables_tuple.equity)
-            #         / static_variables_tuple.equity
+            #         (order.equity - account_state.equity)
+            #         / account_state.equity
             #     ) * 100
-            #     if gains_pct > static_variables_tuple.gains_pct_filter:
+            #     if gains_pct > backtest_settings.gains_pct_filter:
             #         temp_strat_records = strat_records[0 : strat_records_filled[0]]
             #         wins_and_losses_array = temp_strat_records["real_pnl"][
             #             ~np.isnan(temp_strat_records["real_pnl"])
@@ -230,7 +229,7 @@ def backtest_df_only_nb(
             #         # Checking total trade filter
             #         if (
             #             wins_and_losses_array.size
-            #             > static_variables_tuple.total_trade_filter
+            #             > backtest_settings.total_trade_filter
             #         ):
             #             wins_and_losses_array_no_be = wins_and_losses_array[
             #                 wins_and_losses_array != 0
