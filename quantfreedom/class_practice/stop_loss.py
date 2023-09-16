@@ -35,7 +35,7 @@ class StopLossLong:
         sl_candle_body_type: CandleBodyType,
         sl_to_be_based_on_candle_body_type: CandleBodyType,
         sl_to_be_when_pct_from_candle_body: float,
-        sl_to_be_zero_or_entry: int,
+        sl_to_be_zero_or_entry_type: int,
         sl_type: int,
         trail_sl_based_on_candle_body_type: CandleBodyType,
         trail_sl_by_pct: float,
@@ -89,10 +89,10 @@ class StopLossLong:
             self.move_sl_to_be_checker = self.check_move_stop_loss_to_be
 
         # setting up stop loss be zero or entry
-        if sl_to_be_zero_or_entry != SLToBeZeroOrEntryType.Nothing:
-            if sl_to_be_zero_or_entry == SLToBeZeroOrEntryType.ZeroLoss:
+        if sl_to_be_zero_or_entry_type != SLToBeZeroOrEntryType.Nothing:
+            if sl_to_be_zero_or_entry_type == SLToBeZeroOrEntryType.ZeroLoss:
                 self.sl_to_be_z_or_e = self.__sl_to_be_zero
-            elif sl_to_be_zero_or_entry == SLToBeZeroOrEntryType.AverageEntry:
+            elif sl_to_be_zero_or_entry_type == SLToBeZeroOrEntryType.AverageEntry:
                 self.sl_to_be_z_or_e = self.__sl_to_be_entry
 
         # setting up stop loss break even checker

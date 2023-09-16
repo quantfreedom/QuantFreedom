@@ -40,7 +40,7 @@ def create_os_cart_product_nb(
         order_type=out.T[10],
         sl_to_be_based_on_candle_body_type=out.T[11],
         sl_to_be_when_pct_from_candle_body=out.T[12],
-        sl_to_be_zero_or_entry=out.T[13],
+        sl_to_be_zero_or_entry_type=out.T[13],
         trail_sl_based_on_candle_body_type=out.T[14],
         trail_sl_when_pct_from_candle_body=out.T[15],
         trail_sl_by_pct=out.T[16],

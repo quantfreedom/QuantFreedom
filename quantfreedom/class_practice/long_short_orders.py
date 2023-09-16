@@ -46,6 +46,10 @@ class Order:
     equity = None
     order_status = None
 
+    # record vars
+    strat_records = None
+    strat_records_filled = None
+
     def instantiate(
         order_type: OrderType, **vargs
     ):  # TODO: we should only have to do this once not everytime
@@ -57,7 +61,7 @@ class Order:
         account_state: AccountState,
         order_settings: OrderSettings,
         exchange_settings: ExchangeSettings,
-        order_result: OrderResult,
+        strat_records: np.array,
         symbol_price_data: np.array,
     ):
         self.order_settings = order_settings
@@ -66,6 +70,8 @@ class Order:
         self.symbol_price_data = symbol_price_data
         self.equity = account_state.equity
         self.available_balance = account_state.equity
+        self.strat_records = strat_records
+        self.strat_records_filled = 0
 
         if self.order_settings.tp_fee_type == TakeProfitFeeType.Nothing:
             self.tp_fee_pct = 0.0
@@ -81,7 +87,7 @@ class Order:
                 sl_candle_body_type=self.order_settings.sl_candle_body_type,
                 sl_to_be_based_on_candle_body_type=self.order_settings.sl_to_be_based_on_candle_body_type,
                 sl_to_be_when_pct_from_candle_body=self.order_settings.sl_to_be_when_pct_from_candle_body,
-                sl_to_be_zero_or_entry=self.order_settings.sl_to_be_zero_or_entry,
+                sl_to_be_zero_or_entry_type=self.order_settings.sl_to_be_zero_or_entry_type,
                 sl_type=self.order_settings.stop_loss_type,
                 trail_sl_based_on_candle_body_type=self.order_settings.trail_sl_based_on_candle_body_type,
                 trail_sl_by_pct=self.order_settings.trail_sl_by_pct,
@@ -247,6 +253,10 @@ class LongOrder(Order):
         order_status: OrderStatus,
         exit_price: float,
         exit_fee_pct: float,
+        bar_index: int,
+        indicator_settings_index: int,
+        order_settings_index: int,
+        symbol_index: int,
     ):
         # profit and loss calulation
         coin_size = self.position_size / self.average_entry  # math checked
@@ -262,7 +272,7 @@ class LongOrder(Order):
         self.equity += self.realized_pnl
 
         print(
-            f"Order - Decrease Position - equity= {round(self.equity,2)} pnl={round(pnl,2)} fees_paid= {round(self.fees_paid,2)} realized_pnl={round(self.realized_pnl,2)}"
+            f"Order - Decrease Position - equity= {round(self.equity,2)} pnl={round(pnl,2)} fees_paid= {round(self.fees_paid,2)} realized_pnl={round(self.realized_pnl,2)} bar_index= {bar_index}"
         )
         self.available_balance = self.equity
         self.cash_borrowed = 0.0
@@ -280,4 +290,13 @@ class LongOrder(Order):
         self.sl_price = 0.0
         self.tp_pct = 0.0
         self.tp_price = 0.0
-        print(f"Order - Decrease Position - rest all order results")
+
+        self.strat_records[self.strat_records_filled]["equity"] = self.equity
+        self.strat_records[self.strat_records_filled]["bar_idx"] = bar_index
+        self.strat_records[self.strat_records_filled]["or_set_idx"] = order_settings_index
+        self.strat_records[self.strat_records_filled]["ind_set_idx"] = indicator_settings_index
+        self.strat_records[self.strat_records_filled]["symbol_idx"] = symbol_index
+        self.strat_records[self.strat_records_filled]["real_pnl"] = round(self.realized_pnl, 4)
+
+        self.strat_records_filled += 1
+        print(f"Order - Decrease Position - rest all order results & filled strat records")

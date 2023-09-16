@@ -2,24 +2,9 @@ from typing import Optional
 import numpy as np
 from numba import njit
 
-from quantfreedom.class_practice.enums import (
-    AccountState,
-    BacktestSettings,
-    DecreasePosition,
-    ExchangeSettings,
-    MoveStopLoss,
-    OrderResult,
-    OrderSettingsArrays,
-    OrderSettings,
-    RejectedOrderError,
-    OrderStatus,
-)
+from quantfreedom.class_practice.enums import *
 from quantfreedom.class_practice.long_short_orders import Order
-from quantfreedom.enums.enums import (
-    order_settings_array_dt,
-    strat_df_array_dt,
-    strat_records_dt,
-)
+from quantfreedom.nb.helper_funcs import get_to_the_upside_nb
 
 
 @njit(cache=True)
@@ -45,7 +30,9 @@ def get_order_settings(
         sl_to_be_when_pct_from_candle_body=os_cart_arrays.sl_to_be_when_pct_from_candle_body[
             settings_idx
         ],
-        sl_to_be_zero_or_entry=os_cart_arrays.sl_to_be_zero_or_entry[settings_idx],
+        sl_to_be_zero_or_entry_type=os_cart_arrays.sl_to_be_zero_or_entry_type[
+            settings_idx
+        ],
         trail_sl_based_on_candle_body_type=os_cart_arrays.trail_sl_based_on_candle_body_type[
             settings_idx
         ],
@@ -90,17 +77,17 @@ def backtest_df_only_nb(
     )
     result_records_filled = 0
 
-    strat_records = np.empty(int(total_bars / 3), dtype=strat_records_dt)
+    # TODO: change this back to / 3 when done testing
+    # strat_records = np.empty(int(total_bars / 3), dtype=strat_records_dt)
+    strat_records = np.empty(int(total_bars), dtype=strat_records_dt)
     strat_records_filled = np.array([0])
 
     prices_start = 0
     entries_per_symbol = int(entries.shape[1] / num_of_symbols)
     entries_start = 0
     entries_end = entries_per_symbol
-    entries_col = 0
-    prices = 0
 
-    for symbol_counter in range(num_of_symbols):
+    for symbol_index in range(num_of_symbols):
         print("\nNew Symbol")
         symbol_price_data = price_data[:, prices_start : prices_start + 4]
 
@@ -111,14 +98,16 @@ def backtest_df_only_nb(
         entries_end += entries_per_symbol
 
         # ind set loop
-        for indicator_settings_counter in range(entries_per_symbol):
+        for indicator_settings_index in range(entries_per_symbol):
             print("\nNew Indicator Setting")
-            current_indicator_entries = symbol_entries[:, indicator_settings_counter]
-            current_exit_signals = exit_signals[:, indicator_settings_counter]
+            current_indicator_entries = symbol_entries[:, indicator_settings_index]
+            current_exit_signals = exit_signals[:, indicator_settings_index]
 
-            for order_settings_idx in range(total_order_settings):
+            for order_settings_index in range(total_order_settings):
                 print("\nNew Order Setting")
-                order_settings = get_order_settings(order_settings_idx, os_cart_arrays)
+                order_settings = get_order_settings(
+                    order_settings_index, os_cart_arrays
+                )
                 # Account State Reset
                 account_state = AccountState(
                     available_balance=account_state.equity,
@@ -151,9 +140,9 @@ def backtest_df_only_nb(
                     account_state=account_state,
                     order_settings=order_settings,
                     exchange_settings=exchange_settings,
-                    order_result=order_result,
                     order_type=order_settings.order_type,
                     symbol_price_data=symbol_price_data,
+                    strat_records=strat_records,
                 )
 
                 # entries loop
@@ -209,6 +198,10 @@ def backtest_df_only_nb(
                                 order_status=e.order_status,
                                 exit_price=e.exit_price,
                                 exit_fee_pct=e.exit_fee_pct,
+                                bar_index=bar_index,
+                                symbol_index=symbol_index,
+                                indicator_settings_index=indicator_settings_index,
+                                order_settings_index=order_settings_index,
                             )
                         except MoveStopLoss as e:
                             print(f"Decrease Position -> {repr(e.order_status)}")
@@ -216,52 +209,136 @@ def backtest_df_only_nb(
                     print("\nChecking Next Bar for entry or exit")
 
                 # Checking if gains
-            #     gains_pct = (
-            #         (order.equity - account_state.equity)
-            #         / account_state.equity
-            #     ) * 100
-            #     if gains_pct > backtest_settings.gains_pct_filter:
-            #         temp_strat_records = strat_records[0 : strat_records_filled[0]]
-            #         wins_and_losses_array = temp_strat_records["real_pnl"][
-            #             ~np.isnan(temp_strat_records["real_pnl"])
-            #         ]
+                gains_pct = (
+                    (order.equity - account_state.equity) / account_state.equity
+                ) * 100
+                if gains_pct > backtest_settings.gains_pct_filter:
+                    temp_strat_records = order.strat_records[
+                        0 : order.strat_records_filled
+                    ]
+                    wins_and_losses_array = temp_strat_records["real_pnl"][
+                        ~np.isnan(temp_strat_records["real_pnl"])
+                    ]
 
-            #         # Checking total trade filter
-            #         if (
-            #             wins_and_losses_array.size
-            #             > backtest_settings.total_trade_filter
-            #         ):
-            #             wins_and_losses_array_no_be = wins_and_losses_array[
-            #                 wins_and_losses_array != 0
-            #             ]
-            #             to_the_upside = get_to_the_upside_nb(
-            #                 gains_pct=gains_pct,
-            #                 wins_and_losses_array_no_be=wins_and_losses_array_no_be,
-            #             )
+                    # Checking total trade filter
+                    if (
+                        wins_and_losses_array.size
+                        > backtest_settings.total_trade_filter
+                    ):
+                        wins_and_losses_array_no_be = wins_and_losses_array[
+                            wins_and_losses_array != 0
+                        ]
+                        to_the_upside = get_to_the_upside_nb(
+                            gains_pct=gains_pct,
+                            wins_and_losses_array_no_be=wins_and_losses_array_no_be,
+                        )
 
-            #             # Checking to the upside filter
-            #             if to_the_upside > static_variables_tuple.upside_filter:
-            #                 fill_strategy_result_records_nb(
-            #                     gains_pct=gains_pct,
-            #                     strategy_result_records=strategy_result_records[
-            #                         result_records_filled
-            #                     ],
-            #                     temp_strat_records=temp_strat_records,
-            #                     to_the_upside=to_the_upside,
-            #                     total_trades=wins_and_losses_array.size,
-            #                     wins_and_losses_array_no_be=wins_and_losses_array_no_be,
-            #                 )
+                        # Checking to the upside filter
+                        if to_the_upside > backtest_settings.upside_filter:
+                            win_loss = np.where(wins_and_losses_array_no_be < 0, 0, 1)
+                            win_rate = round(
+                                np.count_nonzero(win_loss) / win_loss.size * 100, 2
+                            )
 
-            #                 fill_order_settings_result_records_nb(
-            #                     entries_col=entries_col,
-            #                     order_settings_result_records=order_settings_result_records[
-            #                         result_records_filled
-            #                     ],
-            #                     symbol_counter=symbol_counter,
-            #                     order_settings_tuple=order_settings,
-            #                 )
-            #                 result_records_filled += 1
-            # entries_col += 1
+                            total_pnl = temp_strat_records["real_pnl"][
+                                ~np.isnan(temp_strat_records["real_pnl"])
+                            ].sum()
+
+                            # strat array
+                            strategy_result_records[result_records_filled][
+                                "symbol_idx"
+                            ] = symbol_index
+                            strategy_result_records[result_records_filled][
+                                "ind_set_idx"
+                            ] = indicator_settings_index
+                            strategy_result_records[result_records_filled][
+                                "or_set_idx"
+                            ] = order_settings_index
+                            strategy_result_records[result_records_filled][
+                                "total_trades"
+                            ] = wins_and_losses_array.size
+                            strategy_result_records[result_records_filled][
+                                "gains_pct"
+                            ] = gains_pct
+                            strategy_result_records[result_records_filled][
+                                "win_rate"
+                            ] = win_rate
+                            strategy_result_records[result_records_filled][
+                                "to_the_upside"
+                            ] = to_the_upside
+                            strategy_result_records[result_records_filled][
+                                "total_pnl"
+                            ] = total_pnl
+                            strategy_result_records[result_records_filled][
+                                "ending_eq"
+                            ] = order.equity
+
+                            # Fill order setting results
+
+                            order_settings_result_records[result_records_filled][
+                                "symbol_idx"
+                            ] = symbol_index
+                            order_settings_result_records[result_records_filled][
+                                "or_set_idx"
+                            ] = order_settings_index
+                            order_settings_result_records[result_records_filled][
+                                "increase_position_type"
+                            ] = order_settings.increase_position_type
+                            order_settings_result_records[result_records_filled][
+                                "leverage_type"
+                            ] = order_settings.leverage_type
+                            order_settings_result_records[result_records_filled][
+                                "max_equity_risk_pct"
+                            ] = order_settings.max_equity_risk_pct
+                            order_settings_result_records[result_records_filled][
+                                "order_type"
+                            ] = order_settings.order_type
+                            order_settings_result_records[result_records_filled][
+                                "risk_account_pct_size"
+                            ] = order_settings.risk_account_pct_size
+                            order_settings_result_records[result_records_filled][
+                                "risk_reward"
+                            ] = order_settings.risk_reward
+                            order_settings_result_records[result_records_filled][
+                                "sl_based_on_add_pct"
+                            ] = order_settings.sl_based_on_add_pct
+                            order_settings_result_records[result_records_filled][
+                                "sl_based_on_lookback"
+                            ] = order_settings.sl_based_on_lookback
+                            order_settings_result_records[result_records_filled][
+                                "sl_candle_body_type"
+                            ] = order_settings.sl_candle_body_type
+                            order_settings_result_records[result_records_filled][
+                                "sl_to_be_based_on_candle_body_type"
+                            ] = order_settings.sl_to_be_based_on_candle_body_type
+                            order_settings_result_records[result_records_filled][
+                                "sl_to_be_when_pct_from_candle_body"
+                            ] = order_settings.sl_to_be_when_pct_from_candle_body
+                            order_settings_result_records[result_records_filled][
+                                "sl_to_be_zero_or_entry_type"
+                            ] = order_settings.sl_to_be_zero_or_entry_type
+                            order_settings_result_records[result_records_filled][
+                                "static_leverage"
+                            ] = order_settings.static_leverage
+                            order_settings_result_records[result_records_filled][
+                                "stop_loss_type"
+                            ] = order_settings.stop_loss_type
+                            order_settings_result_records[result_records_filled][
+                                "take_profit_type"
+                            ] = order_settings.take_profit_type
+                            order_settings_result_records[result_records_filled][
+                                "trail_sl_based_on_candle_body_type"
+                            ] = order_settings.trail_sl_based_on_candle_body_type
+                            order_settings_result_records[result_records_filled][
+                                "trail_sl_by_pct"
+                            ] = order_settings.trail_sl_by_pct
+                            order_settings_result_records[result_records_filled][
+                                "trail_sl_when_pct_from_candle_body"
+                            ] = order_settings.trail_sl_when_pct_from_candle_body
+                            order_settings_result_records[result_records_filled][
+                                "tp_fee_type"
+                            ] = order_settings.tp_fee_type
+                            result_records_filled += 1
     return (
         strategy_result_records[:result_records_filled],
         order_settings_result_records[:result_records_filled],

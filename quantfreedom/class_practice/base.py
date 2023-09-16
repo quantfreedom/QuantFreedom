@@ -75,29 +75,27 @@ def backtest_df_only(
         total_order_settings=total_order_settings,
     )
 
-    # strat_results_df = pd.DataFrame(strat_array).sort_values(
-    #     by=["to_the_upside", "gains_pct"], ascending=False
-    # )
+    strat_results_df = pd.DataFrame(strat_array).sort_values(
+        by=["to_the_upside", "gains_pct"], ascending=False
+    )
 
-    # symbols = list(price_data.columns.levels[0])
+    symbols = list(price_data.columns.levels[0])
 
-    # for i in range(len(symbols)):
-    #     strat_results_df.replace({"symbol": {i: symbols[i]}}, inplace=True)
+    for i in range(len(symbols)):
+        strat_results_df.replace({"symbol": {i: symbols[i]}}, inplace=True)
 
-    # symbols = list(entries.columns.levels[0])
-    # setting_results_df = pd.DataFrame(settings_array).dropna(axis="columns", thresh=1)
+    setting_results_df = pd.DataFrame(settings_array).dropna(axis="columns", thresh=1)
 
-    # for i in range(len(CandleBodyType._fields)):
-    #     setting_results_df.replace(
-    #         {"tsl_based_on": {i: CandleBodyType._fields[i]}}, inplace=True
-    #     )
-    #     setting_results_df.replace(
-    #         {"sl_to_be_based_on": {i: CandleBodyType._fields[i]}}, inplace=True
-    #     )
-    # for i in range(len(symbols)):
-    #     setting_results_df.replace({"symbol": {i: symbols[i]}}, inplace=True)
+    for i in range(len(CandleBodyType._fields)):
+        setting_results_df.replace(
+            {"tsl_based_on": {i: CandleBodyType._fields[i]}}, inplace=True
+        )
+        setting_results_df.replace(
+            {"sl_to_be_based_on": {i: CandleBodyType._fields[i]}}, inplace=True
+        )
+    for i in range(len(symbols)):
+        setting_results_df.replace({"symbol": {i: symbols[i]}}, inplace=True)
 
-    # setting_results_df = setting_results_df.T
+    setting_results_df = setting_results_df.T
 
-    # return strat_results_df, setting_results_df
-    pass
+    return strat_results_df, setting_results_df

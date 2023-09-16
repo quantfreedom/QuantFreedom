@@ -138,7 +138,7 @@ class OrderSettingsArrays(NamedTuple):
     order_type: np.array
     sl_to_be_based_on_candle_body_type: np.array
     sl_to_be_when_pct_from_candle_body: np.array
-    sl_to_be_zero_or_entry: np.array
+    sl_to_be_zero_or_entry_type: np.array
     trail_sl_based_on_candle_body_type: np.array
     trail_sl_when_pct_from_candle_body: np.array
     trail_sl_by_pct: np.array
@@ -160,7 +160,7 @@ class OrderSettings(NamedTuple):
     order_type: int
     sl_to_be_based_on_candle_body_type: int
     sl_to_be_when_pct_from_candle_body: float
-    sl_to_be_zero_or_entry: int
+    sl_to_be_zero_or_entry_type: int
     trail_sl_based_on_candle_body_type: int
     trail_sl_when_pct_from_candle_body: float
     trail_sl_by_pct: float
@@ -225,3 +225,77 @@ class MoveStopLoss(Exception):
     ):
         self.order_status = order_status
         self.sl_price = sl_price
+
+
+order_settings_array_dt = np.dtype(
+    [
+        ("symbol_idx", np.int_),
+        ("or_set_idx", np.int_),
+        ("increase_position_type", np.int_),
+        ("leverage_type", np.int_),
+        ("max_equity_risk_pct", np.float_),
+        ("order_type", np.int_),
+        ("risk_account_pct_size", np.float_),
+        ("risk_reward", np.float_),
+        ("sl_based_on_add_pct", np.float_),
+        ("sl_based_on_lookback", np.int_),
+        ("sl_candle_body_type", np.int_),
+        ("sl_to_be_based_on_candle_body_type", np.int_),
+        ("sl_to_be_when_pct_from_candle_body", np.float_),
+        ("sl_to_be_zero_or_entry_type", np.int_),
+        ("static_leverage", np.float_),
+        ("stop_loss_type", np.int_),
+        ("take_profit_type", np.int_),
+        ("trail_sl_based_on_candle_body_type", np.int_),
+        ("trail_sl_by_pct", np.float_),
+        ("trail_sl_when_pct_from_candle_body", np.float_),
+        ("tp_fee_type", np.int_),
+    ],
+    align=True,
+)
+
+
+or_dt = np.dtype(
+    [
+        ("order_id", np.int_),
+        ("order_set_id", np.int_),
+        ("bar", np.int_),
+        ("size_value", np.float_),
+        ("price", np.float_),
+        ("avg_entry", np.float_),
+        ("fees_paid", np.float_),
+        ("order_type", np.float_),
+        ("real_pnl", np.float_),
+        ("equity", np.float_),
+        ("sl_price", np.float_),
+        ("tp_price", np.float_),
+    ],
+    align=True,
+)
+
+strat_df_array_dt = np.dtype(
+    [
+        ("symbol_idx", np.int_),
+        ("ind_set_idx", np.int_),
+        ("or_set_idx", np.int_),
+        ("total_trades", np.float_),
+        ("gains_pct", np.float_),
+        ("win_rate", np.float_),
+        ("to_the_upside", np.float_),
+        ("total_pnl", np.float_),
+        ("ending_eq", np.float_),
+    ],
+    align=True,
+)
+
+strat_records_dt = np.dtype(
+    [
+        ("equity", np.float_),
+        ("bar_idx", np.int_),
+        ("or_set_idx", np.int_),
+        ("ind_set_idx", np.int_),
+        ("symbol_idx", np.int_),
+        ("real_pnl", np.float_),
+    ],
+    align=True,
+)
