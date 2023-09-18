@@ -220,9 +220,10 @@ def backtest_df_only_nb(
                 ) * 100
                 if gains_pct > backtest_settings.gains_pct_filter:
                     temp_strat_records = order.strat_records[
-                        0 : order.strat_records_filled
+                        : order.strat_records_filled
                     ]
-                    wins_and_losses_array = temp_strat_records["real_pnl"][
+                    pnl_array = temp_strat_records["real_pnl"]
+                    wins_and_losses_array = pnl_array[
                         ~np.isnan(temp_strat_records["real_pnl"])
                     ]
 
@@ -246,9 +247,6 @@ def backtest_df_only_nb(
                                 np.count_nonzero(win_loss) / win_loss.size * 100, 2
                             )
 
-                            pnl_array = temp_strat_records["real_pnl"][
-                                ~np.isnan(temp_strat_records["real_pnl"])
-                            ]
                             for i in range(pnl_array.size):
                                 pnl_result_records[result_records_filled][
                                     i
