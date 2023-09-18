@@ -61,7 +61,7 @@ def backtest_df_only(
         f"\nTotal combinations to test: {total_indicator_settings * total_order_settings:,}"
     )
 
-    strat_array, settings_array = backtest_df_only_nb(
+    pnl_array, strat_array, settings_array = backtest_df_only_nb(
         account_state=account_state,
         os_cart_arrays=os_cart_arrays,
         backtest_settings=backtest_settings,
@@ -98,4 +98,4 @@ def backtest_df_only(
 
     setting_results_df = setting_results_df.T
 
-    return strat_results_df, setting_results_df
+    return pnl_array, strat_results_df, setting_results_df

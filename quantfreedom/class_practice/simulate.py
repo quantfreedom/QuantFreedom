@@ -71,6 +71,12 @@ def backtest_df_only_nb(
         array_size,
         dtype=strat_df_array_dt,
     )
+
+    pnl_result_records = np.full(
+        ((total_indicator_settings * total_order_settings * total_bars), array_size),
+        np.nan,
+    )
+
     order_settings_result_records = np.empty(
         array_size,
         dtype=order_settings_array_dt,
@@ -240,9 +246,14 @@ def backtest_df_only_nb(
                                 np.count_nonzero(win_loss) / win_loss.size * 100, 2
                             )
 
-                            total_pnl = temp_strat_records["real_pnl"][
+                            pnl_array = temp_strat_records["real_pnl"][
                                 ~np.isnan(temp_strat_records["real_pnl"])
-                            ].sum()
+                            ]
+                            for i in range(pnl_array.size):
+                                pnl_result_records[result_records_filled][
+                                    i
+                                ] = pnl_array[i]
+                            total_pnl = pnl_array.sum()
 
                             # strat array
                             strategy_result_records[result_records_filled][
@@ -340,6 +351,7 @@ def backtest_df_only_nb(
                             ] = order_settings.tp_fee_type
                             result_records_filled += 1
     return (
+        pnl_result_records[:result_records_filled],
         strategy_result_records[:result_records_filled],
         order_settings_result_records[:result_records_filled],
     )
