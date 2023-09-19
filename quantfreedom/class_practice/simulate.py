@@ -72,11 +72,6 @@ def backtest_df_only_nb(
         dtype=strat_df_array_dt,
     )
 
-    pnl_result_records = np.full(
-        ((total_indicator_settings * total_order_settings * total_bars), array_size),
-        np.nan,
-    )
-
     order_settings_result_records = np.empty(
         array_size,
         dtype=order_settings_array_dt,
@@ -86,7 +81,9 @@ def backtest_df_only_nb(
     # TODO: change this back to / 3 when done testing
     # strat_records = np.empty(int(total_bars / 3), dtype=strat_records_dt)
     strat_records = np.empty(int(total_bars), dtype=strat_records_dt)
-    strat_records_filled = np.array([0])
+
+    order_records = np.empty(total_bars * 50, dtype=or_dt)
+    order_records_filled = np.array([0])
 
     prices_start = 0
     entries_per_symbol = int(entries.shape[1] / num_of_symbols)
@@ -122,26 +119,6 @@ def backtest_df_only_nb(
                     equity=account_state.equity,
                 )
 
-                # Order Result Reset
-                order_result = OrderResult(
-                    average_entry=0.0,
-                    fees_paid=0.0,
-                    leverage=1.0,
-                    liq_price=0.0,
-                    order_status=0,
-                    possible_loss=0.0,
-                    entry_size=0.0,
-                    entry_price=0.0,
-                    exit_price=0.0,
-                    position_size=0.0,
-                    realized_pnl=0.0,
-                    sl_pct=0.0,
-                    sl_price=0.0,
-                    tp_pct=0.0,
-                    tp_price=0.0,
-                )
-                strat_records_filled[0] = 0
-
                 order = Order.instantiate(
                     account_state=account_state,
                     order_settings=order_settings,
@@ -166,7 +143,14 @@ def backtest_df_only_nb(
                             )
                             order.calculate_leverage()
                             order.calculate_take_profit()
-                            order.fill_order_result_successful_entry()
+                            order.fill_order_records(
+                                bar_index=bar_index,
+                                order_settings_index=order_settings_index,
+                                indicator_settings_index=indicator_settings_index,
+                                symbol_index=symbol_index,
+                                order_records=order_records[order_records_filled[0]],
+                                order_records_filled=order_records_filled
+                            )
                         except RejectedOrderError as e:
                             print(f"Skipping iteration -> {repr(e)}")
                             # order.fill_order_result_rejected_entry()
@@ -208,9 +192,21 @@ def backtest_df_only_nb(
                                 symbol_index=symbol_index,
                                 indicator_settings_index=indicator_settings_index,
                                 order_settings_index=order_settings_index,
+                                order_records=order_records[order_records_filled[0]],
+                                order_records_filled=order_records_filled
                             )
                         except MoveStopLoss as e:
                             print(f"Decrease Position -> {repr(e.order_status)}")
+                            order.move_stop_loss(
+                                sl_price=e.sl_price,
+                                order_status=e.order_status,
+                                bar_index=bar_index,
+                                order_settings_index=order_settings_index,
+                                indicator_settings_index=indicator_settings_index,
+                                symbol_index=symbol_index,
+                                order_records=order_records[order_records_filled[0]],
+                                order_records_filled=order_records_filled
+                            )
 
                     print("\nChecking Next Bar for entry or exit")
 
@@ -246,11 +242,6 @@ def backtest_df_only_nb(
                             win_rate = round(
                                 np.count_nonzero(win_loss) / win_loss.size * 100, 2
                             )
-
-                            for i in range(pnl_array.size):
-                                pnl_result_records[result_records_filled][
-                                    i
-                                ] = pnl_array[i]
                             total_pnl = pnl_array.sum()
 
                             # strat array
@@ -349,7 +340,7 @@ def backtest_df_only_nb(
                             ] = order_settings.tp_fee_type
                             result_records_filled += 1
     return (
-        pnl_result_records[:result_records_filled],
+        order_records[: order_records_filled[0]],
         strategy_result_records[:result_records_filled],
         order_settings_result_records[:result_records_filled],
     )

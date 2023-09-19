@@ -28,23 +28,25 @@ class Order:
     tp_fee_pct = None
 
     # order result variables
-    sl_price = 0.0
-    entry_size = None
-    position_size = 0.0
-    entry_price = None
-    exit_price = None
+    available_balance = 0.0
     average_entry = 0.0
-    possible_loss = 0.0
-    sl_pct = None
-    liq_price = None
-    available_balance = None
-    cash_used = 0.0
     cash_borrowed = 0.0
-    tp_pct = None
-    tp_price = None
+    cash_used = 0.0
+    entry_price = 0.0
+    entry_size = 0.0
+    equity = 0.0
+    exit_price = 0.0
+    fees_paid = 0.0
     leverage = 1.0
-    equity = None
-    order_status = None
+    liq_price = 0.0
+    order_status = 0.0
+    position_size = 0.0
+    possible_loss = 0.0
+    realized_pnl = 0.0
+    sl_pct = 0.0
+    sl_price = 0.0
+    tp_pct = 0.0
+    tp_price = 0.0
 
     # record vars
     strat_records = None
@@ -61,8 +63,8 @@ class Order:
         account_state: AccountState,
         order_settings: OrderSettings,
         exchange_settings: ExchangeSettings,
-        strat_records: np.array,
         symbol_price_data: np.array,
+        strat_records: np.array,
     ):
         self.order_settings = order_settings
         self.account_state = account_state
@@ -149,12 +151,65 @@ class Order:
     def decrease_position(self, **vargs):
         pass
 
-    def move_stop_loss(self, sl_price):
+    def move_stop_loss(
+        self,
+        sl_price: float,
+        order_status: int,
+        bar_index: int,
+        indicator_settings_index: int,
+        order_settings_index: int,
+        symbol_index: int,
+        order_records: np.array,
+        order_records_filled: np.array,
+    ):
         self.sl_price = sl_price
-        self.sl_pct = sl_price
+        self.sl_pct = (self.average_entry - sl_price) / self.average_entry
+        self.order_status = order_status
+        self.fill_order_records(
+            bar_index=bar_index,
+            order_settings_index=order_settings_index,
+            indicator_settings_index=indicator_settings_index,
+            symbol_index=symbol_index,
+            order_records=order_records,
+            order_records_filled=order_records_filled,
+        )
 
-    def fill_order_result_successful_entry(self, **vargs):
-        pass
+    def fill_order_records(
+        self,
+        bar_index: int,
+        indicator_settings_index: int,
+        order_settings_index: int,
+        symbol_index: int,
+        order_records_filled: np.array,
+        order_records: np.array,
+    ):
+        order_records["symbol_idx"] = symbol_index
+        order_records["ind_set_idx"] = indicator_settings_index
+        order_records["or_set_idx"] = order_settings_index
+        order_records["bar_idx"] = bar_index
+
+        order_records["equity"] = self.equity
+        order_records["available_balance"] = self.available_balance
+        order_records["cash_borrowed"] = self.cash_borrowed
+        order_records["cash_used"] = self.cash_used
+
+        order_records["average_entry"] = self.average_entry
+        order_records["fees_paid"] = self.fees_paid
+        order_records["leverage"] = self.leverage
+        order_records["liq_price"] = self.liq_price
+        order_records["order_status"] = self.order_status
+        order_records["possible_loss"] = self.possible_loss
+        order_records["entry_size"] = self.entry_size
+        order_records["entry_price"] = self.entry_price
+        order_records["exit_price"] = self.exit_price
+        order_records["position_size"] = self.position_size
+        order_records["realized_pnl"] = self.realized_pnl
+        order_records["sl_pct"] = self.sl_pct * 100
+        order_records["sl_price"] = self.sl_price
+        order_records["tp_pct"] = self.tp_pct * 100
+        order_records["tp_price"] = self.tp_price
+
+        order_records_filled[0] += 1
 
     def fill_rejected_order_record(self, **vargs):
         print("Order - fill_rejected_order_record")
@@ -208,6 +263,7 @@ class LongOrder(Order):
         (
             self.tp_price,
             self.tp_pct,
+            self.order_status
         ) = self.obj_take_profit.take_profit_calculator(
             possible_loss=self.possible_loss,
             position_size=self.position_size,
@@ -257,6 +313,8 @@ class LongOrder(Order):
         indicator_settings_index: int,
         order_settings_index: int,
         symbol_index: int,
+        order_records: np.array,
+        order_records_filled: np.array,
     ):
         # profit and loss calulation
         coin_size = self.position_size / self.average_entry  # math checked
@@ -293,10 +351,29 @@ class LongOrder(Order):
 
         self.strat_records[self.strat_records_filled]["equity"] = self.equity
         self.strat_records[self.strat_records_filled]["bar_idx"] = bar_index
-        self.strat_records[self.strat_records_filled]["or_set_idx"] = order_settings_index
-        self.strat_records[self.strat_records_filled]["ind_set_idx"] = indicator_settings_index
+        self.strat_records[self.strat_records_filled][
+            "or_set_idx"
+        ] = order_settings_index
+        self.strat_records[self.strat_records_filled][
+            "ind_set_idx"
+        ] = indicator_settings_index
         self.strat_records[self.strat_records_filled]["symbol_idx"] = symbol_index
-        self.strat_records[self.strat_records_filled]["real_pnl"] = round(self.realized_pnl, 4)
+        self.strat_records[self.strat_records_filled]["real_pnl"] = round(
+            self.realized_pnl, 4
+        )
 
         self.strat_records_filled += 1
-        print(f"Order - Decrease Position - rest all order results & filled strat records")
+        print(
+            f"Order - Decrease Position - rest all order results & filled strat records"
+        )
+        self.fill_order_records(
+            bar_index=bar_index,
+            order_settings_index=order_settings_index,
+            indicator_settings_index=indicator_settings_index,
+            symbol_index=symbol_index,
+            order_records=order_records,
+            order_records_filled=order_records_filled,
+        )
+        self.fees_paid = 0.0
+        self.realized_pnl = 0.0
+        self.exit_price = 0.0

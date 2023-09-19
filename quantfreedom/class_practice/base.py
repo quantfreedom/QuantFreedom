@@ -8,6 +8,7 @@ from quantfreedom.class_practice.enums import (
     CandleBodyType,
     OrderSettingsArrays,
     ExchangeSettings,
+    or_dt
 )
 from quantfreedom.class_practice.helper_funcs import create_os_cart_product_nb
 from quantfreedom.class_practice.simulate import backtest_df_only_nb
@@ -61,7 +62,7 @@ def backtest_df_only(
         f"\nTotal combinations to test: {total_indicator_settings * total_order_settings:,}"
     )
 
-    pnl_array, strat_array, settings_array = backtest_df_only_nb(
+    order_records_array, strat_array, settings_array = backtest_df_only_nb(
         account_state=account_state,
         os_cart_arrays=os_cart_arrays,
         backtest_settings=backtest_settings,
@@ -74,6 +75,8 @@ def backtest_df_only(
         total_indicator_settings=total_indicator_settings,
         total_order_settings=total_order_settings,
     )
+    
+    order_records_df = pd.DataFrame(order_records_array, columns=or_dt.names).T
 
     strat_results_df = pd.DataFrame(strat_array).sort_values(
         by=["to_the_upside", "gains_pct"], ascending=False
@@ -98,4 +101,4 @@ def backtest_df_only(
 
     setting_results_df = setting_results_df.T
 
-    return pnl_array, strat_results_df, setting_results_df
+    return order_records_df, strat_results_df, setting_results_df

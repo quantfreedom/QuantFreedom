@@ -64,6 +64,7 @@ class TakeProfitLong:
         return (
             self.tp_price,
             self.tp_pct,
+            OrderStatus.EntryFilled,
         )
 
     def calculate_take_profit_pct(self, **vargs):
