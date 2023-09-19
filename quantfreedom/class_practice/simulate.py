@@ -13,17 +13,15 @@ def get_order_settings(
     os_cart_arrays: OrderSettingsArrays,
 ) -> OrderSettings:
     return OrderSettings(
-        risk_account_pct_size=os_cart_arrays.risk_account_pct_size[settings_idx],
-        sl_based_on_add_pct=os_cart_arrays.sl_based_on_add_pct[settings_idx],
-        sl_based_on_lookback=os_cart_arrays.sl_based_on_lookback[settings_idx],
-        risk_reward=os_cart_arrays.risk_reward[settings_idx],
-        leverage_type=os_cart_arrays.leverage_type[settings_idx],
-        sl_candle_body_type=os_cart_arrays.sl_candle_body_type[settings_idx],
         increase_position_type=os_cart_arrays.increase_position_type[settings_idx],
-        stop_loss_type=os_cart_arrays.stop_loss_type[settings_idx],
-        take_profit_type=os_cart_arrays.take_profit_type[settings_idx],
+        leverage_type=os_cart_arrays.leverage_type[settings_idx],
         max_equity_risk_pct=os_cart_arrays.max_equity_risk_pct[settings_idx],
         order_type=os_cart_arrays.order_type[settings_idx],
+        risk_account_pct_size=os_cart_arrays.risk_account_pct_size[settings_idx],
+        risk_reward=os_cart_arrays.risk_reward[settings_idx],
+        sl_based_on_add_pct=os_cart_arrays.sl_based_on_add_pct[settings_idx],
+        sl_based_on_lookback=os_cart_arrays.sl_based_on_lookback[settings_idx],
+        sl_candle_body_type=os_cart_arrays.sl_candle_body_type[settings_idx],
         sl_to_be_based_on_candle_body_type=os_cart_arrays.sl_to_be_based_on_candle_body_type[
             settings_idx
         ],
@@ -33,15 +31,17 @@ def get_order_settings(
         sl_to_be_zero_or_entry_type=os_cart_arrays.sl_to_be_zero_or_entry_type[
             settings_idx
         ],
+        static_leverage=os_cart_arrays.static_leverage[settings_idx],
+        stop_loss_type=os_cart_arrays.stop_loss_type[settings_idx],
+        take_profit_type=os_cart_arrays.take_profit_type[settings_idx],
+        tp_fee_type=os_cart_arrays.tp_fee_type[settings_idx],
         trail_sl_based_on_candle_body_type=os_cart_arrays.trail_sl_based_on_candle_body_type[
             settings_idx
         ],
+        trail_sl_by_pct=os_cart_arrays.trail_sl_by_pct[settings_idx],
         trail_sl_when_pct_from_candle_body=os_cart_arrays.trail_sl_when_pct_from_candle_body[
             settings_idx
         ],
-        trail_sl_by_pct=os_cart_arrays.trail_sl_by_pct[settings_idx],
-        static_leverage=os_cart_arrays.static_leverage[settings_idx],
-        tp_fee_type=os_cart_arrays.tp_fee_type[settings_idx],
     )
 
 
@@ -82,7 +82,7 @@ def backtest_df_only_nb(
     # strat_records = np.empty(int(total_bars / 3), dtype=strat_records_dt)
     strat_records = np.empty(int(total_bars), dtype=strat_records_dt)
 
-    order_records = np.empty(total_bars * 3, dtype=or_dt)
+    order_records = np.empty(50, dtype=or_dt)
     order_records_filled = np.array([0])
 
     prices_start = 0
@@ -149,7 +149,7 @@ def backtest_df_only_nb(
                                 indicator_settings_index=indicator_settings_index,
                                 symbol_index=symbol_index,
                                 order_records=order_records[order_records_filled[0]],
-                                order_records_filled=order_records_filled
+                                order_records_filled=order_records_filled,
                             )
                         except RejectedOrderError as e:
                             print(f"Skipping iteration -> {repr(e)}")
@@ -193,7 +193,7 @@ def backtest_df_only_nb(
                                 indicator_settings_index=indicator_settings_index,
                                 order_settings_index=order_settings_index,
                                 order_records=order_records[order_records_filled[0]],
-                                order_records_filled=order_records_filled
+                                order_records_filled=order_records_filled,
                             )
                         except MoveStopLoss as e:
                             print(f"Decrease Position -> {repr(e.order_status)}")
@@ -205,7 +205,7 @@ def backtest_df_only_nb(
                                 indicator_settings_index=indicator_settings_index,
                                 symbol_index=symbol_index,
                                 order_records=order_records[order_records_filled[0]],
-                                order_records_filled=order_records_filled
+                                order_records_filled=order_records_filled,
                             )
 
                     print("\nChecking Next Bar for entry or exit")

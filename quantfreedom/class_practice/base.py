@@ -8,7 +8,7 @@ from quantfreedom.class_practice.enums import (
     CandleBodyType,
     OrderSettingsArrays,
     ExchangeSettings,
-    or_dt
+    or_dt,
 )
 from quantfreedom.class_practice.helper_funcs import create_os_cart_product_nb
 from quantfreedom.class_practice.simulate import backtest_df_only_nb
@@ -75,9 +75,11 @@ def backtest_df_only(
         total_indicator_settings=total_indicator_settings,
         total_order_settings=total_order_settings,
     )
-    
-    order_records_df = pd.DataFrame(order_records_array, columns=or_dt.names).T
 
+    order_records_df = pd.DataFrame(order_records_array, columns=or_dt.names)
+    order_records_df = order_records_df[order_records_df.columns[:4]].join(
+        order_records_df[order_records_df.columns[4:]].replace(0.0, np.nan)
+    )
     strat_results_df = pd.DataFrame(strat_array).sort_values(
         by=["to_the_upside", "gains_pct"], ascending=False
     )
@@ -99,6 +101,9 @@ def backtest_df_only(
     for i in range(len(symbols)):
         setting_results_df.replace({"symbol": {i: symbols[i]}}, inplace=True)
 
-    setting_results_df = setting_results_df.T
-
-    return order_records_df, strat_results_df, setting_results_df
+    setting_results_df = setting_results_df
+    return (
+        order_records_df,
+        strat_results_df,
+        setting_results_df,
+    )

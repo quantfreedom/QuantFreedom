@@ -125,47 +125,47 @@ class ExchangeSettings(NamedTuple):
 
 
 class OrderSettingsArrays(NamedTuple):
-    risk_account_pct_size: np.array
-    sl_based_on_add_pct: np.array
-    sl_based_on_lookback: np.array
-    risk_reward: np.array
-    leverage_type: np.array
-    sl_candle_body_type: np.array
     increase_position_type: np.array
-    stop_loss_type: np.array
-    take_profit_type: np.array
+    leverage_type: np.array
     max_equity_risk_pct: np.array
     order_type: np.array
+    risk_account_pct_size: np.array
+    risk_reward: np.array
+    sl_based_on_add_pct: np.array
+    sl_based_on_lookback: np.array
+    sl_candle_body_type: np.array
     sl_to_be_based_on_candle_body_type: np.array
     sl_to_be_when_pct_from_candle_body: np.array
     sl_to_be_zero_or_entry_type: np.array
-    trail_sl_based_on_candle_body_type: np.array
-    trail_sl_when_pct_from_candle_body: np.array
-    trail_sl_by_pct: np.array
     static_leverage: np.array
+    stop_loss_type: np.array
+    take_profit_type: np.array
     tp_fee_type: np.array
+    trail_sl_based_on_candle_body_type: np.array
+    trail_sl_by_pct: np.array
+    trail_sl_when_pct_from_candle_body: np.array
 
 
 class OrderSettings(NamedTuple):
-    risk_account_pct_size: float
-    sl_based_on_add_pct: float
-    sl_based_on_lookback: int
-    risk_reward: float
-    leverage_type: int
-    sl_candle_body_type: int
     increase_position_type: int
-    stop_loss_type: int
-    take_profit_type: int
+    leverage_type: int
     max_equity_risk_pct: float
     order_type: int
+    risk_account_pct_size: float
+    risk_reward: float
+    sl_based_on_add_pct: float
+    sl_based_on_lookback: int
+    sl_candle_body_type: int
     sl_to_be_based_on_candle_body_type: int
     sl_to_be_when_pct_from_candle_body: float
     sl_to_be_zero_or_entry_type: int
-    trail_sl_based_on_candle_body_type: int
-    trail_sl_when_pct_from_candle_body: float
-    trail_sl_by_pct: float
     static_leverage: float
+    stop_loss_type: int
+    take_profit_type: int
     tp_fee_type: int
+    trail_sl_based_on_candle_body_type: int
+    trail_sl_by_pct: float
+    trail_sl_when_pct_from_candle_body: float
 
 
 class OrderResult(NamedTuple):
@@ -246,10 +246,10 @@ order_settings_array_dt = np.dtype(
         ("static_leverage", np.float_),
         ("stop_loss_type", np.int_),
         ("take_profit_type", np.int_),
+        ("tp_fee_type", np.int_),
         ("trail_sl_based_on_candle_body_type", np.int_),
         ("trail_sl_by_pct", np.float_),
         ("trail_sl_when_pct_from_candle_body", np.float_),
-        ("tp_fee_type", np.int_),
     ],
     align=True,
 )
