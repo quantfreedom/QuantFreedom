@@ -29,12 +29,13 @@ class Order:
 
     # order result variables
     available_balance = 0.0
-    average_entry = 0.0
     cash_borrowed = 0.0
     cash_used = 0.0
+    equity = 0.0
+    
+    average_entry = 0.0
     entry_price = 0.0
     entry_size = 0.0
-    equity = 0.0
     exit_price = 0.0
     fees_paid = 0.0
     leverage = 1.0
