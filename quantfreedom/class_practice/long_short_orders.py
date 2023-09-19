@@ -263,7 +263,7 @@ class LongOrder(Order):
         (
             self.tp_price,
             self.tp_pct,
-            self.order_status
+            self.order_status,
         ) = self.obj_take_profit.take_profit_calculator(
             possible_loss=self.possible_loss,
             position_size=self.position_size,

@@ -48,7 +48,7 @@ class TakeProfitLong:
         )
 
     def pass_fucntion(self, **vargs):
-        return 0.0, 0.0
+        return 0.0, 0.0, 0.0
 
     def calculate_risk_reward(self, possible_loss, position_size, average_entry):
         print("Long Order - Calculate Take Profit - calculate_risk_reward")
@@ -61,11 +61,7 @@ class TakeProfitLong:
         print(
             f"Long Order - Calculate Take Profit - tp_price= {round(self.tp_price,2)} tp_pct= {round(self.tp_pct*100,2)}"
         )
-        return (
-            self.tp_price,
-            self.tp_pct,
-            OrderStatus.EntryFilled,
-        )
+        return self.tp_price, self.tp_pct, OrderStatus.EntryFilled
 
     def calculate_take_profit_pct(self, **vargs):
         print("Long Order - Calculate Take Profit - calculate_take_profit_pct")
@@ -94,7 +90,9 @@ class TakeProfitLong:
         print("Long Order - Take Profit Checker - check_take_profit_hit_provided")
         if exit_signal:
             raise DecreasePosition(
-                exit_price=current_candle[3], # sending the close of the current candle for now as exit price
+                exit_price=current_candle[
+                    3
+                ],  # sending the close of the current candle for now as exit price
                 order_status=OrderStatus.TakeProfitFilled,
                 exit_fee_pct=exit_fee_pct,
             )
