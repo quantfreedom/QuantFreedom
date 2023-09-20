@@ -207,7 +207,6 @@ def backtest_df_only_nb(
                                 order_records=order_records[order_records_filled[0]],
                                 order_records_filled=order_records_filled,
                             )
-
                     print("\nChecking Next Bar for entry or exit")
 
                 # Checking if gains
