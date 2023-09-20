@@ -82,7 +82,7 @@ def backtest_df_only_nb(
     # strat_records = np.empty(int(total_bars / 3), dtype=strat_records_dt)
     strat_records = np.empty(int(total_bars), dtype=strat_records_dt)
 
-    order_records = np.empty(50, dtype=or_dt)
+    order_records = np.empty(10000, dtype=or_dt)
     order_records_filled = np.array([0])
 
     prices_start = 0
