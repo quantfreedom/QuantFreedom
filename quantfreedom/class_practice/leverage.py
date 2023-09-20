@@ -50,7 +50,6 @@ class LeverageLong:
         # if there is a stop loss then calc liq hit is pass function
 
     def pass_function(self, **vargs):
-        print("Long Order - Liqidation checker - pass_function")
         pass
 
     def calculate_leverage(
@@ -75,7 +74,6 @@ class LeverageLong:
         og_cash_used: float,
         og_cash_borrowed: float,
     ):
-        print("Long Order - Calculate Leverage - __calc_liq_price")
 
         # Getting Order Cost
         # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001064&language=en_US
@@ -101,15 +99,7 @@ class LeverageLong:
             self.liq_price = average_entry * (
                 1 - (1 / self.leverage) + self.mmr_pct
             )  # math checked
-        print(
-            f"Long Order - Calculate Leverage - leverage= {round(self.leverage,2)} liq_price= {round(self.liq_price,2)}"
-        )
-        print(
-            f"Long Order - Calculate Leverage - available_balance= {round(available_balance,2)}"
-        )
-        print(
-            f"Long Order - Calculate Leverage - cash_used= {round(cash_used,2)} cash_borrowed= {round(cash_borrowed,2)}"
-        )
+
         return (
             self.leverage,
             self.liq_price,
@@ -127,7 +117,6 @@ class LeverageLong:
         cash_borrowed: float,
         **vargs,
     ):
-        print("Long Order - Calculate Leverage - set_static_leverage")
         return self.__calc_liq_price(
             entry_size=entry_size,
             leverage=self.static_leverage,
@@ -146,7 +135,6 @@ class LeverageLong:
         available_balance: float,
         cash_borrowed: float,
     ):
-        print("Long Order - Calculate Leverage - calculate_dynamic_leverage")
         self.leverage = -average_entry / (
             (sl_price - sl_price * 0.001)
             - average_entry

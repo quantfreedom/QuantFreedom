@@ -51,20 +51,16 @@ class TakeProfitLong:
         return 0.0, 0.0, 0.0
 
     def calculate_risk_reward(self, possible_loss, position_size, average_entry):
-        print("Long Order - Calculate Take Profit - calculate_risk_reward")
         profit = possible_loss * self.risk_reward
         self.tp_price = (profit + position_size * self.tp_fee_pct + position_size) * (
             average_entry / (position_size - position_size * self.tp_fee_pct)
         )  # math checked
 
         self.tp_pct = (self.tp_price - average_entry) / average_entry  # math checked
-        print(
-            f"Long Order - Calculate Take Profit - tp_price= {round(self.tp_price,2)} tp_pct= {round(self.tp_pct*100,2)}"
-        )
         return self.tp_price, self.tp_pct, OrderStatus.EntryFilled
 
     def calculate_take_profit_pct(self, **vargs):
-        print("Long Order - Calculate Take Profit - calculate_take_profit_pct")
+        pass
 
     def check_take_profit_hit_regular(
         self,
@@ -72,7 +68,6 @@ class TakeProfitLong:
         exit_fee_pct: float,
         **vargs,
     ):
-        print("Long Order - Take Profit Checker - check_take_profit_hit")
         if tp_hit:
             raise DecreasePosition(
                 exit_price=self.tp_price,
@@ -87,7 +82,6 @@ class TakeProfitLong:
         current_candle: np.array,
         **vargs,
     ):
-        print("Long Order - Take Profit Checker - check_take_profit_hit_provided")
         if exit_signal:
             raise DecreasePosition(
                 exit_price=current_candle[

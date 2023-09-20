@@ -213,10 +213,9 @@ class Order:
         order_records_filled[0] += 1
 
     def fill_rejected_order_record(self, **vargs):
-        print("Order - fill_rejected_order_record")
-
+        pass
     def fill_strat_records_nb(self, **vargs):
-        print("Order - fill_strat_records_nb")
+        pass
 
 
 class LongOrder(Order):
@@ -330,9 +329,6 @@ class LongOrder(Order):
         # Setting new equity
         self.equity += self.realized_pnl
 
-        print(
-            f"Order - Decrease Position - equity= {round(self.equity,2)} pnl={round(pnl,2)} fees_paid= {round(self.fees_paid,2)} realized_pnl={round(self.realized_pnl,2)} bar_index= {bar_index}"
-        )
         self.available_balance = self.equity
         self.cash_borrowed = 0.0
         self.cash_used = 0.0
@@ -364,9 +360,6 @@ class LongOrder(Order):
         )
 
         self.strat_records_filled += 1
-        print(
-            f"Order - Decrease Position - rest all order results & filled strat records"
-        )
         self.fill_order_records(
             bar_index=bar_index,
             order_settings_index=order_settings_index,

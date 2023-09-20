@@ -91,7 +91,6 @@ def backtest_df_only_nb(
     entries_end = entries_per_symbol
 
     for symbol_index in range(num_of_symbols):
-        print("\nNew Symbol")
         symbol_price_data = price_data[:, prices_start : prices_start + 4]
 
         prices_start += 4
@@ -102,12 +101,10 @@ def backtest_df_only_nb(
 
         # ind set loop
         for indicator_settings_index in range(entries_per_symbol):
-            print("\nNew Indicator Setting")
             current_indicator_entries = symbol_entries[:, indicator_settings_index]
             current_exit_signals = exit_signals[:, indicator_settings_index]
 
             for order_settings_index in range(total_order_settings):
-                print("\nNew Order Setting")
                 order_settings = get_order_settings(
                     order_settings_index, os_cart_arrays
                 )
@@ -133,7 +130,6 @@ def backtest_df_only_nb(
                     if current_indicator_entries[
                         bar_index
                     ]:  # add in that we are also not at max entry amount
-                        print(f"Order - Try to Enter Trade - bar_index= {bar_index}")
                         try:
                             order.calculate_stop_loss(bar_index=bar_index)
                             order.calculate_increase_posotion(
@@ -152,9 +148,7 @@ def backtest_df_only_nb(
                                 order_records_filled=order_records_filled,
                             )
                         except RejectedOrderError as e:
-                            print(f"Skipping iteration -> {repr(e)}")
-                            # order.fill_order_result_rejected_entry()
-
+                            pass
                     if order.position_size > 0:
                         try:
                             # need to figure out a way that if any of these are hit i get kicked out and then return the order result
@@ -178,12 +172,8 @@ def backtest_df_only_nb(
                                 bar_index=bar_index, symbol_price_data=symbol_price_data
                             )
                         except RejectedOrderError as e:
-                            print(f"Skipping iteration -> {repr(e.order_status)}")
-                            # order.fill_order_result_rejected_exit()
+                            pass
                         except DecreasePosition as e:
-                            print(
-                                f"Order - Decrease Position - order_status= {OrderStatus._fields[e.order_status]} exit_price= {e.exit_price}"
-                            )
                             order.decrease_position(
                                 order_status=e.order_status,
                                 exit_price=e.exit_price,
@@ -196,7 +186,6 @@ def backtest_df_only_nb(
                                 order_records_filled=order_records_filled,
                             )
                         except MoveStopLoss as e:
-                            print(f"Decrease Position -> {repr(e.order_status)}")
                             order.move_stop_loss(
                                 sl_price=e.sl_price,
                                 order_status=e.order_status,
@@ -207,8 +196,6 @@ def backtest_df_only_nb(
                                 order_records=order_records[order_records_filled[0]],
                                 order_records_filled=order_records_filled,
                             )
-                    print("\nChecking Next Bar for entry or exit")
-
                 # Checking if gains
                 gains_pct = (
                     (order.equity - account_state.equity) / account_state.equity
