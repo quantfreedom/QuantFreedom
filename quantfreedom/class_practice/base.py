@@ -1,6 +1,14 @@
 import pandas as pd
 import numpy as np
 from typing import Optional
+from dash_bootstrap_templates import load_figure_template
+from plotly.subplots import make_subplots
+from jupyter_dash import JupyterDash
+from dash import Dash, dcc, html, dash_table
+from IPython import get_ipython
+import plotly.io as pio
+import dash_bootstrap_components as dbc
+import plotly.graph_objects as go
 
 from quantfreedom.class_practice.enums import (
     AccountState,
@@ -12,6 +20,28 @@ from quantfreedom.class_practice.enums import (
 )
 from quantfreedom.class_practice.helper_funcs import create_os_cart_product_nb
 from quantfreedom.class_practice.simulate import backtest_df_only_nb
+
+pio.renderers.default = "browser"
+
+
+# np.set_printoptions(formatter={"float_kind": "{:.2f}".format})
+
+# pd.options.display.float_format = "{:,.2f}".format
+
+load_figure_template("darkly")
+dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
+try:
+    shell = str(get_ipython())
+    if "ZMQInteractiveShell" in shell:
+        app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
+    elif shell == "TerminalInteractiveShell":
+        app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
+    else:
+        app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
+except NameError:
+    app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
+
+bg_color = "#0b0b18"
 
 
 def backtest_df_only(
@@ -81,7 +111,9 @@ def backtest_df_only(
         order_records_df[order_records_df.columns[4:]].replace(0.0, np.nan)
     )
     strat_results_df = pd.DataFrame(strat_array).sort_values(
-        by=["to_the_upside", "gains_pct"], ascending=False
+        by=["to_the_upside", "gains_pct"],
+        ascending=False,
+        ignore_index=True,
     )
 
     symbols = list(price_data.columns.levels[0])
@@ -101,9 +133,116 @@ def backtest_df_only(
     for i in range(len(symbols)):
         setting_results_df.replace({"symbol": {i: symbols[i]}}, inplace=True)
 
-    setting_results_df = setting_results_df
     return (
         order_records_df,
         strat_results_df,
         setting_results_df,
     )
+
+
+def plot_one_result(
+    strat_result_index: int,
+    strat_res_df: pd.DataFrame,
+    price_data: pd.DataFrame,
+    order_records_df: pd.DataFrame,
+):
+    indexes = tuple(strat_res_df.iloc[strat_result_index].iloc[[0, 1, 2]].astype(int))
+    index_selected_df = order_records_df[
+        (order_records_df.symbol_idx == indexes[0])
+        & (order_records_df.ind_set_idx == indexes[1])
+        & (order_records_df.or_set_idx == indexes[2])
+    ].reset_index()
+    price_data_symbol = price_data.columns.levels[0][indexes[0]]
+    price_data_index = price_data.index
+    results_bar_index = price_data_index[index_selected_df.bar_idx]
+    array_with_zeros = np.zeros_like(price_data_index.values, dtype=np.float_)
+    pnl_no_nan = index_selected_df[~np.isnan(index_selected_df["realized_pnl"])][
+        "realized_pnl"
+    ]
+    for a, b in pnl_no_nan.items():
+        array_with_zeros[index_selected_df["bar_idx"].iloc[a]] = b
+    cumsum_pnl_array = array_with_zeros.cumsum()
+
+    fig = make_subplots(
+        rows=2,
+        cols=1,
+        shared_xaxes=True,
+        vertical_spacing=0.02,
+        row_heights=[0.6, 0.4],
+    )
+    fig.add_traces(
+        data=[
+            go.Candlestick(
+                x=price_data_index,
+                open=price_data[price_data_symbol].open,
+                high=price_data[price_data_symbol].high,
+                low=price_data[price_data_symbol].low,
+                close=price_data[price_data_symbol].close,
+                name="Candles",
+            ),
+            go.Scatter(
+                name="Avg Entries",
+                x=results_bar_index,
+                y=index_selected_df.average_entry,
+                mode="markers",
+                marker=dict(
+                    color="lightblue",
+                    size=10,
+                    symbol="circle",
+                    line=dict(color="black", width=1),
+                ),
+            ),
+            go.Scatter(
+                name="Stop Loss",
+                x=results_bar_index,
+                y=index_selected_df.sl_price,
+                mode="markers",
+                marker=dict(
+                    color="orange",
+                    size=10,
+                    symbol="x",
+                    line=dict(color="black", width=1),
+                ),
+            ),
+            go.Scatter(
+                name="Take Profit",
+                x=results_bar_index,
+                y=index_selected_df.tp_price,
+                mode="markers",
+                marker=dict(
+                    color="#57FF30",
+                    size=10,
+                    symbol="star",
+                    line=dict(color="black", width=1),
+                ),
+            ),
+            go.Scatter(
+                name="Exit Hit",
+                x=results_bar_index,
+                y=index_selected_df.exit_price,
+                mode="markers",
+                marker=dict(
+                    color="yellow",
+                    size=10,
+                    symbol="square",
+                    line=dict(color="black", width=1),
+                ),
+            ),
+        ],
+        rows=1,
+        cols=1,
+    )
+    fig.add_traces(
+        data=go.Scatter(
+            name="PnL",
+            x=price_data_index,
+            y=cumsum_pnl_array,
+            mode="lines+markers",
+            marker=dict(size=6),
+            line=dict(color="#247eb2"),
+        ),
+        rows=2,
+        cols=1,
+    )
+    fig.update_xaxes(rangeslider_visible=False)
+    fig.show()
