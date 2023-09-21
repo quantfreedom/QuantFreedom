@@ -72,18 +72,16 @@ def backtest_df_only_nb(
         dtype=strat_df_array_dt,
     )
 
-    order_settings_result_records = np.empty(
-        array_size,
-        dtype=order_settings_array_dt,
-    )
+    order_settings_result_indexes = []
+    indicator_settings_result_indexes = []
     result_records_filled = 0
 
     # TODO: change this back to / 3 when done testing
     # strat_records = np.empty(int(total_bars / 3), dtype=strat_records_dt)
     strat_records = np.empty(int(total_bars), dtype=strat_records_dt)
 
-    order_records = np.empty(10000, dtype=or_dt)
-    order_records_filled = np.array([0])
+    order_records = np.empty(int(total_bars) * 100, dtype=or_dt)
+    total_order_records_filled = np.array([0])
 
     prices_start = 0
     entries_per_symbol = int(entries.shape[1] / num_of_symbols)
@@ -144,8 +142,10 @@ def backtest_df_only_nb(
                                 order_settings_index=order_settings_index,
                                 indicator_settings_index=indicator_settings_index,
                                 symbol_index=symbol_index,
-                                order_records=order_records[order_records_filled[0]],
-                                order_records_filled=order_records_filled,
+                                order_records=order_records[
+                                    total_order_records_filled[0]
+                                ],
+                                total_order_records_filled=total_order_records_filled,
                             )
                         except RejectedOrderError as e:
                             pass
@@ -182,8 +182,10 @@ def backtest_df_only_nb(
                                 symbol_index=symbol_index,
                                 indicator_settings_index=indicator_settings_index,
                                 order_settings_index=order_settings_index,
-                                order_records=order_records[order_records_filled[0]],
-                                order_records_filled=order_records_filled,
+                                order_records=order_records[
+                                    total_order_records_filled[0]
+                                ],
+                                total_order_records_filled=total_order_records_filled,
                             )
                         except MoveStopLoss as e:
                             order.move_stop_loss(
@@ -193,8 +195,10 @@ def backtest_df_only_nb(
                                 order_settings_index=order_settings_index,
                                 indicator_settings_index=indicator_settings_index,
                                 symbol_index=symbol_index,
-                                order_records=order_records[order_records_filled[0]],
-                                order_records_filled=order_records_filled,
+                                order_records=order_records[
+                                    total_order_records_filled[0]
+                                ],
+                                total_order_records_filled=total_order_records_filled,
                             )
                 # Checking if gains
                 gains_pct = (
@@ -259,74 +263,96 @@ def backtest_df_only_nb(
                                 "ending_eq"
                             ] = order.equity
 
-                            # Fill order setting results
+                            if (
+                                order_settings_index
+                                not in order_settings_result_indexes
+                            ):
+                                order_settings_result_indexes.append(
+                                    order_settings_index
+                                )
+                            if (
+                                indicator_settings_index
+                                not in indicator_settings_result_indexes
+                            ):
+                                indicator_settings_result_indexes.append(
+                                    indicator_settings_index
+                                )
 
-                            order_settings_result_records[result_records_filled][
-                                "symbol_idx"
-                            ] = symbol_index
-                            order_settings_result_records[result_records_filled][
-                                "or_set_idx"
-                            ] = order_settings_index
-                            order_settings_result_records[result_records_filled][
-                                "increase_position_type"
-                            ] = order_settings.increase_position_type
-                            order_settings_result_records[result_records_filled][
-                                "leverage_type"
-                            ] = order_settings.leverage_type
-                            order_settings_result_records[result_records_filled][
-                                "max_equity_risk_pct"
-                            ] = order_settings.max_equity_risk_pct
-                            order_settings_result_records[result_records_filled][
-                                "order_type"
-                            ] = order_settings.order_type
-                            order_settings_result_records[result_records_filled][
-                                "risk_account_pct_size"
-                            ] = order_settings.risk_account_pct_size
-                            order_settings_result_records[result_records_filled][
-                                "risk_reward"
-                            ] = order_settings.risk_reward
-                            order_settings_result_records[result_records_filled][
-                                "sl_based_on_add_pct"
-                            ] = order_settings.sl_based_on_add_pct
-                            order_settings_result_records[result_records_filled][
-                                "sl_based_on_lookback"
-                            ] = order_settings.sl_based_on_lookback
-                            order_settings_result_records[result_records_filled][
-                                "sl_candle_body_type"
-                            ] = order_settings.sl_candle_body_type
-                            order_settings_result_records[result_records_filled][
-                                "sl_to_be_based_on_candle_body_type"
-                            ] = order_settings.sl_to_be_based_on_candle_body_type
-                            order_settings_result_records[result_records_filled][
-                                "sl_to_be_when_pct_from_candle_body"
-                            ] = order_settings.sl_to_be_when_pct_from_candle_body
-                            order_settings_result_records[result_records_filled][
-                                "sl_to_be_zero_or_entry_type"
-                            ] = order_settings.sl_to_be_zero_or_entry_type
-                            order_settings_result_records[result_records_filled][
-                                "static_leverage"
-                            ] = order_settings.static_leverage
-                            order_settings_result_records[result_records_filled][
-                                "stop_loss_type"
-                            ] = order_settings.stop_loss_type
-                            order_settings_result_records[result_records_filled][
-                                "take_profit_type"
-                            ] = order_settings.take_profit_type
-                            order_settings_result_records[result_records_filled][
-                                "trail_sl_based_on_candle_body_type"
-                            ] = order_settings.trail_sl_based_on_candle_body_type
-                            order_settings_result_records[result_records_filled][
-                                "trail_sl_by_pct"
-                            ] = order_settings.trail_sl_by_pct
-                            order_settings_result_records[result_records_filled][
-                                "trail_sl_when_pct_from_candle_body"
-                            ] = order_settings.trail_sl_when_pct_from_candle_body
-                            order_settings_result_records[result_records_filled][
-                                "tp_fee_type"
-                            ] = order_settings.tp_fee_type
+                            # Fill order setting results
+                            # order_settings_result_records[result_records_filled][
+                            #     "symbol_idx"
+                            # ] = symbol_index
+                            # order_settings_result_records[result_records_filled][
+                            #     "or_set_idx"
+                            # ] = order_settings_index
+                            # order_settings_result_records[result_records_filled][
+                            #     "increase_position_type"
+                            # ] = order_settings.increase_position_type
+                            # order_settings_result_records[result_records_filled][
+                            #     "leverage_type"
+                            # ] = order_settings.leverage_type
+                            # order_settings_result_records[result_records_filled][
+                            #     "max_equity_risk_pct"
+                            # ] = order_settings.max_equity_risk_pct
+                            # order_settings_result_records[result_records_filled][
+                            #     "order_type"
+                            # ] = order_settings.order_type
+                            # order_settings_result_records[result_records_filled][
+                            #     "risk_account_pct_size"
+                            # ] = order_settings.risk_account_pct_size
+                            # order_settings_result_records[result_records_filled][
+                            #     "risk_reward"
+                            # ] = order_settings.risk_reward
+                            # order_settings_result_records[result_records_filled][
+                            #     "sl_based_on_add_pct"
+                            # ] = order_settings.sl_based_on_add_pct
+                            # order_settings_result_records[result_records_filled][
+                            #     "sl_based_on_lookback"
+                            # ] = order_settings.sl_based_on_lookback
+                            # order_settings_result_records[result_records_filled][
+                            #     "sl_candle_body_type"
+                            # ] = order_settings.sl_candle_body_type
+                            # order_settings_result_records[result_records_filled][
+                            #     "sl_to_be_based_on_candle_body_type"
+                            # ] = order_settings.sl_to_be_based_on_candle_body_type
+                            # order_settings_result_records[result_records_filled][
+                            #     "sl_to_be_when_pct_from_candle_body"
+                            # ] = order_settings.sl_to_be_when_pct_from_candle_body
+                            # order_settings_result_records[result_records_filled][
+                            #     "sl_to_be_zero_or_entry_type"
+                            # ] = order_settings.sl_to_be_zero_or_entry_type
+                            # order_settings_result_records[result_records_filled][
+                            #     "static_leverage"
+                            # ] = order_settings.static_leverage
+                            # order_settings_result_records[result_records_filled][
+                            #     "stop_loss_type"
+                            # ] = order_settings.stop_loss_type
+                            # order_settings_result_records[result_records_filled][
+                            #     "take_profit_type"
+                            # ] = order_settings.take_profit_type
+                            # order_settings_result_records[result_records_filled][
+                            #     "trail_sl_based_on_candle_body_type"
+                            # ] = order_settings.trail_sl_based_on_candle_body_type
+                            # order_settings_result_records[result_records_filled][
+                            #     "trail_sl_by_pct"
+                            # ] = order_settings.trail_sl_by_pct
+                            # order_settings_result_records[result_records_filled][
+                            #     "trail_sl_when_pct_from_candle_body"
+                            # ] = order_settings.trail_sl_when_pct_from_candle_body
+                            # order_settings_result_records[result_records_filled][
+                            #     "tp_fee_type"
+                            # ] = order_settings.tp_fee_type
                             result_records_filled += 1
+                        else:
+                            total_order_records_filled[0] -= order.order_records_filled
+                    else:
+                        total_order_records_filled[0] -= order.order_records_filled
+                else:
+                    total_order_records_filled[0] -= order.order_records_filled
+
+    
     return (
-        order_records[: order_records_filled[0]],
+        order_records[: total_order_records_filled[0]],
         strategy_result_records[:result_records_filled],
         order_settings_result_records[:result_records_filled],
     )

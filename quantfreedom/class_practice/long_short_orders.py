@@ -75,6 +75,7 @@ class Order:
         self.available_balance = account_state.equity
         self.strat_records = strat_records
         self.strat_records_filled = 0
+        self.order_records_filled = 0
 
         if self.order_settings.tp_fee_type == TakeProfitFeeType.Nothing:
             self.tp_fee_pct = 0.0
@@ -161,7 +162,7 @@ class Order:
         order_settings_index: int,
         symbol_index: int,
         order_records: np.array,
-        order_records_filled: np.array,
+        total_order_records_filled: np.array,
     ):
         self.sl_price = sl_price
         self.sl_pct = (self.average_entry - sl_price) / self.average_entry
@@ -172,7 +173,7 @@ class Order:
             indicator_settings_index=indicator_settings_index,
             symbol_index=symbol_index,
             order_records=order_records,
-            order_records_filled=order_records_filled,
+            total_order_records_filled=total_order_records_filled,
         )
 
     def fill_order_records(
@@ -181,7 +182,7 @@ class Order:
         indicator_settings_index: int,
         order_settings_index: int,
         symbol_index: int,
-        order_records_filled: np.array,
+        total_order_records_filled: np.array,
         order_records: np.array,
     ):
         order_records["symbol_idx"] = symbol_index
@@ -210,7 +211,8 @@ class Order:
         order_records["tp_pct"] = self.tp_pct * 100
         order_records["tp_price"] = self.tp_price
 
-        order_records_filled[0] += 1
+        total_order_records_filled[0] += 1
+        self.order_records_filled +=1
 
     def fill_rejected_order_record(self, **vargs):
         pass
@@ -314,7 +316,7 @@ class LongOrder(Order):
         order_settings_index: int,
         symbol_index: int,
         order_records: np.array,
-        order_records_filled: np.array,
+        total_order_records_filled: np.array,
     ):
         # profit and loss calulation
         coin_size = self.position_size / self.average_entry  # math checked
@@ -366,7 +368,7 @@ class LongOrder(Order):
             indicator_settings_index=indicator_settings_index,
             symbol_index=symbol_index,
             order_records=order_records,
-            order_records_filled=order_records_filled,
+            total_order_records_filled=total_order_records_filled,
         )
         self.fees_paid = 0.0
         self.realized_pnl = 0.0

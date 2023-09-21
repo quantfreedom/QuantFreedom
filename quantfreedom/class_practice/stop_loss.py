@@ -186,7 +186,7 @@ class StopLossLong:
         if move_sl:
             temp_sl_price = candle_body_ohlc - candle_body_ohlc * self.trail_sl_by_pct
             if temp_sl_price > self.sl_price:
-                self.sl_price = self.sl_to_be_z_or_e(average_entry)
+                self.sl_price = temp_sl_price
 
                 raise MoveStopLoss(
                     sl_price=self.sl_price,
