@@ -127,9 +127,9 @@ def backtest_sim_6(
     )
 
     order_records_df = pd.DataFrame(order_records_array, columns=or_dt.names)
-    order_records_df = order_records_df[order_records_df.columns[:3]].join(
-        order_records_df[order_records_df.columns[3:]].replace(0.0, np.nan)
-    )
+    # order_records_df = order_records_df[order_records_df.columns[:3]].join(
+    #     order_records_df[order_records_df.columns[3:]].replace(0.0, np.nan)
+    # )
 
     return order_records_df
 
@@ -222,14 +222,15 @@ def plot_one_result(
         cols=1,
     )
     fig.add_traces(
-        data=go.Scatter(
-            name="PnL",
-            x=price_data_index,
-            y=cumsum_pnl_array,
-            mode="lines+markers",
-            marker=dict(size=6),
-            line=dict(color="#247eb2"),
-        ),
+        data=[
+            go.Scatter(
+                name="PnL",
+                x=price_data_index,
+                y=cumsum_pnl_array,
+                mode="lines",
+                line=dict(color="#247eb2"),
+            ),
+        ],
         rows=2,
         cols=1,
     )

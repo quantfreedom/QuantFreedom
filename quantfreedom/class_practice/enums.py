@@ -169,21 +169,28 @@ class OrderSettings(NamedTuple):
 
 
 class OrderResult(NamedTuple):
-    average_entry: float = 0.0
-    fees_paid: float = 0.0
-    leverage: float = 1.0
-    liq_price: float = 0.0
-    order_status: int = 0
-    possible_loss: float = 0.0
-    entry_size: float = 0.0
-    entry_price: float = 0.0
-    exit_price: float = 0.0
-    position_size: float = 0.0
-    realized_pnl: float = 0.0
-    sl_pct: float = 0.0
-    sl_price: float = 0.0
-    tp_pct: float = 0.0
-    tp_price: float = 0.0
+    indicator_settings_index: int
+    order_settings_index: int
+    bar_index: int
+    equity: float = np.nan
+    available_balance: float = np.nan
+    cash_borrowed: float = np.nan
+    cash_used: float = np.nan
+    average_entry: float = np.nan
+    fees_paid: float = np.nan
+    leverage: float = np.nan
+    liq_price: float = np.nan
+    order_status: int = np.nan
+    possible_loss: float = np.nan
+    entry_size: float = np.nan
+    entry_price: float = np.nan
+    exit_price: float = np.nan
+    position_size: float = np.nan
+    realized_pnl: float = np.nan
+    sl_pct: float = np.nan
+    sl_price: float = np.nan
+    tp_pct: float = np.nan
+    tp_price: float = np.nan
 
 
 class RejectedOrderError(Exception):

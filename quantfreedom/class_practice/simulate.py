@@ -96,11 +96,7 @@ def backtest_df_only_nb(
                         )
                         order.calculate_leverage()
                         order.calculate_take_profit()
-                        order.or_filler(
-                            bar_index=bar_index,
-                            order_settings_index=order_settings_index,
-                            indicator_settings_index=indicator_settings_index,
-                        )
+
                     except RejectedOrderError as e:
                         pass
                 if order.position_size > 0:
@@ -184,9 +180,11 @@ def sim_6_nb(
     total_order_records_filled = 0
 
     for i in range(strat_indexes_len):
-        current_indicator_entries = entries[:, indicator_indexes[i]]
-        current_exit_signals = exit_signals[:, indicator_indexes[i]]
-        order_settings = get_order_settings(or_settings_indexes[i], os_cart_arrays)
+        indicator_settings_index = indicator_indexes[i]
+        order_settings_index = or_settings_indexes[i]
+        current_indicator_entries = entries[:, indicator_settings_index]
+        current_exit_signals = exit_signals[:, indicator_settings_index]
+        order_settings = get_order_settings(order_settings_index, os_cart_arrays)
 
         account_state = AccountState(
             available_balance=account_state.equity,
@@ -215,10 +213,27 @@ def sim_6_nb(
                     )
                     order.calculate_leverage()
                     order.calculate_take_profit()
-                    order.fill_order_records(
-                        bar_index=bar_index,
-                        order_settings_index=or_settings_indexes[i],
-                        indicator_settings_index=indicator_indexes[i],
+                    order.or_filler(
+                        order_result=OrderResult(
+                            indicator_settings_index=indicator_settings_index,
+                            order_settings_index=order_settings_index,
+                            bar_index=bar_index,
+                            available_balance=order.available_balance,
+                            cash_borrowed=order.cash_borrowed,
+                            cash_used=order.cash_used,
+                            average_entry=order.average_entry,
+                            leverage=order.leverage,
+                            liq_price=order.liq_price,
+                            order_status=order.order_status,
+                            possible_loss=order.possible_loss,
+                            entry_size=order.entry_size,
+                            entry_price=order.entry_price,
+                            position_size=order.position_size,
+                            sl_pct=order.sl_pct,
+                            sl_price=order.sl_price,
+                            tp_pct=order.tp_pct,
+                            tp_price=order.tp_price,
+                        )
                     )
                 except RejectedOrderError as e:
                     pass
@@ -240,16 +255,16 @@ def sim_6_nb(
                         exit_price=e.exit_price,
                         exit_fee_pct=e.exit_fee_pct,
                         bar_index=bar_index,
-                        indicator_settings_index=indicator_indexes[i],
-                        order_settings_index=or_settings_indexes[i],
+                        indicator_settings_index=indicator_settings_index,
+                        order_settings_index=order_settings_index,
                     )
                 except MoveStopLoss as e:
                     order.move_stop_loss(
                         sl_price=e.sl_price,
                         order_status=e.order_status,
                         bar_index=bar_index,
-                        order_settings_index=or_settings_indexes[i],
-                        indicator_settings_index=indicator_indexes[i],
+                        order_settings_index=order_settings_index,
+                        indicator_settings_index=indicator_settings_index,
                     )
         order_records = order.order_records
         total_order_records_filled = order.total_order_records_filled

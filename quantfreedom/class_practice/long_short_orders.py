@@ -148,42 +148,45 @@ class Order:
         self.sl_price = sl_price
         self.sl_pct = (self.average_entry - sl_price) / self.average_entry
         self.order_status = order_status
+
         self.or_filler(
-            bar_index=bar_index,
-            order_settings_index=order_settings_index,
-            indicator_settings_index=indicator_settings_index,
+            order_result=OrderResult(
+                indicator_settings_index=indicator_settings_index,
+                order_settings_index=order_settings_index,
+                bar_index=bar_index,
+                order_status=self.order_status,
+                sl_price=self.sl_price,
+            ),
         )
 
     def fill_order_records(
         self,
-        bar_index: int,
-        indicator_settings_index: int,
-        order_settings_index: int,
+        order_result: OrderResult,
     ):
-        self.order_records[self.total_order_records_filled]["ind_set_idx"] = indicator_settings_index
-        self.order_records[self.total_order_records_filled]["or_set_idx"] = order_settings_index
-        self.order_records[self.total_order_records_filled]["bar_idx"] = bar_index
+        self.order_records[self.total_order_records_filled]["ind_set_idx"] = order_result.indicator_settings_index
+        self.order_records[self.total_order_records_filled]["or_set_idx"] = order_result.order_settings_index
+        self.order_records[self.total_order_records_filled]["bar_idx"] = order_result.bar_index
 
-        self.order_records[self.total_order_records_filled]["equity"] = self.equity
-        self.order_records[self.total_order_records_filled]["available_balance"] = self.available_balance
-        self.order_records[self.total_order_records_filled]["cash_borrowed"] = self.cash_borrowed
-        self.order_records[self.total_order_records_filled]["cash_used"] = self.cash_used
+        self.order_records[self.total_order_records_filled]["equity"] = order_result.equity
+        self.order_records[self.total_order_records_filled]["available_balance"] = order_result.available_balance
+        self.order_records[self.total_order_records_filled]["cash_borrowed"] = order_result.cash_borrowed
+        self.order_records[self.total_order_records_filled]["cash_used"] = order_result.cash_used
 
-        self.order_records[self.total_order_records_filled]["average_entry"] = self.average_entry
-        self.order_records[self.total_order_records_filled]["fees_paid"] = self.fees_paid
-        self.order_records[self.total_order_records_filled]["leverage"] = self.leverage
-        self.order_records[self.total_order_records_filled]["liq_price"] = self.liq_price
-        self.order_records[self.total_order_records_filled]["order_status"] = self.order_status
-        self.order_records[self.total_order_records_filled]["possible_loss"] = self.possible_loss
-        self.order_records[self.total_order_records_filled]["entry_size"] = self.entry_size
-        self.order_records[self.total_order_records_filled]["entry_price"] = self.entry_price
-        self.order_records[self.total_order_records_filled]["exit_price"] = self.exit_price
-        self.order_records[self.total_order_records_filled]["position_size"] = self.position_size
-        self.order_records[self.total_order_records_filled]["realized_pnl"] = self.realized_pnl
-        self.order_records[self.total_order_records_filled]["sl_pct"] = self.sl_pct * 100
-        self.order_records[self.total_order_records_filled]["sl_price"] = self.sl_price
-        self.order_records[self.total_order_records_filled]["tp_pct"] = self.tp_pct * 100
-        self.order_records[self.total_order_records_filled]["tp_price"] = self.tp_price
+        self.order_records[self.total_order_records_filled]["average_entry"] = order_result.average_entry
+        self.order_records[self.total_order_records_filled]["fees_paid"] = order_result.fees_paid
+        self.order_records[self.total_order_records_filled]["leverage"] = order_result.leverage
+        self.order_records[self.total_order_records_filled]["liq_price"] = order_result.liq_price
+        self.order_records[self.total_order_records_filled]["order_status"] = order_result.order_status
+        self.order_records[self.total_order_records_filled]["possible_loss"] = order_result.possible_loss
+        self.order_records[self.total_order_records_filled]["entry_size"] = order_result.entry_size
+        self.order_records[self.total_order_records_filled]["entry_price"] = order_result.entry_price
+        self.order_records[self.total_order_records_filled]["exit_price"] = order_result.exit_price
+        self.order_records[self.total_order_records_filled]["position_size"] = order_result.position_size
+        self.order_records[self.total_order_records_filled]["realized_pnl"] = order_result.realized_pnl
+        self.order_records[self.total_order_records_filled]["sl_pct"] = order_result.sl_pct * 100
+        self.order_records[self.total_order_records_filled]["sl_price"] = order_result.sl_price
+        self.order_records[self.total_order_records_filled]["tp_pct"] = order_result.tp_pct * 100
+        self.order_records[self.total_order_records_filled]["tp_price"] = order_result.tp_price
 
         self.total_order_records_filled += 1
 
@@ -292,33 +295,19 @@ class LongOrder(Order):
         indicator_settings_index: int,
         order_settings_index: int,
     ):
+        self.exit_price = exit_price
+        self.order_status = order_status
         # profit and loss calulation
         coin_size = self.position_size / self.average_entry  # math checked
-        pnl = coin_size * (exit_price - self.average_entry)  # math checked
+        pnl = coin_size * (self.exit_price - self.average_entry)  # math checked
         fee_open = coin_size * self.average_entry * self.exchange_settings.market_fee_pct  # math checked
-        fee_close = coin_size * exit_price * exit_fee_pct  # math checked
+        fee_close = coin_size * self.exit_price * exit_fee_pct  # math checked
         self.fees_paid = fee_open + fee_close  # math checked
         self.realized_pnl = pnl - self.fees_paid  # math checked
 
         # Setting new equity
         self.equity += self.realized_pnl
-
         self.available_balance = self.equity
-        self.cash_borrowed = 0.0
-        self.cash_used = 0.0
-        self.average_entry = 0.0
-        self.leverage = 0.0
-        self.liq_price = 0.0
-        self.order_status = order_status
-        self.possible_loss = 0.0
-        self.entry_size = 0.0
-        self.entry_price = 0.0
-        self.exit_price = exit_price
-        self.position_size = 0.0
-        self.sl_pct = 0.0
-        self.sl_price = 0.0
-        self.tp_pct = 0.0
-        self.tp_price = 0.0
 
         self.strat_filler(
             bar_index=bar_index,
@@ -327,10 +316,32 @@ class LongOrder(Order):
         )
 
         self.or_filler(
-            bar_index=bar_index,
-            order_settings_index=order_settings_index,
-            indicator_settings_index=indicator_settings_index,
+            order_result=OrderResult(
+                indicator_settings_index=indicator_settings_index,
+                order_settings_index=order_settings_index,
+                bar_index=bar_index,
+                equity=self.equity,
+                available_balance=self.available_balance,
+                fees_paid=self.fees_paid,
+                order_status=self.order_status,
+                exit_price=self.exit_price,
+                realized_pnl=self.realized_pnl,
+            )
         )
+
+        self.cash_borrowed = 0.0
+        self.cash_used = 0.0
+        self.average_entry = 0.0
+        self.leverage = 0.0
+        self.liq_price = 0.0
+        self.possible_loss = 0.0
+        self.entry_size = 0.0
+        self.entry_price = 0.0
+        self.position_size = 0.0
+        self.sl_pct = 0.0
+        self.sl_price = 0.0
+        self.tp_pct = 0.0
+        self.tp_price = 0.0
         self.fees_paid = 0.0
         self.realized_pnl = 0.0
         self.exit_price = 0.0
