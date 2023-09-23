@@ -1,10 +1,8 @@
 import numpy as np
-from numba import njit
 
 from quantfreedom.class_practice.enums import OrderSettingsArrays
 
 
-@njit(cache=True)
 def create_os_cart_product_nb(
     order_settings_arrays: OrderSettingsArrays,
 ):

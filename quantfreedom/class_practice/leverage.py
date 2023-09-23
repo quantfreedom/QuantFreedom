@@ -74,17 +74,12 @@ class LeverageLong:
         og_cash_used: float,
         og_cash_borrowed: float,
     ):
-
         # Getting Order Cost
         # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001064&language=en_US
         initial_margin = entry_size / self.leverage
         fee_to_open = entry_size * self.market_fee_pct  # math checked
-        possible_bankruptcy_fee = (
-            entry_size * (self.leverage - 1) / self.leverage * self.mmr_pct
-        )
-        cash_used = (
-            initial_margin + fee_to_open + possible_bankruptcy_fee
-        )  # math checked
+        possible_bankruptcy_fee = entry_size * (self.leverage - 1) / self.leverage * self.mmr_pct
+        cash_used = initial_margin + fee_to_open + possible_bankruptcy_fee  # math checked
 
         if cash_used > og_available_balance:
             raise RejectedOrderError(order_status=OrderStatus.CashUsedExceed)
@@ -96,9 +91,7 @@ class LeverageLong:
             cash_used += og_cash_used
             cash_borrowed = og_cash_borrowed + entry_size - cash_used
 
-            self.liq_price = average_entry * (
-                1 - (1 / self.leverage) + self.mmr_pct
-            )  # math checked
+            self.liq_price = average_entry * (1 - (1 / self.leverage) + self.mmr_pct)  # math checked
 
         return (
             self.leverage,

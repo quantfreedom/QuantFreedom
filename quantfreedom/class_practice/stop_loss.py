@@ -112,40 +112,36 @@ class StopLossLong:
             self.tsl_price_getter = self.__get_candle_body_price_close
             self.move_tsl_checker = self.check_move_trailing_stop_loss
 
-    def __get_candle_body_price_open(self, lookback, bar_index, symbol_price_data):
-        return symbol_price_data[lookback:bar_index, 0].min()
+    def __get_candle_body_price_open(self, lookback, bar_index, price_data):
+        return price_data[lookback:bar_index, 0].min()
 
-    def __get_candle_body_price_high(self, lookback, bar_index, symbol_price_data):
-        return symbol_price_data[lookback:bar_index, 1].min()
+    def __get_candle_body_price_high(self, lookback, bar_index, price_data):
+        return price_data[lookback:bar_index, 1].min()
 
-    def __get_candle_body_price_low(self, lookback, bar_index, symbol_price_data):
-        return symbol_price_data[lookback:bar_index, 2].min()
+    def __get_candle_body_price_low(self, lookback, bar_index, price_data):
+        return price_data[lookback:bar_index, 2].min()
 
-    def __get_candle_body_price_close(self, lookback, bar_index, symbol_price_data):
-        return symbol_price_data[lookback:bar_index, 3].min()
+    def __get_candle_body_price_close(self, lookback, bar_index, price_data):
+        return price_data[lookback:bar_index, 3].min()
 
     # main functions
     def pass_function(self, **vargs):
         pass
 
-    def calculate_stop_loss(self, bar_index, symbol_price_data):
+    def calculate_stop_loss(self, bar_index, price_data):
         # lb will be bar index if sl isn't based on lookback because look back will be 0
         lookback = max(int((bar_index - 1) - self.sl_based_on_lookback), 0)
         candle_body = self.sl_price_getter(
             lookback=lookback,
             bar_index=bar_index,
-            symbol_price_data=symbol_price_data,
+            price_data=price_data,
         )
-        self.sl_price = float(
-            floor(candle_body - (candle_body * self.sl_based_on_add_pct))
-        )
+        self.sl_price = float(floor(candle_body - (candle_body * self.sl_based_on_add_pct)))
         return self.sl_price
 
     # stop loss to break even zero or entry
     def __sl_to_be_zero(self, average_entry):
-        return (self.market_fee_pct * average_entry + average_entry) / (
-            1 - self.market_fee_pct
-        )
+        return (self.market_fee_pct * average_entry + average_entry) / (1 - self.market_fee_pct)
 
     def __sl_to_be_entry(self, average_entry):
         return average_entry
@@ -154,32 +150,30 @@ class StopLossLong:
         self,
         average_entry,
         bar_index,
-        symbol_price_data,
+        price_data,
     ):
         # Stop Loss to break even
         candle_body_ohlc = self.sl_to_be_price_getter(
             lookback=bar_index,
             bar_index=bar_index + 1,
-            symbol_price_data=symbol_price_data,
+            price_data=price_data,
         )
         pct_from_ae = (candle_body_ohlc - average_entry) / average_entry
         move_sl = pct_from_ae > self.sl_to_be_move_when_pct
         if move_sl:
             self.sl_price = self.sl_to_be_z_or_e(average_entry)
-            raise MoveStopLoss(
-                sl_price=self.sl_price, order_status=OrderStatus.MovedStopLossToBE
-            )
+            raise MoveStopLoss(sl_price=self.sl_price, order_status=OrderStatus.MovedStopLossToBE)
 
     def check_move_trailing_stop_loss(
         self,
         average_entry,
         bar_index,
-        symbol_price_data,
+        price_data,
     ):
         candle_body_ohlc = self.tsl_price_getter(
             lookback=bar_index,
             bar_index=bar_index + 1,
-            symbol_price_data=symbol_price_data,
+            price_data=price_data,
         )
         pct_from_ae = (candle_body_ohlc - average_entry) / average_entry
         move_sl = pct_from_ae > self.trail_sl_when_pct_from_candle_body

@@ -1,3 +1,4 @@
+from typing import Optional
 import numpy as np
 from quantfreedom.class_practice.increase_position import IncreasePositionLong
 from quantfreedom.class_practice.leverage import LeverageLong
@@ -21,7 +22,6 @@ class Order:
     obj_increase_posotion = None
     obj_take_profit = None
     account_state = None
-    symbol_price_data = None
     exit_signals = None
     exchange_settings = None
     order_settings = None
@@ -32,7 +32,7 @@ class Order:
     cash_borrowed = 0.0
     cash_used = 0.0
     equity = 0.0
-    
+
     average_entry = 0.0
     entry_price = 0.0
     entry_size = 0.0
@@ -53,9 +53,7 @@ class Order:
     strat_records = None
     strat_records_filled = None
 
-    def instantiate(
-        order_type: OrderType, **vargs
-    ):  # TODO: we should only have to do this once not everytime
+    def instantiate(order_type: OrderType, **vargs):  # TODO: we should only have to do this once not everytime
         if order_type == OrderType.Long:
             return LongOrder(**vargs)
 
@@ -64,18 +62,31 @@ class Order:
         account_state: AccountState,
         order_settings: OrderSettings,
         exchange_settings: ExchangeSettings,
-        symbol_price_data: np.array,
-        strat_records: np.array,
+        strat_records: Optional[np.array] = None,
+        order_records: Optional[np.array] = None,
+        total_order_records_filled: Optional[int] = None,
     ):
         self.order_settings = order_settings
         self.account_state = account_state
         self.exchange_settings = exchange_settings
-        self.symbol_price_data = symbol_price_data
         self.equity = account_state.equity
         self.available_balance = account_state.equity
-        self.strat_records = strat_records
-        self.strat_records_filled = 0
-        self.order_records_filled = 0
+
+        # this is not effecient ... this will not change
+        if strat_records is None:
+            self.strat_filler = self.pass_func
+        else:
+            self.strat_filler = self.fill_strat_records
+            self.strat_records = strat_records
+            self.strat_records_filled = 0
+
+        # this is not effecient ... this will not change
+        if order_records is None:
+            self.or_filler = self.pass_func
+        else:
+            self.or_filler = self.fill_order_records
+            self.order_records = order_records
+            self.total_order_records_filled = total_order_records_filled
 
         if self.order_settings.tp_fee_type == TakeProfitFeeType.Nothing:
             self.tp_fee_pct = 0.0
@@ -123,34 +134,7 @@ class Order:
         elif self.order_settings.order_type == OrderType.Short:
             pass
 
-    def calculate_stop_loss(self, **vargs):
-        pass
-
-    def calculate_leverage(self, **vargs):
-        pass
-
-    def calculate_increase_posotion(self, **vargs):
-        pass
-
-    def calculate_take_profit(self, **vargs):
-        pass
-
-    def check_stop_loss_hit(self, **vargs):
-        pass
-
-    def check_liq_hit(self, **vargs):
-        pass
-
-    def check_take_profit_hit(self, **vargs):
-        pass
-
-    def check_move_stop_loss_to_be(self, **vargs):
-        pass
-
-    def check_move_trailing_stop_loss(self, **vargs):
-        pass
-
-    def decrease_position(self, **vargs):
+    def pass_func(self, **vargs):
         pass
 
     def move_stop_loss(
@@ -160,20 +144,14 @@ class Order:
         bar_index: int,
         indicator_settings_index: int,
         order_settings_index: int,
-        symbol_index: int,
-        order_records: np.array,
-        total_order_records_filled: np.array,
     ):
         self.sl_price = sl_price
         self.sl_pct = (self.average_entry - sl_price) / self.average_entry
         self.order_status = order_status
-        self.fill_order_records(
+        self.or_filler(
             bar_index=bar_index,
             order_settings_index=order_settings_index,
             indicator_settings_index=indicator_settings_index,
-            symbol_index=symbol_index,
-            order_records=order_records,
-            total_order_records_filled=total_order_records_filled,
         )
 
     def fill_order_records(
@@ -181,50 +159,49 @@ class Order:
         bar_index: int,
         indicator_settings_index: int,
         order_settings_index: int,
-        symbol_index: int,
-        total_order_records_filled: np.array,
-        order_records: np.array,
     ):
-        order_records["symbol_idx"] = symbol_index
-        order_records["ind_set_idx"] = indicator_settings_index
-        order_records["or_set_idx"] = order_settings_index
-        order_records["bar_idx"] = bar_index
+        self.order_records[self.total_order_records_filled]["ind_set_idx"] = indicator_settings_index
+        self.order_records[self.total_order_records_filled]["or_set_idx"] = order_settings_index
+        self.order_records[self.total_order_records_filled]["bar_idx"] = bar_index
 
-        order_records["equity"] = self.equity
-        order_records["available_balance"] = self.available_balance
-        order_records["cash_borrowed"] = self.cash_borrowed
-        order_records["cash_used"] = self.cash_used
+        self.order_records[self.total_order_records_filled]["equity"] = self.equity
+        self.order_records[self.total_order_records_filled]["available_balance"] = self.available_balance
+        self.order_records[self.total_order_records_filled]["cash_borrowed"] = self.cash_borrowed
+        self.order_records[self.total_order_records_filled]["cash_used"] = self.cash_used
 
-        order_records["average_entry"] = self.average_entry
-        order_records["fees_paid"] = self.fees_paid
-        order_records["leverage"] = self.leverage
-        order_records["liq_price"] = self.liq_price
-        order_records["order_status"] = self.order_status
-        order_records["possible_loss"] = self.possible_loss
-        order_records["entry_size"] = self.entry_size
-        order_records["entry_price"] = self.entry_price
-        order_records["exit_price"] = self.exit_price
-        order_records["position_size"] = self.position_size
-        order_records["realized_pnl"] = self.realized_pnl
-        order_records["sl_pct"] = self.sl_pct * 100
-        order_records["sl_price"] = self.sl_price
-        order_records["tp_pct"] = self.tp_pct * 100
-        order_records["tp_price"] = self.tp_price
+        self.order_records[self.total_order_records_filled]["average_entry"] = self.average_entry
+        self.order_records[self.total_order_records_filled]["fees_paid"] = self.fees_paid
+        self.order_records[self.total_order_records_filled]["leverage"] = self.leverage
+        self.order_records[self.total_order_records_filled]["liq_price"] = self.liq_price
+        self.order_records[self.total_order_records_filled]["order_status"] = self.order_status
+        self.order_records[self.total_order_records_filled]["possible_loss"] = self.possible_loss
+        self.order_records[self.total_order_records_filled]["entry_size"] = self.entry_size
+        self.order_records[self.total_order_records_filled]["entry_price"] = self.entry_price
+        self.order_records[self.total_order_records_filled]["exit_price"] = self.exit_price
+        self.order_records[self.total_order_records_filled]["position_size"] = self.position_size
+        self.order_records[self.total_order_records_filled]["realized_pnl"] = self.realized_pnl
+        self.order_records[self.total_order_records_filled]["sl_pct"] = self.sl_pct * 100
+        self.order_records[self.total_order_records_filled]["sl_price"] = self.sl_price
+        self.order_records[self.total_order_records_filled]["tp_pct"] = self.tp_pct * 100
+        self.order_records[self.total_order_records_filled]["tp_price"] = self.tp_price
 
-        total_order_records_filled[0] += 1
-        self.order_records_filled +=1
+        self.total_order_records_filled += 1
 
-    def fill_rejected_order_record(self, **vargs):
-        pass
-    def fill_strat_records_nb(self, **vargs):
-        pass
+    def fill_strat_records(self, bar_index, order_settings_index, indicator_settings_index):
+        self.strat_records[self.strat_records_filled]["bar_idx"] = bar_index
+        self.strat_records[self.strat_records_filled]["or_set_idx"] = order_settings_index
+        self.strat_records[self.strat_records_filled]["ind_set_idx"] = indicator_settings_index
+        self.strat_records[self.strat_records_filled]["equity"] = self.equity
+        self.strat_records[self.strat_records_filled]["real_pnl"] = round(self.realized_pnl, 4)
+
+        self.strat_records_filled += 1
 
 
 class LongOrder(Order):
-    def calculate_stop_loss(self, bar_index):
+    def calculate_stop_loss(self, bar_index, price_data):
         self.sl_price = self.obj_stop_loss.calculate_stop_loss(
             bar_index=bar_index,
-            symbol_price_data=self.symbol_price_data,
+            price_data=price_data,
         )
 
     def calculate_increase_posotion(self, entry_price):
@@ -292,18 +269,18 @@ class LongOrder(Order):
             exit_fee_pct=self.tp_fee_pct,
         )
 
-    def check_move_stop_loss_to_be(self, bar_index, symbol_price_data):
+    def check_move_stop_loss_to_be(self, bar_index, price_data):
         self.obj_stop_loss.move_sl_to_be_checker(
             average_entry=self.average_entry,
             bar_index=bar_index,
-            symbol_price_data=symbol_price_data,
+            price_data=price_data,
         )
 
-    def check_move_trailing_stop_loss(self, bar_index, symbol_price_data):
+    def check_move_trailing_stop_loss(self, bar_index, price_data):
         self.obj_stop_loss.move_tsl_checker(
             average_entry=self.average_entry,
             bar_index=bar_index,
-            symbol_price_data=symbol_price_data,
+            price_data=price_data,
         )
 
     def decrease_position(
@@ -314,16 +291,11 @@ class LongOrder(Order):
         bar_index: int,
         indicator_settings_index: int,
         order_settings_index: int,
-        symbol_index: int,
-        order_records: np.array,
-        total_order_records_filled: np.array,
     ):
         # profit and loss calulation
         coin_size = self.position_size / self.average_entry  # math checked
         pnl = coin_size * (exit_price - self.average_entry)  # math checked
-        fee_open = (
-            coin_size * self.average_entry * self.exchange_settings.market_fee_pct
-        )  # math checked
+        fee_open = coin_size * self.average_entry * self.exchange_settings.market_fee_pct  # math checked
         fee_close = coin_size * exit_price * exit_fee_pct  # math checked
         self.fees_paid = fee_open + fee_close  # math checked
         self.realized_pnl = pnl - self.fees_paid  # math checked
@@ -348,27 +320,16 @@ class LongOrder(Order):
         self.tp_pct = 0.0
         self.tp_price = 0.0
 
-        self.strat_records[self.strat_records_filled]["equity"] = self.equity
-        self.strat_records[self.strat_records_filled]["bar_idx"] = bar_index
-        self.strat_records[self.strat_records_filled][
-            "or_set_idx"
-        ] = order_settings_index
-        self.strat_records[self.strat_records_filled][
-            "ind_set_idx"
-        ] = indicator_settings_index
-        self.strat_records[self.strat_records_filled]["symbol_idx"] = symbol_index
-        self.strat_records[self.strat_records_filled]["real_pnl"] = round(
-            self.realized_pnl, 4
-        )
-
-        self.strat_records_filled += 1
-        self.fill_order_records(
+        self.strat_filler(
             bar_index=bar_index,
             order_settings_index=order_settings_index,
             indicator_settings_index=indicator_settings_index,
-            symbol_index=symbol_index,
-            order_records=order_records,
-            total_order_records_filled=total_order_records_filled,
+        )
+
+        self.or_filler(
+            bar_index=bar_index,
+            order_settings_index=order_settings_index,
+            indicator_settings_index=indicator_settings_index,
         )
         self.fees_paid = 0.0
         self.realized_pnl = 0.0

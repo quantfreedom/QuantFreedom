@@ -41,9 +41,7 @@ class IncreasePositionLong:
                 self.calculator_in_pos = self.riskAmount_based
             elif increase_position_type == IncreasePositionType.RiskPctAccountEntrySize:
                 self.calculator_in_pos = self.risk_pct_of_account_and_sl_based_on_in_pos
-                self.calculator_not_in_pos = (
-                    self.risk_pct_of_account_and_sl_based_on_not_in_pos
-                )
+                self.calculator_not_in_pos = self.risk_pct_of_account_and_sl_based_on_not_in_pos
             else:
                 raise NotImplementedError(
                     "IncreasePositionType=RiskPctAccountEntrySize and not StopLossType=SLBasedOnCandleBody"
@@ -101,23 +99,15 @@ class IncreasePositionLong:
         )
 
     def __get_possible_loss(self, account_state_equity, possible_loss):
-        possible_loss += (
-            account_state_equity * self.risk_account_pct_size
-        )  # will this work right?
+        possible_loss += account_state_equity * self.risk_account_pct_size  # will this work right?
 
         if possible_loss > account_state_equity * self.max_equity_risk_pct:
             raise RejectedOrderError("possible loss too big")
         return round(possible_loss, 2)
 
     def __check_size_value(self, entry_size):
-        if (
-            entry_size < 1
-            or entry_size > self.max_order_size_value
-            or entry_size < self.min_order_size_value
-        ):
-            raise RejectedOrderError(
-                "Long Increase - Size Value is either to big or too small"
-            )
+        if entry_size < 1 or entry_size > self.max_order_size_value or entry_size < self.min_order_size_value:
+            raise RejectedOrderError("Long Increase - Size Value is either to big or too small")
 
     def amount_based(self, **vargs):
         pass
@@ -140,10 +130,7 @@ class IncreasePositionLong:
             account_state_equity=account_state_equity,
         )
         entry_size = -possible_loss / (
-            sl_price / entry_price
-            - 1
-            - self.market_fee_pct
-            - sl_price * self.market_fee_pct / entry_price
+            sl_price / entry_price - 1 - self.market_fee_pct - sl_price * self.market_fee_pct / entry_price
         )
         average_entry = entry_price
         sl_pct = (average_entry - sl_price) / average_entry
@@ -182,18 +169,11 @@ class IncreasePositionLong:
             + entry_price * position_size * average_entry * self.market_fee_pct
         ) / (
             average_entry
-            * (
-                entry_price
-                - sl_price
-                + entry_price * self.market_fee_pct
-                + sl_price * self.market_fee_pct
-            )
+            * (entry_price - sl_price + entry_price * self.market_fee_pct + sl_price * self.market_fee_pct)
         )
         if entry_size < 1:
             raise RejectedOrderError(order_status=OrderStatus.EntrySizeTooSmall)
-        average_entry = (entry_size + position_size) / (
-            (entry_size / entry_price) + (position_size / average_entry)
-        )
+        average_entry = (entry_size + position_size) / ((entry_size / entry_price) + (position_size / average_entry))
         sl_pct = (average_entry - sl_price) / average_entry
 
         position_size += entry_size

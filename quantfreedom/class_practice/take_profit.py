@@ -84,9 +84,7 @@ class TakeProfitLong:
     ):
         if exit_signal:
             raise DecreasePosition(
-                exit_price=current_candle[
-                    3
-                ],  # sending the close of the current candle for now as exit price
+                exit_price=current_candle[3],  # sending the close of the current candle for now as exit price
                 order_status=OrderStatus.TakeProfitFilled,
                 exit_fee_pct=exit_fee_pct,
             )

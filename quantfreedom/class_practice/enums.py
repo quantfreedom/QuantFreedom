@@ -229,7 +229,6 @@ class MoveStopLoss(Exception):
 
 order_settings_array_dt = np.dtype(
     [
-        ("symbol_idx", np.int_),
         ("or_set_idx", np.int_),
         ("increase_position_type", np.int_),
         ("leverage_type", np.int_),
@@ -257,7 +256,6 @@ order_settings_array_dt = np.dtype(
 
 or_dt = np.dtype(
     [
-        ("symbol_idx", np.int_),
         ("ind_set_idx", np.int_),
         ("or_set_idx", np.int_),
         ("bar_idx", np.int_),
@@ -286,7 +284,6 @@ or_dt = np.dtype(
 
 strat_df_array_dt = np.dtype(
     [
-        ("symbol_idx", np.int_),
         ("ind_set_idx", np.int_),
         ("or_set_idx", np.int_),
         ("total_trades", np.float_),
@@ -305,7 +302,6 @@ strat_records_dt = np.dtype(
         ("bar_idx", np.int_),
         ("or_set_idx", np.int_),
         ("ind_set_idx", np.int_),
-        ("symbol_idx", np.int_),
         ("real_pnl", np.float_),
     ],
     align=True,
