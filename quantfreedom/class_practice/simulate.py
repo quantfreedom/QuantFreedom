@@ -104,8 +104,8 @@ def backtest_df_only_nb(
                         order.check_stop_loss_hit(current_candle=price_data[bar_index, :])
                         order.check_liq_hit(current_candle=price_data[bar_index, :])
                         order.check_take_profit_hit(
-                            exit_signal=current_exit_signals[bar_index],
                             current_candle=price_data[bar_index, :],
+                            exit_signal=current_exit_signals[bar_index],
                         )
                         order.check_move_stop_loss_to_be(bar_index=bar_index, price_data=price_data)
                         order.check_move_trailing_stop_loss(bar_index=bar_index, price_data=price_data)
@@ -242,8 +242,8 @@ def sim_6_nb(
                     order.check_stop_loss_hit(current_candle=price_data[bar_index, :])
                     order.check_liq_hit(current_candle=price_data[bar_index, :])
                     order.check_take_profit_hit(
-                        exit_signal=current_exit_signals[bar_index],
                         current_candle=price_data[bar_index, :],
+                        exit_signal=current_exit_signals[bar_index],
                     )
                     order.check_move_stop_loss_to_be(bar_index=bar_index, price_data=price_data)
                     order.check_move_trailing_stop_loss(bar_index=bar_index, price_data=price_data)

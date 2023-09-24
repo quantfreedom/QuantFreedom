@@ -48,7 +48,7 @@ class TakeProfitLong:
         )
 
     def pass_fucntion(self, **vargs):
-        return 0.0, 0.0, 0.0
+        return np.nan, np.nan, 0
 
     def calculate_risk_reward(self, possible_loss, position_size, average_entry):
         profit = possible_loss * self.risk_reward
@@ -64,11 +64,11 @@ class TakeProfitLong:
 
     def check_take_profit_hit_regular(
         self,
-        tp_hit: bool,
+        current_candle: np.array,
         exit_fee_pct: float,
         **vargs,
     ):
-        if tp_hit:
+        if current_candle[1] > self.tp_price:
             raise DecreasePosition(
                 exit_price=self.tp_price,
                 order_status=OrderStatus.TakeProfitFilled,
@@ -77,14 +77,13 @@ class TakeProfitLong:
 
     def check_take_profit_hit_provided(
         self,
-        exit_signal: bool,
+        exit_signal: float,
         exit_fee_pct: float,
-        current_candle: np.array,
         **vargs,
     ):
-        if exit_signal:
+        if not np.isnan(exit_signal):
             raise DecreasePosition(
-                exit_price=current_candle[3],  # sending the close of the current candle for now as exit price
+                exit_price=exit_signal,  # sending the close of the current candle for now as exit price
                 order_status=OrderStatus.TakeProfitFilled,
                 exit_fee_pct=exit_fee_pct,
             )

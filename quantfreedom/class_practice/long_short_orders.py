@@ -267,7 +267,6 @@ class LongOrder(Order):
     def check_take_profit_hit(self, current_candle, exit_signal):
         self.obj_take_profit.tp_checker(
             current_candle=current_candle,
-            tp_hit=current_candle[1] > self.tp_price,
             exit_signal=exit_signal,
             exit_fee_pct=self.tp_fee_pct,
         )
