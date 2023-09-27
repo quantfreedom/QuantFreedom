@@ -73,7 +73,7 @@ class DownloadCandles:
         self.bar_duration_millisecs = timedelta(minutes=number_minutes).seconds * 1000
 
     def _get_since_date_ms(self, **vargs):
-        return self.since_date_ms
+        return self.since_date_ms - 1
 
     def _get_until_date_ms(self, **vargs):
         return self.until_date_ms
@@ -129,19 +129,6 @@ class DownloadCandles:
         loop_duration = round((datetime.now() - start_time).total_seconds() / 60, 2)
         print(f"It took {loop_duration} minutes to complete the candle download")
         return self._turn_into_pandas()
-
-    # def end_and_candle_dl_none(self):
-    #     logging.info(f"Downloading the latest candles")
-    #     try:
-    #         candles_list = self.exchange_candle_fetcher()
-    #     except Exception as e:
-    #         logging.info(f"Got exception -> {repr(e)}")
-
-    #     logging.info(f"Got {len(candles_list)} new candles")
-    #     if len(candles_list) == 0:
-    #         logging.warning(f"fetch_ohlcv for got 0 candles")
-
-    #     return self._turn_into_pandas(candles_list=candles_list)
 
     def _turn_into_pandas(self):
         candles = pd.DataFrame(
