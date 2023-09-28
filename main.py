@@ -5,12 +5,12 @@ import logging
 sys.dont_write_bytecode = True
 os.environ["NUMBA_DISABLE_JIT"] = "1"
 
-import quantfreedom as qf
+import old_quantfreedom as qf
 import pandas as pd
-from quantfreedom.indicators.talib_ind import *
-from quantfreedom.evaluators.evaluators import _is_below
-from quantfreedom.base.base import backtest_df_only
-from quantfreedom.enums.enums import (
+from old_quantfreedom.indicators.talib_ind import *
+from old_quantfreedom.evaluators.evaluators import _is_below
+from old_quantfreedom.base.base import backtest_df_only
+from old_quantfreedom.enums.enums import (
     CandleBody,
     LeverageMode,
     OrderType,
