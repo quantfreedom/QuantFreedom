@@ -32,7 +32,7 @@ class Mufex:
         self.category = category
         self.volume_yes_no = -2
         main_net = "https://api.mufex.finance/"  # Testnet endpoint
-        test_net = "https://api.mufex.finance/"  # Testnet endpoint
+        test_net = "https://api.testnet.mufex.finance"  # Testnet endpoint
         self.url_start = main_net
 
         if use_test_net:
@@ -110,28 +110,6 @@ class Mufex:
         return candles_df
 
     def __get_HTTP_request(self, params, info):
-        time_stamp = str(int(time.time() * 10**3))
-        param_str = str(time_stamp) + "5000"
-        hash = hmac.new(bytes(self.secret_key, "utf-8"), param_str.encode("utf-8"), hashlib.sha256)
-        signature = hash.hexdigest()
-        headers = {
-            "MF-ACCESS-API-KEY": self.api_key,
-            "MF-ACCESS-SIGN": signature,
-            "MF-ACCESS-SIGN-TYPE": "2",
-            "MF-ACCESS-TIMESTAMP": time_stamp,
-            "MF-ACCESS-RECV-WINDOW": "5000",
-            "Content-Type": "application/json",
-        }
-
-        response = get(
-            url=self.url_start + self.end_point + "?",
-            params=params,
-            headers=headers,
-        )
-        print(info + " Elapsed Time : " + str(response.elapsed))
-        return response.json()
-
-    def __get_public_HTTP_request(self, params, info):
         time_stamp = str(int(time.time() * 10**3))
         param_str = str(time_stamp) + "5000"
         hash = hmac.new(bytes(self.secret_key, "utf-8"), param_str.encode("utf-8"), hashlib.sha256)
