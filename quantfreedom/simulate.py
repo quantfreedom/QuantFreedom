@@ -2,8 +2,7 @@ from typing import Optional
 import numpy as np
 
 from quantfreedom.enums import *
-from quantfreedom.long_short_orders import Order
-from quantfreedom.nb.helper_funcs import get_to_the_upside_nb
+from quantfreedom.gather_order_ex_info.long_short_orders import Order
 
 
 def get_order_settings(
@@ -35,7 +34,7 @@ def get_order_settings(
 
 def backtest_df_only_nb(
     account_state: AccountState,
-    os_cart_arrays: OrderSettings,
+    os_cart_arrays: OrderSettingsArrays,
     exchange_settings: ExchangeSettings,
     backtest_settings: BacktestSettings,
     total_indicator_settings: int,

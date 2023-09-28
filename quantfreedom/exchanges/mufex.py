@@ -97,8 +97,9 @@ class Mufex:
         # else:
         #     print("last candle is the right candle")
         candles_df = self.__candles_list_to_pd(candles_list=candles_list)
-        end_time = int(datetime.now().timestamp())
-        print(f"It took {round((end_time - start_time)/60,2)} minutes to get the candles")
+        print(
+            f"It took {round((int(datetime.now().timestamp()) - start_time)/60,2)} minutes to create the candles dataframe"
+        )
         return candles_df
 
     def __candles_list_to_pd(self, candles_list):

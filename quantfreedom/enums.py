@@ -1,10 +1,11 @@
+from typing import NamedTuple
 import numpy as np
-from quantfreedom._typing import NamedTuple
+
 
 
 class CandleProcessingTypeT(NamedTuple):
     RegularBacktest: int = 0
-    BacktestingCandleByCandle: int = 1
+    BacktestCandleByCandle: int = 1
     LiveTrading: int = 2
 
 
