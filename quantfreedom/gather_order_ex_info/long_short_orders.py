@@ -1,9 +1,5 @@
 from typing import Optional
 import numpy as np
-from quantfreedom.increase_position import IncreasePositionLong
-from quantfreedom.leverage import LeverageLong
-from quantfreedom.stop_loss import StopLossLong
-from quantfreedom.take_profit import TakeProfitLong
 from quantfreedom.enums import (
     AccountState,
     DecreasePosition,
@@ -14,6 +10,10 @@ from quantfreedom.enums import (
     OrderResult,
     TakeProfitFeeType,
 )
+from quantfreedom.gather_order_ex_info.increase_position import IncreasePositionLong
+from quantfreedom.gather_order_ex_info.leverage import LeverageLong
+from quantfreedom.gather_order_ex_info.stop_loss import StopLossLong
+from quantfreedom.gather_order_ex_info.take_profit import TakeProfitLong
 
 
 class Order:

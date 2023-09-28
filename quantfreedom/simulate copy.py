@@ -2,9 +2,6 @@ from typing import Optional
 import numpy as np
 
 from quantfreedom.enums import *
-from quantfreedom.strategy import Strategy
-from quantfreedom.long_short_orders import Order
-from quantfreedom.nb.helper_funcs import get_to_the_upside_nb
 
 
 def get_order_settings(

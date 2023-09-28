@@ -5,11 +5,7 @@ import numpy as np
 from typing import NamedTuple
 
 from quantfreedom.enums import CandleProcessingType
-
-
-class IndicatorSettingsArrays(NamedTuple):
-    rsi_lenth: np.array = np.array([10, 15])
-    rsi_is_below: np.array = np.array([30, 40, 50])
+from quantfreedom.strategies.strategy import IndicatorSettingsArrays
 
 
 class Strategy:
@@ -19,6 +15,10 @@ class Strategy:
         candles_df=None,
         num_candles: int = None,
     ) -> None:
+        class IndicatorSettingsArrays(NamedTuple):
+            rsi_lenth: np.array = np.array([10, 15])
+            rsi_is_below: np.array = np.array([30, 40, 50])
+
         self.candles = candles_df
         self.indicator_settings_array = self.__create_ind_cart_product_nb(IndicatorSettingsArrays())
 
