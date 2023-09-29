@@ -104,7 +104,7 @@ class Mufex:
 
     def __candles_list_to_pd(self, candles_list):
         candles = np.array(candles_list, dtype=np.float_)[:, : self.volume_yes_no]
-        candles_df = pd.DataFrame(np.array(candles), columns=["timestamp", "open", "high", "low", "close"])
+        candles_df = pd.DataFrame(candles, columns=["timestamp", "open", "high", "low", "close"])
         candles_df = candles_df.astype({"timestamp": "int64"})
         candles_df.timestamp = pd.to_datetime(candles_df.timestamp, unit="ms")
         return candles_df
