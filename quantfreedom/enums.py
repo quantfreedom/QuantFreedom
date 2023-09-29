@@ -2,7 +2,6 @@ from typing import NamedTuple
 import numpy as np
 
 
-
 class CandleProcessingTypeT(NamedTuple):
     RegularBacktest: int = 0
     BacktestCandleByCandle: int = 1
@@ -124,14 +123,13 @@ class BacktestSettings(NamedTuple):
 
 
 class ExchangeSettings(NamedTuple):
-    market_fee_pct: float = 0.06 / 100
-    limit_fee_pct: float = 0.02 / 100
-    mmr_pct: float = 0.5 / 100
-    max_leverage: float = 100.0
-    max_order_size_pct: float = 100.0
-    max_order_size_value: float = np.inf
-    min_order_size_pct: float = 0.01
-    min_order_size_value: float = 1.0
+    market_fee_pct: float = None
+    limit_fee_pct: float = None
+    mmr_pct: float = None
+    max_leverage: float = None
+    min_leverage: float = None
+    max_coin_size_value: float = None
+    min_coin_size_value: float = None
 
 
 class OrderSettingsArrays(NamedTuple):

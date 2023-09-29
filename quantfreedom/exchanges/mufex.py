@@ -9,6 +9,8 @@ import numpy as np
 from datetime import datetime, timedelta
 from requests import get
 
+from quantfreedom.enums import ExchangeSettings
+
 mufex_timeframes = [1, 3, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 10080, 43800]
 universal_timeframes = ["1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"]
 
@@ -23,7 +25,6 @@ class Mufex:
         timeframe: str = "5m",
         apikey: str = "",
         secret_key: str = "",
-        use_test_net: bool = False,
         keep_volume_in_candles: bool = False,
     ):
         self.api_key = apikey
@@ -31,12 +32,10 @@ class Mufex:
         self.symbol = symbol
         self.category = category
         self.volume_yes_no = -2
-        main_net = "https://api.mufex.finance/"  # Testnet endpoint
-        test_net = "https://api.testnet.mufex.finance"  # Testnet endpoint
-        self.url_start = main_net
+        self.url_start = "https://api.mufex.finance"
+        self.exchange_settings = ExchangeSettings()
+        self.__set_exchange_settings()
 
-        if use_test_net:
-            self.url_start = test_net
         if keep_volume_in_candles:
             self.volume_yes_no = -1
         try:
@@ -45,13 +44,22 @@ class Mufex:
         except:
             raise TypeError(f"You need to send the following {universal_timeframes}")
 
+    def get_symbol_info(self, symbol: str = None, category: str = "linear", limit: int = 1000):
+        end_point = "/public/v1/instruments"
+        params = {
+            "category": category,
+            "symbol": symbol,
+            "limit": limit,
+        }
+        return get(url=self.url_start + end_point + "?", params=params).json()["data"]["list"]
+
     def get_candles(
         self,
         candles_to_dl: int = None,
         since_date_ms: int = None,
         until_date_ms: int = None,
     ):
-        end_point = "public/v1/market/kline"
+        end_point = "/public/v1/market/kline"
         candles_list = []
         if until_date_ms is None:
             until_date_ms = int(datetime.now().timestamp() * 1000) - self.timeframe_in_ms
@@ -109,7 +117,7 @@ class Mufex:
         candles_df.timestamp = pd.to_datetime(candles_df.timestamp, unit="ms")
         return candles_df
 
-    def __get_HTTP_request(self, params, info):
+    def __get_HTTP_request(self, end_point, params):
         time_stamp = str(int(time.time() * 10**3))
         param_str = str(time_stamp) + "5000"
         hash = hmac.new(bytes(self.secret_key, "utf-8"), param_str.encode("utf-8"), hashlib.sha256)
@@ -124,9 +132,44 @@ class Mufex:
         }
 
         response = get(
-            url=self.url_start + self.end_point + "?",
+            url=self.url_start + end_point + "?",
             params=params,
             headers=headers,
         )
-        print(info + " Elapsed Time : " + str(response.elapsed))
         return response.json()
+
+    def __set_exchange_settings(self):
+        self.__set_fee_pcts()
+        self.__set_leverage_and_coin_size()
+        self.__set_mmr_pct()
+
+    def __set_fee_pcts(self):
+        end_point = "/private/v1/account/trade-fee"
+        params = {
+            "symbol": self.symbol,
+        }
+        trading_fees = self.__get_HTTP_request(end_point=end_point, params=params).json()["data"]["list"][0]
+        self.exchange_settings.market_fee_pct = float(trading_fees["takerFeeRate"])
+        self.exchange_settings.limit_fee_pct = float(trading_fees["makerFeeRate"])
+
+    def __set_mmr_pct(self):
+        end_point = "/public/v1/position-risk"
+        params = {
+            "category": self.category,
+            "symbol": self.symbol,
+        }
+        self.exchange_settings.mmr_pct = get(url=self.url_start + end_point + "?", params=params).json()["data"][
+            "list"
+        ][0]["maintainMargin"]
+
+    def __set_leverage_and_coin_size(self):
+        end_point = "/public/v1/instruments"
+        params = {
+            "category": self.category,
+            "symbol": self.symbol,
+        }
+        symbol_info = get(url=self.url_start + end_point + "?", params=params).json()["data"]["list"][0]
+        self.exchange_settings.max_leverage = float(symbol_info["leverageFilter"]["maxLeverage"])
+        self.exchange_settings.min_leverage = float(symbol_info["leverageFilter"]["minLeverage"])
+        self.exchange_settings.max_coin_size_value = float(symbol_info["lotSizeFilter"]["maxTradingQty"])
+        self.exchange_settings.min_coin_size_value = float(symbol_info["lotSizeFilter"]["minTradingQty"])
