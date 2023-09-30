@@ -38,6 +38,7 @@ class Strategy:
                 self.set_price_data = self.__create_indicator_candle_by_candle
         elif candle_processing_mode == CandleProcessingType.LiveTrading:
             self.ind_settings_or_results(indicator_setting_index)
+            self.bar_index = -1
 
     #########################################################################
     ###################                                  ####################

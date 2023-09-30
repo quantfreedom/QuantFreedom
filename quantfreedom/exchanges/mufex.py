@@ -38,7 +38,8 @@ class Mufex(Exchange):
         if keep_volume_in_candles:
             self.volume_yes_no = -1
         self.timeframe = MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(self.timeframe)]
-
+        if self.side == "buy":
+            self.side_num = 0
         self.__set_exchange_settings()
 
     def set_candles_df(
@@ -81,7 +82,6 @@ class Mufex(Exchange):
 
             except Exception as e:
                 logging.error(repr(e))
-                return False
 
         logging.info(f"Got {len(self.candles_list)} new candles.")
 
@@ -89,7 +89,6 @@ class Mufex(Exchange):
             f"It took {round((self.__get_current_time_seconds() - start_time),4)} seconds to create the candles\n"
         )
         self.__candles_list_to_pd()
-        return True
 
     def __set_init_last_fetched_time(self):
         logging.info("Starting execution for user")
@@ -161,7 +160,7 @@ class Mufex(Exchange):
             raise KeyError(f"{e}")
         return response_json
 
-    def get_buy_position_info(self):
+    def get_position_info(self):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_myposition
         """
@@ -172,34 +171,14 @@ class Mufex(Exchange):
         try:
             data_order_info = self.__HTTP_get_request(end_point=end_point, params=params)
             # TODO how do you try this if the list is zero?
-            order_info_og = data_order_info["data"]["list"][0]
+            order_info_og = data_order_info["data"]["list"][self.side_num]
             if float(order_info_og["entryPrice"]) > 0:
                 return order_info_og
             else:
                 raise KeyError("Looks like we aren't in a buy posiiton.")
 
         except KeyError as e:
-            raise KeyError(f"Something is wrong with get_buy_position_info {e}")
-
-    def get_sell_position_info(self):
-        """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_myposition
-        """
-        end_point = "/private/v1/account/positions"
-        params = {
-            "symbol": self.symbol,
-        }
-        try:
-            data_order_info = self.__HTTP_get_request(end_point=end_point, params=params)
-            # TODO how do you try this if the list is zero?
-            order_info_og = data_order_info["data"]["list"][1]
-            if float(order_info_og["entryPrice"]) > 0:
-                return order_info_og
-            else:
-                raise KeyError("Looks like we aren't in a sell posiiton.")
-
-        except KeyError as e:
-            raise KeyError(f"Something is wrong with get_sell_position_info {e}")
+            raise KeyError(f"Something is wrong with get_buy_position_info {repr(e)}")
 
     def check_if_in_sell_position(self):
         """

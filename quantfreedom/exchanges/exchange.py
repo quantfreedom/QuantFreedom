@@ -24,6 +24,7 @@ class Exchange:
         timeframe: str,
         api_key: str,
         secret_key: str,
+        side: str,
         candles_to_dl: int = None,
     ):
         self.api_key = api_key
@@ -73,4 +74,7 @@ class Exchange:
         pass
 
     def set_candles_df(self):
+        pass
+    
+    def get_position_info(self):
         pass

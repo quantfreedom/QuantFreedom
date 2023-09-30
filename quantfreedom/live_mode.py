@@ -31,46 +31,54 @@ class LiveTrading:
         sleep(self.__get_time_to_next_bar_seconds())
         while True:
             try:
-                if self.exchange.set_candles_df():
-                    self.strategy.set_indicator_live_trading(self.exchange.candles_df)
-                    if self.strategy.evaluate():
-                        try:
-                            self.order.calculate_stop_loss(
-                                bar_index=bar_index,
-                                price_data=price_data,
-                            )
-                            self.order.calculate_increase_posotion(
-                                entry_price=price_data[
-                                    bar_index, 0
-                                ]  # entry price is open because we are getting the signal from the close of the previous candle
-                            )
-                            self.order.calculate_leverage()
-                            self.order.calculate_take_profit()
-
-                        except RejectedOrderError as e:
-                            pass
-                        if self.exchange.postion
-                        try:
-                            self.order.check_move_stop_loss_to_be(bar_index=bar_index, price_data=price_data)
-                            self.order.check_move_trailing_stop_loss(bar_index=bar_index, price_data=price_data)
-                        except RejectedOrderError as e:
-                            pass
-                        except MoveStopLoss as e:
-                            self.order.move_stop_loss(
-                                sl_price=e.sl_price,
-                                order_status=e.order_status,
-                                bar_index=bar_index,
-                                order_settings_index=order_settings_index,
-                                indicator_settings_index=indicator_settings_index,
-                            )
-                    sleep(self.__get_time_to_next_bar_seconds())
-                    continue
+                self.exchange.set_candles_df()
+                self.strategy.set_indicator_live_trading(self.exchange.candles_df)
+                if self.strategy.evaluate():
+                    try:
+                        if self.exchange.get_position_info()["position_size"] < 1000:
+                            try:
+                                self.order.calculate_stop_loss(
+                                    bar_index=bar_index,
+                                    price_data=price_data,
+                                )
+                                self.order.calculate_increase_posotion(
+                                    entry_price=price_data[
+                                        bar_index, 0
+                                    ]  # entry price is open because we are getting the signal from the close of the previous candle
+                                )
+                                self.order.calculate_leverage()
+                                self.order.calculate_take_profit()
+                                #####
+                                # here we need to actually excute the order
+                                #####
+                            except RejectedOrderError as e:
+                                pass
+                        if self.exchange.get_position_info()["position_size"] > 0:
+                            try:
+                                self.order.check_move_stop_loss_to_be(bar_index=bar_index, price_data=price_data)
+                                self.order.check_move_trailing_stop_loss(bar_index=bar_index, price_data=price_data)
+                            except RejectedOrderError as e:
+                                pass
+                            except MoveStopLoss as e:
+                                self.order.move_stop_loss(
+                                    sl_price=e.sl_price,
+                                    order_status=e.order_status,
+                                    bar_index=bar_index,
+                                    order_settings_index=order_settings_index,
+                                    indicator_settings_index=indicator_settings_index,
+                                )
+                                #####
+                                # here we adjust the stop
+                                #####
+                    except Exception as e:
+                        logging.error(f"Something is wrong in the order creation part of live mode -> {repr(e)}")
+                        raise Exception
                 else:
-                    logging.error("Something went wrong with getting the candles")
-                    break
+                    logging.info("No entry ... waiting to get next bar")
             except Exception as e:
                 logging.error(f"Something is wrong in the run part of live mode -> {repr(e)}")
                 raise Exception
+            sleep(self.__get_time_to_next_bar_seconds())
 
     def __get_time_to_next_bar_seconds(self):
         ms_to_next_candle = max(
