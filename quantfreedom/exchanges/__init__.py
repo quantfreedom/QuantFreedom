@@ -1,6 +1,5 @@
 from requests import get
 
-
 def get_exchange_symbols(exchange: str):
     """
     exchanges list: mufex, apex

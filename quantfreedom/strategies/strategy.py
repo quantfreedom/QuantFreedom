@@ -1,3 +1,4 @@
+import logging
 import pandas_ta as pta
 import pandas as pd
 import numpy as np
@@ -17,9 +18,10 @@ class Strategy:
 
     def __init__(
         self,
-        candles=None,
-        candle_processing_mode=CandleProcessingType.RegularBacktest,
+        candles: pd.DataFrame = None,
+        candle_processing_mode: CandleProcessingType = None,
         num_candles: int = None,
+        indicator_setting_index: int = None,
     ) -> None:
         self.candles = candles
         self.indicator_settings_array = self.__create_ind_cart_product_nb(IndicatorSettingsArrays())
@@ -28,13 +30,14 @@ class Strategy:
             self.create_indicator = self.__create_indicator_reg_backtest
             self.closing_prices = candles.close
             self.rsi = self.__get_rsi()
-        if candle_processing_mode == CandleProcessingType.BacktestCandleByCandle:
+        elif candle_processing_mode == CandleProcessingType.BacktestCandleByCandle:
             if num_candles is None:
                 raise TypeError("num candles has to be > 1 or not None when backtesting candle by candle")
             else:
                 self.num_candles = -(num_candles - 1)
                 self.set_price_data = self.__create_indicator_candle_by_candle
-        pass
+        elif candle_processing_mode == CandleProcessingType.LiveTrading:
+            self.ind_settings_or_results(indicator_setting_index)
 
     #########################################################################
     ###################                                  ####################
@@ -47,7 +50,7 @@ class Strategy:
 
     #########################################################################
     ###################                                  ####################
-    ################### Candle by Candle Functions Start ####################
+    ################### Candle by Candle Backtest Start  ####################
     ###################                                  ####################
     #########################################################################
 
@@ -56,6 +59,18 @@ class Strategy:
         bar_start = max(self.num_candles + bar_index, 0)
         self.closing_prices = self.candles.iloc[bar_start : bar_index + 1, 4]
         self.rsi = self.__get_rsi()
+
+    #########################################################################
+    ###################                                  ####################
+    ###################      Live Trading Start          ####################
+    ###################                                  ####################
+    #########################################################################
+
+    def set_indicator_live_trading(self, price_data):
+        try:
+            self.rsi = pta.rsi(close=price_data.close, length=self.rsi_lenth).round(decimals=2)
+        except Exception as e:
+            logging.error(f"Something went wrong creating rsi ")
 
     #########################################################################
     ###################                                  ####################
@@ -74,14 +89,9 @@ class Strategy:
                 return True
             else:
                 return False
-        except:
-            return False
-
-    def __get_rsi(self):
-        try:
-            return pta.rsi(close=self.closing_prices, length=self.rsi_lenth).round(decimals=2)
-        except:
-            pass
+        except Exception as e:
+            logging.error(f"Something is wrong evaluting the strat -> {repr(e)}")
+            raise Exception
 
     def __create_ind_cart_product_nb(self, indicator_settings_array):
         # cart array loop

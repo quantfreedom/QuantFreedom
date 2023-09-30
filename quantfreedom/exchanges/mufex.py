@@ -1,4 +1,5 @@
 import json
+import logging
 import time
 import hashlib
 import hmac
@@ -6,71 +7,109 @@ import hmac
 import pandas as pd
 import numpy as np
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from requests import get, post
+from time import sleep
 
 from quantfreedom.enums import ExchangeSettings, PositionIdxType, PositionModeType, TriggerDirectionType
+from quantfreedom.exchanges.exchange import SLEEP_RETRY, UNIVERSAL_TIMEFRAMES, Exchange
 
 MUFEX_TIMEFRAMES = [1, 3, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 10080, 43800]
-UNIVERSAL_TIMEFRAMES = ["1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"]
 
 
-class Mufex:
+class Mufex(Exchange):
     def __init__(
         self,
-        symbol: str,
-        category: str,
-        timeframe: str,
-        api_key: str,
-        secret_key: str,
+        category: str = "linear",
         keep_volume_in_candles: bool = False,
-        # position_mode: int = PositionMode.OneWayMode,
+        use_test_net: bool = False,
     ):
         """
         Make sure you have your position mode set to hedge or else a lot of functions will not work.
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_switchpositionmode
         """
-        self.api_key = api_key
-        self.secret_key = secret_key
-        self.symbol = symbol
         self.category = category
         self.volume_yes_no = -2
-        self.url_start = "https://api.mufex.finance"
-
-        self.__set_exchange_settings()
-        # self.__set_position_mode(position_mode=position_mode)
+        if not use_test_net:
+            self.url_start = "https://api.mufex.finance"
+        else:
+            self.url_start = "https://api.testnet.mufex.finance"
 
         if keep_volume_in_candles:
             self.volume_yes_no = -1
-        try:
-            self.timeframe = MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
-            self.timeframe_in_ms = timedelta(minutes=self.timeframe).seconds * 1000
-        except:
-            raise TypeError(f"You need to send the following {UNIVERSAL_TIMEFRAMES}")
+        self.timeframe = MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(self.timeframe)]
 
-    def set_leverage_test(self, leverage: float, tradeMode: int = 1):
-        pass
+        self.__set_exchange_settings()
 
-    def set_leverage(self, leverage: float, tradeMode: int = 1):
-        """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_marginswitch
-        """
-        end_point = "/private/v1/account/set-isolated"
-        leverage = str(leverage)
+    def set_candles_df(
+        self,
+        since_date_ms: int = None,
+        until_date_ms: int = None,
+    ):
+        if until_date_ms is None:
+            until_date_ms = self.__get_current_pd_datetime() - self.timeframe_in_ms
+
+        if since_date_ms is None:
+            since_date_ms = until_date_ms - self.timeframe_in_ms - self.candles_to_dl_in_ms
+
+        self.candles_list = []
+        end_point = "/public/v1/market/kline"
         params = {
+            "category": self.category,
             "symbol": self.symbol,
-            "tradeMode": tradeMode,
-            "buyLeverage": leverage,
-            "sellLeverage": leverage,
+            "interval": self.timeframe,
+            "start": since_date_ms,
+            "end": until_date_ms,
+        }
+        start_time = self.__get_current_time_seconds()
+        while params["start"] < until_date_ms:
+            try:
+                new_candles_og = self.__HTTP_get_request(end_point=end_point, params=params)
+                candles = new_candles_og["data"]["list"]
+                if not candles:
+                    break
+                last_candle_time_ms = int(candles[-1][0])
+                if last_candle_time_ms == self.last_fetched_ms_time:
+                    logging.info(
+                        f"\nLast candle {self.__convert_to_pd_datetime(last_candle_time_ms)} == last fetched time {self.__last_fetched_time_to_pd_datetime()}. Trying again in .2 seconds"
+                    )
+                    sleep(0.2)
+                else:
+                    self.candles_list.extend(candles)
+                    params["start"] = last_candle_time_ms + 1000
+                    self.last_fetched_ms_time = last_candle_time_ms
+
+            except Exception as e:
+                logging.error(repr(e))
+                return False
+
+        logging.info(f"Got {len(self.candles_list)} new candles.")
+
+        logging.info(
+            f"It took {round((self.__get_current_time_seconds() - start_time),4)} seconds to create the candles\n"
+        )
+        self.__candles_list_to_pd()
+        return True
+
+    def __set_init_last_fetched_time(self):
+        logging.info("Starting execution for user")
+        init_end = self.__get_ms_current_time() - self.timeframe_in_ms
+        init_start = init_end - self.timeframe_in_ms
+
+        end_point = "/public/v1/market/kline"
+        params = {
+            "category": self.category,
+            "symbol": self.symbol,
+            "interval": self.timeframe,
+            "start": init_start,
+            "end": init_end,
         }
         try:
-            data_orderId = self.__HTTP_post_request(end_point=end_point, params=params)
-            if data_orderId == orderId:
-                return True
-            else:
-                return False
+            self.last_fetched_ms_time = int(
+                self.__HTTP_get_request(end_point=end_point, params=params)["data"]["list"][-1][0]
+            )
         except KeyError as e:
-            raise KeyError(f"Something is wrong set_leverage {e}")
+            logging.error(f"Somethinig is wrong with __set_init_last_fetched_time -< {e}")
 
     def __HTTP_post_request(self, end_point, params):
         time_stamp = str(int(time.time() * 1000))
@@ -416,72 +455,6 @@ class Mufex:
 
         return symbol_info
 
-    def get_candles(
-        self,
-        candles_to_dl: int = None,
-        since_date_ms: int = None,
-        until_date_ms: int = None,
-        limit: int = None,
-    ):
-        candles_list = []
-        if until_date_ms is None:
-            until_date_ms = int(datetime.now().timestamp() * 1000) - self.timeframe_in_ms
-
-        if since_date_ms is None and candles_to_dl is not None:
-            since_date_ms = until_date_ms - self.timeframe_in_ms * candles_to_dl
-        else:
-            since_date_ms = until_date_ms - self.timeframe_in_ms * 200
-
-        end_point = "/public/v1/market/kline"
-        params = {
-            "category": self.category,
-            "symbol": self.symbol,
-            "interval": self.timeframe,
-            "limit": limit,
-            "end": until_date_ms,
-        }
-
-        # since_pd_timestamp = pd.to_datetime(int(since_date_ms / 1000), unit="s")
-        # until_pd_timestamp = pd.to_datetime(int(until_date_ms / 1000), unit="s")
-        # print(f"since_date_ms={since_pd_timestamp}, until_date_ms={until_pd_timestamp}")
-        print(f"Downloading Candles")
-        start_time = int(datetime.now().timestamp())
-        while since_date_ms < until_date_ms:
-            params["start"] = since_date_ms
-            try:
-                new_candles_og = self.__HTTP_get_request(end_point=end_point, params=params)
-                new_candles = new_candles_og["data"]["list"]
-            except Exception as e:
-                # print(f"Got exception -> {repr(e)}")
-                break
-
-            if new_candles is None:
-                break
-            else:
-                # print(f"Got {len(new_candles)} new candles for since={since_pd_timestamp}")
-                candles_list.extend(new_candles)
-                since_date_ms = int(candles_list[-1][0]) + 1000
-                # since_pd_timestamp = pd.to_datetime(since_date_ms, unit="ms")
-                # print(f"Getting candles since={since_pd_timestamp}")
-
-        # if until_date_ms - int(candles_list[-1][0]) < 0:
-        #     print("revmoing last candle because it is the current candle")
-        #     candles_list = candles_list[:-1]
-        # else:
-        #     print("last candle is the right candle")
-        candles_df = self.__candles_list_to_pd(candles_list=candles_list)
-        print(
-            f"It took {round((int(datetime.now().timestamp()) - start_time)/60,2)} minutes to create the candles dataframe"
-        )
-        return candles_df
-
-    def __candles_list_to_pd(self, candles_list):
-        candles = np.array(candles_list, dtype=np.float_)[:, : self.volume_yes_no]
-        candles_df = pd.DataFrame(candles, columns=["timestamp", "open", "high", "low", "close"])
-        candles_df = candles_df.astype({"timestamp": "int64"})
-        candles_df.timestamp = pd.to_datetime(candles_df.timestamp, unit="ms")
-        return candles_df
-
     def __params_as_string(self, params):
         params_as_string = str(json.dumps(params))
         return params_as_string
@@ -567,3 +540,24 @@ class Mufex:
             self.__HTTP_post_request(end_point=end_point, params=params)
         except KeyError as e:
             raise KeyError(f"Something is wrong setting postiion mode {e}")
+
+    # def set_leverage(self, leverage: float, tradeMode: int = 1):
+    #     """
+    #     https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_marginswitch
+    #     """
+    #     end_point = "/private/v1/account/set-isolated"
+    #     leverage = str(leverage)
+    #     params = {
+    #         "symbol": self.symbol,
+    #         "tradeMode": tradeMode,
+    #         "buyLeverage": leverage,
+    #         "sellLeverage": leverage,
+    #     }
+    #     try:
+    #         data_orderId = self.__HTTP_post_request(end_point=end_point, params=params)
+    #         if data_orderId == orderId:
+    #             return True
+    #         else:
+    #             return False
+    #     except KeyError as e:
+    #         raise KeyError(f"Something is wrong set_leverage {e}")

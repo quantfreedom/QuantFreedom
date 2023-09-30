@@ -6,14 +6,12 @@ from quantfreedom.exchanges.apex_github.apexpro.http_private_stark_key_sign impo
 from quantfreedom.exchanges.apex_github.apexpro.http_public import HttpPublic
 
 APEX_TIMEFRAMES = ["1", "3", "5", "15", "30", "60", "120", "240", "360", "720", "D", "W", "M"]
-UNIVERSAL_TIMEFRAMES = ["1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"]
 
 
 class Apex:
     def __init__(
         self,
         symbol: str,
-        timeframe: str,
         api_key: str,
         secret_key: str,
         passphrase: str,
@@ -116,12 +114,12 @@ class Apex:
         )
 
     def __set_exchange_settings(self):
-        account_info = self.private_client.get_account_v2()['data']['accounts'][0]
+        account_info = self.private_client.get_account_v2()["data"]["accounts"][0]
         self.__set_mmr_pct()
         self.__set_min_max_leverage_and_coin_size()
         self.exchange_settings = ExchangeSettings(
-            market_fee_pct=float(account_info['takerFeeRate']),
-            limit_fee_pct=float(account_info['makerFeeRate']),
+            market_fee_pct=float(account_info["takerFeeRate"]),
+            limit_fee_pct=float(account_info["makerFeeRate"]),
             mmr_pct=self.mmr_pct,
             max_leverage=self.max_leverage,
             min_leverage=self.min_leverage,
