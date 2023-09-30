@@ -1,33 +1,28 @@
 import json
-import sys
 import time
 import hashlib
 import hmac
-from tkinter import messagebox
-import uuid
-
 
 import pandas as pd
 import numpy as np
 
 from datetime import datetime, timedelta
 from requests import get, post
-import requests
 
-from quantfreedom.enums import ExchangeSettings, PositionIdx, PositionMode, TriggerDirection
+from quantfreedom.enums import ExchangeSettings, PositionIdxType, PositionModeType, TriggerDirectionType
 
-mufex_timeframes = [1, 3, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 10080, 43800]
-universal_timeframes = ["1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"]
+MUFEX_TIMEFRAMES = [1, 3, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 10080, 43800]
+UNIVERSAL_TIMEFRAMES = ["1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"]
 
 
 class Mufex:
     def __init__(
         self,
-        symbol: str = "BTCUSDT",
-        category: str = "linear",
-        timeframe: str = "5m",
-        apikey: str = "",
-        secret_key: str = "",
+        symbol: str,
+        category: str,
+        timeframe: str,
+        api_key: str,
+        secret_key: str,
         keep_volume_in_candles: bool = False,
         # position_mode: int = PositionMode.OneWayMode,
     ):
@@ -35,7 +30,7 @@ class Mufex:
         Make sure you have your position mode set to hedge or else a lot of functions will not work.
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_switchpositionmode
         """
-        self.api_key = apikey
+        self.api_key = api_key
         self.secret_key = secret_key
         self.symbol = symbol
         self.category = category
@@ -48,30 +43,34 @@ class Mufex:
         if keep_volume_in_candles:
             self.volume_yes_no = -1
         try:
-            self.timeframe = mufex_timeframes[universal_timeframes.index(timeframe)]
+            self.timeframe = MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
             self.timeframe_in_ms = timedelta(minutes=self.timeframe).seconds * 1000
         except:
-            raise TypeError(f"You need to send the following {universal_timeframes}")
+            raise TypeError(f"You need to send the following {UNIVERSAL_TIMEFRAMES}")
 
-    def get_buy_position_info(self):
+    def set_leverage_test(self, leverage: float, tradeMode: int = 1):
+        pass
+
+    def set_leverage(self, leverage: float, tradeMode: int = 1):
         """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_myposition
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_marginswitch
         """
-        end_point = "/private/v1/account/positions"
+        end_point = "/private/v1/account/set-isolated"
+        leverage = str(leverage)
         params = {
             "symbol": self.symbol,
+            "tradeMode": tradeMode,
+            "buyLeverage": leverage,
+            "sellLeverage": leverage,
         }
         try:
-            data_order_info = self.__HTTP_get_request(end_point=end_point, params=params)
-            # TODO how do you try this if the list is zero?
-            order_info_og = data_order_info["data"]["list"][0]
-            if float(order_info_og["entryPrice"]) > 0:
-                return order_info_og
+            data_orderId = self.__HTTP_post_request(end_point=end_point, params=params)
+            if data_orderId == orderId:
+                return True
             else:
                 return False
-
         except KeyError as e:
-            raise KeyError(f"Something is wrong setting the limit order {e}")
+            raise KeyError(f"Something is wrong set_leverage {e}")
 
     def __HTTP_post_request(self, end_point, params):
         time_stamp = str(int(time.time() * 1000))
@@ -85,8 +84,7 @@ class Mufex:
             "MF-ACCESS-RECV-WINDOW": "5000",
             "Content-Type": "application/json",
         }
-        response = requests.Session().request(
-            method="POST",
+        response = post(
             url=self.url_start + end_point,
             headers=headers,
             data=params_as_string,
@@ -274,7 +272,7 @@ class Mufex:
     def create_limit_entry_order(
         self,
         side: str,
-        positionIdx: PositionIdx,
+        positionIdx: PositionIdxType,
         qty: float,
         price: float,
         orderLinkId: str,
@@ -306,7 +304,7 @@ class Mufex:
     def create_market_entry_order(
         self,
         side: str,
-        positionIdx: PositionIdx,
+        positionIdx: PositionIdxType,
         qty: float,
         orderLinkId: str,
     ):
@@ -335,7 +333,7 @@ class Mufex:
     def create_tp_limit_order(
         self,
         side: str,
-        positionIdx: PositionIdx,
+        positionIdx: PositionIdxType,
         qty: float,
         price: float,
         orderLinkId: str,
@@ -367,11 +365,11 @@ class Mufex:
     def create_sl_order(
         self,
         side: str,
-        positionIdx: PositionIdx,
+        positionIdx: PositionIdxType,
         qty: float,
         orderLinkId: str,
         triggerPrice: float,
-        triggerDirection: TriggerDirection,
+        triggerDirection: TriggerDirectionType,
         timeInForce: str = "GoodTillCancel",
     ):
         """

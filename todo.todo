@@ -1,8 +1,25 @@
 questions:
-    ☐ we have to create separate functions for each long entry size and short entry size and also decreaseing the position as well
-todo later:
-    ☐ figure out how to make it so you only create long or short order one time not every time
-    ☐ 
+    ☐ set leverage
+    ☐ get usdt balance
 
-menu:
-    ☐ add a selection to allow the user to choose if they use a stop loss or liq and this will change how you check the exits ... there will be one for stop loss then one for liq and one for pass ... the reason is because you don't need to check for liq if you have a stop loss and you don't need to check for stop loss
+
+
+def _fill_real_trade_info(self, exchange, symbol, order_created, TP_order_created, SL_order_created):
+    position_info = exchange.fetch_positions(symbols=[symbol])[0]
+    self.average_entry = position_info["entryPrice"]
+    self.position_size = position_info["contracts"]
+    self.liq_price = position_info["liquidationPrice"]
+    self.position_size_usd = position_info["notional"]
+    self.tp_price = TP_order_created["price"]
+    self.sl_price = SL_order_created["price"]
+    self.sl_pct = (self.average_entry - self.sl_price) / self.average_entry
+    self.tp_pct = (self.tp_price - self.average_entry) / self.average_entry
+    self.entry_size = order_created["amount"]
+    self.entry_size_value = order_created["price"] * self.entry_size
+    self.leverage = position_info["leverage"]
+
+    pnl = self.position_size * (self.sl_price - self.average_entry)  # math checked
+    fee_open = self.position_size * self.average_entry * self.market_fee_pct  # math checked
+    fee_close = self.position_size * self.sl_price * self.market_fee_pct  # math checked
+    self.fees_paid = fee_open + fee_close  # math checked
+    self.tpl = pnl - self.fees_paid  # math checked

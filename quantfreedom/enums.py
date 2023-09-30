@@ -78,21 +78,21 @@ class OrderTypeT(NamedTuple):
 OrderType = OrderTypeT()
 
 
-class PositionIdxT(NamedTuple):
+class PositionIdxTypeT(NamedTuple):
     Hedge: int = 0
     Buy: int = 1
     Sell: int = 2
 
 
-PositionIdx = PositionIdxT()
+PositionIdxType = PositionIdxTypeT()
 
 
-class PositionModeT(NamedTuple):
+class PositionModeTypeT(NamedTuple):
     OneWayMode: int = 0
     HedgeMode: int = 3
 
 
-PositionMode = PositionModeT()
+PositionModeType = PositionModeTypeT()
 
 
 class StopLossTypeT(NamedTuple):
@@ -125,12 +125,12 @@ class TakeProfitTypeT(NamedTuple):
 TakeProfitType = TakeProfitTypeT()
 
 
-class TriggerDirectionT(NamedTuple):
+class TriggerDirectionTypeT(NamedTuple):
     Rise: int = 1
     Fall: int = 2
 
 
-TriggerDirection = TriggerDirectionT()
+TriggerDirectionType = TriggerDirectionTypeT()
 
 
 class AccountState(NamedTuple):
