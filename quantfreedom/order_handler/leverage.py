@@ -2,7 +2,7 @@ import numpy as np
 from quantfreedom.enums import (
     AccountState,
     DecreasePosition,
-    LeverageType,
+    LeverageStrategyType,
     OrderStatus,
     RejectedOrderError,
     StopLossType,
@@ -25,7 +25,7 @@ class LeverageLong:
 
     def __init__(
         self,
-        leverage_type: LeverageType,
+        leverage_type: LeverageStrategyType,
         sl_type: StopLossType,
         market_fee_pct: float,
         max_leverage: float,
@@ -37,12 +37,12 @@ class LeverageLong:
         self.mmr_pct = mmr_pct
         self.static_leverage = static_leverage
 
-        if leverage_type == LeverageType.Static:
+        if leverage_type == LeverageStrategyType.Static:
             self.leverage_calculator = self.set_static_leverage
-        elif leverage_type == LeverageType.Dynamic:
+        elif leverage_type == LeverageStrategyType.Dynamic:
             self.leverage_calculator = self.calculate_dynamic_leverage
 
-        if sl_type == StopLossType.Nothing or leverage_type == LeverageType.Nothing:
+        if sl_type == StopLossType.Nothing or leverage_type == LeverageStrategyType.Nothing:
             self.liq_hit_checker = self.pass_function
         else:
             self.liq_hit_checker = self.check_liq_hit

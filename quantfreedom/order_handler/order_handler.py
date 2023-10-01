@@ -10,10 +10,10 @@ from quantfreedom.enums import (
     OrderResult,
     TakeProfitFeeType,
 )
-from quantfreedom.gather_order_ex_info.increase_position import IncreasePositionLong
-from quantfreedom.gather_order_ex_info.leverage import LeverageLong
-from quantfreedom.gather_order_ex_info.stop_loss import StopLossLong
-from quantfreedom.gather_order_ex_info.take_profit import TakeProfitLong
+from quantfreedom.order_handler.increase_position import IncreasePositionLong
+from quantfreedom.order_handler.leverage import LeverageLong
+from quantfreedom.order_handler.stop_loss import StopLossLong
+from quantfreedom.order_handler.take_profit import TakeProfitLong
 
 
 class Order:
@@ -115,8 +115,8 @@ class Order:
                 market_fee_pct=self.exchange_settings.market_fee_pct,
                 max_equity_risk_pct=self.order_settings.max_equity_risk_pct,
                 risk_account_pct_size=self.order_settings.risk_account_pct_size,
-                max_order_size_value=self.exchange_settings.max_order_size_value,
-                min_order_size_value=self.exchange_settings.min_order_size_value,
+                max_asset_qty=self.exchange_settings.max_asset_qty,
+                min_asset_qty=self.exchange_settings.min_asset_qty,
             )
             self.obj_leverage = LeverageLong(
                 leverage_type=self.order_settings.leverage_type,
@@ -135,6 +135,18 @@ class Order:
             pass
 
     def pass_func(self, **vargs):
+        pass
+
+    def calculate_stop_loss(self, **vargs):
+        pass
+
+    def calculate_increase_posotion(self, **vargs):
+        pass
+
+    def check_move_stop_loss_to_be(self, **vargs):
+        pass
+
+    def check_move_trailing_stop_loss(self, **vargs):
         pass
 
     def move_stop_loss(
@@ -202,7 +214,7 @@ class Order:
 
 class LongOrder(Order):
     def calculate_stop_loss(self, bar_index, price_data):
-        self.sl_price = self.obj_stop_loss.calculate_stop_loss(
+        self.sl_price = self.obj_stop_loss.calculator(
             bar_index=bar_index,
             price_data=price_data,
         )

@@ -12,7 +12,7 @@ class TakeProfit:
         try:
             self.calculate_function = self.calculators[take_profit_type]
         except KeyError as e:
-            print(f"Calculator not found -> {repr(e)}")
+            print(f"Calculator not found -> {e}")
 
     def calculate(self, **vargs):
         return self.calculate_function(**vargs)
@@ -27,9 +27,7 @@ class TakeProfit:
             average_entry / (position_size - position_size * limit_fee_pct)
         )  # math checked
 
-        take_profit_pct = (
-            take_profit_price - average_entry
-        ) / average_entry  # math checked
+        take_profit_pct = (take_profit_price - average_entry) / average_entry  # math checked
         take_profit_pct = round(take_profit_pct * 100, 2)
         take_profit_price = round(take_profit_price, 2)
         return take_profit_price, take_profit_pct

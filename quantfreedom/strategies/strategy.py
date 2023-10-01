@@ -91,7 +91,7 @@ class Strategy:
             else:
                 return False
         except Exception as e:
-            logging.error(f"Something is wrong evaluting the strat -> {repr(e)}")
+            logging.error(f"Something is wrong evaluting the strat -> {e}")
             raise Exception
 
     def __create_ind_cart_product_nb(self, indicator_settings_array):

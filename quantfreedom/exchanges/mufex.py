@@ -1,6 +1,5 @@
 import json
 import logging
-import time
 import hashlib
 import hmac
 
@@ -9,40 +8,114 @@ import numpy as np
 
 from datetime import datetime
 from requests import get, post
-from time import sleep
+from time import sleep, time
 
-from quantfreedom.enums import ExchangeSettings, PositionIdxType, PositionModeType, TriggerDirectionType
-from quantfreedom.exchanges.exchange import SLEEP_RETRY, UNIVERSAL_TIMEFRAMES, Exchange
+from quantfreedom.enums import (
+    ExchangeSettings,
+    LeverageModeType,
+    PositionIdxType,
+    PositionModeType,
+    TriggerDirectionType,
+)
+from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES, Exchange
 
 MUFEX_TIMEFRAMES = [1, 3, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 10080, 43800]
+
+
+def __init__(
+    self,
+    category: str = "linear",
+):
+    """
+    Make sure you have your position mode set to hedge or else a lot of functions will not work.
+    https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_switchpositionmode
+    """
+    self.timeframe = MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(self.timeframe)]
+    self.side = self.side.capitalize()
+    self.category = category
+
+    if not self.use_test_net:
+        self.url_start = "https://api.mufex.finance"
+    else:
+        self.url_start = "https://api.testnet.mufex.finance"
+
+    if self.position_mode == PositionModeType.HedgeMode:
+        self.position_mode = 3
+
+    if self.keep_volume_in_candles:
+        self.volume_yes_no = -1
+    else:
+        self.volume_yes_no = -2
+
+    if self.side == "Buy":
+        self.side_num = 0
+    else:
+        self.side_num = 1
+
+    self.__set_exchange_settings()
 
 
 class Mufex(Exchange):
     def __init__(
         self,
-        category: str = "linear",
+        symbol: str,
+        timeframe: str,
+        api_key: str,
+        secret_key: str,
+        side: str,
+        position_mode: PositionModeType,
+        leverage_mode: LeverageModeType,
+        candles_to_dl: int = None,
         keep_volume_in_candles: bool = False,
         use_test_net: bool = False,
+        category: str = "linear",
     ):
         """
         Make sure you have your position mode set to hedge or else a lot of functions will not work.
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_switchpositionmode
         """
+        super().__init__(
+            symbol,
+            timeframe,
+            api_key,
+            secret_key,
+            side,
+            position_mode,
+            leverage_mode,
+            candles_to_dl,
+            keep_volume_in_candles,
+            use_test_net,
+        )
+        self.timeframe = MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(self.timeframe)]
+        self.side = self.side.capitalize()
         self.category = category
-        self.volume_yes_no = -2
-        if not use_test_net:
+
+        if not self.use_test_net:
             self.url_start = "https://api.mufex.finance"
         else:
             self.url_start = "https://api.testnet.mufex.finance"
 
-        if keep_volume_in_candles:
+        if self.keep_volume_in_candles:
             self.volume_yes_no = -1
-        self.timeframe = MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(self.timeframe)]
-        if self.side == "buy":
+        else:
+            self.volume_yes_no = -2
+
+        if self.side == "Buy":
             self.side_num = 0
+        else:
+            self.side_num = 1
+
+        if self.position_mode == PositionModeType.HedgeMode:
+            self.position_mode = 3
+        
+        if leverage_mode == LeverageModeType.Isolated:
+            self.__set_leverage_mode_isolated()
+        elif leverage_mode == LeverageModeType.Cross:
+            self.__set_leverage_mode_cross()
+
         self.__set_exchange_settings()
 
-    def set_candles_df(
+    def get_and_set_candles_df(
         self,
         since_date_ms: int = None,
         until_date_ms: int = None,
@@ -81,14 +154,14 @@ class Mufex(Exchange):
                     self.last_fetched_ms_time = last_candle_time_ms
 
             except Exception as e:
-                logging.error(repr(e))
+                logging.error(e)
 
         logging.info(f"Got {len(self.candles_list)} new candles.")
 
         logging.info(
             f"It took {round((self.__get_current_time_seconds() - start_time),4)} seconds to create the candles\n"
         )
-        self.__candles_list_to_pd()
+        return self.__candles_list_to_pd()
 
     def __set_init_last_fetched_time(self):
         logging.info("Starting execution for user")
@@ -111,7 +184,7 @@ class Mufex(Exchange):
             logging.error(f"Somethinig is wrong with __set_init_last_fetched_time -< {e}")
 
     def __HTTP_post_request(self, end_point, params):
-        time_stamp = str(int(time.time() * 1000))
+        time_stamp = str(int(time() * 1000))
         params_as_string = self.__params_as_string(params=params)
         signature = self.__genSignature(time_stamp=time_stamp, paras_as_string=params_as_string)
         headers = {
@@ -136,7 +209,7 @@ class Mufex(Exchange):
         return response_json
 
     def __HTTP_get_request(self, end_point, params):
-        time_stamp = str(int(time.time() * 1000))
+        time_stamp = str(int(time() * 1000))
         params_as_path = self.__params_to_path(params=params)
         signature = self.__genSignature(time_stamp=time_stamp, paras_as_string=params_as_path)
         headers = {
@@ -178,9 +251,9 @@ class Mufex(Exchange):
                 raise KeyError("Looks like we aren't in a buy posiiton.")
 
         except KeyError as e:
-            raise KeyError(f"Something is wrong with get_buy_position_info {repr(e)}")
+            raise KeyError(f"Something is wrong with get_buy_position_info {e}")
 
-    def check_if_in_sell_position(self):
+    def check_if_in_position(self):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_myposition
         """
@@ -190,28 +263,7 @@ class Mufex(Exchange):
         }
         try:
             data_order_info = self.__HTTP_get_request(end_point=end_point, params=params)
-            # TODO how do you try this if the list is zero?
-            order_info_og = data_order_info["data"]["list"][1]
-            if float(order_info_og["entryPrice"]) > 0:
-                return True
-            else:
-                return False
-
-        except KeyError as e:
-            raise KeyError(f"Something is wrong with check_if_in_sell_position {e}")
-
-    def check_if_in_buy_position(self):
-        """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_myposition
-        """
-        end_point = "/private/v1/account/positions"
-        params = {
-            "symbol": self.symbol,
-        }
-        try:
-            data_order_info = self.__HTTP_get_request(end_point=end_point, params=params)
-            # TODO how do you try this if the list is zero?
-            order_info_og = data_order_info["data"]["list"][0]
+            order_info_og = data_order_info["data"]["list"][self.side_num]
             if float(order_info_og["entryPrice"]) > 0:
                 return True
             else:
@@ -462,8 +514,10 @@ class Mufex(Exchange):
             mmr_pct=self.mmr_pct,
             max_leverage=self.max_leverage,
             min_leverage=self.min_leverage,
-            max_coin_size_value=self.max_coin_size_value,
-            min_coin_size_value=self.min_coin_size_value,
+            max_asset_qty=self.max_coin_size_value,
+            min_asset_qty=self.min_asset_qty,
+            position_mode=self.position_mode,
+            leverage_mode=self.leverage_mode,
         )
 
     def __set_fee_pcts(self):
@@ -502,41 +556,122 @@ class Mufex(Exchange):
             self.max_leverage = float(symbol_info["leverageFilter"]["maxLeverage"])
             self.min_leverage = float(symbol_info["leverageFilter"]["minLeverage"])
             self.max_coin_size_value = float(symbol_info["lotSizeFilter"]["maxTradingQty"])
-            self.min_coin_size_value = float(symbol_info["lotSizeFilter"]["minTradingQty"])
+            self.min_asset_qty = float(symbol_info["lotSizeFilter"]["minTradingQty"])
 
         except KeyError as e:
             raise KeyError(f"Something is wrong setting min max leveage coin size {e}")
 
-    def __set_position_mode(self, position_mode):
-        # https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_switchpositionmode
+    def set_position_mode(self, position_mode: int):
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_switchpositionmode
+        Position mode. 0: One-Way mode. 3: Hedge mode
+        """
         end_point = "/private/v1/account/set-position-mode"
         params = {
             "symbol": self.symbol,
             "mode": position_mode,
         }
-
         try:
             self.__HTTP_post_request(end_point=end_point, params=params)
         except KeyError as e:
             raise KeyError(f"Something is wrong setting postiion mode {e}")
 
-    # def set_leverage(self, leverage: float, tradeMode: int = 1):
-    #     """
-    #     https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_marginswitch
-    #     """
-    #     end_point = "/private/v1/account/set-isolated"
-    #     leverage = str(leverage)
-    #     params = {
-    #         "symbol": self.symbol,
-    #         "tradeMode": tradeMode,
-    #         "buyLeverage": leverage,
-    #         "sellLeverage": leverage,
-    #     }
-    #     try:
-    #         data_orderId = self.__HTTP_post_request(end_point=end_point, params=params)
-    #         if data_orderId == orderId:
-    #             return True
-    #         else:
-    #             return False
-    #     except KeyError as e:
-    #         raise KeyError(f"Something is wrong set_leverage {e}")
+    def __set_position_as_hedge_mode(self):
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_switchpositionmode
+        Position mode. 0: One-Way mode. 3: Hedge mode
+        """
+        end_point = "/private/v1/account/set-position-mode"
+        params = {
+            "symbol": self.symbol,
+            "mode": 3,
+        }
+        try:
+            self.__HTTP_post_request(end_point=end_point, params=params)
+        except KeyError as e:
+            raise KeyError(f"Something is wrong setting postiion mode {e}")
+
+    def __set_position_as_one_way_mode(self):
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_switchpositionmode
+        Position mode. 0: One-Way mode. 3: Hedge mode
+        """
+        end_point = "/private/v1/account/set-position-mode"
+        params = {
+            "symbol": self.symbol,
+            "mode": 0,
+        }
+        try:
+            self.__HTTP_post_request(end_point=end_point, params=params)
+        except KeyError as e:
+            raise KeyError(f"Something is wrong setting postiion mode {e}")
+
+    def set_leverage_value(self, leverage: float):
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_marginswitch
+        """
+        end_point = "/private/v1/account/set-leverage"
+        leverage_str = str(leverage)
+        params = {
+            "symbol": self.symbol,
+            "buyLeverage": leverage_str,
+            "sellLeverage": leverage_str,
+        }
+        try:
+            self.__HTTP_post_request(end_point=end_point, params=params)
+        except KeyError as e:
+            raise KeyError(f"Something is wrong set_leverage {e}")
+
+    def set_leverage_mode(self, tradeMode: int, leverage: int = 5):
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_marginswitch
+        Cross/isolated mode. 0: cross margin mode; 1: isolated margin mode
+        """
+        end_point = "/private/v1/account/set-isolated"
+        leverage_str = str(leverage)
+        params = {
+            "symbol": self.symbol,
+            "tradeMode": tradeMode,
+            "buyLeverage": leverage_str,
+            "sellLeverage": leverage_str,
+        }
+        try:
+            self.__HTTP_post_request(end_point=end_point, params=params)
+        except KeyError as e:
+            raise KeyError(f"More than likely lev mode already set {e}")
+
+    def __set_leverage_mode_isolated(self):
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_marginswitch
+        Cross/isolated mode. 0: cross margin mode; 1: isolated margin mode
+        """
+        end_point = "/private/v1/account/set-isolated"
+        leverage_str = "5"
+        params = {
+            "symbol": self.symbol,
+            "tradeMode": 1,
+            "buyLeverage": leverage_str,
+            "sellLeverage": leverage_str,
+        }
+        try:
+            self.__HTTP_post_request(end_point=end_point, params=params)
+        except KeyError as e:
+            raise KeyError(f"More than likely isolated lev mode already set {e}")
+
+    def __set_leverage_mode_cross(self):
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_marginswitch
+        Cross/isolated mode. 0: cross margin mode; 1: isolated margin mode
+        """
+        end_point = "/private/v1/account/set-isolated"
+        leverage_str = "5"
+        params = {
+            "symbol": self.symbol,
+            "tradeMode": 0,
+            "buyLeverage": leverage_str,
+            "sellLeverage": leverage_str,
+        }
+        try:
+            self.__HTTP_post_request(end_point=end_point, params=params)
+        except KeyError as e:
+            raise KeyError(f"More than likely cross lev mode already set {e}")

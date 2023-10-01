@@ -2,7 +2,7 @@ from typing import Optional
 import numpy as np
 
 from quantfreedom.enums import *
-from quantfreedom.gather_order_ex_info.long_short_orders import Order
+from quantfreedom.order_handler.order_handler import Order
 
 
 def get_order_settings(

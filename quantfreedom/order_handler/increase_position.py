@@ -13,8 +13,8 @@ class IncreasePositionLong:
     market_fee_pct = None
     risk_account_pct_size = None
     max_equity_risk_pct = None
-    max_order_size_value = None
-    min_order_size_value = None
+    min_asset_qty = None
+    min_asset_qty = None
 
     def __init__(
         self,
@@ -23,25 +23,28 @@ class IncreasePositionLong:
         market_fee_pct: float,
         risk_account_pct_size: float,
         max_equity_risk_pct: float,
-        max_order_size_value: float,
-        min_order_size_value: float,
+        max_asset_qty: float,
+        min_asset_qty: float,
     ):
         self.market_fee_pct = market_fee_pct
         self.risk_account_pct_size = risk_account_pct_size
         self.max_equity_risk_pct = max_equity_risk_pct
-        self.max_order_size_value = max_order_size_value
-        self.min_order_size_value = min_order_size_value
+        self.max_asset_qty = max_asset_qty
+        self.min_asset_qty = min_asset_qty
 
         if stop_loss_type == StopLossType.SLBasedOnCandleBody:
-            if increase_position_type == IncreasePositionType.AmountEntrySize:
+            if increase_position_type == IncreasePositionType.RiskPctAccountEntrySize:
+                self.calculator_in_pos = self.risk_pct_of_account_and_sl_based_on_in_pos
+                self.calculator_not_in_pos = self.risk_pct_of_account_and_sl_based_on_not_in_pos
+            elif increase_position_type == IncreasePositionType.TestingStrategy:
+                self.calculator_in_pos = self.smallest_amount
+                self.calculator_not_in_pos = self.smallest_amount
+            elif increase_position_type == IncreasePositionType.AmountEntrySize:
                 self.calculator_in_pos = self.amount_based
             elif increase_position_type == IncreasePositionType.PctAccountEntrySize:
                 self.calculator_in_pos = self.pctAccount_based
             elif increase_position_type == IncreasePositionType.RiskAmountEntrySize:
                 self.calculator_in_pos = self.riskAmount_based
-            elif increase_position_type == IncreasePositionType.RiskPctAccountEntrySize:
-                self.calculator_in_pos = self.risk_pct_of_account_and_sl_based_on_in_pos
-                self.calculator_not_in_pos = self.risk_pct_of_account_and_sl_based_on_not_in_pos
             else:
                 raise NotImplementedError(
                     "IncreasePositionType=RiskPctAccountEntrySize and not StopLossType=SLBasedOnCandleBody"
@@ -106,7 +109,7 @@ class IncreasePositionLong:
         return round(possible_loss, 2)
 
     def __check_size_value(self, entry_size):
-        if entry_size < 1 or entry_size > self.max_order_size_value or entry_size < self.min_order_size_value:
+        if entry_size < 1 or entry_size > self.max_order_size_value or entry_size < self.min_asset_qty:
             raise RejectedOrderError("Long Increase - Size Value is either to big or too small")
 
     def amount_based(self, **vargs):
@@ -117,6 +120,9 @@ class IncreasePositionLong:
 
     def riskAmount_based(self, **vargs):
         pass
+
+    def smallest_amount(self, **vargs):
+        return self.min_asset_qty
 
     def risk_pct_of_account_and_sl_based_on_not_in_pos(
         self,

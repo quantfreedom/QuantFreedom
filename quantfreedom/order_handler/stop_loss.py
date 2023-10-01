@@ -53,6 +53,7 @@ class StopLossLong:
 
         # setting up stop loss calulator
         if sl_type == StopLossType.SLBasedOnCandleBody:
+            self.calculator = self.sl_based_on_candle_body_calc
             if sl_candle_body_type == CandleBodyType.Open:
                 self.sl_price_getter = self.__get_candle_body_price_open
             elif sl_candle_body_type == CandleBodyType.High:
@@ -128,7 +129,7 @@ class StopLossLong:
     def pass_function(self, **vargs):
         pass
 
-    def calculate_stop_loss(self, bar_index, price_data):
+    def sl_based_on_candle_body_calc(self, bar_index, price_data):
         # lb will be bar index if sl isn't based on lookback because look back will be 0
         lookback = max(int((bar_index - 1) - self.sl_based_on_lookback), 0)
         candle_body = self.sl_price_getter(

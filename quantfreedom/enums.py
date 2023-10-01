@@ -28,27 +28,27 @@ class IncreasePositionTypeT(NamedTuple):
     PctAccountEntrySize: int = 2
     RiskAmountEntrySize: int = 3
     RiskPctAccountEntrySize: int = 4
+    TestingStrategy: int = 5
 
 
 IncreasePositionType = IncreasePositionTypeT()
 
 
-class LeverageTypeT(NamedTuple):
+class LeverageModeTypeT(NamedTuple):
+    Cross: int = 0
+    Isolated: int = 1
+
+
+LeverageModeType = LeverageModeTypeT()
+
+
+class LeverageStrategyTypeT(NamedTuple):
     Nothing: int = 0
     Static: int = 1
     Dynamic: int = 2
 
 
-LeverageType = LeverageTypeT()
-
-
-class SLToBeZeroOrEntryTypeT(NamedTuple):
-    Nothing = 0
-    ZeroLoss = 1
-    AverageEntry = 2
-
-
-SLToBeZeroOrEntryType = SLToBeZeroOrEntryTypeT()
+LeverageStrategyType = LeverageStrategyTypeT()
 
 
 class OrderStatusT(NamedTuple):
@@ -89,10 +89,19 @@ PositionIdxType = PositionIdxTypeT()
 
 class PositionModeTypeT(NamedTuple):
     OneWayMode: int = 0
-    HedgeMode: int = 3
+    HedgeMode: int = 1
 
 
 PositionModeType = PositionModeTypeT()
+
+
+class SLToBeZeroOrEntryTypeT(NamedTuple):
+    Nothing: int = 0
+    ZeroLoss: int = 1
+    AverageEntry: int = 2
+
+
+SLToBeZeroOrEntryType = SLToBeZeroOrEntryTypeT()
 
 
 class StopLossTypeT(NamedTuple):
@@ -153,8 +162,10 @@ class ExchangeSettings(NamedTuple):
     mmr_pct: float = None
     max_leverage: float = None
     min_leverage: float = None
-    max_coin_size_value: float = None
-    min_coin_size_value: float = None
+    max_asset_qty: float = None
+    min_asset_qty: float = None
+    position_mode: int = None
+    leverage_mode: int = None
 
 
 class OrderSettingsArrays(NamedTuple):

@@ -113,7 +113,7 @@ class DownloadCandles:
             try:
                 new_candles = self._ccxt_candle_download(since_date_ms=since_date_ms)
             except Exception as e:
-                logging.error(f"Got exception -> {repr(e)}")
+                logging.error(f"Got exception -> {e}")
                 break
 
             logging.info(f"Got {len(new_candles)} new candles for since={since_pd_timestamp}")

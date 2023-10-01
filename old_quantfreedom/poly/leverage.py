@@ -15,7 +15,7 @@ class Leverage:
         try:
             self.calculate_function = self.calculators[leverage_type]
         except KeyError as e:
-            print(f"Calculator not found -> {repr(e)}")
+            print(f"Calculator not found -> {e}")
 
     def calculate(self, **vargs):
         return self.calculate_function(**vargs)
@@ -34,14 +34,13 @@ class Leverage:
         # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001064&language=en_US
         initial_margin = entry_size / leverage
         fee_to_open = entry_size * market_fee_pct  # math checked
-        possible_bankruptcy_fee = (
-            entry_size * (leverage - 1) / leverage * market_fee_pct
-        )
-        cash_used_new = (
-            initial_margin + fee_to_open + possible_bankruptcy_fee
-        )  # math checked
+        possible_bankruptcy_fee = entry_size * (leverage - 1) / leverage * market_fee_pct
+        cash_used_new = initial_margin + fee_to_open + possible_bankruptcy_fee  # math checked
 
-        if cash_used_new > account_state_available_balance * leverage or cash_used_new > account_state_available_balance:
+        if (
+            cash_used_new > account_state_available_balance * leverage
+            or cash_used_new > account_state_available_balance
+        ):
             raise RejectedOrderError(order_status=OrderStatus.CashUsedExceed)
 
         else:
@@ -51,9 +50,7 @@ class Leverage:
             cash_used_new = account_state_cash_used + cash_used_new
             cash_borrowed_new = account_state_cash_borrowed + entry_size - cash_used_new
 
-            liq_price_new = average_entry * (
-                1 - (1 / leverage) + exchange_settings_mmr_pct
-            )  # math checked
+            liq_price_new = average_entry * (1 - (1 / leverage) + exchange_settings_mmr_pct)  # math checked
             return (
                 leverage,
                 liq_price_new,

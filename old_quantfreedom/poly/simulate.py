@@ -14,15 +14,13 @@ from old_quantfreedom.poly.enums import (
     OrderSettingsArrays,
     OrderSettings,
     AccountState,
-    RejectedOrderError
+    RejectedOrderError,
 )
 from old_quantfreedom.poly.long_short_orders import Order
 
 
 @njit(cache=True)
-def get_order_settings(
-    settings_idx: int, os_cart_arrays: OrderSettingsArrays
-) -> OrderSettings:
+def get_order_settings(settings_idx: int, os_cart_arrays: OrderSettingsArrays) -> OrderSettings:
     return OrderSettings(
         risk_account_pct_size=os_cart_arrays.risk_account_pct_size[settings_idx],
         sl_based_on_add_pct=os_cart_arrays.sl_based_on_add_pct[settings_idx],
@@ -104,17 +102,17 @@ def backtest_df_only_nb(
 
                 # Order Result Reset
                 order_result = OrderResult(
-                    average_entry=0.,
+                    average_entry=0.0,
                     fees_paid=np.nan,
-                    leverage=1.,
+                    leverage=1.0,
                     liq_price=np.nan,
                     order_status=0,
                     order_status_info=0,
-                    possible_loss=0.,
+                    possible_loss=0.0,
                     pct_chg_trade=np.nan,
-                    entry_size=0.,
-                    entry_price=0.,
-                    position_size=0.,
+                    entry_size=0.0,
+                    entry_price=0.0,
+                    position_size=0.0,
                     realized_pnl=np.nan,
                     sl_pct=np.nan,
                     sl_price=np.nan,
@@ -139,9 +137,7 @@ def backtest_df_only_nb(
 
                 # entries loop
                 for bar_index in range(total_bars):
-                    if current_indicator_entries[
-                        bar_index
-                    ]:  # add in that we are also not at max entry amount
+                    if current_indicator_entries[bar_index]:  # add in that we are also not at max entry amount
                         try:
                             order.calc_stop_loss(
                                 symbol_price_data=symbol_price_data,
@@ -152,14 +148,13 @@ def backtest_df_only_nb(
                             )
                             order.calc_leverage()
                             order.calc_take_profit()
-                            
+
                             # all went ok, we are ready to update order_result with the new calculated values
                             order.fill_order_result_entry()
                         except RejectedOrderError as e:
-                            print(f'Skipping iteration -> {repr(e)}')
+                            print(f"Skipping iteration -> {e}")
                         if order.order_result.position_size > 0:
-                            pass                        
-                        
+                            pass
 
                 # Checking if gains
             #     gains_pct = (
