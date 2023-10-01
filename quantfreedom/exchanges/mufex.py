@@ -2,6 +2,7 @@ import json
 import logging
 import hashlib
 import hmac
+from uuid import uuid4
 
 import pandas as pd
 import numpy as np
@@ -13,61 +14,29 @@ from time import sleep, time
 from quantfreedom.enums import (
     ExchangeSettings,
     LeverageModeType,
-    PositionIdxType,
+    LongOrShortType,
     PositionModeType,
-    TriggerDirectionType,
 )
 from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES, Exchange
 
 MUFEX_TIMEFRAMES = [1, 3, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 10080, 43800]
 
 
-def __init__(
-    self,
-    category: str = "linear",
-):
-    """
-    Make sure you have your position mode set to hedge or else a lot of functions will not work.
-    https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_switchpositionmode
-    """
-    self.timeframe = MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(self.timeframe)]
-    self.side = self.side.capitalize()
-    self.category = category
-
-    if not self.use_test_net:
-        self.url_start = "https://api.mufex.finance"
-    else:
-        self.url_start = "https://api.testnet.mufex.finance"
-
-    if self.position_mode == PositionModeType.HedgeMode:
-        self.position_mode = 3
-
-    if self.keep_volume_in_candles:
-        self.volume_yes_no = -1
-    else:
-        self.volume_yes_no = -2
-
-    if self.side == "Buy":
-        self.side_num = 0
-    else:
-        self.side_num = 1
-
-    self.__set_exchange_settings()
-
-
 class Mufex(Exchange):
     def __init__(
+        # Exchange Vars
         self,
         symbol: str,
         timeframe: str,
         api_key: str,
         secret_key: str,
-        side: str,
-        position_mode: PositionModeType,
-        leverage_mode: LeverageModeType,
+        long_or_short: LongOrShortType,
         candles_to_dl: int = None,
         keep_volume_in_candles: bool = False,
         use_test_net: bool = False,
+        position_mode: PositionModeType = PositionModeType.HedgeMode,
+        leverage_mode: LeverageModeType = LeverageModeType.Isolated,
+        # Mufex Vars
         category: str = "linear",
     ):
         """
@@ -79,35 +48,37 @@ class Mufex(Exchange):
             timeframe,
             api_key,
             secret_key,
-            side,
+            long_or_short,
             position_mode,
             leverage_mode,
             candles_to_dl,
             keep_volume_in_candles,
             use_test_net,
         )
-        self.timeframe = MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(self.timeframe)]
-        self.side = self.side.capitalize()
+        self.timeframe = MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
         self.category = category
 
-        if not self.use_test_net:
+        if not use_test_net:
             self.url_start = "https://api.mufex.finance"
         else:
             self.url_start = "https://api.testnet.mufex.finance"
 
-        if self.keep_volume_in_candles:
+        if keep_volume_in_candles:
             self.volume_yes_no = -1
         else:
             self.volume_yes_no = -2
 
-        if self.side == "Buy":
+        if long_or_short == LongOrShortType.Long:
             self.side_num = 0
         else:
             self.side_num = 1
 
-        if self.position_mode == PositionModeType.HedgeMode:
+        if position_mode == PositionModeType.HedgeMode:
             self.position_mode = 3
-        
+            self.__set_position_mode_as_hedge_mode()
+        else:
+            self.__set_position_mode_as_one_way_mode()
+
         if leverage_mode == LeverageModeType.Isolated:
             self.__set_leverage_mode_isolated()
         elif leverage_mode == LeverageModeType.Cross:
@@ -115,11 +86,91 @@ class Mufex(Exchange):
 
         self.__set_exchange_settings()
 
+    def __HTTP_post_request(
+        self,
+        end_point,
+        params,
+        **vargs,
+    ):
+        time_stamp = str(int(time() * 1000))
+        params_as_string = self.__params_as_string(params=params)
+        signature = self.__genSignature(time_stamp=time_stamp, paras_as_string=params_as_string)
+        headers = {
+            "MF-ACCESS-API-KEY": self.api_key,
+            "MF-ACCESS-SIGN": signature,
+            "MF-ACCESS-SIGN-TYPE": "2",
+            "MF-ACCESS-TIMESTAMP": time_stamp,
+            "MF-ACCESS-RECV-WINDOW": "5000",
+            "Content-Type": "application/json",
+        }
+        response = post(
+            url=self.url_start + end_point,
+            headers=headers,
+            data=params_as_string,
+        )
+        try:
+            response_json = response.json()
+        except KeyError as e:
+            raise KeyError(f"{e}")
+        return response_json
+
+    def __HTTP_get_request(
+        self,
+        end_point,
+        params,
+    ):
+        time_stamp = str(int(time() * 1000))
+        params_as_path = self.__params_to_path(params=params)
+        signature = self.__genSignature(time_stamp=time_stamp, paras_as_string=params_as_path)
+        headers = {
+            "MF-ACCESS-API-KEY": self.api_key,
+            "MF-ACCESS-SIGN": signature,
+            "MF-ACCESS-SIGN-TYPE": "2",
+            "MF-ACCESS-TIMESTAMP": time_stamp,
+            "MF-ACCESS-RECV-WINDOW": "5000",
+            "Content-Type": "application/json",
+        }
+
+        response = get(
+            url=self.url_start + end_point + "?" + params_as_path,
+            headers=headers,
+        )
+        try:
+            response_json = response.json()
+        except KeyError as e:
+            raise KeyError(f"{e}")
+        return response_json
+
     def get_and_set_candles_df(
         self,
         since_date_ms: int = None,
         until_date_ms: int = None,
+        **vargs,
     ):
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
+        {
+            "code": 0,
+            "message": "OK",,
+            "data": {
+              "category":"linear",
+              "symbol":"BTCUSDT",
+              "interval":"1",
+              "list":[
+              "1621162800000",
+              "49592.43",
+              "49644.91",
+              "49342.37",
+              "49349.42",
+              "1451.59",
+              "2.4343353100000003"
+            ]
+            },
+            "ext_info": {},
+            "time": 1669802294719
+        }
+        The default collation within the array is start, open, high, low, close, volume, turnover
+        """
         if until_date_ms is None:
             until_date_ms = self.__get_current_pd_datetime() - self.timeframe_in_ms
 
@@ -135,7 +186,6 @@ class Mufex(Exchange):
             "start": since_date_ms,
             "end": until_date_ms,
         }
-        start_time = self.__get_current_time_seconds()
         while params["start"] < until_date_ms:
             try:
                 new_candles_og = self.__HTTP_get_request(end_point=end_point, params=params)
@@ -155,16 +205,35 @@ class Mufex(Exchange):
 
             except Exception as e:
                 logging.error(e)
-
-        logging.info(f"Got {len(self.candles_list)} new candles.")
-
-        logging.info(
-            f"It took {round((self.__get_current_time_seconds() - start_time),4)} seconds to create the candles\n"
-        )
         return self.__candles_list_to_pd()
 
-    def __set_init_last_fetched_time(self):
-        logging.info("Starting execution for user")
+    def set_init_last_fetched_time(
+        self,
+    ):
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
+        {
+            "code": 0,
+            "message": "OK",,
+            "data": {
+              "category":"linear",
+              "symbol":"BTCUSDT",
+              "interval":"1",
+              "list":[
+              "1621162800000",
+              "49592.43",
+              "49644.91",
+              "49342.37",
+              "49349.42",
+              "1451.59",
+              "2.4343353100000003"
+            ]
+            },
+            "ext_info": {},
+            "time": 1669802294719
+        }
+        The default collation within the array is start, open, high, low, close, volume, turnover
+        """
         init_end = self.__get_ms_current_time() - self.timeframe_in_ms
         init_start = init_end - self.timeframe_in_ms
 
@@ -181,61 +250,56 @@ class Mufex(Exchange):
                 self.__HTTP_get_request(end_point=end_point, params=params)["data"]["list"][-1][0]
             )
         except KeyError as e:
-            logging.error(f"Somethinig is wrong with __set_init_last_fetched_time -< {e}")
+            raise KeyError(f"Somethinig is wrong with __set_init_last_fetched_time -< {e}")
 
-    def __HTTP_post_request(self, end_point, params):
-        time_stamp = str(int(time() * 1000))
-        params_as_string = self.__params_as_string(params=params)
-        signature = self.__genSignature(time_stamp=time_stamp, paras_as_string=params_as_string)
-        headers = {
-            "MF-ACCESS-API-KEY": self.api_key,
-            "MF-ACCESS-SIGN": signature,
-            "MF-ACCESS-SIGN-TYPE": "2",
-            "MF-ACCESS-TIMESTAMP": time_stamp,
-            "MF-ACCESS-RECV-WINDOW": "5000",
-            "Content-Type": "application/json",
-        }
-        response = post(
-            url=self.url_start + end_point,
-            headers=headers,
-            data=params_as_string,
-        )
-        try:
-            response_json = response.json()
-            if not response_json["data"]:
-                raise KeyError(f' -> {response_json["message"]}')
-        except KeyError as e:
-            raise KeyError(f"{e}")
-        return response_json
-
-    def __HTTP_get_request(self, end_point, params):
-        time_stamp = str(int(time() * 1000))
-        params_as_path = self.__params_to_path(params=params)
-        signature = self.__genSignature(time_stamp=time_stamp, paras_as_string=params_as_path)
-        headers = {
-            "MF-ACCESS-API-KEY": self.api_key,
-            "MF-ACCESS-SIGN": signature,
-            "MF-ACCESS-SIGN-TYPE": "2",
-            "MF-ACCESS-TIMESTAMP": time_stamp,
-            "MF-ACCESS-RECV-WINDOW": "5000",
-            "Content-Type": "application/json",
-        }
-
-        response = get(
-            url=self.url_start + end_point + "?" + params_as_path,
-            headers=headers,
-        )
-        try:
-            response_json = response.json()
-            if not response_json["data"]:
-                raise KeyError(f' -> {response_json["message"]}')
-        except KeyError as e:
-            raise KeyError(f"{e}")
-        return response_json
-
-    def get_position_info(self):
+    def get_position_info(
+        self,
+        **vargs,
+    ):
         """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_myposition
+            https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_myposition
+            {
+            "code": 0,
+                "message": "OK",
+                "data":  {
+                "list": [
+                    {
+                        "positionIdx": 0,
+                        "riskId": 11,
+                        "symbol": "ETHUSDT",
+                        "side": "None",
+                        "size": "0.00",
+                        "positionValue": "0",
+                        "entryPrice": "0",
+                        "tradeMode": 1,
+                        "autoAddMargin": 0,
+                        "leverage": "10",
+                        "positionBalance": "0",
+                        "liqPrice": "0.00",
+                        "bustPrice": "0.00",
+                        "takeProfit": "0.00",
+                        "stopLoss": "0.00",
+                        "trailingStop": "0.00",
+                        "unrealisedPnl": "0",
+                        "createdTime": "1659943372099",
+                        "updatedTime": "1669470547908",
+                        "tpSlMode": "Full",
+                        "riskLimitValue": "900000",
+                        "activePrice": "0.00",
+                        "markPrice": "1205.02",
+                        "cumRealisedPnl": "0.00",
+                        "positionMM": "",
+                        "positionIM": "",
+                        "positionStatus": "Normal",
+                        "sessionAvgPrice": "0.00",
+                    }
+                ],
+                    "category": "linear",
+                    "nextPageCursor": ""
+            },
+            "ext_info": {},
+            "time": 1670836410404
+        }
         """
         end_point = "/private/v1/account/positions"
         params = {
@@ -243,87 +307,121 @@ class Mufex(Exchange):
         }
         try:
             data_order_info = self.__HTTP_get_request(end_point=end_point, params=params)
-            # TODO how do you try this if the list is zero?
             order_info_og = data_order_info["data"]["list"][self.side_num]
-            if float(order_info_og["entryPrice"]) > 0:
+            if order_info_og:
                 return order_info_og
             else:
-                raise KeyError("Looks like we aren't in a buy posiiton.")
+                raise KeyError("Looks like get_position_info returned an empty list")
 
         except KeyError as e:
             raise KeyError(f"Something is wrong with get_buy_position_info {e}")
 
-    def check_if_in_position(self):
+    def check_if_in_position(
+        self,
+        **vargs,
+    ):
+        if float(self.get_position_info()["entryPrice"]) > 0:
+            return True
+        else:
+            return False
+
+    def get_open_order_info(
+        self,
+        orderId: str,
+        **vargs,
+    ):
         """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_myposition
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-contract_getopenorder
+        {
+          "code": 0,
+          "message": "OK",
+          "data":  {
+            "list": [
+              {
+                "symbol": "XRPUSDT",
+                "orderId": "db8b74b3-72d3-4264-bf3f-52d39b41956e",
+                "side": "Sell",
+                "orderType": "Limit",
+                "stopOrderType": "Stop",
+                "price": "0.4000",
+                "qty": "15",
+                "timeInForce": "GoodTillCancel",
+                "orderStatus": "UnTriggered",
+                "triggerPrice": "0.1000",
+                "orderLinkId": "x002",
+                "createdTime": "1658901865082",
+                "updatedTime": "1658902610748",
+                "takeProfit": "0.2000",
+                "stopLoss": "1.6000",
+                "tpTriggerBy": "UNKNOWN",
+                "slTriggerBy": "UNKNOWN",
+                "triggerBy": "MarkPrice",
+                "reduceOnly": false,
+                "leavesQty": "15",
+                "leavesValue": "6",
+                "cumExecQty": "0",
+                "cumExecValue": "0",
+                "cumExecFee": "0",
+                "triggerDirection": 2
+              }
+            ],
+            "nextPageCursor": ""
+          },
+          "ext_info": {},
+          "time": 1658902847238
+        }
         """
-        end_point = "/private/v1/account/positions"
+        end_point = "/private/v1/trade/activity-orders"
         params = {
             "symbol": self.symbol,
+            "orderId": orderId,
         }
         try:
-            data_order_info = self.__HTTP_get_request(end_point=end_point, params=params)
-            order_info_og = data_order_info["data"]["list"][self.side_num]
-            if float(order_info_og["entryPrice"]) > 0:
-                return True
+            order_info_list = self.__HTTP_get_request(end_point=end_point, params=params)["data"]["list"][0]
+            if order_info_list:
+                return order_info_list
             else:
-                return False
-
+                raise KeyError("Nothing sent back in the list for get_open_order_info")
         except KeyError as e:
-            raise KeyError(f"Something is wrong with check_if_in_buy_position {e}")
+            raise KeyError(f"Something is wrong checking if order is canceled {e}")
 
     def check_if_order_canceled(
         self,
         orderId: str,
+        **vargs,
     ):
-        """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-contract_getopenorder
-        """
-        end_point = "/private/v1/trade/activity-orders"
-        params = {
-            "symbol": self.symbol,
-            "orderId": orderId,
-        }
-        try:
-            order_info_og = self.__HTTP_get_request(end_point=end_point, params=params)
-            # TODO how do you try this if the list is zero?
-            order_status = order_info_og["data"]["list"][0]["orderStatus"]
-            if order_status in ["Cancelled", "Deactivated"]:
-                return True
-            else:
-                return False
-        except KeyError as e:
-            raise KeyError(f"Something is wrong checking if order is canceled {e}")
+        if self.get_open_order_info(orderId=orderId)["orderStatus"] in ["Cancelled", "Deactivated"]:
+            return True
+        else:
+            return False
 
-    def check_if_order_open(
+    def check_if_order_active(
         self,
         orderId: str,
+        **vargs,
     ):
-        """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-contract_getopenorder
-        """
-        end_point = "/private/v1/trade/activity-orders"
-        params = {
-            "symbol": self.symbol,
-            "orderId": orderId,
-        }
-        try:
-            order_info_og = self.__HTTP_get_request(end_point=end_point, params=params)
-            # TODO how do you try this if the list is zero?
-            order_status = order_info_og["data"]["list"][0]["orderStatus"]
-            if order_status in ["New", "Untriggered"]:
-                return True
-            else:
-                return False
-        except KeyError as e:
-            raise KeyError(f"Something is wrong checking if order is open {e}")
+        if self.get_open_order_info(orderId=orderId)["orderStatus"] in ["New", "Untriggered"]:
+            return True
+        else:
+            return False
 
     def cancel_order(
         self,
         orderId: str,
+        **vargs,
     ):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-contract_cancelorder
+        {
+            "code":0,
+            "message":"OK",
+            "data": {
+              "orderId": "4030430d-1dba-4134-ac77-3d81c14aaa00",
+              "orderLinkId": ""
+          },
+          "ext_info":null,
+            "time":1658850321861
+        }
         """
         end_point = "/private/v1/trade/cancel"
         params = {
@@ -339,29 +437,25 @@ class Mufex(Exchange):
         except KeyError as e:
             raise KeyError(f"Something is wrong cancel order {e}")
 
-    def create_limit_entry_order(
+    def create_order(
         self,
-        side: str,
-        positionIdx: PositionIdxType,
-        qty: float,
-        price: float,
-        orderLinkId: str,
-        timeInForce: str = "PostOnly",
+        params: dict,
+        **vargs,
     ):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_placeorder
+        {
+            "code":0,
+                "message":"OK",
+                "data": {
+                "orderId":"a09a43f1-7a65-4255-8758-034103447a4e",
+                "orderLinkId":""
+            },
+            "ext_info":null,
+                "time":1658850321861
+        }
         """
         end_point = "/private/v1/trade/create"
-        params = {
-            "symbol": self.symbol,
-            "side": side,
-            "positionIdx": positionIdx,
-            "orderType": "Limit",
-            "qty": str(qty),
-            "price": str(price),
-            "timeInForce": timeInForce,
-            "orderLinkId": orderLinkId,
-        }
 
         try:
             order_info = self.__HTTP_post_request(end_point=end_point, params=params)["data"]
@@ -371,108 +465,250 @@ class Mufex(Exchange):
             raise KeyError(f"Something is wrong setting the limit entry order {e}")
         return orderId, orderLinkId
 
-    def create_market_entry_order(
+    def create_long_entry_market_order(
         self,
-        side: str,
-        positionIdx: PositionIdxType,
-        qty: float,
-        orderLinkId: str,
+        asset_amount: float,
+        time_in_force: str = "GoodTillCancel",
+        **vargs,
     ):
-        """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_placeorder
-        """
-        end_point = "/private/v1/trade/create"
         params = {
             "symbol": self.symbol,
-            "side": side,
-            "positionIdx": positionIdx,
+            "positionIdx": 1,
+            "side": "Buy",
             "orderType": "Market",
-            "qty": str(qty),
-            "timeInForce": "GoodTillCancel",
-            "orderLinkId": orderLinkId,
+            "qty": str(asset_amount),
+            "timeInForce": time_in_force,
+            "orderLinkId": uuid4().hex,
         }
+        return self.create_order(params=params)
 
-        try:
-            order_info = self.__HTTP_post_request(end_point=end_point, params=params)["data"]
-            orderId = order_info["orderId"]
-            orderLinkId = order_info["orderLinkId"]
-        except KeyError as e:
-            raise KeyError(f"Something is wrong setting the market entry order {e}")
-        return orderId, orderLinkId
-
-    def create_tp_limit_order(
+    def create_long_entry_limit_order(
         self,
-        side: str,
-        positionIdx: PositionIdxType,
-        qty: float,
-        price: float,
-        orderLinkId: str,
-        timeInForce: str = "PostOnly",
+        asset_amount: float,
+        entry_price: float,
+        time_in_force: str = "PostOnly",
+        **vargs,
     ):
-        """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_placeorder
-        """
-        end_point = "/private/v1/trade/create"
         params = {
             "symbol": self.symbol,
-            "side": side,
-            "positionIdx": positionIdx,
+            "positionIdx": 1,
+            "side": "Buy",
             "orderType": "Limit",
-            "qty": str(qty),
-            "price": str(price),
-            "timeInForce": timeInForce,
-            "reduceOnly": True,
-            "orderLinkId": orderLinkId,
+            "qty": str(asset_amount),
+            "price": str(entry_price),
+            "timeInForce": time_in_force,
+            "orderLinkId": uuid4().hex,
         }
-        try:
-            order_info = self.__HTTP_post_request(end_point=end_point, params=params)["data"]
-            orderId = order_info["orderId"]
-            orderLinkId = order_info["orderLinkId"]
-        except KeyError as e:
-            raise KeyError(f"Something is wrong setting the take profit order {e}")
-        return orderId, orderLinkId
+        return self.create_order(params=params)
 
-    def create_sl_order(
+    def create_long_tp_market_order(
         self,
-        side: str,
-        positionIdx: PositionIdxType,
-        qty: float,
-        orderLinkId: str,
-        triggerPrice: float,
-        triggerDirection: TriggerDirectionType,
-        timeInForce: str = "GoodTillCancel",
+        asset_amount: float,
+        time_in_force: str = "GoodTillCancel",
+        **vargs,
     ):
-        """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_placeorder
-        """
-        end_point = "/private/v1/trade/create"
         params = {
             "symbol": self.symbol,
-            "side": side,
-            "positionIdx": positionIdx,
+            "positionIdx": 1,
+            "side": "Sell",
             "orderType": "Market",
-            "qty": str(qty),
-            "timeInForce": timeInForce,
+            "qty": str(asset_amount),
+            "timeInForce": time_in_force,
             "reduceOnly": True,
-            "triggerPrice": str(triggerPrice),
-            "triggerDirection": triggerDirection,
-            "orderLinkId": orderLinkId,
+            "orderLinkId": uuid4().hex,
         }
+        return self.create_order(params=params)
 
-        try:
-            order_info = self.__HTTP_post_request(end_point=end_point, params=params)["data"]
-            orderId = order_info["orderId"]
-            orderLinkId = order_info["orderLinkId"]
-        except KeyError as e:
-            raise KeyError(f"Something is wrong setting the stop loss order {e}")
-        return orderId, orderLinkId
+    def create_long_tp_limit_order(
+        self,
+        asset_amount: float,
+        entry_price: float,
+        time_in_force: str = "PostOnly",
+        **vargs,
+    ):
+        params = {
+            "symbol": self.symbol,
+            "side": "Sell",
+            "positionIdx": 1,
+            "orderType": "Limit",
+            "qty": str(asset_amount),
+            "price": str(entry_price),
+            "timeInForce": time_in_force,
+            "reduceOnly": True,
+            "orderLinkId": uuid4().hex,
+        }
+        return self.create_order(params=params)
+
+    def create_long_sl_order(
+        self,
+        asset_amount: float,
+        trigger_price: float,
+        time_in_force: str = "GoodTillCancel",
+        **vargs,
+    ):
+        params = {
+            "symbol": self.symbol,
+            "side": "Sell",
+            "positionIdx": 1,
+            "orderType": "Market",
+            "qty": str(asset_amount),
+            "timeInForce": time_in_force,
+            "reduceOnly": True,
+            "triggerPrice": str(trigger_price),
+            "triggerDirection": 2,
+            "orderLinkId": uuid4().hex,
+        }
+        return self.create_order(params=params)
+
+    def create_short_entry_market_order(
+        self,
+        asset_amount: float,
+        time_in_force: str = "GoodTillCancel",
+        **vargs,
+    ):
+        params = {
+            "symbol": self.symbol,
+            "positionIdx": 2,
+            "side": "Buy",
+            "orderType": "Market",
+            "qty": str(asset_amount),
+            "timeInForce": time_in_force,
+            "orderLinkId": uuid4().hex,
+        }
+        return self.create_order(params=params)
+
+    def create_short_entry_limit_order(
+        self,
+        asset_amount: float,
+        entry_price: float,
+        time_in_force: str = "PostOnly",
+        **vargs,
+    ):
+        params = {
+            "symbol": self.symbol,
+            "positionIdx": 2,
+            "side": "Buy",
+            "orderType": "Limit",
+            "qty": str(asset_amount),
+            "price": str(entry_price),
+            "timeInForce": time_in_force,
+            "orderLinkId": uuid4().hex,
+        }
+        return self.create_order(params=params)
+
+    def create_short_tp_market_order(
+        self,
+        asset_amount: float,
+        time_in_force: str = "GoodTillCancel",
+        **vargs,
+    ):
+        params = {
+            "symbol": self.symbol,
+            "positionIdx": 2,
+            "side": "Buy",
+            "orderType": "Market",
+            "qty": str(asset_amount),
+            "timeInForce": time_in_force,
+            "reduceOnly": True,
+            "orderLinkId": uuid4().hex,
+        }
+        return self.create_order(params=params)
+
+    def create_short_tp_limit_order(
+        self,
+        asset_amount: float,
+        entry_price: float,
+        time_in_force: str = "PostOnly",
+        **vargs,
+    ):
+        params = {
+            "symbol": self.symbol,
+            "side": "Buy",
+            "positionIdx": 2,
+            "orderType": "Limit",
+            "qty": str(asset_amount),
+            "price": str(entry_price),
+            "timeInForce": time_in_force,
+            "reduceOnly": True,
+            "orderLinkId": uuid4().hex,
+        }
+        return self.create_order(params=params)
+
+    def create_short_sl_order(
+        self,
+        asset_amount: float,
+        trigger_price: float,
+        time_in_force: str = "GoodTillCancel",
+        **vargs,
+    ):
+        params = {
+            "symbol": self.symbol,
+            "side": "Buy",
+            "positionIdx": 2,
+            "orderType": "Market",
+            "qty": str(asset_amount),
+            "timeInForce": time_in_force,
+            "reduceOnly": True,
+            "triggerPrice": str(trigger_price),
+            "triggerDirection": 1,
+            "orderLinkId": uuid4().hex,
+        }
+        return self.create_order(params=params)
 
     def get_symbol_info(
         self,
         symbol: str = None,
         category: str = "linear",
         limit: int = 1000,
+        **vargs,
     ):
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_instrhead
+        {
+            "code": 0,
+            "message": "OK",
+            "data":  {
+                "category": "linear",
+                "list": [
+                    {
+                        "symbol": "BTCUSDT",
+                        "contractType": "LinearPerpetual",
+                        "status": "Trading",
+                        "baseCoin": "BTC",
+                        "quoteCoin": "USDT",
+                        "launchTime": "1584230400000",
+                        "deliveryTime": "0",
+                        "deliveryFeeRate": "",
+                        "priceScale": "2",
+                        "leverageFilter": {
+                            "minLeverage": "1",
+                            "maxLeverage": "100.00",
+                            "leverageStep": "0.01"
+                        },
+                        "priceFilter": {
+                            "minPrice": "0.50",
+                            "maxPrice": "999999.00",
+                            "tickSize": "0.50"
+                        },
+                        "lotSizeFilter": {
+                            "maxTradingQty": "100.000",
+                            "minTradingQty": "0.001",
+                            "qtyStep": "0.001",
+                            "postOnlyMaxOrderQty": "1000.000"
+                        },
+                        "unifiedMarginTrade": true,
+                        "fundingInterval": 480,
+                        "settleCoin": "USDT"
+                    }
+                ],
+                "nextPageCursor": ""
+            },
+            "ext_info": {},
+            "time": 1670838442302
+        }
+
+
+        """
         end_point = "/public/v1/instruments"
         params = {
             "category": category,
@@ -480,17 +716,25 @@ class Mufex(Exchange):
             "limit": limit,
         }
         try:
-            symbol_info = self.__HTTP_get_request(url=self.url_start + end_point + "?", params=params)["data"]["list"]
+            symbol_info = self.__HTTP_get_request(url=self.url_start + end_point + "?", params=params)["data"]["list"][
+                0
+            ]
         except KeyError as e:
             raise KeyError(f"Something is wrong getting symbol_info {e}")
 
         return symbol_info
 
-    def __params_as_string(self, params):
+    def __params_as_string(
+        self,
+        params,
+    ):
         params_as_string = str(json.dumps(params))
         return params_as_string
 
-    def __params_to_path(self, params):
+    def __params_to_path(
+        self,
+        params,
+    ):
         entries = params.items()
         if not entries:
             pass
@@ -499,7 +743,11 @@ class Mufex(Exchange):
         if paramsString:
             return paramsString
 
-    def __genSignature(self, time_stamp, paras_as_string):
+    def __genSignature(
+        self,
+        time_stamp,
+        paras_as_string,
+    ):
         param_str = time_stamp + self.api_key + "5000" + paras_as_string
         hash = hmac.new(bytes(self.secret_key, "utf-8"), param_str.encode("utf-8"), hashlib.sha256)
         return hash.hexdigest()
@@ -520,51 +768,118 @@ class Mufex(Exchange):
             leverage_mode=self.leverage_mode,
         )
 
-    def __set_fee_pcts(self):
+    def get_trading_fee_info(self):
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-tradingfeerate
+        response
+        {
+            "code": 0,
+                "message": "OK",
+                "data":  {
+                "list": [
+                    {
+                        "symbol": "ETHUSDT",
+                        "takerFeeRate": "0.0009",
+                        "makerFeeRate": "0.0003"
+                    }
+                ]
+            },
+            "ext_info": {},
+            "time": 1658739027301
+        }
+        """
         end_point = "/private/v1/account/trade-fee"
         params = {
             "symbol": self.symbol,
         }
         try:
-            trading_fees = self.__HTTP_get_request(end_point=end_point, params=params)["data"]["list"][0]
-            self.market_fee_pct = float(trading_fees["takerFeeRate"])
-            self.limit_fee_pct = float(trading_fees["makerFeeRate"])
+            trading_fee_info = self.__HTTP_get_request(end_point=end_point, params=params)["data"]["list"][0]
+            if trading_fee_info:
+                return trading_fee_info
+            else:
+                raise KeyError("Nothing sent back in the list for get_trading_fee_info")
         except KeyError as e:
             raise KeyError(f"Something is wrong setting fee pct {e}")
 
-    def __set_mmr_pct(self):
+    def __set_fee_pcts(self):
+        trading_fee_info = self.get_trading_fee_info()
+        self.market_fee_pct = float(trading_fee_info["takerFeeRate"])
+        self.limit_fee_pct = float(trading_fee_info["makerFeeRate"])
+
+    def get_risk_limit_info(self):
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_risklimithead
+        {
+            "code": 0,
+            "message": "OK",
+            "data":  {
+                "category": "linear",
+                "list": [
+                    {
+                        "id": 1,
+                        "symbol": "BTCUSDT",
+                        "limit": "2000000",
+                        "maintainMargin": "0.005",
+                        "initialMargin": "0.01",
+                        "section": [
+                            "1",
+                            "3",
+                            "5",
+                            "10",
+                            "25",
+                            "50",
+                            "80"
+                        ],
+                        "isLowestRisk": 1,
+                        "maxLeverage": "100.00"
+                    }
+                ]
+            },
+            "ext_info": {},
+            "time": 1669802294719
+        }
+
+        """
         end_point = "/public/v1/position-risk"
         params = {
             "category": self.category,
             "symbol": self.symbol,
         }
         try:
-            mmr_pct = self.__HTTP_get_request(end_point=end_point, params=params)
-            self.mmr_pct = mmr_pct["data"]["list"][0]["maintainMargin"]
+            risk_limit_info = self.__HTTP_get_request(end_point=end_point, params=params)["data"]["list"][0]
+            if risk_limit_info:
+                return risk_limit_info
+            else:
+                raise KeyError("Nothing sent back in the list for get_risk_limit_info")
         except KeyError as e:
             raise KeyError(f"Something is wrong setting mmr pct {e}")
 
+    def __set_mmr_pct(self):
+        risk_limit_info = self.get_risk_limit_info()
+        self.mmr_pct = risk_limit_info["maintainMargin"]
+
     def __set_min_max_leverage_and_coin_size(self):
-        end_point = "/public/v1/instruments"
-        params = {
-            "category": self.category,
-            "symbol": self.symbol,
-        }
-        try:
-            symbol_info_og = self.__HTTP_get_request(end_point=end_point, params=params)
-            symbol_info = symbol_info_og["data"]["list"][0]
-            self.max_leverage = float(symbol_info["leverageFilter"]["maxLeverage"])
-            self.min_leverage = float(symbol_info["leverageFilter"]["minLeverage"])
-            self.max_coin_size_value = float(symbol_info["lotSizeFilter"]["maxTradingQty"])
-            self.min_asset_qty = float(symbol_info["lotSizeFilter"]["minTradingQty"])
+        symbol_info = self.get_symbol_info(symbol=self.symbol)
+        self.max_leverage = float(symbol_info["leverageFilter"]["maxLeverage"])
+        self.min_leverage = float(symbol_info["leverageFilter"]["minLeverage"])
+        self.max_coin_size_value = float(symbol_info["lotSizeFilter"]["maxTradingQty"])
+        self.min_asset_qty = float(symbol_info["lotSizeFilter"]["minTradingQty"])
 
-        except KeyError as e:
-            raise KeyError(f"Something is wrong setting min max leveage coin size {e}")
-
-    def set_position_mode(self, position_mode: int):
+    def set_position_mode(
+        self,
+        position_mode: int,
+        **vargs,
+    ):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_switchpositionmode
         Position mode. 0: One-Way mode. 3: Hedge mode
+        {
+            "code": 0,
+                "message": "OK",
+                "data":  {},
+            "ext_info": {},
+            "time": 1658908532580
+        }
         """
         end_point = "/private/v1/account/set-position-mode"
         params = {
@@ -572,41 +887,23 @@ class Mufex(Exchange):
             "mode": position_mode,
         }
         try:
-            self.__HTTP_post_request(end_point=end_point, params=params)
+            message = self.__HTTP_post_request(end_point=end_point, params=params)["message"]
+            if message not in ["OK", "position mode not modified"]:
+                raise KeyError("Something is wrong with setting the position mode")
         except KeyError as e:
             raise KeyError(f"Something is wrong setting postiion mode {e}")
 
-    def __set_position_as_hedge_mode(self):
-        """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_switchpositionmode
-        Position mode. 0: One-Way mode. 3: Hedge mode
-        """
-        end_point = "/private/v1/account/set-position-mode"
-        params = {
-            "symbol": self.symbol,
-            "mode": 3,
-        }
-        try:
-            self.__HTTP_post_request(end_point=end_point, params=params)
-        except KeyError as e:
-            raise KeyError(f"Something is wrong setting postiion mode {e}")
+    def __set_position_mode_as_hedge_mode(self):
+        self.set_position_mode(position_mode=3)
 
-    def __set_position_as_one_way_mode(self):
-        """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_switchpositionmode
-        Position mode. 0: One-Way mode. 3: Hedge mode
-        """
-        end_point = "/private/v1/account/set-position-mode"
-        params = {
-            "symbol": self.symbol,
-            "mode": 0,
-        }
-        try:
-            self.__HTTP_post_request(end_point=end_point, params=params)
-        except KeyError as e:
-            raise KeyError(f"Something is wrong setting postiion mode {e}")
+    def __set_position_mode_as_one_way_mode(self):
+        self.set_position_mode(position_mode=0)
 
-    def set_leverage_value(self, leverage: float):
+    def set_leverage_value(
+        self,
+        leverage: float,
+        **vargs,
+    ):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_marginswitch
         """
@@ -622,10 +919,22 @@ class Mufex(Exchange):
         except KeyError as e:
             raise KeyError(f"Something is wrong set_leverage {e}")
 
-    def set_leverage_mode(self, tradeMode: int, leverage: int = 5):
+    def set_leverage_mode(
+        self,
+        tradeMode: int,
+        leverage: int = 5,
+        **vargs,
+    ):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_marginswitch
         Cross/isolated mode. 0: cross margin mode; 1: isolated margin mode
+        {
+            "code": 0,
+                "message": "OK",
+                "data":  {},
+            "ext_info": {},
+            "time": 1658908532580
+        }
         """
         end_point = "/private/v1/account/set-isolated"
         leverage_str = str(leverage)
@@ -636,42 +945,14 @@ class Mufex(Exchange):
             "sellLeverage": leverage_str,
         }
         try:
-            self.__HTTP_post_request(end_point=end_point, params=params)
+            message = self.__HTTP_post_request(end_point=end_point, params=params)["message"]
+            if message not in ["OK", "Isolated not modified"]:
+                raise KeyError("Something is wrong with setting the position mode")
         except KeyError as e:
             raise KeyError(f"More than likely lev mode already set {e}")
 
     def __set_leverage_mode_isolated(self):
-        """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_marginswitch
-        Cross/isolated mode. 0: cross margin mode; 1: isolated margin mode
-        """
-        end_point = "/private/v1/account/set-isolated"
-        leverage_str = "5"
-        params = {
-            "symbol": self.symbol,
-            "tradeMode": 1,
-            "buyLeverage": leverage_str,
-            "sellLeverage": leverage_str,
-        }
-        try:
-            self.__HTTP_post_request(end_point=end_point, params=params)
-        except KeyError as e:
-            raise KeyError(f"More than likely isolated lev mode already set {e}")
+        self.set_leverage_mode(tradeMode=1)
 
     def __set_leverage_mode_cross(self):
-        """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_marginswitch
-        Cross/isolated mode. 0: cross margin mode; 1: isolated margin mode
-        """
-        end_point = "/private/v1/account/set-isolated"
-        leverage_str = "5"
-        params = {
-            "symbol": self.symbol,
-            "tradeMode": 0,
-            "buyLeverage": leverage_str,
-            "sellLeverage": leverage_str,
-        }
-        try:
-            self.__HTTP_post_request(end_point=end_point, params=params)
-        except KeyError as e:
-            raise KeyError(f"More than likely cross lev mode already set {e}")
+        self.set_leverage_mode(tradeMode=0)

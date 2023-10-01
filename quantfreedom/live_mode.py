@@ -1,6 +1,7 @@
 import logging
 from time import sleep
-from quantfreedom.enums import MoveStopLoss, RejectedOrderError
+from uuid import uuid4
+from quantfreedom.enums import LongOrShortType, MoveStopLoss, OrderPlacementType, RejectedOrderError
 
 from quantfreedom.exchanges.exchange import Exchange
 from quantfreedom.order_handler.order_handler import Order
@@ -14,15 +15,28 @@ class LiveTrading:
         candles_to_dl: int,
         strategy: Strategy,
         order: Order,
-    ) -> None:
+        entry_order_type: OrderPlacementType,
+        tp_order_type: OrderPlacementType,
+    ):
         self.exchange = exchange
         self.candles_to_dl = candles_to_dl
         self.strategy = strategy
         self.order = order
-        pass
+
+        if self.exchange.long_or_short == LongOrShortType.Long:
+            self.sl_order = self.exchange.create_long_sl_order
+            if entry_order_type == OrderPlacementType.Market:
+                self.entry_order = self.exchange.create_long_entry_market_order
+            else:
+                self.entry_order = self.exchange.create_long_entry_limit_order
+
+            if tp_order_type == OrderPlacementType.Market:
+                self.tp_order = self.exchange.create_long_tp_market_order
+            else:
+                self.tp_order = self.exchange.create_long_tp_limit_order
 
     def run(self):
-        self.exchange.__set_init_last_fetched_time()
+        self.exchange.set_init_last_fetched_time()
         logging.info(f"Last Candle {self.exchange.__last_fetched_time_to_pd_datetime()}")
         logging.info(
             f"Will sleep for {round(self.time_to_sleep_seconds/60,2)} minutes before getting first batch of candles"
@@ -50,9 +64,11 @@ class LiveTrading:
                             )
                             self.order.calculate_leverage()
                             self.order.calculate_take_profit()
-                            #####
-                            # here we need to actually excute the order
-                            #####
+                            self.place_entry_order(
+                                asset_amount=self.order.entry_size / self.order.entry_price,
+                                entry_price=self.order.entry_price,
+                            )
+                            sleep(0.3)
                         except RejectedOrderError as e:
                             pass
                         if self.exchange.get_position_info()["position_size"] > 0:
@@ -79,7 +95,8 @@ class LiveTrading:
     def __get_time_to_next_bar_seconds(self):
         ms_to_next_candle = max(
             0,
-            (self.last_fetched_time + self.exchange.timeframe_in_ms * 2) - self.__get_ms_current_time(),
+            (self.exchange.last_fetched_ms_time + self.exchange.timeframe_in_ms * 2)
+            - self.exchange.__get_ms_current_time(),
         )
         time_to_sleep_seconds = ms_to_next_candle / 1000.0
 
@@ -91,3 +108,11 @@ class LiveTrading:
                         [mins_to_next_candle={round(time_to_sleep_seconds/60,2)}]\n"
         )
         return time_to_sleep_seconds
+
+    def place_entry_order(self, qty, orderLinkId, entry_price):
+        self.entry_order(
+            qty=qty,
+            orderLinkId=orderLinkId,
+            price=entry_price,
+        )
+        pass

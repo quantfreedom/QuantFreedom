@@ -149,6 +149,12 @@ class Order:
     def check_move_trailing_stop_loss(self, **vargs):
         pass
 
+    def calculate_leverage(self):
+        pass
+
+    def calculate_take_profit(self):
+        pass
+
     def move_stop_loss(
         self,
         sl_price: float,

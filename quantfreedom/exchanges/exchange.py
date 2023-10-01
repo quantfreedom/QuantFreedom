@@ -3,7 +3,7 @@ import logging
 import pandas as pd
 import numpy as np
 
-from quantfreedom.enums import LeverageModeType, PositionModeType
+from quantfreedom.enums import LeverageModeType, LongOrShortType, PositionModeType
 
 
 UNIVERSAL_SIDES = ["buy", "sell"]
@@ -17,9 +17,19 @@ MAX_NETWORKING_RETRY = 20
 
 
 class Exchange:
-    last_fetched_time = None
+    last_fetched_ms_time = None
     candles_list = None
     candles_df = None
+    symbol = None
+    timeframe = None
+    api_key = None
+    secret_key = None
+    long_or_short = None
+    candles_to_dl = None
+    keep_volume_in_candles = None
+    use_test_net = None
+    position_mode = None
+    leverage_mode = None
 
     def __init__(
         self,
@@ -27,38 +37,27 @@ class Exchange:
         timeframe: str,
         api_key: str,
         secret_key: str,
-        side: str,
-        position_mode: PositionModeType,
-        leverage_mode: LeverageModeType,
+        long_or_short: LongOrShortType,
         candles_to_dl: int = None,
         keep_volume_in_candles: bool = False,
         use_test_net: bool = False,
+        position_mode: PositionModeType = PositionModeType.HedgeMode,
+        leverage_mode: LeverageModeType = LeverageModeType.Isolated,
     ):
+        self.timeframe_in_ms = self.__get_timeframe_in_ms(timeframe)
         self.api_key = api_key
         self.secret_key = secret_key
         self.symbol = symbol
-        self.volume_yes_no = -2
-        self.position_mode = position_mode
-        self.leverage_mode = leverage_mode
+        self.long_or_short = long_or_short
         self.keep_volume_in_candles = keep_volume_in_candles
         self.use_test_net = use_test_net
+        self.position_mode = position_mode
+        self.leverage_mode = leverage_mode
 
-        if side.lower() not in UNIVERSAL_SIDES:
-            raise TypeError(f"You need to send side as {UNIVERSAL_SIDES}")
-        else:
-            self.side = side.lower()
-
-        self.timeframe_in_ms = self.__get_timeframe_in_ms(timeframe)
         if candles_to_dl:
             self.candles_to_dl_in_ms = candles_to_dl * self.timeframe_in_ms
         else:
             self.candles_to_dl_in_ms = 0
-
-    def get_and_set_candles_df(self):
-        pass
-
-    def get_position_info(self):
-        pass
 
     def __get_timeframe_in_ms(self, timeframe):
         try:
@@ -79,7 +78,7 @@ class Exchange:
         return pd.to_datetime(self.__get_current_time_seconds(), unit="s")
 
     def __last_fetched_time_to_pd_datetime(self):
-        return pd.to_datetime(self.last_fetched_time / 1000, unit="s")
+        return pd.to_datetime(self.last_fetched_ms_time / 1000, unit="s")
 
     def __convert_to_pd_datetime(self, time_in_ms):
         return pd.to_datetime(time_in_ms / 1000, unit="s")
@@ -89,3 +88,24 @@ class Exchange:
         self.candles_df = pd.DataFrame(candles, columns=["timestamp", "open", "high", "low", "close"])
         self.candles_df = self.candles_df.astype({"timestamp": "int64"})
         self.candles_df["timestamp"] = self.__convert_to_pd_datetime(self.candles_df["timestamp"])
+
+    def get_and_set_candles_df(self, **vargs):
+        pass
+
+    def get_position_info(self, **vargs):
+        pass
+
+    def create_long_entry_market_order(self, **vargs):
+        pass
+
+    def create_long_entry_limit_order(self, **vargs):
+        pass
+
+    def create_long_tp_limit_order(self, **vargs):
+        pass
+
+    def create_long_tp_market_order(self, **vargs):
+        pass
+
+    def create_long_sl_order(self, **vargs):
+        pass

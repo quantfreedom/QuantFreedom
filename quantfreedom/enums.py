@@ -51,6 +51,14 @@ class LeverageStrategyTypeT(NamedTuple):
 LeverageStrategyType = LeverageStrategyTypeT()
 
 
+class OrderPlacementTypeT(NamedTuple):
+    Limit: int = 0
+    Market: int = 1
+
+
+OrderPlacementType = OrderPlacementTypeT()
+
+
 class OrderStatusT(NamedTuple):
     Nothing: int = 0
     EntryFilled: int = 1
@@ -68,23 +76,12 @@ class OrderStatusT(NamedTuple):
 OrderStatus = OrderStatusT()
 
 
-class OrderTypeT(NamedTuple):
-    Nothing: int = 0
-    Long: int = 1
-    Short: int = 2
-    Both: int = 3
+class LongOrShortTypeT(NamedTuple):
+    Long: int = 0
+    Short: int = 1
 
 
-OrderType = OrderTypeT()
-
-
-class PositionIdxTypeT(NamedTuple):
-    Hedge: int = 0
-    Buy: int = 1
-    Sell: int = 2
-
-
-PositionIdxType = PositionIdxTypeT()
+LongOrShortType = LongOrShortTypeT()
 
 
 class PositionModeTypeT(NamedTuple):
@@ -104,13 +101,13 @@ class SLToBeZeroOrEntryTypeT(NamedTuple):
 SLToBeZeroOrEntryType = SLToBeZeroOrEntryTypeT()
 
 
-class StopLossTypeT(NamedTuple):
+class StopLossStrategyTypeT(NamedTuple):
     Nothing: int = 0
     SLBasedOnCandleBody: int = 1
     SLPct: int = 2
 
 
-StopLossType = StopLossTypeT()
+StopLossStrategyType = StopLossStrategyTypeT()
 
 
 class TakeProfitFeeTypeT(NamedTuple):
@@ -122,7 +119,7 @@ class TakeProfitFeeTypeT(NamedTuple):
 TakeProfitFeeType = TakeProfitFeeTypeT()
 
 
-class TakeProfitTypeT(NamedTuple):
+class TakeProfitStrategyTypeT(NamedTuple):
     Nothing: int = 0
     RiskReward: int = 1
     TPPct: int = 2
@@ -131,7 +128,7 @@ class TakeProfitTypeT(NamedTuple):
     ProvidedandRR: int = 5
 
 
-TakeProfitType = TakeProfitTypeT()
+TakeProfitStrategyType = TakeProfitStrategyTypeT()
 
 
 class TriggerDirectionTypeT(NamedTuple):
