@@ -41,7 +41,7 @@ class Order:
     leverage = 1.0
     liq_price = 0.0
     order_status = 0.0
-    position_size = 0.0
+    position_size_usd = 0.0
     possible_loss = 0.0
     realized_pnl = 0.0
     sl_pct = 0.0
@@ -199,7 +199,7 @@ class Order:
         self.order_records[self.total_order_records_filled]["entry_size"] = order_result.entry_size
         self.order_records[self.total_order_records_filled]["entry_price"] = order_result.entry_price
         self.order_records[self.total_order_records_filled]["exit_price"] = order_result.exit_price
-        self.order_records[self.total_order_records_filled]["position_size"] = order_result.position_size
+        self.order_records[self.total_order_records_filled]["position_size_usd"] = order_result.position_size_usd
         self.order_records[self.total_order_records_filled]["realized_pnl"] = order_result.realized_pnl
         self.order_records[self.total_order_records_filled]["sl_pct"] = order_result.sl_pct * 100
         self.order_records[self.total_order_records_filled]["sl_price"] = order_result.sl_price
@@ -230,15 +230,15 @@ class LongOrder(Order):
             self.average_entry,
             self.entry_price,
             self.entry_size,
-            self.position_size,
+            self.position_size_usd,
             self.possible_loss,
             self.sl_pct,
         ) = self.obj_increase_posotion.calculate_increase_posotion(
             account_state_equity=self.equity,
             average_entry=self.average_entry,
             entry_price=entry_price,
-            in_position=self.position_size > 0,
-            position_size=self.position_size,
+            in_position=self.position_size_usd > 0,
+            position_size_usd=self.position_size_usd,
             possible_loss=self.possible_loss,
             sl_price=self.sl_price,
         )
@@ -266,7 +266,7 @@ class LongOrder(Order):
             self.order_status,
         ) = self.obj_take_profit.take_profit_calculator(
             possible_loss=self.possible_loss,
-            position_size=self.position_size,
+            position_size_usd=self.position_size_usd,
             average_entry=self.average_entry,
         )
 
@@ -315,7 +315,7 @@ class LongOrder(Order):
         self.exit_price = exit_price
         self.order_status = order_status
         # profit and loss calulation
-        coin_size = self.position_size / self.average_entry  # math checked
+        coin_size = self.position_size_usd / self.average_entry  # math checked
         pnl = coin_size * (self.exit_price - self.average_entry)  # math checked
         fee_open = coin_size * self.average_entry * self.exchange_settings.market_fee_pct  # math checked
         fee_close = coin_size * self.exit_price * exit_fee_pct  # math checked
@@ -354,7 +354,7 @@ class LongOrder(Order):
         self.possible_loss = 0.0
         self.entry_size = 0.0
         self.entry_price = 0.0
-        self.position_size = 0.0
+        self.position_size_usd = 0.0
         self.sl_pct = 0.0
         self.sl_price = 0.0
         self.tp_pct = 0.0

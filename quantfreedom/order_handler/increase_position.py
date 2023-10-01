@@ -56,14 +56,14 @@ class IncreasePositionLong:
         average_entry,
         entry_price,
         in_position,
-        position_size,
+        position_size_usd,
         possible_loss,
         sl_price,
     ):
         if in_position:
             (
                 entry_size,
-                position_size,
+                position_size_usd,
                 entry_price,
                 average_entry,
                 possible_loss,
@@ -72,14 +72,14 @@ class IncreasePositionLong:
                 account_state_equity=account_state_equity,
                 average_entry=average_entry,
                 entry_price=entry_price,
-                position_size=position_size,
+                position_size_usd=position_size_usd,
                 possible_loss=possible_loss,
                 sl_price=sl_price,
             )
         else:
             (
                 entry_size,
-                position_size,
+                position_size_usd,
                 entry_price,
                 average_entry,
                 possible_loss,
@@ -96,7 +96,7 @@ class IncreasePositionLong:
             average_entry,
             entry_price,
             entry_size,
-            position_size,
+            position_size_usd,
             possible_loss,
             sl_pct,
         )
@@ -140,11 +140,11 @@ class IncreasePositionLong:
         )
         average_entry = entry_price
         sl_pct = (average_entry - sl_price) / average_entry
-        position_size = entry_size
+        position_size_usd = entry_size
 
         return (
             entry_size,
-            position_size,
+            position_size_usd,
             entry_price,
             average_entry,
             possible_loss,
@@ -155,7 +155,7 @@ class IncreasePositionLong:
         self,
         entry_price,
         average_entry,
-        position_size,
+        position_size_usd,
         sl_price,
         possible_loss,
         account_state_equity,
@@ -169,24 +169,24 @@ class IncreasePositionLong:
 
         entry_size = (
             -possible_loss * entry_price * average_entry
-            + entry_price * position_size * average_entry
-            - sl_price * entry_price * position_size
-            + sl_price * entry_price * position_size * self.market_fee_pct
-            + entry_price * position_size * average_entry * self.market_fee_pct
+            + entry_price * position_size_usd * average_entry
+            - sl_price * entry_price * position_size_usd
+            + sl_price * entry_price * position_size_usd * self.market_fee_pct
+            + entry_price * position_size_usd * average_entry * self.market_fee_pct
         ) / (
             average_entry
             * (entry_price - sl_price + entry_price * self.market_fee_pct + sl_price * self.market_fee_pct)
         )
         if entry_size < 1:
             raise RejectedOrderError(order_status=OrderStatus.EntrySizeTooSmall)
-        average_entry = (entry_size + position_size) / ((entry_size / entry_price) + (position_size / average_entry))
+        average_entry = (entry_size + position_size_usd) / ((entry_size / entry_price) + (position_size_usd / average_entry))
         sl_pct = (average_entry - sl_price) / average_entry
 
-        position_size += entry_size
+        position_size_usd += entry_size
 
         return (
             entry_size,
-            position_size,
+            position_size_usd,
             entry_price,
             average_entry,
             possible_loss,

@@ -141,6 +141,64 @@ class Mufex(Exchange):
             raise KeyError(f"{e}")
         return response_json
 
+    def get_order_history(self, order_id: str):
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_getorder
+        {
+            "code": 0,
+            "message": "OK",
+            "data":  {
+                "list": [
+                    {
+                        "symbol": "BTCUSDT",
+                        "side": "Buy",
+                        "orderType": "Market",
+                        "price": "0.3431",
+                        "qty": "65",
+                        "reduceOnly": true,
+                        "timeInForce": "ImmediateOrCancel",
+                        "orderStatus": "Filled",
+                        "leavesQty": "0",
+                        "leavesValue": "0",
+                        "cumExecQty": "65",
+                        "cumExecValue": "21.3265",
+                        "cumExecFee": "0.0127959",
+                        "lastPriceOnCreated": "0.0000",
+                        "rejectReason": "EC_NoError",
+                        "orderLinkId": "",
+                        "createdTime": "1657526321499",
+                        "updatedTime": "1657526321504",
+                        "orderId": "ac0a8134-acb3-4ee1-a2d4-41891c9c46d7",
+                        "stopOrderType": "UNKNOWN",
+                        "takeProfit": "0.0000",
+                        "stopLoss": "0.0000",
+                        "tpTriggerBy": "UNKNOWN",
+                        "slTriggerBy": "UNKNOWN",
+                        "triggerPrice": "0.0000",
+                        "closeOnTrigger": true,
+                        "triggerDirection": 0,
+                        "positionIdx": 2
+                ],
+                "nextPageCursor": "K0crQkZRL0MyQVpiN0tVSDFTS0RlMk9DemNCWHZaRHp3aFZ4Y1Yza2MyWT0="
+            },
+            "ext_info": {},
+            "time": 1658899014975
+        }
+        """
+        end_point = "/private/v1/trade/orders"
+        params = {
+            "symbol": self.symbol,
+            "orderId": order_id,
+        }
+        try:
+            order_info_list = self.__HTTP_get_request(end_point=end_point, params=params)["data"]["list"][0]
+            if order_info_list:
+                return order_info_list
+            else:
+                raise KeyError("Nothing sent back in the list for get_open_order_info")
+        except KeyError as e:
+            raise KeyError(f"Something is wrong checking if order is canceled {e}")
+
     def get_and_set_candles_df(
         self,
         since_date_ms: int = None,
@@ -307,14 +365,93 @@ class Mufex(Exchange):
         }
         try:
             data_order_info = self.__HTTP_get_request(end_point=end_point, params=params)
-            order_info_og = data_order_info["data"]["list"][self.side_num]
-            if order_info_og:
-                return order_info_og
+            order_info = data_order_info["data"]["list"][self.side_num]
+            if order_info:
+                return order_info
             else:
                 raise KeyError("Looks like get_position_info returned an empty list")
 
         except KeyError as e:
             raise KeyError(f"Something is wrong with get_buy_position_info {e}")
+
+    def get_filled_order_info(
+        self,
+        order_id: str,
+        **vargs,
+    ):
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-usertraderecords
+        {
+            "code": 0,
+                "message": "OK",
+                "data":  {
+                "list": [
+                    {
+                        "symbol": "BTCUSDT",
+                        "execFee": "0.00293025",
+                        "execId": "16bff97b-0e04-4303-82b5-1b1134f15695",
+                        "execPrice": "0.00",
+                        "execQty": "0.001",
+                        "execType": "Funding",
+                        "execValue": "29.30248",
+                        "feeRate": "0.0001",
+                        "lastLiquidityInd": "UNKNOWN",
+                        "leavesQty": "0.000",
+                        "orderId": "1690588800-BTCUSDT-139688-Buy",
+                        "orderLinkId": "",
+                        "orderPrice": "0.00",
+                        "orderQty": "0.000",
+                        "orderType": "UNKNOWN",
+                        "stopOrderType": "UNKNOWN",
+                        "side": "Buy",
+                        "execTime": "1690588800000",
+                        "closedSize": "0.000",
+                        "crossSeq": "41019846"
+                    },
+                    {
+                        "symbol": "BTCUSDT",
+                        "execFee": "0.00293787",
+                        "execId": "d9439111-d9ee-4cf3-90e1-85e8f148b6a3",
+                        "execPrice": "0.00",
+                        "execQty": "0.001",
+                        "execType": "Funding",
+                        "execValue": "29.3787",
+                        "feeRate": "0.0001",
+                        "lastLiquidityInd": "UNKNOWN",
+                        "leavesQty": "0.000",
+                        "orderId": "1690560000-BTCUSDT-139688-Buy",
+                        "orderLinkId": "",
+                        "orderPrice": "0.00",
+                        "orderQty": "0.000",
+                        "orderType": "UNKNOWN",
+                        "stopOrderType": "UNKNOWN",
+                        "side": "Buy",
+                        "execTime": "1690560000000",
+                        "closedSize": "0.000",
+                        "crossSeq": "40849025"
+                    }
+                ],
+                    "nextPageCursor": ""
+            },
+            "ext_info": {},
+            "time": 1658911518442
+        }
+        """
+        end_point = "/private/v1/trade/fills"
+        params = {
+            "symbol": self.symbol,
+            "orderId": order_id,
+        }
+        try:
+            data_order_info = self.__HTTP_get_request(end_point=end_point, params=params)
+            order_info = data_order_info["data"]["list"][self.side_num]
+            if order_info:
+                return order_info
+            else:
+                raise KeyError("Looks like get_position_info returned an empty list")
+
+        except KeyError as e:
+            raise KeyError(f"Something is wrong with get_filled_order_info {e}")
 
     def check_if_in_position(
         self,
@@ -325,89 +462,39 @@ class Mufex(Exchange):
         else:
             return False
 
-    def get_open_order_info(
+    def check_if_order_filled(
         self,
-        orderId: str,
+        order_id: str,
         **vargs,
     ):
-        """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-contract_getopenorder
-        {
-          "code": 0,
-          "message": "OK",
-          "data":  {
-            "list": [
-              {
-                "symbol": "XRPUSDT",
-                "orderId": "db8b74b3-72d3-4264-bf3f-52d39b41956e",
-                "side": "Sell",
-                "orderType": "Limit",
-                "stopOrderType": "Stop",
-                "price": "0.4000",
-                "qty": "15",
-                "timeInForce": "GoodTillCancel",
-                "orderStatus": "UnTriggered",
-                "triggerPrice": "0.1000",
-                "orderLinkId": "x002",
-                "createdTime": "1658901865082",
-                "updatedTime": "1658902610748",
-                "takeProfit": "0.2000",
-                "stopLoss": "1.6000",
-                "tpTriggerBy": "UNKNOWN",
-                "slTriggerBy": "UNKNOWN",
-                "triggerBy": "MarkPrice",
-                "reduceOnly": false,
-                "leavesQty": "15",
-                "leavesValue": "6",
-                "cumExecQty": "0",
-                "cumExecValue": "0",
-                "cumExecFee": "0",
-                "triggerDirection": 2
-              }
-            ],
-            "nextPageCursor": ""
-          },
-          "ext_info": {},
-          "time": 1658902847238
-        }
-        """
-        end_point = "/private/v1/trade/activity-orders"
-        params = {
-            "symbol": self.symbol,
-            "orderId": orderId,
-        }
-        try:
-            order_info_list = self.__HTTP_get_request(end_point=end_point, params=params)["data"]["list"][0]
-            if order_info_list:
-                return order_info_list
-            else:
-                raise KeyError("Nothing sent back in the list for get_open_order_info")
-        except KeyError as e:
-            raise KeyError(f"Something is wrong checking if order is canceled {e}")
+        if self.get_order_history(order_id=order_id)["orderStatus"] == "Filled":
+            return True
+        else:
+            return False
 
     def check_if_order_canceled(
         self,
-        orderId: str,
+        order_id: str,
         **vargs,
     ):
-        if self.get_open_order_info(orderId=orderId)["orderStatus"] in ["Cancelled", "Deactivated"]:
+        if self.get_order_history(order_id=order_id)["orderStatus"] in ["Cancelled", "Deactivated"]:
             return True
         else:
             return False
 
     def check_if_order_active(
         self,
-        orderId: str,
+        order_id: str,
         **vargs,
     ):
-        if self.get_open_order_info(orderId=orderId)["orderStatus"] in ["New", "Untriggered"]:
+        if self.get_order_history(order_id=order_id)["orderStatus"] in ["New", "Untriggered"]:
             return True
         else:
             return False
 
     def cancel_order(
         self,
-        orderId: str,
+        order_id: str,
         **vargs,
     ):
         """
@@ -426,11 +513,11 @@ class Mufex(Exchange):
         end_point = "/private/v1/trade/cancel"
         params = {
             "symbol": self.symbol,
-            "orderId": orderId,
+            "orderId": order_id,
         }
         try:
             data_orderId = self.__HTTP_post_request(end_point=end_point, params=params)["data"]["orderId"]
-            if data_orderId == orderId:
+            if data_orderId == order_id:
                 return True
             else:
                 return False
@@ -468,7 +555,7 @@ class Mufex(Exchange):
     def create_long_entry_market_order(
         self,
         asset_amount: float,
-        time_in_force: str = "GoodTillCancel",
+        time_in_force: str = "ImmediateOrCancel",
         **vargs,
     ):
         params = {
@@ -504,7 +591,7 @@ class Mufex(Exchange):
     def create_long_tp_market_order(
         self,
         asset_amount: float,
-        time_in_force: str = "GoodTillCancel",
+        time_in_force: str = "ImmediateOrCancel",
         **vargs,
     ):
         params = {
@@ -522,7 +609,7 @@ class Mufex(Exchange):
     def create_long_tp_limit_order(
         self,
         asset_amount: float,
-        entry_price: float,
+        tp_price: float,
         time_in_force: str = "PostOnly",
         **vargs,
     ):
@@ -532,7 +619,7 @@ class Mufex(Exchange):
             "positionIdx": 1,
             "orderType": "Limit",
             "qty": str(asset_amount),
-            "price": str(entry_price),
+            "price": str(tp_price),
             "timeInForce": time_in_force,
             "reduceOnly": True,
             "orderLinkId": uuid4().hex,
@@ -543,7 +630,7 @@ class Mufex(Exchange):
         self,
         asset_amount: float,
         trigger_price: float,
-        time_in_force: str = "GoodTillCancel",
+        time_in_force: str = "ImmediateOrCancel",
         **vargs,
     ):
         params = {
@@ -563,7 +650,7 @@ class Mufex(Exchange):
     def create_short_entry_market_order(
         self,
         asset_amount: float,
-        time_in_force: str = "GoodTillCancel",
+        time_in_force: str = "ImmediateOrCancel",
         **vargs,
     ):
         params = {
@@ -599,7 +686,7 @@ class Mufex(Exchange):
     def create_short_tp_market_order(
         self,
         asset_amount: float,
-        time_in_force: str = "GoodTillCancel",
+        time_in_force: str = "ImmediateOrCancel",
         **vargs,
     ):
         params = {
@@ -617,7 +704,7 @@ class Mufex(Exchange):
     def create_short_tp_limit_order(
         self,
         asset_amount: float,
-        entry_price: float,
+        tp_price: float,
         time_in_force: str = "PostOnly",
         **vargs,
     ):
@@ -627,7 +714,7 @@ class Mufex(Exchange):
             "positionIdx": 2,
             "orderType": "Limit",
             "qty": str(asset_amount),
-            "price": str(entry_price),
+            "price": str(tp_price),
             "timeInForce": time_in_force,
             "reduceOnly": True,
             "orderLinkId": uuid4().hex,
@@ -638,7 +725,7 @@ class Mufex(Exchange):
         self,
         asset_amount: float,
         trigger_price: float,
-        time_in_force: str = "GoodTillCancel",
+        time_in_force: str = "ImmediateOrCancel",
         **vargs,
     ):
         params = {

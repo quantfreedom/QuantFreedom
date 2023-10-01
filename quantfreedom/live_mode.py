@@ -26,8 +26,10 @@ class LiveTrading:
         if self.exchange.long_or_short == LongOrShortType.Long:
             self.sl_order = self.exchange.create_long_sl_order
             if entry_order_type == OrderPlacementType.Market:
+                self.check_entry_order = self.exchange.check_if_order_filled
                 self.entry_order = self.exchange.create_long_entry_market_order
             else:
+                self.check_entry_order = self.exchange.check_if_order_active
                 self.entry_order = self.exchange.create_long_entry_limit_order
 
             if tp_order_type == OrderPlacementType.Market:
@@ -36,6 +38,10 @@ class LiveTrading:
                 self.tp_order = self.exchange.create_long_tp_limit_order
 
     def run(self):
+        entry_order_id = 0
+        tp_order_id = 0
+        sl_order_id = 0
+
         self.exchange.set_init_last_fetched_time()
         logging.info(f"Last Candle {self.exchange.__last_fetched_time_to_pd_datetime()}")
         logging.info(
@@ -54,24 +60,45 @@ class LiveTrading:
                 if self.strategy.evaluate():
                     try:
                         try:
+                            if self.exchange.position_size_asset > 0:
+                                self.exchange.in_position = True
+                                self.order.position_size_usd = round(
+                                    self.exchange.position_size_asset * self.exchange.average_entry, 4
+                                )
+                                self.order.average_entry = self.exchange.average_entry
+                            else:
+                                self.exchange.in_position = False
+                                self.order.position_size_usd = 0.0
+                                self.order.average_entry = 0.0
                             self.order.calculate_stop_loss(
                                 bar_index=bar_index,
                                 price_data=price_data,
                             )
                             self.order.calculate_increase_posotion(
                                 # entry price is close of the last bar
-                                entry_price=price_data[-1, 3]
+                                entry_price=price_data[-1, 3],
                             )
                             self.order.calculate_leverage()
                             self.order.calculate_take_profit()
-                            self.place_entry_order(
+                            if not self.cancel_tp_and_sl(tp_order_id=tp_order_id, sl_order_id=sl_order_id):
+                                if self.exchange.in_position:
+                                    logging.error("Wasn't able to verify that the tp and sl were canceled")
+                            entry_order_id, _ = self.place_entry_order(
                                 asset_amount=self.order.entry_size / self.order.entry_price,
                                 entry_price=self.order.entry_price,
                             )
-                            sleep(0.3)
+                            sleep(0.2)
+                            if not self.check_entry_order(order_id=entry_order_id):
+                                raise LookupError(f"Couldn't verify entry order was filled")
+                            
+                            
+                            #### place stop loss and tp and also check if they were placed
+                            
+                            
+                            
                         except RejectedOrderError as e:
                             pass
-                        if self.exchange.get_position_info()["position_size"] > 0:
+                        if self.exchange.in_position:
                             try:
                                 self.order.check_move_stop_loss_to_be(bar_index=bar_index, price_data=price_data)
                                 self.order.check_move_trailing_stop_loss(bar_index=bar_index, price_data=price_data)
@@ -116,3 +143,17 @@ class LiveTrading:
             price=entry_price,
         )
         pass
+
+    def cancel_tp_and_sl(self, tp_order_id, sl_order_id):
+        tp_canceled = False
+        sl_canceled = False
+        if self.exchange.check_if_order_active(order_id=tp_order_id):
+            self.exchange.cancel_order(order_id=tp_order_id)
+            tp_canceled = True
+        if self.exchange.check_if_order_active(order_id=sl_order_id):
+            self.exchange.cancel_order(order_id=sl_order_id)
+            sl_canceled = True
+        if tp_canceled and sl_canceled:
+            return True
+        else:
+            return False

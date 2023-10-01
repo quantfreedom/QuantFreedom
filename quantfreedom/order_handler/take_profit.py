@@ -40,20 +40,20 @@ class TakeProfitLong:
                 self.take_profit_calculator = self.calculate_risk_reward
                 self.tp_checker = self.check_take_profit_hit_provided_rr
 
-    def calculate_take_profit(self, possible_loss, position_size, average_entry):
+    def calculate_take_profit(self, possible_loss, position_size_usd, average_entry):
         return self.take_profit_calculator(
             possible_loss=possible_loss,
-            position_size=position_size,
+            position_size_usd=position_size_usd,
             average_entry=average_entry,
         )
 
     def pass_fucntion(self, **vargs):
         return np.nan, np.nan, 0
 
-    def calculate_risk_reward(self, possible_loss, position_size, average_entry):
+    def calculate_risk_reward(self, possible_loss, position_size_usd, average_entry):
         profit = possible_loss * self.risk_reward
-        self.tp_price = (profit + position_size * self.tp_fee_pct + position_size) * (
-            average_entry / (position_size - position_size * self.tp_fee_pct)
+        self.tp_price = (profit + position_size_usd * self.tp_fee_pct + position_size_usd) * (
+            average_entry / (position_size_usd - position_size_usd * self.tp_fee_pct)
         )  # math checked
 
         self.tp_pct = (self.tp_price - average_entry) / average_entry  # math checked

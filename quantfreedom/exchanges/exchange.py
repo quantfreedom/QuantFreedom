@@ -17,19 +17,10 @@ MAX_NETWORKING_RETRY = 20
 
 
 class Exchange:
-    last_fetched_ms_time = None
-    candles_list = None
-    candles_df = None
-    symbol = None
-    timeframe = None
-    api_key = None
-    secret_key = None
-    long_or_short = None
-    candles_to_dl = None
-    keep_volume_in_candles = None
-    use_test_net = None
-    position_mode = None
-    leverage_mode = None
+    position_size_usd = 0
+    position_size_asset = 0
+    average_entry = 0
+    in_position = False
 
     def __init__(
         self,
@@ -98,6 +89,9 @@ class Exchange:
     def create_long_entry_market_order(self, **vargs):
         pass
 
+    def cancel_order(self, **vargs):
+        pass
+
     def create_long_entry_limit_order(self, **vargs):
         pass
 
@@ -108,4 +102,10 @@ class Exchange:
         pass
 
     def create_long_sl_order(self, **vargs):
+        pass
+
+    def check_if_order_filled(self, **vargs):
+        pass
+
+    def check_if_order_active(self, **vargs):
         pass

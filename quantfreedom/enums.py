@@ -226,7 +226,7 @@ class OrderResult(NamedTuple):
     entry_size: float = np.nan
     entry_price: float = np.nan
     exit_price: float = np.nan
-    position_size: float = np.nan
+    position_size_usd: float = np.nan
     realized_pnl: float = np.nan
     sl_pct: float = np.nan
     sl_price: float = np.nan
@@ -320,7 +320,7 @@ or_dt = np.dtype(
         ("entry_size", np.float_),
         ("entry_price", np.float_),
         ("exit_price", np.float_),
-        ("position_size", np.float_),
+        ("position_size_usd", np.float_),
         ("realized_pnl", np.float_),
         ("sl_pct", np.float_),
         ("sl_price", np.float_),

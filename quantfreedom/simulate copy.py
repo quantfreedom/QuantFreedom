@@ -103,7 +103,7 @@ def backtest_df_only_nb(
 
                     except RejectedOrderError as e:
                         pass
-                if order.position_size > 0:
+                if order.position_size_usd > 0:
                     try:
                         order.check_stop_loss_hit(current_candle=price_data[bar_index, :])
                         order.check_liq_hit(current_candle=price_data[bar_index, :])
@@ -232,7 +232,7 @@ def sim_6_nb(
                             possible_loss=order.possible_loss,
                             entry_size=order.entry_size,
                             entry_price=order.entry_price,
-                            position_size=order.position_size,
+                            position_size_usd=order.position_size_usd,
                             sl_pct=order.sl_pct,
                             sl_price=order.sl_price,
                             tp_pct=order.tp_pct,
@@ -241,7 +241,7 @@ def sim_6_nb(
                     )
                 except RejectedOrderError as e:
                     pass
-            if order.position_size > 0:
+            if order.position_size_usd > 0:
                 try:
                     order.check_stop_loss_hit(current_candle=price_data[bar_index, :])
                     order.check_liq_hit(current_candle=price_data[bar_index, :])
