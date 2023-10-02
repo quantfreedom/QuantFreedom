@@ -21,6 +21,7 @@ class Exchange:
     position_size_asset = 0
     average_entry = 0
     in_position = False
+    last_fetched_ms_time = 0
 
     def __init__(
         self,
@@ -108,4 +109,10 @@ class Exchange:
         pass
 
     def check_if_order_active(self, **vargs):
+        pass
+
+    def set_init_last_fetched_time(self, **vargs):
+        pass
+
+    def adjust_order(self, **vargs):
         pass

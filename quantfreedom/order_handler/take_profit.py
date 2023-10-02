@@ -2,7 +2,7 @@ import numpy as np
 from quantfreedom.enums import (
     DecreasePosition,
     OrderStatus,
-    TakeProfitType,
+    TakeProfitStrategyType,
 )
 
 
@@ -16,27 +16,27 @@ class TakeProfitLong:
 
     def __init__(
         self,
-        take_profit_type: TakeProfitType,
+        take_profit_type: TakeProfitStrategyType,
         risk_reward: float,
         tp_fee_pct: float,
     ):
         self.risk_reward = risk_reward
         self.tp_fee_pct = tp_fee_pct
 
-        if take_profit_type != TakeProfitType.Nothing:
-            if take_profit_type == TakeProfitType.RiskReward:
+        if take_profit_type != TakeProfitStrategyType.Nothing:
+            if take_profit_type == TakeProfitStrategyType.RiskReward:
                 self.take_profit_calculator = self.calculate_risk_reward
                 self.tp_checker = self.check_take_profit_hit_regular
-            elif take_profit_type == TakeProfitType.TPPct:
+            elif take_profit_type == TakeProfitStrategyType.TPPct:
                 self.take_profit_calculator = self.calculate_take_profit_pct
                 self.tp_checker = self.check_take_profit_hit_regular
-            elif take_profit_type == TakeProfitType.Provided:
+            elif take_profit_type == TakeProfitStrategyType.Provided:
                 self.take_profit_calculator = self.pass_fucntion
                 self.tp_checker = self.check_take_profit_hit_provided
-            elif take_profit_type == TakeProfitType.ProvidedandPct:
+            elif take_profit_type == TakeProfitStrategyType.ProvidedandPct:
                 self.take_profit_calculator = self.calculate_take_profit_pct
                 self.tp_checker = self.check_take_profit_hit_provided_pct
-            elif take_profit_type == TakeProfitType.ProvidedandRR:
+            elif take_profit_type == TakeProfitStrategyType.ProvidedandRR:
                 self.take_profit_calculator = self.calculate_risk_reward
                 self.tp_checker = self.check_take_profit_hit_provided_rr
 

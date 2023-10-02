@@ -524,6 +524,46 @@ class Mufex(Exchange):
         except KeyError as e:
             raise KeyError(f"Something is wrong cancel order {e}")
 
+    def adjust_order(
+        self,
+        order_id: str,
+        new_price: float,
+        asset_amount: float = None,
+        **vargs,
+    ):
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_replaceorder
+        {
+            "code": 0,
+                "message": "OK",
+                "data":  {
+                "orderId": "db8b74b3-72d3-4264-bf3f-52d39b41956e",
+                    "orderLinkId": "x002"
+            },
+            "ext_info": {},
+            "time": 1658902610749
+        }
+        """
+        end_point = "/private/v1/trade/replace"
+        params = {
+            "symbol": self.symbol,
+            "orderId": order_id,
+            "price": str(new_price),
+            "qty": str(asset_amount),
+        }
+
+        try:
+            data = self.__HTTP_post_request(end_point=end_point, params=params)
+            if data["message"] == "OK":
+                return True
+            else:
+                return False
+            # orderLinkId = order_info["orderLinkId"]
+        except KeyError as e:
+            raise KeyError(f"Something is wrong setting the limit entry order {e}")
+        # return orderId, orderLinkId
+        return orderId
+
     def create_order(
         self,
         params: dict,
@@ -547,10 +587,11 @@ class Mufex(Exchange):
         try:
             order_info = self.__HTTP_post_request(end_point=end_point, params=params)["data"]
             orderId = order_info["orderId"]
-            orderLinkId = order_info["orderLinkId"]
+            # orderLinkId = order_info["orderLinkId"]
         except KeyError as e:
             raise KeyError(f"Something is wrong setting the limit entry order {e}")
-        return orderId, orderLinkId
+        # return orderId, orderLinkId
+        return orderId
 
     def create_long_entry_market_order(
         self,

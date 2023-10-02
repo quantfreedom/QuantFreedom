@@ -12,7 +12,7 @@ def get_order_settings(
         increase_position_type=os_cart_arrays.increase_position_type[settings_idx],
         leverage_type=os_cart_arrays.leverage_type[settings_idx],
         max_equity_risk_pct=os_cart_arrays.max_equity_risk_pct[settings_idx],
-        order_type=os_cart_arrays.order_type[settings_idx],
+        long_or_short=os_cart_arrays.long_or_short[settings_idx],
         risk_account_pct_size=os_cart_arrays.risk_account_pct_size[settings_idx],
         risk_reward=os_cart_arrays.risk_reward[settings_idx],
         sl_based_on_add_pct=os_cart_arrays.sl_based_on_add_pct[settings_idx],
@@ -80,7 +80,7 @@ def backtest_df_only_nb(
                 account_state=account_state,
                 order_settings=order_settings,
                 exchange_settings=exchange_settings,
-                order_type=order_settings.order_type,
+                long_or_short=order_settings.long_or_short,
                 strat_records=strat_records,
             )
 
@@ -201,7 +201,7 @@ def sim_6_nb(
             account_state=account_state,
             order_settings=order_settings,
             exchange_settings=exchange_settings,
-            order_type=order_settings.order_type,
+            long_or_short=order_settings.long_or_short,
             order_records=order_records,
             total_order_records_filled=total_order_records_filled,
         )
@@ -230,7 +230,7 @@ def sim_6_nb(
                             liq_price=order.liq_price,
                             order_status=order.order_status,
                             possible_loss=order.possible_loss,
-                            entry_size=order.entry_size,
+                            entry_size_usd=order.entry_size_usd,
                             entry_price=order.entry_price,
                             position_size_usd=order.position_size_usd,
                             sl_pct=order.sl_pct,

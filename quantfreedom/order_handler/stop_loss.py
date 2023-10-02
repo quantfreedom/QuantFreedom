@@ -7,7 +7,7 @@ from quantfreedom.enums import (
     MoveStopLoss,
     OrderStatus,
     SLToBeZeroOrEntryType,
-    StopLossType,
+    StopLossStrategyType,
 )
 
 
@@ -52,7 +52,7 @@ class StopLossLong:
         self.market_fee_pct = market_fee_pct
 
         # setting up stop loss calulator
-        if sl_type == StopLossType.SLBasedOnCandleBody:
+        if sl_type == StopLossStrategyType.SLBasedOnCandleBody:
             self.calculator = self.sl_based_on_candle_body_calc
             if sl_candle_body_type == CandleBodyType.Open:
                 self.sl_price_getter = self.__get_candle_body_price_open
@@ -65,10 +65,10 @@ class StopLossLong:
             else:
                 raise ValueError("Something is wrong with your stop loss type")
             self.sl_hit_checker = self.check_stop_loss_hit
-        elif sl_type == StopLossType.SLPct:
+        elif sl_type == StopLossStrategyType.SLPct:
             self.calculator = self.sl_pct_calc
             self.sl_hit_checker = self.check_stop_loss_hit
-        elif sl_type == StopLossType.Nothing:
+        elif sl_type == StopLossStrategyType.Nothing:
             self.calculator = self.pass_function
             self.sl_hit_checker = self.pass_function
 
@@ -152,18 +152,23 @@ class StopLossLong:
         average_entry,
         bar_index,
         price_data,
+        can_move_sl_to_be,
     ):
-        # Stop Loss to break even
-        candle_body_ohlc = self.sl_to_be_price_getter(
-            lookback=bar_index,
-            bar_index=bar_index + 1,
-            price_data=price_data,
-        )
-        pct_from_ae = (candle_body_ohlc - average_entry) / average_entry
-        move_sl = pct_from_ae > self.sl_to_be_move_when_pct
-        if move_sl:
-            self.sl_price = self.sl_to_be_z_or_e(average_entry)
-            raise MoveStopLoss(sl_price=self.sl_price, order_status=OrderStatus.MovedStopLossToBE)
+        if can_move_sl_to_be:
+            # Stop Loss to break even
+            candle_body_ohlc = self.sl_to_be_price_getter(
+                lookback=bar_index,
+                bar_index=bar_index + 1,
+                price_data=price_data,
+            )
+            pct_from_ae = (candle_body_ohlc - average_entry) / average_entry
+            move_sl = pct_from_ae > self.sl_to_be_move_when_pct
+            if move_sl:
+                self.sl_price = self.sl_to_be_z_or_e(average_entry)
+                raise MoveStopLoss(
+                    sl_price=self.sl_price,
+                    order_status=OrderStatus.MovedStopLossToBE,
+                )
 
     def check_move_trailing_stop_loss(
         self,

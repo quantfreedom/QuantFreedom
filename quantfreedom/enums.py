@@ -169,7 +169,7 @@ class OrderSettingsArrays(NamedTuple):
     increase_position_type: np.array
     leverage_type: np.array
     max_equity_risk_pct: np.array
-    order_type: np.array
+    long_or_short: np.array
     risk_account_pct_size: np.array
     risk_reward: np.array
     sl_based_on_add_pct: np.array
@@ -191,7 +191,7 @@ class OrderSettings(NamedTuple):
     increase_position_type: int
     leverage_type: int
     max_equity_risk_pct: float
-    order_type: int
+    long_or_short: int
     risk_account_pct_size: float
     risk_reward: float
     sl_based_on_add_pct: float
@@ -223,7 +223,7 @@ class OrderResult(NamedTuple):
     liq_price: float = np.nan
     order_status: int = np.nan
     possible_loss: float = np.nan
-    entry_size: float = np.nan
+    entry_size_usd: float = np.nan
     entry_price: float = np.nan
     exit_price: float = np.nan
     position_size_usd: float = np.nan
@@ -270,9 +270,11 @@ class MoveStopLoss(Exception):
         self,
         order_status: OrderStatus,
         sl_price: float,
+        can_move_sl_to_be: bool,
     ):
         self.order_status = order_status
         self.sl_price = sl_price
+        self.can_move_sl_to_be = can_move_sl_to_be
 
 
 order_settings_array_dt = np.dtype(
@@ -281,7 +283,7 @@ order_settings_array_dt = np.dtype(
         ("increase_position_type", np.int_),
         ("leverage_type", np.int_),
         ("max_equity_risk_pct", np.float_),
-        ("order_type", np.int_),
+        ("long_or_short", np.int_),
         ("risk_account_pct_size", np.float_),
         ("risk_reward", np.float_),
         ("sl_based_on_add_pct", np.float_),
@@ -317,7 +319,7 @@ or_dt = np.dtype(
         ("liq_price", np.float_),
         ("order_status", np.int_),
         ("possible_loss", np.float_),
-        ("entry_size", np.float_),
+        ("entry_size_usd", np.float_),
         ("entry_price", np.float_),
         ("exit_price", np.float_),
         ("position_size_usd", np.float_),

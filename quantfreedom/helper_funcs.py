@@ -28,7 +28,7 @@ def create_os_cart_product_nb(
         increase_position_type=out.T[0],
         leverage_type=out.T[1],
         max_equity_risk_pct=out.T[2],
-        order_type=out.T[3],
+        long_or_short=out.T[3],
         risk_account_pct_size=out.T[4],
         risk_reward=out.T[5],
         sl_based_on_add_pct=out.T[6],

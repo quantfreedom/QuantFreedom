@@ -4,7 +4,7 @@ from quantfreedom.enums import (
     AccountState,
     DecreasePosition,
     OrderStatus,
-    OrderType,
+    LongOrShortType,
     OrderSettings,
     ExchangeSettings,
     OrderResult,
@@ -35,7 +35,7 @@ class Order:
 
     average_entry = 0.0
     entry_price = 0.0
-    entry_size = 0.0
+    entry_size_usd = 0.0
     exit_price = 0.0
     fees_paid = 0.0
     leverage = 1.0
@@ -48,13 +48,14 @@ class Order:
     sl_price = 0.0
     tp_pct = 0.0
     tp_price = 0.0
+    can_move_sl_to_be = False
 
     # record vars
     strat_records = None
     strat_records_filled = None
 
-    def instantiate(order_type: OrderType, **vargs):  # TODO: we should only have to do this once not everytime
-        if order_type == OrderType.Long:
+    def instantiate(long_or_short: LongOrShortType, **vargs):  # TODO: we should only have to do this once not everytime
+        if long_or_short == LongOrShortType.Long:
             return LongOrder(**vargs)
 
     def __init__(
@@ -95,7 +96,7 @@ class Order:
         elif self.order_settings.tp_fee_type == TakeProfitFeeType.Market:
             self.tp_fee_pct = self.exchange_settings.market_fee_pct
 
-        if self.order_settings.order_type == OrderType.Long:
+        if self.order_settings.long_or_short == LongOrShortType.Long:
             self.obj_stop_loss = StopLossLong(
                 sl_based_on_add_pct=self.order_settings.sl_based_on_add_pct,
                 sl_based_on_lookback=self.order_settings.sl_based_on_lookback,
@@ -131,7 +132,7 @@ class Order:
                 risk_reward=self.order_settings.risk_reward,
                 tp_fee_pct=self.tp_fee_pct,
             )
-        elif self.order_settings.order_type == OrderType.Short:
+        elif self.order_settings.long_or_short == LongOrShortType.Short:
             pass
 
     def pass_func(self, **vargs):
@@ -166,6 +167,7 @@ class Order:
         self.sl_price = sl_price
         self.sl_pct = (self.average_entry - sl_price) / self.average_entry
         self.order_status = order_status
+        self.can_move_sl_to_be = False
 
         self.or_filler(
             order_result=OrderResult(
@@ -176,6 +178,14 @@ class Order:
                 sl_price=self.sl_price,
             ),
         )
+
+    def move_stop_loss_live_trading(
+        self,
+        sl_price: float,
+    ):
+        self.sl_price = sl_price
+        self.sl_pct = (self.average_entry - sl_price) / self.average_entry
+        self.can_move_sl_to_be = False
 
     def fill_order_records(
         self,
@@ -196,7 +206,7 @@ class Order:
         self.order_records[self.total_order_records_filled]["liq_price"] = order_result.liq_price
         self.order_records[self.total_order_records_filled]["order_status"] = order_result.order_status
         self.order_records[self.total_order_records_filled]["possible_loss"] = order_result.possible_loss
-        self.order_records[self.total_order_records_filled]["entry_size"] = order_result.entry_size
+        self.order_records[self.total_order_records_filled]["entry_size_usd"] = order_result.entry_size_usd
         self.order_records[self.total_order_records_filled]["entry_price"] = order_result.entry_price
         self.order_records[self.total_order_records_filled]["exit_price"] = order_result.exit_price
         self.order_records[self.total_order_records_filled]["position_size_usd"] = order_result.position_size_usd
@@ -229,7 +239,9 @@ class LongOrder(Order):
         (
             self.average_entry,
             self.entry_price,
-            self.entry_size,
+            self.entry_size_usd,
+            self.position_size_usd,
+            self.entry_size_usd,
             self.position_size_usd,
             self.possible_loss,
             self.sl_pct,
@@ -250,13 +262,14 @@ class LongOrder(Order):
             self.available_balance,
             self.cash_used,
             self.cash_borrowed,
+            self.can_move_sl_to_be,
         ) = self.obj_leverage.leverage_calculator(
             average_entry=self.average_entry,
             sl_price=self.sl_price,
             available_balance=self.available_balance,
             cash_used=self.cash_used,
             cash_borrowed=self.cash_borrowed,
-            entry_size=self.entry_size,
+            entry_size_usd=self.entry_size_usd,
         )
 
     def calculate_take_profit(self):
@@ -294,6 +307,7 @@ class LongOrder(Order):
             average_entry=self.average_entry,
             bar_index=bar_index,
             price_data=price_data,
+            can_move_sl_to_be=self.can_move_sl_to_be,
         )
 
     def check_move_trailing_stop_loss(self, bar_index, price_data):
@@ -352,7 +366,7 @@ class LongOrder(Order):
         self.leverage = 0.0
         self.liq_price = 0.0
         self.possible_loss = 0.0
-        self.entry_size = 0.0
+        self.entry_size_usd = 0.0
         self.entry_price = 0.0
         self.position_size_usd = 0.0
         self.sl_pct = 0.0

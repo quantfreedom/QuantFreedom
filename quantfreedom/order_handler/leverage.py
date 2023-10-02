@@ -5,7 +5,7 @@ from quantfreedom.enums import (
     LeverageStrategyType,
     OrderStatus,
     RejectedOrderError,
-    StopLossType,
+    StopLossStrategyType,
 )
 
 
@@ -26,7 +26,7 @@ class LeverageLong:
     def __init__(
         self,
         leverage_type: LeverageStrategyType,
-        sl_type: StopLossType,
+        sl_type: StopLossStrategyType,
         market_fee_pct: float,
         max_leverage: float,
         mmr_pct: float,
@@ -42,7 +42,7 @@ class LeverageLong:
         elif leverage_type == LeverageStrategyType.Dynamic:
             self.leverage_calculator = self.calculate_dynamic_leverage
 
-        if sl_type == StopLossType.Nothing or leverage_type == LeverageStrategyType.Nothing:
+        if sl_type == StopLossStrategyType.Nothing or leverage_type == LeverageStrategyType.Nothing:
             self.liq_hit_checker = self.pass_function
         else:
             self.liq_hit_checker = self.check_liq_hit
@@ -57,18 +57,18 @@ class LeverageLong:
         account_state: AccountState,
         sl_price: float,
         average_entry: float,
-        entry_size: float,
+        entry_size_usd: float,
     ):
         return self.leverage_calculator(
             account_state=account_state,
             sl_price=sl_price,
             average_entry=average_entry,
-            entry_size=entry_size,
+            entry_size_usd=entry_size_usd,
         )
 
     def __calc_liq_price(
         self,
-        entry_size: float,
+        entry_size_usd: float,
         average_entry: float,
         og_available_balance: float,
         og_cash_used: float,
@@ -76,9 +76,9 @@ class LeverageLong:
     ):
         # Getting Order Cost
         # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001064&language=en_US
-        initial_margin = entry_size / self.leverage
-        fee_to_open = entry_size * self.market_fee_pct  # math checked
-        possible_bankruptcy_fee = entry_size * (self.leverage - 1) / self.leverage * self.mmr_pct
+        initial_margin = entry_size_usd / self.leverage
+        fee_to_open = entry_size_usd * self.market_fee_pct  # math checked
+        possible_bankruptcy_fee = entry_size_usd * (self.leverage - 1) / self.leverage * self.mmr_pct
         cash_used = initial_margin + fee_to_open + possible_bankruptcy_fee  # math checked
 
         if cash_used > og_available_balance:
@@ -89,9 +89,10 @@ class LeverageLong:
             # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001067&language=en_US
             available_balance = og_available_balance - cash_used
             cash_used += og_cash_used
-            cash_borrowed = og_cash_borrowed + entry_size - cash_used
+            cash_borrowed = og_cash_borrowed + entry_size_usd - cash_used
 
             self.liq_price = average_entry * (1 - (1 / self.leverage) + self.mmr_pct)  # math checked
+            can_move_sl_to_be = True
 
         return (
             self.leverage,
@@ -99,19 +100,20 @@ class LeverageLong:
             available_balance,
             cash_used,
             cash_borrowed,
+            can_move_sl_to_be,
         )
 
     def set_static_leverage(
         self,
         average_entry: float,
-        entry_size: float,
+        entry_size_usd: float,
         cash_used: float,
         available_balance: float,
         cash_borrowed: float,
         **vargs,
     ):
         return self.__calc_liq_price(
-            entry_size=entry_size,
+            entry_size_usd=entry_size_usd,
             leverage=self.static_leverage,
             average_entry=average_entry,
             og_cash_used=cash_used,
@@ -123,7 +125,7 @@ class LeverageLong:
         self,
         sl_price: float,
         average_entry: float,
-        entry_size: float,
+        entry_size_usd: float,
         cash_used: float,
         available_balance: float,
         cash_borrowed: float,
@@ -141,7 +143,7 @@ class LeverageLong:
             self.leverage = 1
 
         return self.__calc_liq_price(
-            entry_size=entry_size,
+            entry_size_usd=entry_size_usd,
             average_entry=average_entry,
             og_cash_used=cash_used,
             og_available_balance=available_balance,
