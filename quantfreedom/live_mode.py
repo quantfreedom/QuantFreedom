@@ -135,6 +135,11 @@ class LiveTrading:
                             if send_verify_error:
                                 logging.error(msg)
                                 self.send_error_msg(msg=msg)
+                            else:
+                                ##############
+                                # TODO send the graph here and the email that we placed an order
+                                ##############
+                                pass
 
                         except RejectedOrderError as e:
                             pass
@@ -149,6 +154,9 @@ class LiveTrading:
                                 self.order.move_stop_loss_live_trading(sl_price=result.sl_price)
                                 try:
                                     self.exchange.adjust_order(new_price=self.order.sl_price)
+                                    ##############
+                                    # TODO log that we moved the stop loss
+                                    #################
                                 except KeyError as e:
                                     logging.error(f"Something wrong with move stop loss -> {e}")
                                     raise KeyError
