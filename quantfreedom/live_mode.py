@@ -2,9 +2,9 @@ import logging
 from time import sleep
 from uuid import uuid4
 from quantfreedom.email_sender import EmailSender
-from quantfreedom.enums import LongOrShortType, MoveStopLoss, OrderPlacementType, RejectedOrderError
+from quantfreedom.enums import LongOrShortType, MoveStopLoss, OrderPlacementType, PositionModeType, RejectedOrderError
 
-from quantfreedom.exchanges.base.exchange import Exchange
+from quantfreedom.exchanges.base.live_exchange import LiveExchange
 from quantfreedom.order_handler.order_handler import Order
 from quantfreedom.strategies.strategy import Strategy
 
@@ -12,7 +12,7 @@ from quantfreedom.strategies.strategy import Strategy
 class LiveTrading:
     def __init__(
         self,
-        exchange: Exchange,
+        exchange: LiveExchange,
         candles_to_dl: int,
         strategy: Strategy,
         order: Order,
@@ -29,19 +29,19 @@ class LiveTrading:
         self.send_plot_graph = self.send_entry_email
         self.__get_plot_file = self.__get_plot_fig_filename
 
-        if self.exchange.long_or_short == LongOrShortType.Long:
-            self.place_sl_order = self.exchange.create_long_sl_order
-            if entry_order_type == OrderPlacementType.Market:
-                self.check_entry_order = self.exchange.check_if_order_filled
-                self.entry_order = self.exchange.create_long_entry_market_order
-            else:
-                self.check_entry_order = self.exchange.check_if_order_active
-                self.entry_order = self.exchange.create_long_entry_limit_order
+        if self.exchange.position_mode == PositionModeType.HedgeMode:
+            if self.exchange.long_or_short == LongOrShortType.Long:
+                self.place_sl_order = self.exchange.create_long_sl_hedge_mode_order
+                self.get_position_info = self.exchange.get_long_hedge_mode_position_info
+                self.get_tp_pct = self.__get_pct_dif_above_average_entry
+                self.get_sl_pct = self.__get_pct_dif_below_average_entry
+                if entry_order_type == OrderPlacementType.Market:
+                    self.entry_order = self.exchange.create_long_hedge_mode_entry_market_order
 
-            if tp_order_type == OrderPlacementType.Market:
-                self.place_tp_order = self.exchange.create_long_tp_market_order
-            else:
-                self.place_tp_order = self.exchange.create_long_tp_limit_order
+                if tp_order_type == OrderPlacementType.Market:
+                    pass
+                else:
+                    self.place_tp_order = self.exchange.create_long_hedge_mode_tp_limit_order
 
     def pass_function(self, **vargs):
         pass
@@ -60,10 +60,10 @@ class LiveTrading:
         sleep(self.get_time_to_next_bar_seconds())
         while True:
             try:
-                price_data = self.exchange.get_and_set_candles_df()[["open", "high", "low", "close"]].values
+                self.exchange.set_candles_df_and_np()
 
                 # bar_index bar index is always the last bar ... so if we have 200 candles we are at index 200
-                bar_index = price_data.shape()[0]
+                bar_index = self.exchange.candles_np.shape()[0]
                 msg = ""
 
                 self.strategy.set_indicator_live_trading(self.exchange.candles_df)
@@ -72,9 +72,7 @@ class LiveTrading:
                         try:
                             if self.exchange.position_size_asset > 0:
                                 self.exchange.in_position = True
-                                self.order.position_size_usd = round(
-                                    self.exchange.position_size_asset * self.exchange.average_entry, 4
-                                )
+                                self.order.position_size_usd = self.exchange.position_size_usd
                                 self.order.average_entry = self.exchange.average_entry
                             else:
                                 self.exchange.in_position = False
@@ -198,7 +196,7 @@ class LiveTrading:
         ms_to_next_candle = max(
             0,
             (self.exchange.last_fetched_ms_time + self.exchange.timeframe_in_ms * 2)
-            - self.exchange.get_ms_current_time(),
+            - self.exchange.get_current_time_ms(),
         )
 
         return int(ms_to_next_candle / 1000)
@@ -243,3 +241,26 @@ class LiveTrading:
             tp_price=tp_price,
             liq_price=liq_price,
         )
+
+    def __set_exchange_variables(self, entry_order_id, sl_order_id, tp_order_id):
+        pos_info = self.get_position_info()
+        entry_info = self.exchange.get_order_id_info(symbol=self.exchange.symbol, order_id=entry_order_id)
+        tp_info = self.exchange.get_order_id_info(symbol=self.exchange.symbol, order_id=tp_order_id)
+        sl_info = self.exchange.get_order_id_info(symbol=self.exchange.symbol, order_id=sl_order_id)
+
+        self.ex_position_size_asset = float(pos_info.get("size"))
+        self.ex_position_size_usd = float(pos_info.get("positionValue"))
+        self.ex_average_entry = float(pos_info.get("entryPrice"))
+        self.ex_leverage = float(pos_info.get("leverage"))
+        self.ex_liq_price = float(pos_info.get("liqPrice"))
+        self.ex_entry_price = round(float(entry_info.get("cumExecValue")) / float(entry_info.get("cumExecValue")), 2)
+        self.ex_tp_price = round(float(tp_info.get("cumExecValue")) / float(tp_info.get("cumExecValue")), 2)
+        self.ex_tp_pct = self.get_tp_pct(price=self.ex_tp_price, average_entry=self.ex_average_entry)
+        self.ex_sl_price = round(float(sl_info.get("cumExecValue")) / float(sl_info.get("cumExecValue")), 2)
+        self.ex_sl_pct = self.get_sl_pct(price=self.ex_sl_price, average_entry=self.ex_average_entry)
+
+    def __get_pct_dif_above_average_entry(self, price, average_entry):
+        return (price - average_entry) / average_entry
+
+    def __get_pct_dif_below_average_entry(self, price, average_entry):
+        return (average_entry - price) / average_entry
