@@ -4,7 +4,7 @@ from uuid import uuid4
 from quantfreedom.email_sender import EmailSender
 from quantfreedom.enums import LongOrShortType, MoveStopLoss, OrderPlacementType, RejectedOrderError
 
-from quantfreedom.exchanges.exchange import Exchange
+from quantfreedom.exchanges.base.exchange import Exchange
 from quantfreedom.order_handler.order_handler import Order
 from quantfreedom.strategies.strategy import Strategy
 
@@ -18,17 +18,16 @@ class LiveTrading:
         order: Order,
         entry_order_type: OrderPlacementType,
         tp_order_type: OrderPlacementType,
-        email_sender: EmailSender = None,
+        email_sender: EmailSender,
     ):
         self.exchange = exchange
         self.candles_to_dl = candles_to_dl
         self.strategy = strategy
         self.order = order
-        if email_sender is None:
-            self.send_error_msg = self.pass_function
-        else:
-            self.send_error_msg = self.email_error_msg
-            self.email_sender = email_sender
+        self.email_sender = email_sender
+        self.send_error_msg = self.email_error_msg
+        self.send_plot_graph = self.send_entry_email
+        self.__get_plot_file = self.__get_plot_fig_filename
 
         if self.exchange.long_or_short == LongOrShortType.Long:
             self.place_sl_order = self.exchange.create_long_sl_order
@@ -53,12 +52,12 @@ class LiveTrading:
         sl_order_id = 0
 
         self.exchange.set_init_last_fetched_time()
-        logging.info(f"Last Candle {self.exchange.__last_fetched_time_to_pd_datetime()}")
+        logging.info(f"Last Candle {self.exchange.last_fetched_time_to_pd_datetime()}")
         logging.info(
-            f"Will sleep for {round(self.__get_time_to_next_bar_seconds()/60,2)} minutes before getting first batch of candles"
+            f"Will sleep for {round(self.get_time_to_next_bar_seconds()/60,2)} minutes before getting first batch of candles"
         )
 
-        sleep(self.__get_time_to_next_bar_seconds())
+        sleep(self.get_time_to_next_bar_seconds())
         while True:
             try:
                 price_data = self.exchange.get_and_set_candles_df()[["open", "high", "low", "close"]].values
@@ -136,9 +135,33 @@ class LiveTrading:
                                 logging.error(msg)
                                 self.send_error_msg(msg=msg)
                             else:
-                                ##############
-                                # TODO send the graph here and the email that we placed an order
-                                ##############
+                                message = '\
+            An order was placed successfully\
+            \
+            User data ->        [equity={entry_data_gathered.no_position_equity}]\n\
+                                [average_entry={entry_data_gathered.average_entry}]\n\
+                                [position_size={entry_data_gathered.position_size}]\n\
+                                [take_profit_price={entry_data_gathered.take_profit_price}]\n\
+                                [stop_loss_price={entry_data_gathered.stop_loss_price}]\n\
+                                [entry_size_value={entry_data_gathered.entry_size_value}]\n\
+                                [entry_size={entry_data_gathered.entry_size}]\n\
+                                [candle_closing_price={entry_data_gathered.candle_closing_price}]\n\
+                                [tpl={entry_data_gathered.tpl}]\n\
+                                [leverage={entry_data_gathered.leverage}]\n\n\
+                            \
+            Exchange info ->    [average_entry={self.order_execution_strategy.average_entry}]\n\
+                                [position_size={self.order_execution_strategy.position_size}]\n\
+                                [position_size_usd={self.order_execution_strategy.position_size_usd}]\n\
+                                [take_profit_price={self.order_execution_strategy.tp_price}]\n\
+                                [take_profit_percent={self.order_execution_strategy.tp_pct}]\n\
+                                [stop_loss_price={self.order_execution_strategy.sl_price}]\n\
+                                [stop_loss_percent={self.order_execution_strategy.sl_pct}]\n\
+                                [entry_size_value={self.order_execution_strategy.entry_size_value}]\n\
+                                [entry_size={self.order_execution_strategy.entry_size}]\n\
+                                [position_tpl={self.order_execution_strategy.tpl}]\n\
+                                [leverage={self.order_execution_strategy.leverage}]\n\n\
+                                [liq_price={self.order_execution_strategy.liq_price}]\n\n"'
+                                logging.info()
                                 pass
 
                         except RejectedOrderError as e:
@@ -169,32 +192,23 @@ class LiveTrading:
             except Exception as e:
                 logging.error(f"Something is wrong in the run part of live mode -> {e}")
                 raise Exception
-            sleep(self.__get_time_to_next_bar_seconds())
+            sleep(self.get_time_to_next_bar_seconds())
 
-    def __get_time_to_next_bar_seconds(self):
+    def get_time_to_next_bar_seconds(self):
         ms_to_next_candle = max(
             0,
             (self.exchange.last_fetched_ms_time + self.exchange.timeframe_in_ms * 2)
-            - self.exchange.__get_ms_current_time(),
+            - self.exchange.get_ms_current_time(),
         )
-        time_to_sleep_seconds = ms_to_next_candle / 1000.0
 
-        logging.debug(
-            f"[last_fetched_time={self.exchange.__last_fetched_time_to_pd_datetime()}]\n\
-                        [bar_duration={self.exchange.timeframe_in_ms/1000}]\n\
-                        [now={self.exchange.__get_current_pd_datetime()}]\n\
-                        [secs_to_next_candle={time_to_sleep_seconds}]\n\
-                        [mins_to_next_candle={round(time_to_sleep_seconds/60,2)}]\n"
-        )
-        return time_to_sleep_seconds
+        return int(ms_to_next_candle / 1000)
 
     def place_entry_order(self, qty, orderLinkId, entry_price):
-        self.entry_order(
+        return self.entry_order(
             qty=qty,
             orderLinkId=orderLinkId,
             price=entry_price,
         )
-        pass
 
     def cancel_tp_and_sl(self, tp_order_id, sl_order_id):
         tp_canceled = False
@@ -212,3 +226,20 @@ class LiveTrading:
 
     def email_error_msg(self, msg):
         self.email_sender.email_error_msg(msg=msg)
+
+    def send_entry_email(self, entry_price, sl_price, tp_price, liq_price, body):
+        fig_filename = self.__get_plot_file(
+            entry_price=entry_price,
+            sl_price=sl_price,
+            tp_price=tp_price,
+            liq_price=liq_price,
+        )
+        self.email_sender.email_new_order(body=body, fig_filename=fig_filename)
+
+    def __get_plot_fig_filename(self, entry_price, sl_price, tp_price, liq_price):
+        return self.strategy.return_plot_image(
+            entry_price=entry_price,
+            sl_price=sl_price,
+            tp_price=tp_price,
+            liq_price=liq_price,
+        )

@@ -1,9 +1,12 @@
+from datetime import datetime
 import logging
+import os
 import pandas_ta as pta
 import pandas as pd
 import numpy as np
 
 from typing import NamedTuple
+from plotly.subplots import make_subplots
 
 from quantfreedom.enums import CandleProcessingType
 
@@ -93,6 +96,94 @@ class Strategy:
         except Exception as e:
             logging.error(f"Something is wrong evaluting the strat -> {e}")
             raise Exception
+
+    def return_plot_image(self, price_data: pd.DataFrame, entry_price, sl_price, tp_price, liq_price, **vargs):
+        graph_entry = price_data.timestamp[-1]
+        fig = make_subplots(
+            rows=2,
+            cols=1,
+            row_heights=[0.7, 0.3],
+            shared_xaxes=True,
+            vertical_spacing=0.02,
+        )
+        fig.add_candlestick(
+            x=price_data.timestamp,
+            open=price_data.open,
+            high=price_data.high,
+            low=price_data.low,
+            close=price_data.close,
+            name="Candles",
+            row=1,
+            col=1,
+        )
+        # entry
+        fig.add_scatter(
+            x=graph_entry,
+            y=entry_price,
+            mode="markers",
+            marker=dict(size=10, color="Blue"),
+            name=f"Entry",
+            row=1,
+            col=1,
+        )
+        # stop loss
+        fig.add_scatter(
+            x=graph_entry,
+            y=sl_price,
+            mode="markers+lines",
+            marker=dict(size=10, symbol="x", color="Red"),
+            name=f"Stop Loss",
+            row=1,
+            col=1,
+        )
+        # take profit
+        fig.add_scatter(
+            x=graph_entry,
+            y=tp_price,
+            mode="markers+lines",
+            marker=dict(size=10, symbol="arrow-up", color="Green"),
+            name=f"Take Profit",
+            row=1,
+            col=1,
+        )
+        # liq price
+        fig.add_scatter(
+            x=graph_entry,
+            y=liq_price,
+            mode="markers+lines",
+            marker=dict(size=10, symbol="arrow-up", color="Green"),
+            name=f"Take Profit",
+            row=1,
+            col=1,
+        )
+
+        # RSI
+        fig.add_scatter(
+            x=price_data.timestamp,
+            y=self.rsi,
+            name="RSI",
+            row=2,
+            col=1,
+        )
+        # RSI divergence
+        fig.add_scatter(
+            x=price_data.timestamp,
+            y=self.rsi[-1],
+            mode="markers+lines",
+            marker=dict(size=10, symbol="circle"),
+            name="RSI div",
+            row=2,
+            col=1,
+        )
+        fig.update_layout(xaxis_rangeslider_visible=False)
+        fig.show()
+        fig_filename = os.path.join(
+            ".",
+            "images",
+            f'{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.png',
+        )
+        fig.write_image(fig_filename)
+        return fig.write_image(fig_filename)
 
     def __create_ind_cart_product_nb(self, indicator_settings_array):
         # cart array loop

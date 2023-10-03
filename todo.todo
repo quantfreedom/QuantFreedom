@@ -1,6 +1,8 @@
 questions:
-    ☐ set leverage
-    ☐ get usdt balance
+    ☐ make convert timeframe function for get candles mufex
+    ☐ make convert candle to dl function on mufex
+    ☐ make convert timeframe_in_ms function
+    
 
 
 
