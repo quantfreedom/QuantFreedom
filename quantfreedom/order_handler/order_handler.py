@@ -60,7 +60,7 @@ class Order:
 
     def __init__(
         self,
-        account_state: AccountState,
+        equity: float,
         order_settings: OrderSettings,
         exchange_settings: ExchangeSettings,
         strat_records: Optional[np.array] = None,
@@ -68,10 +68,9 @@ class Order:
         total_order_records_filled: Optional[int] = None,
     ):
         self.order_settings = order_settings
-        self.account_state = account_state
         self.exchange_settings = exchange_settings
-        self.equity = account_state.equity
-        self.available_balance = account_state.equity
+        self.equity = equity
+        self.available_balance = equity
 
         # this is not effecient ... this will not change
         if strat_records is None:
@@ -179,7 +178,7 @@ class Order:
             ),
         )
 
-    def move_stop_loss_live_trading(
+    def update_stop_loss_live_trading(
         self,
         sl_price: float,
     ):

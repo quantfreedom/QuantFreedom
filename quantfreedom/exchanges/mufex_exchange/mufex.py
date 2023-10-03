@@ -361,21 +361,19 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Something is wrong with get_order_history -> {e}")
 
-    def get_order_id_info(self, symbol: str, order_id: str, params: dict = {}, **vargs):
-        """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_getorder
-        """
+    def get_order_history_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **vargs):
         params["orderId"] = order_id
         return self.get_order_history(symbol=symbol, params=params)[0]
 
-    def get_symbol_open_orders(self, symbol: str, **vargs):
+    def get_open_orders(self, symbol: str, limit: int = 50, params: dict = {}, **vargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_getopenorder
 
         use link to see all Request Parameters
         """
         end_point = "/private/v1/trade/activity-orders"
-        params = {"symbol": symbol}
+        params["symbol"] = symbol
+        params["limit"] = limit
         try:
             response = self.__HTTP_get_request(end_point=end_point, params=params)
             data_list = response.get("data").get("list")
@@ -385,6 +383,33 @@ class Mufex(Exchange):
                 raise Exception(f"Data or List is empty {response['message']}")
         except Exception as e:
             raise Exception(f"Something is wrong with get_open_orders -> {e}")
+
+    def get_open_orders_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **vargs):
+        params["orderId"] = order_id
+        return self.get_open_orders(symbol=symbol, params=params)[0]
+
+    def get_filled_orders(self, symbol: str, limit: int = 200, params: dict = {}, **vargs):
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-usertraderecords
+
+        use link to see all Request Parameters
+        """
+        end_point = "/private/v1/trade/fills"
+        params["symbol"] = symbol
+        params["limit"] = limit
+        try:
+            response = self.__HTTP_get_request(end_point=end_point, params=params)
+            data_list = response.get("data").get("list")
+            if data_list is not None and data_list:
+                return data_list
+            else:
+                raise Exception(f"Data or List is empty {response['message']}")
+        except Exception as e:
+            raise Exception(f"Something is wrong with get_filled_orders -> {e}")
+
+    def get_filled_orders_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **vargs):
+        params["orderId"] = order_id
+        return self.get_filled_orders(symbol=symbol, params=params)[0]
 
     def get_account_position_info(self, **vargs):
         """
@@ -509,12 +534,12 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Something is wrong with get_wallet_info -> {e}")
 
-    def get_wallet_info_of_asset(self, asset: str, **vargs):
+    def get_wallet_info_of_asset(self, trading_in: str, **vargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-balance
         """
         end_point = "/private/v1/account/balance"
-        params = {"coin": asset}
+        params = {"coin": trading_in}
         try:
             response = self.__HTTP_get_request(end_point=end_point, params=params)
             data_list = response.get("data").get("list")
@@ -584,6 +609,27 @@ class Mufex(Exchange):
                 raise Exception(f"{message}")
         except Exception as e:
             raise Exception(f"Something is wrong with set_leverage_mode -> {e}")
+
+    def check_if_order_filled(self, symbol: str, order_id: str, **vargs):
+        order_status = self.get_filled_orders_by_order_id(symbol=symbol, order_id=order_id)["orderStatus"]
+        if order_status == "Filled":
+            return True
+        else:
+            return False
+
+    def check_if_order_canceled(self, symbol: str, order_id: str, **vargs):
+        order_status = self.get_order_history_by_order_id(symbol=symbol, order_id=order_id)["orderStatus"]
+        if order_status in ["Cancelled", "Deactivated"]:
+            return True
+        else:
+            return False
+
+    def check_if_order_open(self, symbol: str, order_id: str, **vargs):
+        order_status = self.get_open_orders_by_order_id(symbol=symbol, order_id=order_id)["orderStatus"]
+        if order_status in ["New", "Untriggered"]:
+            return True
+        else:
+            return False
 
     """
     ##############################################################

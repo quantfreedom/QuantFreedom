@@ -12,13 +12,35 @@ class Exchange:
     candles_list = None
     volume_yes_no_start = None
     volume_yes_no_end = None
+    exchange_settings = None
 
     def __init__(self, api_key: str, secret_key: str, use_test_net: bool = False):
         self.api_key = api_key
         self.secret_key = secret_key
         self.use_test_net = use_test_net
 
-    def get_order_id_info(self):
+    def cancel_open_order(self, *vargs):
+        pass
+
+    def get_filled_orders_by_order_id(self, *vargs):
+        pass
+
+    def move_open_order(self, *vargs):
+        pass
+
+    def get_open_orders_by_order_id(self, *vargs):
+        pass
+
+    def get_wallet_info_of_asset(self, *vargs):
+        pass
+
+    def check_if_order_filled(self, *vargs):
+        pass
+
+    def check_if_order_canceled(self, *vargs):
+        pass
+
+    def check_if_order_open(self, *vargs):
         pass
 
     def get_current_time_seconds(self):

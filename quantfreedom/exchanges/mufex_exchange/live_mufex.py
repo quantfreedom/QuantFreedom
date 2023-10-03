@@ -11,6 +11,7 @@ class LiveMufex(LiveExchange, Mufex):
     def __init__(
         self,
         symbol: str,
+        trading_in: str,
         timeframe: str,
         long_or_short: LongOrShortType,
         candles_to_dl: int = None,
@@ -23,6 +24,7 @@ class LiveMufex(LiveExchange, Mufex):
         super().__init__(
             symbol,
             timeframe,
+            trading_in,
             candles_to_dl,
             keep_volume_in_candles,
             long_or_short,
@@ -54,7 +56,7 @@ class LiveMufex(LiveExchange, Mufex):
             limit=200,
         )
 
-        self.__set_exchange_settings(
+        self.exchange_settings = self.__get_exchange_settings(
             symbol=symbol,
             position_mode=position_mode,
             leverage_mode=leverage_mode,
@@ -143,27 +145,6 @@ class LiveMufex(LiveExchange, Mufex):
         else:
             return False
 
-    def check_if_order_filled(self, order_id: str, **vargs):
-        order_status = self.get_order_id_info(symbol=self.symbol, order_id=order_id)["orderStatus"]
-        if order_status == "Filled":
-            return True
-        else:
-            return False
-
-    def check_if_order_canceled(self, order_id: str, **vargs):
-        order_status = self.get_order_id_info(symbol=self.symbol, order_id=order_id)["orderStatus"]
-        if order_status in ["Cancelled", "Deactivated"]:
-            return True
-        else:
-            return False
-
-    def check_if_order_active(self, order_id: str, **vargs):
-        order_status = self.get_order_id_info(symbol=self.symbol, order_id=order_id)["orderStatus"]
-        if order_status in ["New", "Untriggered"]:
-            return True
-        else:
-            return False
-
     def create_long_hedge_mode_entry_market_order(
         self,
         asset_amount: float,
@@ -222,9 +203,5 @@ class LiveMufex(LiveExchange, Mufex):
         }
         return self.create_order(params=params)
 
-    def get_wallet_info(self):
-        return self.get_wallet_info_of_asset(asset=self.trading_in)
-
     def get_long_hedge_mode_position_info(self):
         return self.get_symbol_position_info(symbol=self.symbol)[0]
-
