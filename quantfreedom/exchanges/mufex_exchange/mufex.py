@@ -368,6 +368,24 @@ class Mufex(Exchange):
         params["orderId"] = order_id
         return self.get_order_history(symbol=symbol, params=params)[0]
 
+    def get_symbol_open_orders(self, symbol: str, **vargs):
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_getopenorder
+
+        use link to see all Request Parameters
+        """
+        end_point = "/private/v1/trade/activity-orders"
+        params = {"symbol": symbol}
+        try:
+            response = self.__HTTP_get_request(end_point=end_point, params=params)
+            data_list = response.get("data").get("list")
+            if data_list is not None and data_list:
+                return data_list
+            else:
+                raise Exception(f"Data or List is empty {response['message']}")
+        except Exception as e:
+            raise Exception(f"Something is wrong with get_open_orders -> {e}")
+
     def get_account_position_info(self, **vargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_myposition

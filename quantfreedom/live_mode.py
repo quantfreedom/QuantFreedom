@@ -35,6 +35,7 @@ class LiveTrading:
                 self.get_position_info = self.exchange.get_long_hedge_mode_position_info
                 self.get_tp_pct = self.__get_pct_dif_above_average_entry
                 self.get_sl_pct = self.__get_pct_dif_below_average_entry
+                self.get_liq_pct = self.__get_pct_dif_below_average_entry
                 if entry_order_type == OrderPlacementType.Market:
                     self.entry_order = self.exchange.create_long_hedge_mode_entry_market_order
 
@@ -251,9 +252,10 @@ class LiveTrading:
         self.ex_position_size_asset = float(pos_info.get("size"))
         self.ex_position_size_usd = float(pos_info.get("positionValue"))
         self.ex_average_entry = float(pos_info.get("entryPrice"))
+        self.ex_entry_price = round(float(entry_info.get("cumExecValue")) / float(entry_info.get("cumExecValue")), 2)
         self.ex_leverage = float(pos_info.get("leverage"))
         self.ex_liq_price = float(pos_info.get("liqPrice"))
-        self.ex_entry_price = round(float(entry_info.get("cumExecValue")) / float(entry_info.get("cumExecValue")), 2)
+        self.ex_liq_pct = self.get_liq_pct(price=self.ex_liq_price, average_entry=self.ex_average_entry)
         self.ex_tp_price = round(float(tp_info.get("cumExecValue")) / float(tp_info.get("cumExecValue")), 2)
         self.ex_tp_pct = self.get_tp_pct(price=self.ex_tp_price, average_entry=self.ex_average_entry)
         self.ex_sl_price = round(float(sl_info.get("cumExecValue")) / float(sl_info.get("cumExecValue")), 2)
