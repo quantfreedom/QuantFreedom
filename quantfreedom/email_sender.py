@@ -14,7 +14,7 @@ class EmailSender:
     password = None
     email_enabled = None
 
-    def __init__(self, config=None):
+    def __init__(self):
         self.port = 465  # For SSL
         self.smtp_server = EmailAccount.smtp_server
         self.sender_email = EmailAccount.sender_account
