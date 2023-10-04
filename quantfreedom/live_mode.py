@@ -68,7 +68,11 @@ class LiveTrading:
         while True:
             try:
                 print("Getting Candles")
+                start_time = self.exchange.get_current_time_seconds()
                 self.exchange.set_candles_df_and_np()
+                time_it_took_in_seconds = self.exchange.get_current_time_seconds() - start_time
+                logging.info(f"It took {time_it_took_in_seconds} seconds to download the candles")
+                logging.info(f"Got a total of {self.exchange.candles_df.shape[0]} candles")
 
                 # bar_index bar index is always the last bar ... so if we have 200 candles we are at index 200
                 bar_index = self.exchange.candles_np.shape[0] - 1
