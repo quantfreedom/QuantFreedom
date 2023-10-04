@@ -88,9 +88,9 @@ if __name__ == "__main__":
     order_settings_arrays = OrderSettingsArrays(
         increase_position_type=np.array([IncreasePositionType.RiskPctAccountEntrySize]),
         leverage_type=np.array([LeverageStrategyType.Dynamic]),
-        max_equity_risk_pct=np.array([3]) / 100,
+        max_equity_risk_pct=np.array([.002]) / 100,
         long_or_short=np.array([LongOrShortType.Long]),
-        risk_account_pct_size=np.array([1.0]) / 100,
+        risk_account_pct_size=np.array([.001]) / 100,
         risk_reward=np.array([2.0, 3.0, 5.0]),
         sl_based_on_add_pct=np.array([0.01, 0.02, 0.03]) / 100,
         sl_based_on_lookback=np.array([50, 70]),
@@ -124,15 +124,15 @@ if __name__ == "__main__":
         long_or_short=LongOrShortType.Long,
         use_test_net=True,
     )
-    equty = mufex.get_wallet_info_of_asset("USDT")
+    equity = mufex.get_equity_of_asset(trading_in="USDT")
 
     strategy = Strategy(
-        indicator_setting_index=4,
+        indicator_setting_index=-1,
         candle_processing_mode=CandleProcessingType.LiveTrading,
     )
 
     order = LongOrder(
-        equity=equty,
+        equity=equity,
         order_settings=order_settings,
         exchange_settings=mufex.exchange_settings,
     )

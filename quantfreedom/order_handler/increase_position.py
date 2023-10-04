@@ -13,7 +13,7 @@ class IncreasePositionLong:
     market_fee_pct = None
     risk_account_pct_size = None
     max_equity_risk_pct = None
-    min_asset_qty = None
+    max_asset_qty = None
     min_asset_qty = None
 
     def __init__(
@@ -36,9 +36,6 @@ class IncreasePositionLong:
             if increase_position_type == IncreasePositionType.RiskPctAccountEntrySize:
                 self.calculator_in_pos = self.risk_pct_of_account_and_sl_based_on_in_pos
                 self.calculator_not_in_pos = self.risk_pct_of_account_and_sl_based_on_not_in_pos
-            elif increase_position_type == IncreasePositionType.TestingStrategy:
-                self.calculator_in_pos = self.smallest_amount
-                self.calculator_not_in_pos = self.smallest_amount
             elif increase_position_type == IncreasePositionType.AmountEntrySize:
                 self.calculator_in_pos = self.amount_based
             elif increase_position_type == IncreasePositionType.PctAccountEntrySize:
@@ -62,10 +59,10 @@ class IncreasePositionLong:
     ):
         if in_position:
             (
+                average_entry,
+                entry_price,
                 entry_size_usd,
                 position_size_usd,
-                entry_price,
-                average_entry,
                 possible_loss,
                 sl_pct,
             ) = self.calculator_in_pos(
@@ -78,10 +75,10 @@ class IncreasePositionLong:
             )
         else:
             (
+                average_entry,
+                entry_price,
                 entry_size_usd,
                 position_size_usd,
-                entry_price,
-                average_entry,
                 possible_loss,
                 sl_pct,
             ) = self.calculator_not_in_pos(
@@ -91,7 +88,7 @@ class IncreasePositionLong:
                 sl_price=sl_price,
             )
 
-        self.__check_size_value(entry_size_usd=entry_size_usd)
+        self.__check_size_value(entry_size_asset=entry_size_usd / entry_price)
         return (
             average_entry,
             entry_price,
@@ -108,8 +105,8 @@ class IncreasePositionLong:
             raise RejectedOrderError("possible loss too big")
         return round(possible_loss, 2)
 
-    def __check_size_value(self, entry_size_usd):
-        if entry_size_usd < 1 or entry_size_usd > self.max_order_size_value or entry_size_usd < self.min_asset_qty:
+    def __check_size_value(self, entry_size_asset):
+        if self.max_asset_qty < entry_size_asset < self.min_asset_qty:
             raise RejectedOrderError("Long Increase - Size Value is either to big or too small")
 
     def amount_based(self, **vargs):
@@ -143,10 +140,10 @@ class IncreasePositionLong:
         position_size_usd = entry_size_usd
 
         return (
+            average_entry,
+            entry_price,
             entry_size_usd,
             position_size_usd,
-            entry_price,
-            average_entry,
             possible_loss,
             sl_pct,
         )
@@ -183,7 +180,6 @@ class IncreasePositionLong:
             (entry_size_usd / entry_price) + (position_size_usd / average_entry)
         )
         sl_pct = (average_entry - sl_price) / average_entry
-
 
         position_size_usd += entry_size_usd
 

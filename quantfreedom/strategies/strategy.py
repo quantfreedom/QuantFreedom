@@ -13,7 +13,7 @@ from quantfreedom.enums import CandleProcessingType
 
 class IndicatorSettingsArrays(NamedTuple):
     rsi_lenth: np.array = np.array([10, 15])
-    rsi_is_below: np.array = np.array([60, 70, 80])
+    rsi_is_below: np.array = np.array([100, 150, 200])
 
 
 class Strategy:
@@ -75,6 +75,7 @@ class Strategy:
             self.rsi = pta.rsi(close=price_data.close, length=self.rsi_lenth).round(decimals=2)
         except Exception as e:
             logging.error(f"Something went wrong creating rsi ")
+            Exception(f"Something went wrong creating rsi ")
 
     #########################################################################
     ###################                                  ####################
@@ -89,13 +90,13 @@ class Strategy:
 
     def evaluate(self):
         try:
-            if self.rsi[self.bar_index] < self.rsi_is_below:
+            if self.rsi.iloc[self.bar_index] < self.rsi_is_below:
                 return True
             else:
                 return False
         except Exception as e:
-            logging.error(f"Something is wrong evaluting the strat -> {e}")
-            raise Exception
+            logging.error(f"Something is wrong evaluting the RSI is below -> {e}")
+            raise Exception(f"Something is wrong evaluting the RSI is below -> {e}")
 
     def return_plot_image(self, price_data: pd.DataFrame, entry_price, sl_price, tp_price, liq_price, **vargs):
         graph_entry = price_data.timestamp[-1]

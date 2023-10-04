@@ -1,6 +1,6 @@
 questions:
-    ☐ add get open order to the functions because that is how you actually return the price of the sl and maybe take profit
-    
+    ☐ i have to do the thing that apex is doing and get the price to be the dec length of the thing i am trading ... 
+    ☐ try to figure out why at 1m candles always give back 1 more candle
 
 
 

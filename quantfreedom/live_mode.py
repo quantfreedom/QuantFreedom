@@ -10,6 +10,8 @@ from quantfreedom.strategies.strategy import Strategy
 
 
 class LiveTrading:
+    ex_position_size_asset = 0
+
     def __init__(
         self,
         exchange: LiveExchange,
@@ -29,7 +31,7 @@ class LiveTrading:
 
         if self.exchange.position_mode == PositionModeType.HedgeMode:
             if self.exchange.long_or_short == LongOrShortType.Long:
-                self.place_sl_order = self.exchange.create_long_sl_hedge_mode_order
+                self.place_sl_order = self.exchange.create_long_hedge_mode_sl_order
                 self.get_position_info = self.exchange.get_long_hedge_mode_position_info
                 self.get_tp_pct = self.__get_pct_dif_above_average_entry
                 self.get_sl_pct = self.__get_pct_dif_below_average_entry
@@ -64,60 +66,73 @@ class LiveTrading:
             try:
                 print("Getting Candles")
                 self.exchange.set_candles_df_and_np()
-                
+
                 # bar_index bar index is always the last bar ... so if we have 200 candles we are at index 200
-                bar_index = self.exchange.candles_np.shape()[0]
+                bar_index = self.exchange.candles_np.shape[0]
                 msg = ""
 
                 self.strategy.set_indicator_live_trading(self.exchange.candles_df)
+                logging.info("Evaluating Strat")
                 if self.strategy.evaluate():
+                    logging.info("Maybe we place a trade")
                     try:
                         try:
                             if self.ex_position_size_asset > 0:
+                                logging.info("if self.ex_position_size_asset > 0:")
                                 self.ex_in_position = True
                                 self.order.position_size_usd = self.ex_position_size_usd
                                 self.order.average_entry = self.ex_average_entry
-                                self.order.equity = self.exchange.get_wallet_info_of_asset(
+                                self.order.equity = self.exchange.get_equity_of_asset(
                                     trading_in=self.exchange.trading_in
                                 )
                             else:
+                                logging.info("else part of if self.ex_position_size_asset > 0:")
                                 self.ex_in_position = False
                                 self.order.position_size_usd = 0.0
                                 self.order.average_entry = 0.0
-
+                            logging.info("self.order.calculate_stop_loss")
                             self.order.calculate_stop_loss(
                                 bar_index=bar_index,
                                 price_data=self.exchange.candles_np,
                             )
+                            logging.info("self.order.calculate_increase_posotion")
                             self.order.calculate_increase_posotion(
                                 # entry price is close of the last bar
                                 entry_price=self.exchange.candles_np[-1, 3],
                             )
+                            logging.info("self.order.calculate_leverage")
                             self.order.calculate_leverage()
+                            logging.info("self.order.calculate_take_profit")
                             self.order.calculate_take_profit()
 
                             # place the order
+                            logging.info("entry_size_asset = round(self.order.entry_size_usd")
                             entry_size_asset = round(self.order.entry_size_usd / self.order.entry_price, 3)
                             send_verify_error = False
+                            logging.info("entry_order_id = self.place_entry_order")
                             entry_order_id = self.place_entry_order(
                                 asset_amount=entry_size_asset,
                                 entry_price=self.order.entry_price,
                             )
 
                             logging.info(f"Submitted entry order -> [order_id={entry_order_id}]")
-                            sleep(0.2)
+                            sleep(0.5)
 
                             # check if order fileld
-                            verify_entry_order = self.exchange.get_filled_orders_by_order_id(
+                            logging.info(f"Checking if entry order was filled")
+                            verify_entry_order = self.exchange.check_if_order_filled(
                                 symbol=self.exchange.symbol,
                                 order_id=entry_order_id,
                             )
                             if not verify_entry_order:
+                                logging.info(f"Couldn't verify entry order was filled {entry_order_id} ")
                                 msg += f"Couldn't verify entry order was filled {entry_order_id} "
                                 send_verify_error = True
-
+                            logging.info(f"entry order was filled")
                             # cancel other orders if in position
+                            logging.info(f"checking if in position to cancel tp and sl")
                             if self.ex_in_position:
+                                logging.info(f"we are in a pos and trying to cancle tp and sl")
                                 if not self.cancel_tp_and_sl(
                                     tp_order_id=tp_order_id,
                                     sl_order_id=sl_order_id,
@@ -125,15 +140,19 @@ class LiveTrading:
                                     logging.warning("Wasn't able to verify that the tp and sl were canceled")
                             sleep(0.2)
                             # place stop loss order
+                            self.__set_ex_position_size_asset()
+                            logging.info(f"__set_ex_position_size_asset {self.ex_position_size_asset}")
+                            logging.info(f"placing stop loss order")
                             sl_order_id = self.place_sl_order(
                                 asset_amount=self.ex_position_size_asset,
                                 trigger_price=self.order.sl_price,
                             )
                             logging.info(f"Submitted SL order -> [order_id={sl_order_id}]")
                             sleep(0.2)
+                            logging.info(f"placing take profit order")
                             tp_order_id = self.place_tp_order(
                                 asset_amount=self.ex_position_size_asset,
-                                tp_price=self.order.tp_price,
+                                tp_price=round(self.order.tp_price, 1),  # TODO fix this later
                             )
                             logging.info(f"Submitted TP order -> [order_id={tp_order_id}]")
 
@@ -215,6 +234,12 @@ class LiveTrading:
             except Exception as e:
                 logging.error(f"Something is wrong in the run part of live mode -> {e}")
                 raise Exception(f"Something is wrong in the run part of live mode -> {e}")
+            logging.info(
+                f"Will sleep for {round(self.get_time_to_next_bar_seconds()/60,2)} minutes before getting first batch of candles"
+            )
+            print(
+                f"Will sleep for {round(self.get_time_to_next_bar_seconds()/60,2)} minutes before getting first batch of candles"
+            )
             sleep(self.get_time_to_next_bar_seconds())
 
     def get_time_to_next_bar_seconds(self):
@@ -226,10 +251,9 @@ class LiveTrading:
 
         return int(ms_to_next_candle / 1000)
 
-    def place_entry_order(self, qty, orderLinkId, entry_price):
+    def place_entry_order(self, asset_amount, entry_price):
         return self.entry_order(
-            qty=qty,
-            orderLinkId=orderLinkId,
+            asset_amount=asset_amount,
             price=entry_price,
         )
 
@@ -267,6 +291,9 @@ class LiveTrading:
             tp_price=tp_price,
             liq_price=liq_price,
         )
+
+    def __set_ex_position_size_asset(self):
+        self.ex_position_size_asset = float(self.get_position_info().get("size"))
 
     def __set_exchange_variables(self, entry_order_id, sl_order_id, tp_order_id):
         pos_info = self.get_position_info()

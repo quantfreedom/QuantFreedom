@@ -28,7 +28,6 @@ class IncreasePositionTypeT(NamedTuple):
     PctAccountEntrySize: int = 2
     RiskAmountEntrySize: int = 3
     RiskPctAccountEntrySize: int = 4
-    TestingStrategy: int = 5
 
 
 IncreasePositionType = IncreasePositionTypeT()

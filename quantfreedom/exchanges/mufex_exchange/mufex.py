@@ -551,6 +551,9 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Something is wrong with get_wallet_info_of_asset -> {e}")
 
+    def get_equity_of_asset(self, trading_in: str, **vargs):
+        return float(self.get_wallet_info_of_asset(trading_in=trading_in).get("equity"))
+
     def set_position_mode(self, symbol: str, position_mode: PositionModeType, **vargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_switchpositionmode
@@ -612,7 +615,7 @@ class Mufex(Exchange):
             raise Exception(f"Something is wrong with set_leverage_mode -> {e}")
 
     def check_if_order_filled(self, symbol: str, order_id: str, **vargs):
-        order_status = self.get_filled_orders_by_order_id(symbol=symbol, order_id=order_id)["orderStatus"]
+        order_status = self.get_order_history_by_order_id(symbol=symbol, order_id=order_id)["orderStatus"]
         if order_status == "Filled":
             return True
         else:
@@ -661,7 +664,7 @@ class Mufex(Exchange):
 
     def __get_mmr_pct(self, symbol, category: str = "linear"):
         risk_limit_info = self.get_risk_limit_info(symbol=symbol, category=category)
-        return risk_limit_info["maintainMargin"]
+        return float(risk_limit_info["maintainMargin"])
 
     def __get_min_max_leverage_and_asset_size(self, symbol):
         symbol_info = self.get_symbol_info(symbol=symbol)
@@ -672,7 +675,7 @@ class Mufex(Exchange):
         return max_leverage, min_leverage, max_asset_qty, min_asset_qty
 
     def set_position_mode_as_hedge_mode(self, symbol):
-        self.set_position_mode(symbol=symbol, position_mode=3)
+        self.set_position_mode(symbol=symbol, position_mode=1)
 
     def set_position_mode_as_one_way_mode(self, symbol):
         self.set_position_mode(symbol=symbol, position_mode=0)

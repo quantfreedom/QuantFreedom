@@ -240,8 +240,6 @@ class LongOrder(Order):
             self.entry_price,
             self.entry_size_usd,
             self.position_size_usd,
-            self.entry_size_usd,
-            self.position_size_usd,
             self.possible_loss,
             self.sl_pct,
         ) = self.obj_increase_posotion.calculate_increase_posotion(

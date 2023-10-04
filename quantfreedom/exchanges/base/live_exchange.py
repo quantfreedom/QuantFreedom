@@ -47,7 +47,7 @@ class LiveExchange(Exchange):
     def last_fetched_time_to_pd_datetime(self, *vargs):
         return self.get_ms_time_to_pd_datetime(time_in_ms=self.last_fetched_ms_time)
 
-    def create_long_sl_hedge_mode_order(self, *vargs):
+    def create_long_hedge_mode_sl_order(self, *vargs):
         pass
 
     def create_long_hedge_mode_tp_limit_order(self, *vargs):

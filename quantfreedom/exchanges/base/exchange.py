@@ -48,6 +48,9 @@ class Exchange:
     def check_if_order_open(self, *vargs):
         pass
 
+    def get_equity_of_asset(self, *vargs):
+        pass
+
     def get_current_time_seconds(self):
         return int(datetime.now().timestamp())
 

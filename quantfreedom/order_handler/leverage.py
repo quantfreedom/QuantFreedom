@@ -91,7 +91,7 @@ class LeverageLong:
             cash_used += og_cash_used
             cash_borrowed = og_cash_borrowed + entry_size_usd - cash_used
 
-            self.liq_price = average_entry * (1 - (1 / self.leverage) + self.mmr_pct)  # math checked
+            self.liq_price = round(average_entry * (1 - (1 / self.leverage) + self.mmr_pct),2)  # math checked
             can_move_sl_to_be = True
 
         return (
