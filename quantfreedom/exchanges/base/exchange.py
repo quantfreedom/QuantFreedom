@@ -33,7 +33,10 @@ class Exchange:
     def move_open_order(self, *vargs):
         pass
 
-    def get_open_orders_by_order_id(self, *vargs):
+    def get_open_order_by_order_id(self, *vargs):
+        pass
+
+    def cancel_all_open_order_per_symbol(self, *vargs):
         pass
 
     def get_wallet_info_of_asset(self, *vargs):

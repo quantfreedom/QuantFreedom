@@ -88,9 +88,9 @@ if __name__ == "__main__":
     order_settings_arrays = OrderSettingsArrays(
         increase_position_type=np.array([IncreasePositionType.RiskPctAccountEntrySize]),
         leverage_type=np.array([LeverageStrategyType.Dynamic]),
-        max_equity_risk_pct=np.array([.002]) / 100,
+        max_equity_risk_pct=np.array([0.002]) / 100,
         long_or_short=np.array([LongOrShortType.Long]),
-        risk_account_pct_size=np.array([.001]) / 100,
+        risk_account_pct_size=np.array([0.001]) / 100,
         risk_reward=np.array([2.0, 3.0, 5.0]),
         sl_based_on_add_pct=np.array([0.01, 0.02, 0.03]) / 100,
         sl_based_on_lookback=np.array([50, 70]),

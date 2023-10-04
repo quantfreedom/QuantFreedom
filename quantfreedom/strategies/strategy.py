@@ -99,7 +99,8 @@ class Strategy:
             raise Exception(f"Something is wrong evaluting the RSI is below -> {e}")
 
     def return_plot_image(self, price_data: pd.DataFrame, entry_price, sl_price, tp_price, liq_price, **vargs):
-        graph_entry = price_data.timestamp[-1]
+        logging.info(f"return_plot_image(self, price_data: pd.DataFrame, entry_price")
+        graph_entry = [price_data.timestamp.iloc[-1]]
         fig = make_subplots(
             rows=2,
             cols=1,
@@ -120,40 +121,40 @@ class Strategy:
         # entry
         fig.add_scatter(
             x=graph_entry,
-            y=entry_price,
+            y=[entry_price],
             mode="markers",
             marker=dict(size=10, color="Blue"),
             name=f"Entry",
             row=1,
             col=1,
         )
-        # stop loss
-        fig.add_scatter(
-            x=graph_entry,
-            y=sl_price,
-            mode="markers+lines",
-            marker=dict(size=10, symbol="x", color="Red"),
-            name=f"Stop Loss",
-            row=1,
-            col=1,
-        )
         # take profit
         fig.add_scatter(
             x=graph_entry,
-            y=tp_price,
-            mode="markers+lines",
+            y=[tp_price],
+            mode="markers",
             marker=dict(size=10, symbol="arrow-up", color="Green"),
             name=f"Take Profit",
+            row=1,
+            col=1,
+        )
+        # stop loss
+        fig.add_scatter(
+            x=graph_entry,
+            y=[sl_price],
+            mode="markers",
+            marker=dict(size=10, symbol="octagon", color="orange"),
+            name=f"Stop Loss",
             row=1,
             col=1,
         )
         # liq price
         fig.add_scatter(
             x=graph_entry,
-            y=liq_price,
-            mode="markers+lines",
-            marker=dict(size=10, symbol="arrow-up", color="Green"),
-            name=f"Take Profit",
+            y=[liq_price],
+            mode="markers",
+            marker=dict(size=10, symbol="hexagram", color="red"),
+            name=f"Liq Price",
             row=1,
             col=1,
         )
@@ -166,16 +167,6 @@ class Strategy:
             row=2,
             col=1,
         )
-        # RSI divergence
-        fig.add_scatter(
-            x=price_data.timestamp,
-            y=self.rsi[-1],
-            mode="markers+lines",
-            marker=dict(size=10, symbol="circle"),
-            name="RSI div",
-            row=2,
-            col=1,
-        )
         fig.update_layout(xaxis_rangeslider_visible=False)
         fig.show()
         fig_filename = os.path.join(
@@ -184,7 +175,7 @@ class Strategy:
             f'{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.png',
         )
         fig.write_image(fig_filename)
-        return fig.write_image(fig_filename)
+        return fig_filename
 
     def __create_ind_cart_product_nb(self, indicator_settings_array):
         # cart array loop

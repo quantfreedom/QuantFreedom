@@ -10,7 +10,6 @@ from time import sleep, time
 from quantfreedom.enums import (
     ExchangeSettings,
     LeverageModeType,
-    LongOrShortType,
     PositionModeType,
 )
 from quantfreedom.exchanges.base.exchange import UNIVERSAL_TIMEFRAMES, Exchange
@@ -63,16 +62,17 @@ class Mufex(Exchange):
             "MF-ACCESS-RECV-WINDOW": "5000",
             "Content-Type": "application/json",
         }
-        response = post(
-            url=self.url_start + end_point,
-            headers=headers,
-            data=params_as_string,
-        )
+
         try:
+            response = post(
+                url=self.url_start + end_point,
+                headers=headers,
+                data=params_as_string,
+            )
             response_json = response.json()
+            return response_json
         except Exception as e:
-            raise Exception(f"{e}")
-        return response_json
+            raise Exception(f"Mufex Class Something wrong with __HTTP_post_request - > {e}")
 
     def __HTTP_post_request_no_params(self, end_point):
         time_stamp = str(int(time() * 1000))
@@ -85,12 +85,12 @@ class Mufex(Exchange):
             "MF-ACCESS-RECV-WINDOW": "5000",
             "Content-Type": "application/json",
         }
-        response = post(url=self.url_start + end_point, headers=headers)
         try:
+            response = post(url=self.url_start + end_point, headers=headers)
             response_json = response.json()
+            return response_json
         except Exception as e:
-            raise Exception(f"{e}")
-        return response_json
+            raise Exception(f"Mufex Class Something wrong with __HTTP_post_request_no_params - > {e}")
 
     def HTTP_get_request(
         self,
@@ -109,15 +109,15 @@ class Mufex(Exchange):
             "Content-Type": "application/json",
         }
 
-        response = get(
-            url=self.url_start + end_point + "?" + params_as_path,
-            headers=headers,
-        )
         try:
+            response = get(
+                url=self.url_start + end_point + "?" + params_as_path,
+                headers=headers,
+            )
             response_json = response.json()
+            return response_json
         except Exception as e:
-            raise Exception(f"{e}")
-        return response_json
+            raise Exception(f"Mufex Class Something wrong with HTTP_get_request - > {e}")
 
     def HTTP_get_request_no_params(self, end_point):
         time_stamp = str(int(time() * 1000))
@@ -131,15 +131,15 @@ class Mufex(Exchange):
             "Content-Type": "application/json",
         }
 
-        response = get(
-            url=self.url_start + end_point,
-            headers=headers,
-        )
         try:
+            response = get(
+                url=self.url_start + end_point,
+                headers=headers,
+            )
             response_json = response.json()
+            return response_json
         except Exception as e:
-            raise Exception(f"{e}")
-        return response_json
+            raise Exception(f"Mufex Class Something wrong with HTTP_get_request_no_params - > {e}")
 
     def __params_as_string(self, params):
         params_as_string = str(json.dumps(params))
@@ -184,6 +184,7 @@ class Mufex(Exchange):
         until_date_ms: int = None,
         candles_to_dl: int = None,
         category: str = "linear",
+        limit: int = 200,
     ):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
@@ -212,47 +213,22 @@ class Mufex(Exchange):
             "interval": mufex_timeframe,
             "start": since_date_ms,
             "end": until_date_ms,
+            "limit": limit,
         }
         while params["start"] + timeframe_in_ms < until_date_ms:
-            try:
-                response = self.HTTP_get_request(end_point=end_point, params=params)
-                new_candles = response.get("data").get("list")
-                if new_candles is not None:
-                    if new_candles:
-                        last_candle_time_ms = int(new_candles[-1][0])
-                        if last_candle_time_ms == params["start"]:
-                            sleep(0.2)
-                        else:
-                            candles_list.extend(new_candles)
-                            # add one sec so we don't download the same candle two times
-                            params["start"] = last_candle_time_ms + 1000
-                    else:
-                        break
-                else:
-                    raise Exception(f"Data or List is empty {response['message']}")
-
-            except Exception as e:
-                raise Exception(f"Something wrong with get_and_set_candles_df -> {e}")
-        return self.get_candles_list_to_pd(candles_list=candles_list, col_end=-2)
-
-    def get_symbol_ticker_info(self, category: str = "linear", params: dict = {}):
-        """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_tickerhead
-
-        Parameters:
-        symbol
-        """
-        end_point = "/public/v1/market/tickers"
-        params["catergoy"] = category
-        try:
             response = self.HTTP_get_request(end_point=end_point, params=params)
-            data_list = response.get("data").get("list")
-            if data_list is not None and data_list:
-                return data_list
-            else:
-                raise Exception(f"Data or List is empty {response['message']}")
-        except Exception as e:
-            raise Exception(f"Something is wrong with get_symbol_ticker_info -> {e}")
+            try:
+                new_candles = response["data"]["list"]
+                last_candle_time_ms = int(new_candles[-1][0])
+                if last_candle_time_ms == params["start"]:
+                    sleep(0.2)
+                else:
+                    candles_list.extend(new_candles)
+                    # add one sec so we don't download the same candle two times
+                    params["start"] = last_candle_time_ms + 1000
+            except Exception as e:
+                raise Exception(f"Mufex Class Something is wrong with get_candles_df {response.get('message')} - > {e}")
+        return self.get_candles_list_to_pd(candles_list=candles_list, col_end=-2)
 
     def get_all_symbols_info(self, category: str = "linear", limit: int = 1000, params: dict = {}, **vargs):
         """
@@ -264,15 +240,13 @@ class Mufex(Exchange):
         end_point = "/public/v1/instruments"
         params["limit"] = limit
         params["category"] = category
+        response = self.HTTP_get_request(end_point=end_point, params=params)
         try:
-            response = self.HTTP_get_request(end_point=end_point, params=params)
-            data_list = response.get("data").get("list")
-            if data_list is not None and data_list:
-                return data_list
-            else:
-                raise Exception(f"Data or List is empty {response['message']}")
+            response["data"]["list"][0]
+            data_list = response["data"]["list"]
+            return data_list
         except Exception as e:
-            raise Exception(f"Something is wrong with get_all_symbols_info -> {e}")
+            raise Exception(f"Mufex Class get_all_symbols_info = Data or List is empty {response['message']} -> {e}")
 
     def get_symbol_info(self, symbol: str, **vargs):
         return self.get_all_symbols_info(params={"symbol": symbol})[0]
@@ -285,15 +259,12 @@ class Mufex(Exchange):
         params = {}
         params["category"] = category
         params["symbol"] = symbol
+        response = self.HTTP_get_request(end_point=end_point, params=params)
         try:
-            response = self.HTTP_get_request(end_point=end_point, params=params)
-            data_list = response.get("data").get("list")
-            if data_list is not None and data_list:
-                return data_list[0]
-            else:
-                raise Exception(f"Data or List is empty {response['message']}")
+            data_list = response["data"]["list"][0]
+            return data_list
         except Exception as e:
-            raise Exception(f"Something is wrong with get_risk_limit_info -> {e}")
+            raise Exception(f"Mufex Class get_risk_limit_info = Data or List is empty {response['message']} -> {e}")
 
     def create_order(self, params: dict, **vargs):
         """
@@ -301,30 +272,23 @@ class Mufex(Exchange):
         use this website to see all the params
         """
         end_point = "/private/v1/trade/create"
+        response = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
-            response = self.__HTTP_post_request(end_point=end_point, params=params)
-            response_order_id = response.get("data").get("orderId")
-            if response_order_id is not None and response_order_id:
-                return response_order_id
-            else:
-                raise Exception(f"Data or orderId is empty {response['message']}")
+            return response["data"]["orderId"]
         except Exception as e:
-            raise Exception(f"Something is wrong with create_order -> {e}")
+            raise Exception(f"Mufex Class Something is wrong with create_order -> {e}")
 
     def get_trading_fee_rates(self, **vargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-tradingfeerate
         """
         end_point = "/private/v1/account/trade-fee"
+        response = self.HTTP_get_request_no_params(end_point=end_point)
         try:
-            response = self.HTTP_get_request_no_params(end_point=end_point)
-            data_list = response.get("data").get("list")
-            if data_list is not None and data_list:
-                return data_list
-            else:
-                raise Exception(f"Data or List is empty {response['message']}")
+            data_list = response["data"]["list"][0]
+            return data_list
         except Exception as e:
-            raise Exception(f"Something is wrong with get_trading_fee_rates -> {e}")
+            raise Exception(f"Mufex Class get_trading_fee_rates = Data or List is empty {response['message']} -> {e}")
 
     def get_symbol_trading_fee_rates(self, symbol: str, **vargs):
         """
@@ -333,15 +297,14 @@ class Mufex(Exchange):
         end_point = "/private/v1/account/trade-fee"
         params = {}
         params["symbol"] = symbol
+        response = self.HTTP_get_request(end_point=end_point, params=params)
         try:
-            response = self.HTTP_get_request(end_point=end_point, params=params)
-            data_list = response.get("data").get("list")
-            if data_list is not None and data_list:
-                return data_list[0]
-            else:
-                raise Exception(f"Data or List is empty {response['message']}")
+            data_list = response["data"]["list"][0]
+            return data_list
         except Exception as e:
-            raise Exception(f"Something is wrong with get_symbol_trading_fee_rates -> {e}")
+            raise Exception(
+                f"Mufex Class get_symbol_trading_fee_rates = Data or List is empty {response['message']} -> {e}"
+            )
 
     def get_order_history(self, symbol: str, limit: int = 50, params: dict = {}, **vargs):
         """
@@ -352,40 +315,55 @@ class Mufex(Exchange):
         end_point = "/private/v1/trade/orders"
         params["symbol"] = symbol
         params["limit"] = limit
+        response = self.HTTP_get_request(end_point=end_point, params=params)
         try:
-            response = self.HTTP_get_request(end_point=end_point, params=params)
-            data_list = response.get("data").get("list")
-            if data_list is not None and data_list:
-                return data_list
-            else:
-                raise Exception(f"Data or List is empty {response['message']}")
+            response["data"]["list"][0]
+            data_list = response["data"]["list"]
+            return data_list
         except Exception as e:
-            raise Exception(f"Something is wrong with get_order_history -> {e}")
+            raise Exception(f"Mufex Class get_order_history = Data or List is empty {response['message']} -> {e}")
 
     def get_order_history_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **vargs):
         params["orderId"] = order_id
         return self.get_order_history(symbol=symbol, params=params)[0]
 
-    def get_open_orders(self, symbol: str, limit: int = 50, params: dict = {}, **vargs):
+    def get_all_symbols_open_orders(self, **vargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_getopenorder
 
         use link to see all Request Parameters
         """
         end_point = "/private/v1/trade/activity-orders"
-        params["symbol"] = symbol
-        params["limit"] = limit
+        response = self.HTTP_get_request_no_params(end_point=end_point)
         try:
-            response = self.HTTP_get_request(end_point=end_point, params=params)
-            data_list = response.get("data").get("list")
-            if data_list is not None and data_list:
-                return data_list
-            else:
-                raise Exception(f"Data or List is empty {response['message']}")
+            response["data"]["list"][0]
+            data_list = response["data"]["list"]
+            return data_list
         except Exception as e:
-            raise Exception(f"Something is wrong with get_open_orders -> {e}")
+            raise Exception(
+                f"Mufex Class get_all_symbols_open_orders = Data or List is empty {response['message']} -> {e}"
+            )
 
-    def get_open_orders_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **vargs):
+    def get_open_orders(self, symbol: str, params: dict = {}, **vargs):
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_getopenorder
+
+        Query real-time order information. If only orderId or orderLinkId are passed, a single order will be returned; otherwise, returns up to 500 unfilled orders
+
+        orderId
+        limit
+        """
+        end_point = "/private/v1/trade/activity-orders"
+        params["symbol"] = symbol
+        response = self.HTTP_get_request(end_point=end_point, params=params)
+        try:
+            response["data"]["list"][0]
+            data_list = response["data"]["list"]
+            return data_list
+        except Exception as e:
+            raise Exception(f"Mufex Class get_open_orders = Data or List is empty {response['message']} -> {e}")
+
+    def get_open_order_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **vargs):
         params["orderId"] = order_id
         return self.get_open_orders(symbol=symbol, params=params)[0]
 
@@ -393,20 +371,20 @@ class Mufex(Exchange):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-usertraderecords
 
+        Get user's trading records. The results are ordered in descending order (the first item is the latest). Returns records up to 2 years old.
+
         use link to see all Request Parameters
         """
         end_point = "/private/v1/trade/fills"
         params["symbol"] = symbol
         params["limit"] = limit
+        response = self.HTTP_get_request(end_point=end_point, params=params)
         try:
-            response = self.HTTP_get_request(end_point=end_point, params=params)
-            data_list = response.get("data").get("list")
-            if data_list is not None and data_list:
-                return data_list
-            else:
-                raise Exception(f"Data or List is empty {response['message']}")
+            response["data"]["list"][0]
+            data_list = response["data"]["list"]
+            return data_list
         except Exception as e:
-            raise Exception(f"Something is wrong with get_filled_orders -> {e}")
+            raise Exception(f"Mufex Class get_filled_orders = Data or List is empty {response['message']} -> {e}")
 
     def get_filled_orders_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **vargs):
         params["orderId"] = order_id
@@ -417,31 +395,33 @@ class Mufex(Exchange):
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_myposition
         """
         end_point = "/private/v1/account/positions"
+        response = self.HTTP_get_request_no_params(end_point=end_point)
         try:
-            response = self.HTTP_get_request_no_params(end_point=end_point)
-            data_list = response.get("data").get("list")
-            if data_list is not None and data_list:
-                return data_list
-            else:
-                raise Exception(f"Data or List is empty {response['message']}")
+            response["data"]["list"][0]
+            data_list = response["data"]["list"]
+            return data_list
         except Exception as e:
-            raise Exception(f"Something is wrong with get_account_position_info -> {e}")
+            raise Exception(
+                f"Mufex Class get_account_position_info = Data or List is empty {response['message']} -> {e}"
+            )
 
-    def get_symbol_position_info(self, symbol: str, **vargs):
+    def get_symbol_position_info(self, symbol: str, limit: int = 20, **vargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_myposition
         """
         end_point = "/private/v1/account/positions"
-        params = {"symbol": symbol}
+        params = {}
+        params["symbol"] = symbol
+        params["limit"] = limit
+        response = self.HTTP_get_request(end_point=end_point, params=params)
         try:
-            response = self.HTTP_get_request(end_point=end_point, params=params)
-            data_list = response.get("data").get("list")
-            if data_list is not None and data_list:
-                return data_list
-            else:
-                raise Exception(f"Data or List is empty {response['message']}")
+            response["data"]["list"][0]
+            data_list = response["data"]["list"]
+            return data_list
         except Exception as e:
-            raise Exception(f"Something is wrong with get_symbol_position_info -> {e}")
+            raise Exception(
+                f"Mufex Class get_symbol_position_info = Data or List is empty {response['message']} -> {e}"
+            )
 
     def cancel_open_order(self, symbol: str, order_id: str, **vargs):
         """
@@ -455,12 +435,23 @@ class Mufex(Exchange):
         try:
             response = self.__HTTP_post_request(end_point=end_point, params=params)
             response_order_id = response.get("data").get("orderId")
-            if response_order_id is not None and response_order_id == order_id:
-                return True
-            else:
-                raise Exception(f'Data or orderId is empty {response["message"]}')
+            return response_order_id == order_id or response["message"] == "OK"
         except Exception as e:
-            raise Exception(f"Something is wrong with cancel_open_order -> {e}")
+            raise Exception(f"Mufex Class cancel_open_order = Something is wrong {response['message']} -> {e}")
+
+    def cancel_all_open_order_per_symbol(self, symbol: str, **vargs):
+        """
+        no link yet
+        """
+        end_point = "/private/v1/trade/cancel-all"
+        params = {
+            "symbol": symbol,
+        }
+        try:
+            response = self.__HTTP_post_request(end_point=end_point, params=params)
+            return response["message"] == "OK"
+        except Exception as e:
+            raise Exception(f"Mufex Class cancel_open_order = Something is wrong {response['message']} -> {e}")
 
     def adjust_open_order(self, symbol: str, order_id: str, new_price: float, asset_amount: float, **vargs):
         """
@@ -475,12 +466,9 @@ class Mufex(Exchange):
         try:
             response = self.__HTTP_post_request(end_point=end_point, params=params)
             response_order_id = response.get("data").get("orderId")
-            if response_order_id is not None and response_order_id == order_id:
-                return True
-            else:
-                raise Exception(f'Data or orderId is empty {response["message"]}')
+            return response_order_id == order_id or response["message"] == "OK"
         except Exception as e:
-            raise Exception(f"Something is wrong with adjust_open_order -> {e}")
+            raise Exception(f"Mufex Class adjust_open_order = Something is wrong {response['message']} -> {e}")
 
     def change_open_order_asset_amount(self, symbol: str, order_id: str, asset_amount: float, **vargs):
         """
@@ -494,12 +482,11 @@ class Mufex(Exchange):
         try:
             response = self.__HTTP_post_request(end_point=end_point, params=params)
             response_order_id = response.get("data").get("orderId")
-            if response_order_id is not None and response_order_id == order_id:
-                return True
-            else:
-                raise Exception(f'Data or orderId is empty {response["message"]}')
+            return response_order_id == order_id or response["message"] == "OK"
         except Exception as e:
-            raise Exception(f"Something is wrong with change_open_order_asset_amount -> {e}")
+            raise Exception(
+                f"Mufex Class change_open_order_asset_amount = Something is wrong {response['message']} -> {e}"
+            )
 
     def move_open_order(self, symbol: str, order_id: str, new_price: float, **vargs):
         """
@@ -513,27 +500,22 @@ class Mufex(Exchange):
         try:
             response = self.__HTTP_post_request(end_point=end_point, params=params)
             response_order_id = response.get("data").get("orderId")
-            if response_order_id is not None and response_order_id == order_id:
-                return True
-            else:
-                raise Exception(f'Data or orderId is empty {response["message"]}')
+            return response_order_id == order_id or response["message"] == "OK"
         except Exception as e:
-            raise Exception(f"Something is wrong with move_open_order -> {e}")
+            raise Exception(f"Mufex Class move_open_order = Something is wrong {response['message']} -> {e}")
 
     def get_wallet_info(self, **vargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-balance
         """
         end_point = "/private/v1/account/balance"
+        response = self.HTTP_get_request_no_params(end_point=end_point)
         try:
-            response = self.HTTP_get_request_no_params(end_point=end_point)
-            data_list = response.get("data").get("list")
-            if data_list is not None and data_list:
-                return data_list
-            else:
-                raise Exception(f"Data or List is empty {response['message']}")
+            response["data"]["list"][0]
+            data_list = response["data"]["list"]
+            return data_list
         except Exception as e:
-            raise Exception(f"Something is wrong with get_wallet_info -> {e}")
+            raise Exception(f"Mufex Class get_wallet_info = Data or List is empty {response['message']} -> {e}")
 
     def get_wallet_info_of_asset(self, trading_in: str, **vargs):
         """
@@ -541,18 +523,20 @@ class Mufex(Exchange):
         """
         end_point = "/private/v1/account/balance"
         params = {"coin": trading_in}
+        response = self.HTTP_get_request(end_point=end_point, params=params)
         try:
-            response = self.HTTP_get_request(end_point=end_point, params=params)
-            data_list = response.get("data").get("list")
-            if data_list is not None and data_list:
-                return data_list[0]
-            else:
-                raise Exception(f"Data or List is empty {response['message']}")
+            data_list = response["data"]["list"][0]
+            return data_list
         except Exception as e:
-            raise Exception(f"Something is wrong with get_wallet_info_of_asset -> {e}")
+            raise Exception(
+                f"Mufex Class get_wallet_info_of_asset = Data or List is empty {response['message']} -> {e}"
+            )
 
     def get_equity_of_asset(self, trading_in: str, **vargs):
-        return float(self.get_wallet_info_of_asset(trading_in=trading_in).get("equity"))
+        try:
+            return float(self.get_wallet_info_of_asset(trading_in=trading_in)["equity"])
+        except Exception as e:
+            raise Exception(f"Mufex Class Something is wrong with get_equity_of_asset -> {e}")
 
     def set_position_mode(self, symbol: str, position_mode: PositionModeType, **vargs):
         """
@@ -563,14 +547,14 @@ class Mufex(Exchange):
             "symbol": symbol,
             "mode": 3 if position_mode == PositionModeType.HedgeMode else 0,
         }
+        response = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
-            message = self.__HTTP_post_request(end_point=end_point, params=params)["message"]
-            if message in ["OK", "position mode not modified"]:
-                return position_mode
+            if response["message"] in ["OK", "position mode not modified"]:
+                return True
             else:
-                raise Exception(f"{message}")
+                raise Exception
         except Exception as e:
-            raise Exception(f"Something is wrong with set_position_mode {e}")
+            raise Exception(f"Mufex Class set_position_mode = Data or List is empty {response['message']} -> {e}")
 
     def set_leverage_value(self, symbol: str, leverage: float, **vargs):
         """
@@ -583,14 +567,14 @@ class Mufex(Exchange):
             "buyLeverage": leverage_str,
             "sellLeverage": leverage_str,
         }
+        response = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
-            message = self.__HTTP_post_request(end_point=end_point, params=params)["message"]
-            if message in ["OK", "leverage not modified"]:
+            if response["message"] in ["OK", "leverage not modified"]:
                 return True
             else:
-                raise Exception(f"{message}")
+                raise Exception
         except Exception as e:
-            raise Exception(f"Something is wrong with set_leverage_value -> {e}")
+            raise Exception(f"Mufex Class set_leverage_value = Data or List is empty {response['message']} -> {e}")
 
     def set_leverage_mode(self, symbol: str, leverage_mode: LeverageModeType, leverage: int = 5, **vargs):
         """
@@ -605,35 +589,79 @@ class Mufex(Exchange):
             "buyLeverage": leverage_str,
             "sellLeverage": leverage_str,
         }
+        response = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
-            message = self.__HTTP_post_request(end_point=end_point, params=params)["message"]
-            if message in ["OK", "Isolated not modified"]:
-                return leverage_mode
+            if response["message"] in ["OK", "Isolated not modified"]:
+                return True
             else:
-                raise Exception(f"{message}")
+                raise Exception
         except Exception as e:
-            raise Exception(f"Something is wrong with set_leverage_mode -> {e}")
+            raise Exception(f"Mufex Class set_leverage_mode = Data or List is empty {response['message']} -> {e}")
 
     def check_if_order_filled(self, symbol: str, order_id: str, **vargs):
-        order_status = self.get_order_history_by_order_id(symbol=symbol, order_id=order_id)["orderStatus"]
-        if order_status == "Filled":
-            return True
-        else:
-            return False
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-usertraderecords
+
+        Get user's trading records. The results are ordered in descending order (the first item is the latest). Returns records up to 2 years old.
+
+        use link to see all Request Parameters
+        """
+        end_point = "/private/v1/trade/fills"
+        params = {}
+        params["symbol"] = symbol
+        params["orderId"] = order_id
+        response = self.HTTP_get_request(end_point=end_point, params=params)
+        try:
+            if response["message"] == "OK":
+                return True
+            else:
+                data_list = response.get("data").get("list")
+                if data_list:
+                    return data_list[0]["orderId"]
+        except Exception as e:
+            raise Exception(f"Mufex Class check_if_order_filled = Something wrong {response['message']} -> {e}")
 
     def check_if_order_canceled(self, symbol: str, order_id: str, **vargs):
-        order_status = self.get_order_history_by_order_id(symbol=symbol, order_id=order_id)["orderStatus"]
-        if order_status in ["Cancelled", "Deactivated"]:
-            return True
-        else:
-            return False
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_getorder
+
+        use link to see all Request Parameters
+        """
+        end_point = "/private/v1/trade/orders"
+        params = {}
+        params["symbol"] = symbol
+        params["orderId"] = order_id
+        response = self.HTTP_get_request(end_point=end_point, params=params)
+        try:
+            if response["message"] == "OK":
+                return True
+            else:
+                data_list = response.get("data").get("list")
+                if data_list:
+                    return data_list[0]["orderId"]
+        except Exception as e:
+            raise Exception(f"Mufex Class check_if_order_canceled = Something wrong {response['message']} -> {e}")
 
     def check_if_order_open(self, symbol: str, order_id: str, **vargs):
-        order_status = self.get_open_orders_by_order_id(symbol=symbol, order_id=order_id)["orderStatus"]
-        if order_status in ["New", "Untriggered"]:
-            return True
-        else:
-            return False
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_getopenorder
+
+        use link to see all Request Parameters
+        """
+        end_point = "/private/v1/trade/activity-orders"
+        params = {}
+        params["symbol"] = symbol
+        params["orderId"] = order_id
+        response = self.HTTP_get_request(end_point=end_point, params=params)
+        try:
+            if response["message"] == "OK":
+                return True
+            else:
+                data_list = response.get("data").get("list")
+                if data_list:
+                    return data_list[0]["orderId"]
+        except Exception as e:
+            raise Exception(f"Mufex Class check_if_order_canceled = Something wrong {response['message']} -> {e}")
 
     """
     ##############################################################

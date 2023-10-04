@@ -66,18 +66,6 @@ class LiveMufex(LiveExchange, Mufex):
             leverage_mode=leverage_mode,
         )
 
-    """
-    ###################################################################
-    ###################################################################
-    ###################                             ###################
-    ###################                             ###################
-    ################### Functions no default params ###################
-    ###################                             ###################
-    ###################                             ###################
-    ###################################################################
-    ###################################################################
-    """
-
     def set_init_last_fetched_time(self, **vargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
@@ -99,9 +87,9 @@ class LiveMufex(LiveExchange, Mufex):
             if data_list is not None and data_list:
                 self.last_fetched_ms_time = int(data_list[-1][0])
             else:
-                raise Exception(f"Data or List is empty {response.get('message')}")
+                raise Exception(f"LiveMufex Class Data or List is empty {response.get('message')}")
         except Exception as e:
-            raise Exception(f"Something is wrong with set_init_last_fetched_time -> {e}")
+            raise Exception(f"LiveMufex Class Something is wrong with set_init_last_fetched_time -> {e}")
 
     def set_candles_df_and_np(self, **vargs):
         """
@@ -121,25 +109,18 @@ class LiveMufex(LiveExchange, Mufex):
             "end": until_date_ms,
         }
         while params["start"] + self.timeframe_in_ms < until_date_ms:
+            response = self.HTTP_get_request(end_point=end_point, params=params)
             try:
-                response = self.HTTP_get_request(end_point=end_point, params=params)
-                new_candles = response.get("data").get("list")
-                if new_candles is not None:
-                    if new_candles:
-                        last_candle_time_ms = int(new_candles[-1][0])
-                        if last_candle_time_ms == params["start"]:
-                            sleep(0.2)
-                        else:
-                            candles_list.extend(new_candles)
-                            # add one sec so we don't download the same candle two times
-                            params["start"] = last_candle_time_ms + 1000
-                            self.last_fetched_ms_time = last_candle_time_ms
-                    else:
-                        break
+                new_candles = response["data"]["list"]
+                last_candle_time_ms = int(new_candles[-1][0])
+                if last_candle_time_ms == params["start"]:
+                    sleep(0.2)
                 else:
-                    raise Exception(f"Data or List is empty {response.get('message')}")
+                    candles_list.extend(new_candles)
+                    # add one sec so we don't download the same candle two times
+                    params["start"] = last_candle_time_ms + 1000
             except Exception as e:
-                raise Exception(f"Something wrong with set_candles_df -> {e}")
+                raise Exception(f"LiveMufex Class Something is wrong with get_candles_df {response.get('message')} - > {e}")
         self.candles_df = self.get_candles_list_to_pd(candles_list=candles_list, col_end=-2)
         self.candles_np = self.candles_df.iloc[:, 1:].values
 
