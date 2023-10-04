@@ -71,7 +71,7 @@ class LiveTrading:
                 self.exchange.set_candles_df_and_np()
 
                 # bar_index bar index is always the last bar ... so if we have 200 candles we are at index 200
-                bar_index = self.exchange.candles_np.shape[0]
+                bar_index = self.exchange.candles_np.shape[0] - 1
                 msg = ""
 
                 self.strategy.set_indicator_live_trading(self.exchange.candles_df)
@@ -228,28 +228,27 @@ class LiveTrading:
                                 self.send_error_msg(msg=msg)
                             else:
                                 logging.info(f"message = self.__create_entry_successful_message")
-                                message = self.__create_entry_successful_message(
-                                    entry_order_id=entry_order_id,
-                                    sl_order_id=sl_order_id,
-                                    tp_order_id=tp_order_id,
-                                )
+                                # message = self.__create_entry_successful_message(
+                                #     entry_order_id=entry_order_id,
+                                #     sl_order_id=sl_order_id,
+                                #     tp_order_id=tp_order_id,
+                                # )
                                 logging.info(f"fig_filename = self.__get_fig_filename")
-                                fig_filename = self.__get_fig_filename(
-                                    entry_price=self.ex_entry_price,
-                                    sl_price=self.ex_sl_price,
-                                    tp_price=self.ex_tp_price,
-                                    liq_price=self.ex_liq_price,
-                                )
+                                # fig_filename = self.__get_fig_filename(
+                                #     entry_price=self.ex_entry_price,
+                                #     sl_price=self.ex_sl_price,
+                                #     tp_price=self.ex_tp_price,
+                                #     liq_price=self.ex_liq_price,
+                                # )
                                 logging.info(f"self.email_sender.email_new_order")
                                 # self.email_sender.email_new_order(
                                 #     message=message,
                                 #     fig_filename=fig_filename,
                                 # )
-                                logging.info(f"{message}")
-                                pass
+                                # logging.info(f"{message}")
 
                         except RejectedOrderError as e:
-                            pass
+                            RejectedOrderError(f"RejectedOrderError for some reason ->{e.order_status}")
                         self.__set_ex_position_size_asset()
                         if self.ex_position_size_asset > 0:
                             logging.info(f"if self.ex_in_position")
@@ -259,12 +258,13 @@ class LiveTrading:
                                     bar_index=bar_index,
                                     price_data=self.exchange.candles_np,
                                 )
+                                logging.info(f"no moving stop loss")
                                 logging.info(f"self.order.check_move_trailing_stop_loss")
                                 self.order.check_move_trailing_stop_loss(
                                     bar_index=bar_index,
                                     price_data=self.exchange.candles_np,
                                 )
-                                logging.info(f"no moving stop loss")
+                                logging.info(f"no trail stop loss")
                             except RejectedOrderError as e:
                                 pass
                             except MoveStopLoss as result:

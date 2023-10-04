@@ -96,7 +96,8 @@ class LiveMufex(LiveExchange, Mufex):
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
         """
 
-        until_date_ms = self.get_current_time_ms() - self.timeframe_in_ms
+        # i think maybe you have to add 5 seconds to the current time because maybe we do it too fast
+        until_date_ms = self.get_current_time_ms() - self.timeframe_in_ms + 5000
         since_date_ms = until_date_ms - self.candles_to_dl_ms
 
         candles_list = []
@@ -108,21 +109,46 @@ class LiveMufex(LiveExchange, Mufex):
             "start": since_date_ms,
             "end": until_date_ms,
         }
+        print(f"until date is {self.get_ms_time_to_pd_datetime(time_in_ms=until_date_ms)}")
+        print(f"since_date_ms is  {self.get_ms_time_to_pd_datetime(time_in_ms=since_date_ms)}")
+        start_time = self.get_current_time_seconds()
         while params["start"] + self.timeframe_in_ms < until_date_ms:
+            print("starting while loop for candles")
             response = self.HTTP_get_request(end_point=end_point, params=params)
+            print("got response")
             try:
                 new_candles = response["data"]["list"]
                 last_candle_time_ms = int(new_candles[-1][0])
+                print(f"checking if last candle equals start, got {len(new_candles)}")
                 if last_candle_time_ms == params["start"]:
+                    print(
+                        f"start and last candle match so wait .2 seconds {last_candle_time_ms} start = {params['start']}"
+                    )
                     sleep(0.2)
                 else:
                     candles_list.extend(new_candles)
+                    print("extended the candle list and set a new start and last fetcehd ms time")
                     # add one sec so we don't download the same candle two times
                     params["start"] = last_candle_time_ms + 1000
+                    print(
+                        f'new params start is {self.get_ms_time_to_pd_datetime(params["start"])} and until_date_ms {self.get_ms_time_to_pd_datetime(until_date_ms)}'
+                    )
+                    self.last_fetched_ms_time = last_candle_time_ms
             except Exception as e:
-                raise Exception(f"LiveMufex Class Something is wrong with get_candles_df {response.get('message')} - > {e}")
+                raise Exception(
+                    f"LiveMufex Class Something is wrong with get_candles_df {response.get('message')} - > {e}"
+                )
+        print(f"Got a total of {len(candles_list)} candles")
+        logging.info(f"Got a total of {len(candles_list)} candles")
         self.candles_df = self.get_candles_list_to_pd(candles_list=candles_list, col_end=-2)
         self.candles_np = self.candles_df.iloc[:, 1:].values
+        time_it_took_in_seconds = self.get_current_time_seconds() - start_time
+        logging.info(
+            f"It took {time_it_took_in_seconds} seconds or {round(time_it_took_in_seconds/60,2)} minutes to download the candles"
+        )
+        print(
+            f"It took {time_it_took_in_seconds} seconds or {round(time_it_took_in_seconds/60,2)} minutes to download the candles"
+        )
 
     def check_long_hedge_mode_if_in_position(self, **vargs):
         if float(self.get_symbol_position_info(symbol=self.symbol)[0]["entryPrice"]) > 0:

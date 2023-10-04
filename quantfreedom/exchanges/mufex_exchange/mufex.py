@@ -216,6 +216,7 @@ class Mufex(Exchange):
             "end": until_date_ms,
             "limit": limit,
         }
+        start_time = self.get_current_time_seconds()
         while params["start"] + timeframe_in_ms < until_date_ms:
             response = self.HTTP_get_request(end_point=end_point, params=params)
             try:
@@ -229,6 +230,13 @@ class Mufex(Exchange):
                     params["start"] = last_candle_time_ms + 1000
             except Exception as e:
                 raise Exception(f"Mufex Class Something is wrong with get_candles_df {response.get('message')} - > {e}")
+        time_it_took_in_seconds = self.get_current_time_seconds() - start_time
+        logging.info(
+            f"It took {time_it_took_in_seconds} seconds or {round(time_it_took_in_seconds/60,2)} minutes to download the candles"
+        )
+        print(
+            f"It took {time_it_took_in_seconds} seconds or {round(time_it_took_in_seconds/60,2)} minutes to download the candles"
+        )
         return self.get_candles_list_to_pd(candles_list=candles_list, col_end=-2)
 
     def get_all_symbols_info(self, category: str = "linear", limit: int = 1000, params: dict = {}, **vargs):
