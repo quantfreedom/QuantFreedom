@@ -1,25 +1,3 @@
 questions:
     ☐ i have to do the thing that apex is doing and get the price to be the dec length of the thing i am trading ... 
     ☐ try to figure out why at 1m candles always give back 1 more candle
-
-
-
-def _fill_real_trade_info(self, exchange, symbol, order_created, TP_order_created, SL_order_created):
-    position_info = exchange.fetch_positions(symbols=[symbol])[0]
-    self.average_entry = position_info["entryPrice"]
-    self.position_size = position_info["contracts"]
-    self.liq_price = position_info["liquidationPrice"]
-    self.position_size_usd = position_info["notional"]
-    self.tp_price = TP_order_created["price"]
-    self.sl_price = SL_order_created["price"]
-    self.sl_pct = (self.average_entry - self.sl_price) / self.average_entry
-    self.tp_pct = (self.tp_price - self.average_entry) / self.average_entry
-    self.entry_size = order_created["amount"]
-    self.entry_size_value = order_created["price"] * self.entry_size
-    self.leverage = position_info["leverage"]
-
-    pnl = self.position_size * (self.sl_price - self.average_entry)  # math checked
-    fee_open = self.position_size * self.average_entry * self.market_fee_pct  # math checked
-    fee_close = self.position_size * self.sl_price * self.market_fee_pct  # math checked
-    self.fees_paid = fee_open + fee_close  # math checked
-    self.tpl = pnl - self.fees_paid  # math checked
