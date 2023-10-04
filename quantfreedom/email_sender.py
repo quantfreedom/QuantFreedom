@@ -4,7 +4,6 @@ import logging
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
-from my_stuff import EmailAccount
 
 
 class EmailSender:
@@ -14,12 +13,18 @@ class EmailSender:
     password = None
     email_enabled = None
 
-    def __init__(self):
+    def __init__(
+        self,
+        smtp_server: str,
+        sender_email: str,
+        password: str,
+        receiver: str,
+    ):
         self.port = 465  # For SSL
-        self.smtp_server = EmailAccount.smtp_server
-        self.sender_email = EmailAccount.sender_account
-        self.password = EmailAccount.sender_password
-        self.receiver = EmailAccount.receiver_account
+        self.smtp_server = smtp_server
+        self.sender_email = sender_email
+        self.password = password
+        self.receiver = receiver
 
     def email_error_msg(self, msg):
         subject = "There's been an error"

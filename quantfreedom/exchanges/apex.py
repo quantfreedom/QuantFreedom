@@ -133,7 +133,7 @@ class Apex:
             "symbol": self.symbol,
         }
         try:
-            trading_fees = self.__HTTP_get_request(end_point=end_point, params=params)["data"]["list"][0]
+            trading_fees = self.HTTP_get_request(end_point=end_point, params=params)["data"]["list"][0]
             self.market_fee_pct = float(trading_fees["takerFeeRate"])
             self.limit_fee_pct = float(trading_fees["makerFeeRate"])
         except KeyError as e:
@@ -146,7 +146,7 @@ class Apex:
             "symbol": self.symbol,
         }
         try:
-            mmr_pct = self.__HTTP_get_request(end_point=end_point, params=params)
+            mmr_pct = self.HTTP_get_request(end_point=end_point, params=params)
             self.mmr_pct = mmr_pct["data"]["list"][0]["maintainMargin"]
         except KeyError as e:
             raise KeyError(f"Something is wrong setting mmr pct {e}")
@@ -158,7 +158,7 @@ class Apex:
             "symbol": self.symbol,
         }
         try:
-            symbol_info_og = self.__HTTP_get_request(end_point=end_point, params=params)
+            symbol_info_og = self.HTTP_get_request(end_point=end_point, params=params)
             symbol_info = symbol_info_og["data"]["list"][0]
             self.max_leverage = float(symbol_info["leverageFilter"]["maxLeverage"])
             self.min_leverage = float(symbol_info["leverageFilter"]["minLeverage"])

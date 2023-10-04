@@ -26,20 +26,22 @@ class LiveExchange(Exchange):
         symbol: str,
         timeframe: str,
         trading_in: str,
+        use_test_net: bool,
         long_or_short: LongOrShortType,
         candles_to_dl: int = None,
         keep_volume_in_candles: bool = False,
-        use_test_net: bool = False,
         position_mode: PositionModeType = PositionModeType.HedgeMode,
         leverage_mode: LeverageModeType = LeverageModeType.Isolated,
     ):
-        super().__init__(api_key, secret_key)
+        super().__init__(api_key, secret_key, use_test_net)
 
         self.timeframe_in_ms = self.get_timeframe_in_ms(timeframe)
         self.symbol = symbol
         self.candles_to_dl = candles_to_dl
         self.trading_in = trading_in
         self.position_mode = position_mode
+        self.keep_volume_in_candles = keep_volume_in_candles
+        self.leverage_mode = leverage_mode
         self.long_or_short = long_or_short
 
     def last_fetched_time_to_pd_datetime(self, *vargs):

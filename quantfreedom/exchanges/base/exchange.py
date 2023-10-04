@@ -14,7 +14,12 @@ class Exchange:
     volume_yes_no_end = None
     exchange_settings = None
 
-    def __init__(self, api_key: str, secret_key: str, use_test_net: bool = False):
+    def __init__(
+        self,
+        api_key: str,
+        secret_key: str,
+        use_test_net: bool,
+    ):
         self.api_key = api_key
         self.secret_key = secret_key
         self.use_test_net = use_test_net

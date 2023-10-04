@@ -13,7 +13,7 @@ from quantfreedom.enums import CandleProcessingType
 
 class IndicatorSettingsArrays(NamedTuple):
     rsi_lenth: np.array = np.array([10, 15])
-    rsi_is_below: np.array = np.array([30, 40, 50])
+    rsi_is_below: np.array = np.array([60, 70, 80])
 
 
 class Strategy:
@@ -21,8 +21,8 @@ class Strategy:
 
     def __init__(
         self,
+        candle_processing_mode: CandleProcessingType,
         candles: pd.DataFrame = None,
-        candle_processing_mode: CandleProcessingType = None,
         num_candles: int = None,
         indicator_setting_index: int = None,
     ) -> None:
@@ -62,7 +62,7 @@ class Strategy:
         self.bar_index = bar_index
         bar_start = max(self.num_candles + bar_index, 0)
         self.closing_prices = self.candles.iloc[bar_start : bar_index + 1, 4]
-        self.rsi = self.__get_rsi()
+        self.rsi = pta.rsi(close=self.closing_prices, length=self.rsi_lenth).round(decimals=2)
 
     #########################################################################
     ###################                                  ####################

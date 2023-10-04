@@ -1,11 +1,9 @@
 import numpy as np
 
-from quantfreedom.enums import OrderSettingsArrays
+from quantfreedom.enums import OrderSettings, OrderSettingsArrays
 
 
-def create_os_cart_product_nb(
-    order_settings_arrays: OrderSettingsArrays,
-):
+def create_os_cart_product_nb(order_settings_arrays: OrderSettingsArrays):
     # cart array loop
     n = 1
     for x in order_settings_arrays:
@@ -44,4 +42,28 @@ def create_os_cart_product_nb(
         trail_sl_based_on_candle_body_type=out.T[16],
         trail_sl_by_pct=out.T[17],
         trail_sl_when_pct_from_candle_body=out.T[18],
+    )
+
+
+def get_order_setting_tuple_from_index(order_settings_array: OrderSettingsArrays, index: int):
+    return OrderSettings(
+        increase_position_type=order_settings_array.increase_position_type[index],
+        leverage_type=order_settings_array.leverage_type[index],
+        max_equity_risk_pct=order_settings_array.max_equity_risk_pct[index],
+        long_or_short=order_settings_array.long_or_short[index],
+        risk_account_pct_size=order_settings_array.risk_account_pct_size[index],
+        risk_reward=order_settings_array.risk_reward[index],
+        sl_based_on_add_pct=order_settings_array.sl_based_on_add_pct[index],
+        sl_based_on_lookback=order_settings_array.sl_based_on_lookback[index],
+        sl_candle_body_type=order_settings_array.sl_candle_body_type[index],
+        sl_to_be_based_on_candle_body_type=order_settings_array.sl_to_be_based_on_candle_body_type[index],
+        sl_to_be_when_pct_from_candle_body=order_settings_array.sl_to_be_when_pct_from_candle_body[index],
+        sl_to_be_zero_or_entry_type=order_settings_array.sl_to_be_zero_or_entry_type[index],
+        static_leverage=order_settings_array.static_leverage[index],
+        stop_loss_type=order_settings_array.stop_loss_type[index],
+        take_profit_type=order_settings_array.take_profit_type[index],
+        tp_fee_type=order_settings_array.tp_fee_type[index],
+        trail_sl_based_on_candle_body_type=order_settings_array.trail_sl_based_on_candle_body_type[index],
+        trail_sl_by_pct=order_settings_array.trail_sl_by_pct[index],
+        trail_sl_when_pct_from_candle_body=order_settings_array.trail_sl_when_pct_from_candle_body[index],
     )

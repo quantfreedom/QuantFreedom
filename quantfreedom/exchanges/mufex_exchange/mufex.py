@@ -92,7 +92,7 @@ class Mufex(Exchange):
             raise Exception(f"{e}")
         return response_json
 
-    def __HTTP_get_request(
+    def HTTP_get_request(
         self,
         end_point,
         params,
@@ -119,7 +119,7 @@ class Mufex(Exchange):
             raise Exception(f"{e}")
         return response_json
 
-    def __HTTP_get_request_no_params(self, end_point):
+    def HTTP_get_request_no_params(self, end_point):
         time_stamp = str(int(time() * 1000))
         signature = self.__gen_signature_no_params(time_stamp=time_stamp)
         headers = {
@@ -215,7 +215,7 @@ class Mufex(Exchange):
         }
         while params["start"] + timeframe_in_ms < until_date_ms:
             try:
-                response = self.__HTTP_get_request(end_point=end_point, params=params)
+                response = self.HTTP_get_request(end_point=end_point, params=params)
                 new_candles = response.get("data").get("list")
                 if new_candles is not None:
                     if new_candles:
@@ -245,7 +245,7 @@ class Mufex(Exchange):
         end_point = "/public/v1/market/tickers"
         params["catergoy"] = category
         try:
-            response = self.__HTTP_get_request(end_point=end_point, params=params)
+            response = self.HTTP_get_request(end_point=end_point, params=params)
             data_list = response.get("data").get("list")
             if data_list is not None and data_list:
                 return data_list
@@ -254,7 +254,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Something is wrong with get_symbol_ticker_info -> {e}")
 
-    def get_symbol_info(self, category: str = "linear", limit: int = 1000, params: dict = {}, **vargs):
+    def get_all_symbols_info(self, category: str = "linear", limit: int = 1000, params: dict = {}, **vargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_instrhead
 
@@ -265,14 +265,17 @@ class Mufex(Exchange):
         params["limit"] = limit
         params["category"] = category
         try:
-            response = self.__HTTP_get_request(end_point=end_point, params=params)
+            response = self.HTTP_get_request(end_point=end_point, params=params)
             data_list = response.get("data").get("list")
             if data_list is not None and data_list:
                 return data_list
             else:
                 raise Exception(f"Data or List is empty {response['message']}")
         except Exception as e:
-            raise Exception(f"Something is wrong with get_symbol_info -> {e}")
+            raise Exception(f"Something is wrong with get_all_symbols_info -> {e}")
+
+    def get_symbol_info(self, symbol: str, **vargs):
+        return self.get_all_symbols_info(params={"symbol": symbol})[0]
 
     def get_risk_limit_info(self, symbol: str, category: str = "linear", **vargs):
         """
@@ -283,7 +286,7 @@ class Mufex(Exchange):
         params["category"] = category
         params["symbol"] = symbol
         try:
-            response = self.__HTTP_get_request(end_point=end_point, params=params)
+            response = self.HTTP_get_request(end_point=end_point, params=params)
             data_list = response.get("data").get("list")
             if data_list is not None and data_list:
                 return data_list[0]
@@ -314,7 +317,7 @@ class Mufex(Exchange):
         """
         end_point = "/private/v1/account/trade-fee"
         try:
-            response = self.__HTTP_get_request_no_params(end_point=end_point)
+            response = self.HTTP_get_request_no_params(end_point=end_point)
             data_list = response.get("data").get("list")
             if data_list is not None and data_list:
                 return data_list
@@ -325,15 +328,13 @@ class Mufex(Exchange):
 
     def get_symbol_trading_fee_rates(self, symbol: str, **vargs):
         """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_getorder
-
-        use link to see all Request Parameters
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-tradingfeerate
         """
-        end_point = "/private/v1/trade/orders"
+        end_point = "/private/v1/account/trade-fee"
         params = {}
         params["symbol"] = symbol
         try:
-            response = self.__HTTP_get_request(end_point=end_point, params=params)
+            response = self.HTTP_get_request(end_point=end_point, params=params)
             data_list = response.get("data").get("list")
             if data_list is not None and data_list:
                 return data_list[0]
@@ -352,7 +353,7 @@ class Mufex(Exchange):
         params["symbol"] = symbol
         params["limit"] = limit
         try:
-            response = self.__HTTP_get_request(end_point=end_point, params=params)
+            response = self.HTTP_get_request(end_point=end_point, params=params)
             data_list = response.get("data").get("list")
             if data_list is not None and data_list:
                 return data_list
@@ -375,7 +376,7 @@ class Mufex(Exchange):
         params["symbol"] = symbol
         params["limit"] = limit
         try:
-            response = self.__HTTP_get_request(end_point=end_point, params=params)
+            response = self.HTTP_get_request(end_point=end_point, params=params)
             data_list = response.get("data").get("list")
             if data_list is not None and data_list:
                 return data_list
@@ -398,7 +399,7 @@ class Mufex(Exchange):
         params["symbol"] = symbol
         params["limit"] = limit
         try:
-            response = self.__HTTP_get_request(end_point=end_point, params=params)
+            response = self.HTTP_get_request(end_point=end_point, params=params)
             data_list = response.get("data").get("list")
             if data_list is not None and data_list:
                 return data_list
@@ -417,7 +418,7 @@ class Mufex(Exchange):
         """
         end_point = "/private/v1/account/positions"
         try:
-            response = self.__HTTP_get_request_no_params(end_point=end_point)
+            response = self.HTTP_get_request_no_params(end_point=end_point)
             data_list = response.get("data").get("list")
             if data_list is not None and data_list:
                 return data_list
@@ -433,7 +434,7 @@ class Mufex(Exchange):
         end_point = "/private/v1/account/positions"
         params = {"symbol": symbol}
         try:
-            response = self.__HTTP_get_request(end_point=end_point, params=params)
+            response = self.HTTP_get_request(end_point=end_point, params=params)
             data_list = response.get("data").get("list")
             if data_list is not None and data_list:
                 return data_list
@@ -525,7 +526,7 @@ class Mufex(Exchange):
         """
         end_point = "/private/v1/account/balance"
         try:
-            response = self.__HTTP_get_request_no_params(end_point=end_point)
+            response = self.HTTP_get_request_no_params(end_point=end_point)
             data_list = response.get("data").get("list")
             if data_list is not None and data_list:
                 return data_list
@@ -541,7 +542,7 @@ class Mufex(Exchange):
         end_point = "/private/v1/account/balance"
         params = {"coin": trading_in}
         try:
-            response = self.__HTTP_get_request(end_point=end_point, params=params)
+            response = self.HTTP_get_request(end_point=end_point, params=params)
             data_list = response.get("data").get("list")
             if data_list is not None and data_list:
                 return data_list[0]
@@ -646,11 +647,11 @@ class Mufex(Exchange):
     def __get_mufex_timeframe(self, timeframe):
         return MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
 
-    def __set_leverage_mode_isolated(self):
-        return self.set_leverage_mode(tradeMode=1)
+    def set_leverage_mode_isolated(self, symbol: str):
+        return self.set_leverage_mode(symbol=symbol, leverage_mode=1)
 
-    def __set_leverage_mode_cross(self):
-        return self.set_leverage_mode(tradeMode=0)
+    def set_leverage_mode_cross(self, symbol: str):
+        return self.set_leverage_mode(symbol=symbol, leverage_mode=0)
 
     def __get_fee_pcts(self, symbol):
         trading_fee_info = self.get_symbol_trading_fee_rates(symbol=symbol)
@@ -670,13 +671,13 @@ class Mufex(Exchange):
         min_asset_qty = float(symbol_info["lotSizeFilter"]["minTradingQty"])
         return max_leverage, min_leverage, max_asset_qty, min_asset_qty
 
-    def __set_position_mode_as_hedge_mode(self, symbol):
+    def set_position_mode_as_hedge_mode(self, symbol):
         self.set_position_mode(symbol=symbol, position_mode=3)
 
-    def __set_position_mode_as_one_way_mode(self, symbol):
+    def set_position_mode_as_one_way_mode(self, symbol):
         self.set_position_mode(symbol=symbol, position_mode=0)
 
-    def __set_exchange_settings(
+    def set_exchange_settings(
         self,
         symbol: str,
         position_mode: PositionModeType,
@@ -686,7 +687,12 @@ class Mufex(Exchange):
         Make sure you actually set your leverage mode and position mode first before running this function
         """
         market_fee_pct, limit_fee_pct = self.__get_fee_pcts(symbol=symbol)
-        max_leverage, min_leverage, max_asset_qty, min_asset_qty = self.__get_min_max_leverage_and_asset_size()
+        (
+            max_leverage,
+            min_leverage,
+            max_asset_qty,
+            min_asset_qty,
+        ) = self.__get_min_max_leverage_and_asset_size(symbol=symbol)
         self.exchange_settings = ExchangeSettings(
             market_fee_pct=market_fee_pct,
             limit_fee_pct=limit_fee_pct,

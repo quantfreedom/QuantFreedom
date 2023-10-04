@@ -13,7 +13,6 @@ class LiveTrading:
     def __init__(
         self,
         exchange: LiveExchange,
-        candles_to_dl: int,
         strategy: Strategy,
         order: Order,
         entry_order_type: OrderPlacementType,
@@ -21,13 +20,12 @@ class LiveTrading:
         email_sender: EmailSender,
     ):
         self.exchange = exchange
-        self.candles_to_dl = candles_to_dl
         self.strategy = strategy
         self.order = order
         self.email_sender = email_sender
         self.send_error_msg = self.email_error_msg
         self.send_plot_graph = self.send_entry_email
-        self.__get_plot_file = self.__get_plot_fig_filename
+        self.__get_plot_file = self.__get_fig_filename
 
         if self.exchange.position_mode == PositionModeType.HedgeMode:
             if self.exchange.long_or_short == LongOrShortType.Long:
@@ -57,12 +55,16 @@ class LiveTrading:
         logging.info(
             f"Will sleep for {round(self.get_time_to_next_bar_seconds()/60,2)} minutes before getting first batch of candles"
         )
+        print(
+            f"Will sleep for {round(self.get_time_to_next_bar_seconds()/60,2)} minutes before getting first batch of candles"
+        )
 
         sleep(self.get_time_to_next_bar_seconds())
         while True:
             try:
+                print("Getting Candles")
                 self.exchange.set_candles_df_and_np()
-
+                
                 # bar_index bar index is always the last bar ... so if we have 200 candles we are at index 200
                 bar_index = self.exchange.candles_np.shape()[0]
                 msg = ""
@@ -212,7 +214,7 @@ class LiveTrading:
                     logging.info("No entry ... waiting to get next bar")
             except Exception as e:
                 logging.error(f"Something is wrong in the run part of live mode -> {e}")
-                raise Exception
+                raise Exception(f"Something is wrong in the run part of live mode -> {e}")
             sleep(self.get_time_to_next_bar_seconds())
 
     def get_time_to_next_bar_seconds(self):

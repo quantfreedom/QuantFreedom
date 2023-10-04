@@ -10,18 +10,22 @@ from quantfreedom.exchanges.mufex_exchange.mufex import MUFEX_TIMEFRAMES, Mufex
 class LiveMufex(LiveExchange, Mufex):
     def __init__(
         self,
+        api_key: str,
+        secret_key: str,
         symbol: str,
         trading_in: str,
         timeframe: str,
+        use_test_net: bool,
         long_or_short: LongOrShortType,
         candles_to_dl: int = None,
         keep_volume_in_candles: bool = False,
-        use_test_net: bool = False,
         position_mode: PositionModeType = PositionModeType.HedgeMode,
         leverage_mode: LeverageModeType = LeverageModeType.Isolated,
         category: str = "linear",
     ):
         super().__init__(
+            api_key,
+            secret_key,
             symbol,
             timeframe,
             trading_in,
@@ -41,14 +45,14 @@ class LiveMufex(LiveExchange, Mufex):
             self.volume_yes_no = -2
 
         if position_mode == PositionModeType.HedgeMode:
-            self.__set_position_mode_as_hedge_mode()
+            self.set_position_mode_as_hedge_mode(symbol=self.symbol)
         else:
-            self.__set_position_mode_as_one_way_mode()
+            self.set_position_mode_as_one_way_mode(symbol=self.symbol)
 
         if leverage_mode == LeverageModeType.Isolated:
-            self.__set_leverage_mode_isolated()
+            self.set_leverage_mode_isolated(symbol=self.symbol)
         elif leverage_mode == LeverageModeType.Cross:
-            self.__set_leverage_mode_cross()
+            self.set_leverage_mode_cross(symbol=self.symbol)
 
         self.candles_to_dl_ms = self.get_candles_to_dl_in_ms(
             candles_to_dl=candles_to_dl,
@@ -56,7 +60,7 @@ class LiveMufex(LiveExchange, Mufex):
             limit=200,
         )
 
-        self.exchange_settings = self.__get_exchange_settings(
+        self.set_exchange_settings(
             symbol=symbol,
             position_mode=position_mode,
             leverage_mode=leverage_mode,
@@ -90,7 +94,7 @@ class LiveMufex(LiveExchange, Mufex):
             "end": init_end,
         }
         try:
-            response = self.__HTTP_get_request(end_point=end_point, params=params)
+            response = self.HTTP_get_request(end_point=end_point, params=params)
             data_list = response.get("data").get("list")
             if data_list is not None and data_list:
                 self.last_fetched_ms_time = int(data_list[-1][0])
@@ -118,7 +122,7 @@ class LiveMufex(LiveExchange, Mufex):
         }
         while params["start"] + self.timeframe_in_ms < until_date_ms:
             try:
-                response = self.__HTTP_get_request(end_point=end_point, params=params)
+                response = self.HTTP_get_request(end_point=end_point, params=params)
                 new_candles = response.get("data").get("list")
                 if new_candles is not None:
                     if new_candles:
