@@ -13,8 +13,8 @@ class IncreasePositionLong:
     market_fee_pct = None
     risk_account_pct_size = None
     max_equity_risk_pct = None
-    max_asset_qty = None
-    min_asset_qty = None
+    max_asset_size = None
+    min_asset_size = None
 
     def __init__(
         self,
@@ -23,14 +23,14 @@ class IncreasePositionLong:
         market_fee_pct: float,
         risk_account_pct_size: float,
         max_equity_risk_pct: float,
-        max_asset_qty: float,
-        min_asset_qty: float,
+        max_asset_size: float,
+        min_asset_size: float,
     ):
         self.market_fee_pct = market_fee_pct
         self.risk_account_pct_size = risk_account_pct_size
         self.max_equity_risk_pct = max_equity_risk_pct
-        self.max_asset_qty = max_asset_qty
-        self.min_asset_qty = min_asset_qty
+        self.max_asset_size = max_asset_size
+        self.min_asset_size = min_asset_size
 
         if stop_loss_type == StopLossStrategyType.SLBasedOnCandleBody:
             if increase_position_type == IncreasePositionType.RiskPctAccountEntrySize:
@@ -106,7 +106,7 @@ class IncreasePositionLong:
         return round(possible_loss, 2)
 
     def __check_size_value(self, entry_size_asset):
-        if self.max_asset_qty < entry_size_asset < self.min_asset_qty:
+        if self.max_asset_size < entry_size_asset < self.min_asset_size:
             raise RejectedOrderError("Long Increase - Size Value is either to big or too small")
 
     def amount_based(self, **vargs):
@@ -119,7 +119,7 @@ class IncreasePositionLong:
         pass
 
     def smallest_amount(self, **vargs):
-        return self.min_asset_qty
+        return self.min_asset_size
 
     def risk_pct_of_account_and_sl_based_on_not_in_pos(
         self,

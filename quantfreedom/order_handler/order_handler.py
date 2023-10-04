@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Optional
 import numpy as np
 from quantfreedom.enums import (
@@ -115,8 +116,8 @@ class Order:
                 market_fee_pct=self.exchange_settings.market_fee_pct,
                 max_equity_risk_pct=self.order_settings.max_equity_risk_pct,
                 risk_account_pct_size=self.order_settings.risk_account_pct_size,
-                max_asset_qty=self.exchange_settings.max_asset_qty,
-                min_asset_qty=self.exchange_settings.min_asset_qty,
+                max_asset_size=self.exchange_settings.max_asset_size,
+                min_asset_size=self.exchange_settings.min_asset_size,
             )
             self.obj_leverage = LeverageLong(
                 leverage_type=self.order_settings.leverage_type,
@@ -155,6 +156,11 @@ class Order:
     def calculate_take_profit(self):
         pass
 
+    def round_size_by_tick_step(user_num: str, exchange_num: str) -> float:
+        int_num = int(Decimal(user_num) / Decimal(exchange_num))
+        float_num = float(Decimal(int_num) * Decimal(exchange_num))
+        return float_num
+
     def move_stop_loss(
         self,
         sl_price: float,
@@ -162,7 +168,7 @@ class Order:
         bar_index: int,
         indicator_settings_index: int,
         order_settings_index: int,
-    ):
+    ) -> None:
         self.sl_price = sl_price
         self.sl_pct = (self.average_entry - sl_price) / self.average_entry
         self.order_status = order_status

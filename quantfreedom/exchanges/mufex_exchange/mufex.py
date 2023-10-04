@@ -6,6 +6,7 @@ from uuid import uuid4
 
 from requests import get, post
 from time import sleep, time
+from decimal import Decimal
 
 from quantfreedom.enums import (
     ExchangeSettings,
@@ -698,9 +699,9 @@ class Mufex(Exchange):
         symbol_info = self.get_symbol_info(symbol=symbol)
         max_leverage = float(symbol_info["leverageFilter"]["maxLeverage"])
         min_leverage = float(symbol_info["leverageFilter"]["minLeverage"])
-        max_asset_qty = float(symbol_info["lotSizeFilter"]["maxTradingQty"])
-        min_asset_qty = float(symbol_info["lotSizeFilter"]["minTradingQty"])
-        return max_leverage, min_leverage, max_asset_qty, min_asset_qty
+        max_asset_size = float(symbol_info["lotSizeFilter"]["maxTradingQty"])
+        min_asset_size = float(symbol_info["lotSizeFilter"]["minTradingQty"])
+        return max_leverage, min_leverage, max_asset_size, min_asset_size
 
     def set_position_mode_as_hedge_mode(self, symbol):
         self.set_position_mode(symbol=symbol, position_mode=1)
@@ -721,17 +722,21 @@ class Mufex(Exchange):
         (
             max_leverage,
             min_leverage,
-            max_asset_qty,
-            min_asset_qty,
+            max_asset_size,
+            min_asset_size,
         ) = self.__get_min_max_leverage_and_asset_size(symbol=symbol)
+        symbol_info = self.get_symbol_info(symbol=symbol)
+
         self.exchange_settings = ExchangeSettings(
+            asset_tick_step=symbol_info["lotSizeFilter"]["qtyStep"],
             market_fee_pct=market_fee_pct,
             limit_fee_pct=limit_fee_pct,
             mmr_pct=self.__get_mmr_pct(symbol=symbol),
             max_leverage=max_leverage,
             min_leverage=min_leverage,
-            max_asset_qty=max_asset_qty,
-            min_asset_qty=min_asset_qty,
+            max_asset_size=max_asset_size,
+            min_asset_size=min_asset_size,
             position_mode=position_mode,
             leverage_mode=leverage_mode,
+            price_tick_step=symbol_info["priceFilter"]["tickSize"],
         )

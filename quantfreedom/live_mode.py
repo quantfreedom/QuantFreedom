@@ -109,14 +109,38 @@ class LiveTrading:
                             logging.info("self.order.calculate_take_profit")
                             self.order.calculate_take_profit()
 
+                            # create variables
+                            entry_size_asset = self.order.entry_size_usd / self.order.entry_price
+                            entry_size_asset = self.order.round_size_by_tick_step(
+                                user_num=str(entry_size_asset),
+                                exchange_num=self.exchange.exchange_settings.asset_tick_step,
+                            )
+
+                            position_size_asset = self.order.round_size_by_tick_step(
+                                user_num=str(self.ex_position_size_asset),
+                                exchange_num=self.exchange.exchange_settings.asset_tick_step,
+                            )
+
+                            entry_price = self.order.round_size_by_tick_step(
+                                user_num=str(self.order.entry_price),
+                                exchange_num=self.exchange.exchange_settings.price_tick_step,
+                            )
+                            sl_price = self.order.round_size_by_tick_step(
+                                user_num=str(self.order.sl_price),
+                                exchange_num=self.exchange.exchange_settings.price_tick_step,
+                            )
+                            tp_price = self.order.round_size_by_tick_step(
+                                user_num=str(self.order.tp_price),
+                                exchange_num=self.exchange.exchange_settings.price_tick_step,
+                            )
+
                             # place the order
                             logging.info("entry_size_asset = round(self.order.entry_size_usd")
-                            entry_size_asset = round(self.order.entry_size_usd / self.order.entry_price, 3)
                             send_verify_error = False
                             logging.info("entry_order_id = self.place_entry_order")
                             entry_order_id = self.place_entry_order(
                                 asset_amount=entry_size_asset,
-                                entry_price=self.order.entry_price,
+                                entry_price=entry_price,
                             )
 
                             logging.info(f"Submitted entry order -> [order_id={entry_order_id}]")
@@ -144,20 +168,20 @@ class LiveTrading:
                             sleep(0.5)
                             # place stop loss order
                             self.__set_ex_position_size_asset()
-                            logging.info(f"__set_ex_position_size_asset {self.ex_position_size_asset}")
+                            logging.info(f"__set_ex_position_size_asset {position_size_asset}")
 
                             logging.info(f"placing stop loss order")
                             sl_order_id = self.place_sl_order(
-                                asset_amount=self.ex_position_size_asset,
-                                trigger_price=self.order.sl_price,
+                                asset_amount=position_size_asset,
+                                trigger_price=sl_price,
                             )
                             logging.info(f"Submitted SL order -> [order_id={sl_order_id}]")
 
                             sleep(0.5)
                             logging.info(f"placing take profit order")
                             tp_order_id = self.place_tp_order(
-                                asset_amount=self.ex_position_size_asset,
-                                tp_price=round(self.order.tp_price, 1),  # TODO fix this later
+                                asset_amount=position_size_asset,
+                                tp_price=tp_price,
                             )
                             logging.info(f"Submitted TP order -> [order_id={tp_order_id}]")
 
@@ -232,10 +256,14 @@ class LiveTrading:
                             except MoveStopLoss as result:
                                 try:
                                     logging.info(f"self.exchange.move_open_order")
+                                    result_sl_price = self.order.round_size_by_tick_step(
+                                        user_num=str(result.sl_price),
+                                        exchange_num=self.exchange.exchange_settings.price_tick_step,
+                                    )
                                     self.exchange.move_open_order(
                                         symbol=self.exchange.symbol,
                                         order_id=sl_order_id,
-                                        new_price=result.sl_price,
+                                        new_price=result_sl_price,
                                     )
                                     ###########
                                     # TODO ... check that the stop loss was moved

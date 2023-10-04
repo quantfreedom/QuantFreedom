@@ -1,3 +1,4 @@
+from decimal import Decimal
 import pandas as pd
 import numpy as np
 

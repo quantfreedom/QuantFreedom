@@ -153,15 +153,17 @@ class BacktestSettings(NamedTuple):
 
 
 class ExchangeSettings(NamedTuple):
-    market_fee_pct: float = None
     limit_fee_pct: float = None
-    mmr_pct: float = None
     max_leverage: float = None
+    market_fee_pct: float = None
+    mmr_pct: float = None
     min_leverage: float = None
-    max_asset_qty: float = None
-    min_asset_qty: float = None
-    position_mode: int = None
-    leverage_mode: int = None
+    max_asset_size: float = None
+    min_asset_size: float = None
+    asset_tick_step: str = None
+    position_mode: PositionModeType = None
+    leverage_mode: LeverageModeType = None
+    price_tick_step: str = None
 
 
 class OrderSettingsArrays(NamedTuple):
