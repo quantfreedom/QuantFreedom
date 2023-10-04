@@ -30,7 +30,12 @@ def create_directory_structure():
     if not isExist:
         os.makedirs(complete_path)
 
-    complete_path = os.path.join(".", "images")
+    complete_path = os.path.join(".", "logs", "images")
+    isExist = os.path.exists(complete_path)
+    if not isExist:
+        os.makedirs(complete_path)
+
+    complete_path = os.path.join(".", "logs", "images")
     isExist = os.path.exists(complete_path)
     if not isExist:
         os.makedirs(complete_path)

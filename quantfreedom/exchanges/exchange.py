@@ -46,6 +46,9 @@ class Exchange:
     def check_if_order_filled(self, *vargs):
         pass
 
+    def set_leverage_value(self, *vargs):
+        pass
+
     def check_if_order_canceled(self, *vargs):
         pass
 

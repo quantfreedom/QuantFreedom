@@ -13,7 +13,7 @@ from quantfreedom.enums import (
     LeverageModeType,
     PositionModeType,
 )
-from quantfreedom.exchanges.base.exchange import UNIVERSAL_TIMEFRAMES, Exchange
+from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES, Exchange
 
 MUFEX_TIMEFRAMES = [1, 3, 5, 15, 30, 60, 120, 240, 360, 720, "D", "W", "M"]
 
@@ -699,9 +699,20 @@ class Mufex(Exchange):
         symbol_info = self.get_symbol_info(symbol=symbol)
         max_leverage = float(symbol_info["leverageFilter"]["maxLeverage"])
         min_leverage = float(symbol_info["leverageFilter"]["minLeverage"])
+        leverage_tick_step = float(symbol_info["leverageFilter"]["leverageStep"])
         max_asset_size = float(symbol_info["lotSizeFilter"]["maxTradingQty"])
         min_asset_size = float(symbol_info["lotSizeFilter"]["minTradingQty"])
-        return max_leverage, min_leverage, max_asset_size, min_asset_size
+        asset_tick_step = float(symbol_info["lotSizeFilter"]["qtyStep"])
+        price_tick_step = float(symbol_info["priceFilter"]["tickSize"])
+        return (
+            max_leverage,
+            min_leverage,
+            max_asset_size,
+            min_asset_size,
+            asset_tick_step,
+            price_tick_step,
+            leverage_tick_step,
+        )
 
     def set_position_mode_as_hedge_mode(self, symbol):
         self.set_position_mode(symbol=symbol, position_mode=1)
@@ -724,11 +735,13 @@ class Mufex(Exchange):
             min_leverage,
             max_asset_size,
             min_asset_size,
+            asset_tick_step,
+            price_tick_step,
+            leverage_tick_step,
         ) = self.__get_min_max_leverage_and_asset_size(symbol=symbol)
-        symbol_info = self.get_symbol_info(symbol=symbol)
 
         self.exchange_settings = ExchangeSettings(
-            asset_tick_step=symbol_info["lotSizeFilter"]["qtyStep"],
+            asset_tick_step=asset_tick_step,
             market_fee_pct=market_fee_pct,
             limit_fee_pct=limit_fee_pct,
             mmr_pct=self.__get_mmr_pct(symbol=symbol),
@@ -738,5 +751,6 @@ class Mufex(Exchange):
             min_asset_size=min_asset_size,
             position_mode=position_mode,
             leverage_mode=leverage_mode,
-            price_tick_step=symbol_info["priceFilter"]["tickSize"],
+            price_tick_step=price_tick_step,
+            leverage_tick_step=leverage_tick_step,
         )

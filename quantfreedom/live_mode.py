@@ -3,8 +3,7 @@ from time import sleep
 from uuid import uuid4
 from quantfreedom.email_sender import EmailSender
 from quantfreedom.enums import LongOrShortType, MoveStopLoss, OrderPlacementType, PositionModeType, RejectedOrderError
-
-from quantfreedom.exchanges.base.live_exchange import LiveExchange
+from quantfreedom.exchanges.live_exchange import LiveExchange
 from quantfreedom.order_handler.order_handler import Order
 from quantfreedom.strategies.strategy import Strategy
 
@@ -81,14 +80,13 @@ class LiveTrading:
                     logging.info("Maybe we place a trade")
                     try:
                         try:
+                            self.__set_ex_position_size_asset()
                             if self.ex_position_size_asset > 0:
                                 logging.info("if self.ex_position_size_asset > 0:")
-                                self.ex_in_position = True
                                 self.order.position_size_usd = self.ex_position_size_usd
                                 self.order.average_entry = self.ex_average_entry
                             else:
                                 logging.info("else part of if self.ex_position_size_asset > 0:")
-                                self.ex_in_position = False
                                 self.order.position_size_usd = 0.0
                                 self.order.average_entry = 0.0
                                 self.order.equity = self.exchange.get_equity_of_asset(
@@ -112,26 +110,26 @@ class LiveTrading:
                             # create variables
                             entry_size_asset = self.order.entry_size_usd / self.order.entry_price
                             entry_size_asset = self.order.round_size_by_tick_step(
-                                user_num=str(entry_size_asset),
-                                exchange_num=self.exchange.exchange_settings.asset_tick_step,
-                            )
-
-                            position_size_asset = self.order.round_size_by_tick_step(
-                                user_num=str(self.ex_position_size_asset),
+                                user_num=entry_size_asset,
                                 exchange_num=self.exchange.exchange_settings.asset_tick_step,
                             )
 
                             entry_price = self.order.round_size_by_tick_step(
-                                user_num=str(self.order.entry_price),
+                                user_num=self.order.entry_price,
                                 exchange_num=self.exchange.exchange_settings.price_tick_step,
                             )
                             sl_price = self.order.round_size_by_tick_step(
-                                user_num=str(self.order.sl_price),
+                                user_num=self.order.sl_price,
                                 exchange_num=self.exchange.exchange_settings.price_tick_step,
                             )
                             tp_price = self.order.round_size_by_tick_step(
-                                user_num=str(self.order.tp_price),
+                                user_num=self.order.tp_price,
                                 exchange_num=self.exchange.exchange_settings.price_tick_step,
+                            )
+
+                            leverage = self.order.round_size_by_tick_step(
+                                user_num=self.order.leverage,
+                                exchange_num=self.exchange.exchange_settings.leverage_tick_step,
                             )
 
                             # place the order
@@ -160,14 +158,30 @@ class LiveTrading:
 
                             # cancel other orders if in position
                             logging.info(f"checking if in position to cancel tp and sl")
-                            if self.ex_in_position:
+                            self.__set_ex_position_size_asset()
+                            if self.ex_position_size_asset > 0:
                                 logging.info(f"we are in a pos and trying to cancle tp and sl")
                                 if not self.exchange.cancel_all_open_order_per_symbol(symbol=self.exchange.symbol):
                                     logging.warning("Wasn't able to verify that the tp and sl were canceled")
 
                             sleep(0.5)
+
+                            # set the levergae
+                            verify_set_leverage = self.exchange.set_leverage_value(
+                                symbol=self.exchange.symbol,
+                                leverage=leverage,
+                            )
+                            logging.info(f"if not verify_set_leverage")
+                            # checking if tp and sl were placed
+                            if not verify_set_leverage:
+                                msg += f"Couldn't verify leverage was set "
+                                send_verify_error = True
+
                             # place stop loss order
-                            self.__set_ex_position_size_asset()
+                            position_size_asset = self.order.round_size_by_tick_step(
+                                user_num=self.ex_position_size_asset,
+                                exchange_num=self.order.exchange_settings.asset_tick_step,
+                            )
                             logging.info(f"__set_ex_position_size_asset {position_size_asset}")
 
                             logging.info(f"placing stop loss order")
@@ -236,8 +250,8 @@ class LiveTrading:
 
                         except RejectedOrderError as e:
                             pass
-
-                        if self.ex_in_position:
+                        self.__set_ex_position_size_asset()
+                        if self.ex_position_size_asset > 0:
                             logging.info(f"if self.ex_in_position")
                             try:
                                 logging.info(f"self.order.check_move_stop_loss_to_be")
@@ -265,9 +279,7 @@ class LiveTrading:
                                         order_id=sl_order_id,
                                         new_price=result_sl_price,
                                     )
-                                    ###########
-                                    # TODO ... check that the stop loss was moved
-                                    ##########
+                                    self.exchange.get_open_order_by_order_id
                                     logging.info(
                                         f"trying to move the stop loss from {self.order.sl_price} to {result.sl_price}"
                                     )
@@ -336,7 +348,10 @@ class LiveTrading:
 
     def __set_ex_position_size_asset(self):
         logging.info(f"__set_ex_position_size_asset(self")
-        self.ex_position_size_asset = float(self.get_position_info().get("size"))
+        self.ex_position_size_asset = self.order.round_size_by_tick_step(
+            float(self.get_position_info().get("size")),
+            self.exchange.exchange_settings.asset_tick_step,
+        )
 
     def __set_exchange_variables(self, entry_order_id, sl_order_id, tp_order_id):
         logging.info(f"__set_exchange_variables(self, entry_order_id, sl_order_id, ")

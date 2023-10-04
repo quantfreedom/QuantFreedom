@@ -160,10 +160,11 @@ class ExchangeSettings(NamedTuple):
     min_leverage: float = None
     max_asset_size: float = None
     min_asset_size: float = None
-    asset_tick_step: str = None
-    position_mode: PositionModeType = None
-    leverage_mode: LeverageModeType = None
-    price_tick_step: str = None
+    asset_tick_step: float = None
+    position_mode: int = None
+    leverage_mode: int = None
+    price_tick_step: float = None
+    leverage_tick_step: float = None
 
 
 class OrderSettingsArrays(NamedTuple):

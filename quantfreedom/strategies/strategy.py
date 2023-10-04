@@ -171,6 +171,7 @@ class Strategy:
         fig.show()
         fig_filename = os.path.join(
             ".",
+            "logs",
             "images",
             f'{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.png',
         )

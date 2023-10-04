@@ -2,8 +2,8 @@ import logging
 from time import sleep
 from uuid import uuid4
 from quantfreedom.enums import LeverageModeType, LongOrShortType, PositionModeType
-from quantfreedom.exchanges.base.exchange import UNIVERSAL_TIMEFRAMES
-from quantfreedom.exchanges.base.live_exchange import LiveExchange
+from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES
+from quantfreedom.exchanges.live_exchange import LiveExchange
 from quantfreedom.exchanges.mufex_exchange.mufex import MUFEX_TIMEFRAMES, Mufex
 
 

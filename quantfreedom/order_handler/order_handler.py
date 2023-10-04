@@ -156,7 +156,9 @@ class Order:
     def calculate_take_profit(self):
         pass
 
-    def round_size_by_tick_step(user_num: str, exchange_num: str) -> float:
+    def round_size_by_tick_step(self, user_num: float, exchange_num: float) -> float:
+        user_num = str(user_num)
+        exchange_num = str(exchange_num)
         int_num = int(Decimal(user_num) / Decimal(exchange_num))
         float_num = float(Decimal(int_num) * Decimal(exchange_num))
         return float_num
