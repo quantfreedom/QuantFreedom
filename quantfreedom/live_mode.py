@@ -437,27 +437,25 @@ class LiveTrading:
             sl_order_id=sl_order_id,
             tp_order_id=tp_order_id,
         )
-        message = f"\
+        message = f"\n\
             An order was placed successfully\n\
-            \
-            User data ->        [average_entry={self.order.average_entry}]\n\
-                                [position_size_usd={self.order.position_size_usd}]\n\
-                                [entry_price={self.order.entry_price}]\n\
-                                [entry_size_usd={self.order.entry_size_usd}]\n\
-                                [leverage={self.order.leverage}]\n\
-                                [liq price={self.order.liq_price}]\n\
-                                [take_profit_price={self.order.tp_price}]\n\
-                                [stop_loss_price={self.order.sl_price}]\n\
-                                [possible loss={self.order.possible_loss}]\n\
-                            \n\
-            Exchange info ->    [candle_closing_price={self.exchange.candles_np[-1,3]}]\n\
-                                [average_entry={self.order.average_entry}]\n\
-                                [entry_price={self.order.entry_price}]\n\
-                                [position_size_usd={self.order.position_size_usd}]\n\
-                                [leverage={self.order.leverage}]\n\
-                                [liq price={self.order.liq_price}]\n\
-                                [entry_size_usd={self.order.entry_size_usd}]\n\
-                                [take_profit_price={self.order.tp_price}]\n\
-                                [stop_loss_price={self.order.sl_price}]\n\
-                                [possible loss={self.ex_possible_loss}]\n"
+                    [ex_candle_closing_price={self.exchange.candles_np[-1,3]}]\n\
+                    [entry_price={self.order.entry_price}]\n\
+                    [ex_entry_price={self.ex_entry_price}]\n\
+                    [average_entry={self.order.average_entry}]\n\
+                    [ex_average_entry={self.ex_average_entry}]\n\
+                    [position_size_usd={self.order.position_size_usd}]\n\
+                    [ex_position_size_usd={self.ex_position_size_usd}]\n\
+                    [entry_size_usd={self.order.entry_size_usd}]\n\
+                    [ex_entry_size_usd={self.ex_entry_size_usd}]\n\
+                    [leverage={self.order.leverage}]\n\
+                    [ex_leverage={self.ex_leverage}]\n\
+                    [liq price={self.order.liq_price}]\n\
+                    [ex_liq price={self.ex_liq_price}]\n\
+                    [stop_loss_price={self.order.sl_price}]\n\
+                    [ex_stop_loss_price={self.ex_sl_price}]\n\
+                    [take_profit_price={self.order.tp_price}]\n\
+                    [ex_take_profit_price={self.ex_tp_price}]\n\
+                    [possible loss={self.order.possible_loss}]\n\
+                    [ex_possible loss={self.ex_possible_loss}]\n"
         return message
