@@ -76,7 +76,7 @@ def create_logging_handler(filename: str, formatter: str):
 
 
 def configure_logging():
-    formatter = "%(asctime)s - %(levelname)s - %(message)s"
+    formatter = "%(asctime)s - %(message)s"
 
     root = logging.getLogger("info")
     filename = os.path.join(".", "logs", "info", f'info_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
@@ -100,14 +100,13 @@ def configure_logging():
 
     logging.ENTRY = 9
     logging.addLevelName(9, "Entry")
-    logging.MOVED_SL = 11
-    logging.addLevelName(11, "Moved Stop Loss")
-
     filename = os.path.join(".", "logs", "entries", f'entry_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
     root = logging.getLogger("entry")
     root.setLevel(logging.INFO)
     root.addHandler(create_logging_handler(filename, formatter))
 
+    logging.MOVED_SL = 11
+    logging.addLevelName(11, "Moved Stop Loss")
     filename = os.path.join(".", "logs", "moved_sl", f'moved_sl_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
     root = logging.getLogger("moved_sl")
     root.setLevel(logging.INFO)
@@ -133,7 +132,7 @@ if __name__ == "__main__":
         risk_account_pct_size=np.array([0.001]) / 100,
         risk_reward=np.array([2.0, 3.0, 5.0]),
         sl_based_on_add_pct=np.array([0.01, 0.02, 0.03]) / 100,
-        sl_based_on_lookback=np.array([50, 70]),
+        sl_based_on_lookback=np.array([300]),
         sl_candle_body_type=np.array([CandleBodyType.Low]),
         sl_to_be_based_on_candle_body_type=np.array([CandleBodyType.Nothing]),
         sl_to_be_when_pct_from_candle_body=np.array([0.0]) / 100,
@@ -160,7 +159,7 @@ if __name__ == "__main__":
         timeframe="1m",
         symbol="BTCUSDT",
         trading_in="USDT",
-        candles_to_dl=300,
+        candles_to_dl=400,
         long_or_short=LongOrShortType.Long,
         use_test_net=True,
     )

@@ -1,7 +1,7 @@
 from quantfreedom.enums import (
     IncreasePositionType,
     OrderStatus,
-    RejectedOrderError,
+    RejectedOrder,
     StopLossStrategyType,
 )
 
@@ -102,12 +102,12 @@ class IncreasePositionLong:
         possible_loss += account_state_equity * self.risk_account_pct_size  # will this work right?
 
         if possible_loss > account_state_equity * self.max_equity_risk_pct:
-            raise RejectedOrderError("possible loss too big")
+            raise RejectedOrder("possible loss too big")
         return round(possible_loss, 2)
 
     def __check_size_value(self, entry_size_asset):
         if self.max_asset_size < entry_size_asset < self.min_asset_size:
-            raise RejectedOrderError("Long Increase - Size Value is either to big or too small")
+            raise RejectedOrder("Long Increase - Size Value is either to big or too small")
 
     def amount_based(self, **vargs):
         pass
@@ -175,7 +175,7 @@ class IncreasePositionLong:
             * (entry_price - sl_price + entry_price * self.market_fee_pct + sl_price * self.market_fee_pct)
         )
         if entry_size_usd < 1:
-            raise RejectedOrderError(order_status=OrderStatus.EntrySizeTooSmall)
+            raise RejectedOrder(order_status=OrderStatus.EntrySizeTooSmall, entry_size_usd=entry_size_usd)
         average_entry = (entry_size_usd + position_size_usd) / (
             (entry_size_usd / entry_price) + (position_size_usd / average_entry)
         )

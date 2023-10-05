@@ -2,11 +2,18 @@ import logging
 from time import sleep
 from uuid import uuid4
 from quantfreedom.email_sender import EmailSender
-from quantfreedom.enums import LongOrShortType, MoveStopLoss, OrderPlacementType, PositionModeType, RejectedOrderError
+from quantfreedom.enums import (
+    LongOrShortType,
+    MoveStopLoss,
+    OrderPlacementType,
+    OrderStatus,
+    PositionModeType,
+    RejectedOrder,
+)
 from quantfreedom.exchanges.live_exchange import LiveExchange
 from quantfreedom.order_handler.order_handler import Order
 from quantfreedom.strategies.strategy import Strategy
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class LiveTrading:
@@ -66,13 +73,6 @@ class LiveTrading:
 
         self.exchange.set_init_last_fetched_time()
         self.info_logger(f"Last Candle {self.exchange.last_fetched_time_to_pd_datetime()}")
-        self.info_logger(
-            f"Will sleep for {datetime.fromtimestamp(self.get_time_to_next_bar_seconds()).strftime('%M mins and %S seconds')} before getting first batch of candles"
-        )
-        print(
-            f"Will sleep for {datetime.fromtimestamp(self.get_time_to_next_bar_seconds()).strftime('%M mins and %S seconds')} before getting first batch of candles"
-        )
-
         sleep(self.get_time_to_next_bar_seconds())
         while True:
             try:
@@ -259,11 +259,11 @@ class LiveTrading:
 
                             else:
                                 self.info_logger(f"message = self.__create_entry_successful_message")
-                                # message = self.__create_entry_successful_message(
-                                #     entry_order_id=entry_order_id,
-                                #     sl_order_id=sl_order_id,
-                                #     tp_order_id=tp_order_id,
-                                # )
+                                message = self.__create_entry_successful_message(
+                                    entry_order_id=entry_order_id,
+                                    sl_order_id=sl_order_id,
+                                    tp_order_id=tp_order_id,
+                                )
                                 self.info_logger(f"fig_filename = self.__get_fig_filename")
                                 # fig_filename = self.__get_fig_filename(
                                 #     entry_price=self.ex_entry_price,
@@ -276,10 +276,14 @@ class LiveTrading:
                                 #     message=message,
                                 #     fig_filename=fig_filename,
                                 # )
-                                # self.info_logger(f"{message}")
+                                self.entry_logger(f"{message}")
 
-                        except RejectedOrderError as e:
-                            RejectedOrderError(f"RejectedOrderError for some reason ->{e.order_status}")
+                        except RejectedOrder as e:
+                            self.info_logger(
+                                f"RejectedOrder -> {OrderStatus._fields[e.order_status]} {e.entry_size_usd}"
+                            )
+                            print(f"RejectedOrder -> {OrderStatus._fields[e.order_status]} {e.entry_size_usd}")
+                            pass
                         self.__set_ex_position_size_asset()
                         if self.ex_position_size_asset > 0:
                             self.info_logger(f"We are in a position ... checking to move stop loss")
@@ -297,7 +301,9 @@ class LiveTrading:
                                     price_data=self.exchange.candles_np,
                                 )
                                 self.info_logger(f"no trail stop loss")
-                            except RejectedOrderError as e:
+                            except RejectedOrder as e:
+                                print(f"RejectedOrder -> {OrderStatus._fields[e.order_status]}")
+                                self.info_logger(f"RejectedOrder -> {OrderStatus._fields[e.order_status]}")
                                 pass
                             except MoveStopLoss as result:
                                 try:
@@ -319,22 +325,17 @@ class LiveTrading:
                                 except KeyError as e:
                                     logging.error(f"Something wrong with move stop loss -> {e}")
                                     raise KeyError
+                                pass
 
                     except Exception as e:
-                        logging.error(f"Something is wrong in the order creation part of live mode -> {e}")
-                        raise Exception
+                        self.error_logger(f"Something is wrong in the order creation part of live mode -> {e}")
+                        raise Exception(f"Something is wrong in the order creation part of live mode -> {e}")
                 else:
                     self.info_logger("No entry ... waiting to get next bar")
             except Exception as e:
-                logging.error(f"Something is wrong in the run part of live mode -> {e}")
-                raise Exception(f"Something is wrong in the run part of live mode -> {e}")
+                self.error_logger(f"Something is wrong with getting candles -> {e}")
+                raise Exception(f"Something is wrong with getting candles -> {e}")
             self.info_logger(f"Last Candle {self.exchange.last_fetched_time_to_pd_datetime()}")
-            self.info_logger(
-                f"Will sleep for {datetime.fromtimestamp(self.get_time_to_next_bar_seconds()).strftime('%M mins and %S seconds')} before getting next candles\n\n"
-            )
-            print(
-                f"Will sleep for {datetime.fromtimestamp(self.get_time_to_next_bar_seconds()).strftime('%M mins and %S seconds')} before getting next candles"
-            )
             sleep(self.get_time_to_next_bar_seconds())
         logging.error("Server stopped")
 
@@ -344,6 +345,9 @@ class LiveTrading:
             (self.exchange.last_fetched_ms_time + self.exchange.timeframe_in_ms * 2)
             - self.exchange.get_current_time_ms(),
         )
+        td = str(timedelta(seconds=ms_to_next_candle / 1000)).split(":")
+        self.info_logger(f"Will sleep for {td[0]} hrs {td[1]} mins and {td[2]} seconds before getting next candles\n")
+        print(f"Will sleep for {td[0]} hrs {td[1]} mins and {td[2]} seconds before getting next candles")
 
         return int(ms_to_next_candle / 1000)
 

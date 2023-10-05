@@ -101,7 +101,7 @@ def backtest_df_only_nb(
                         order.calculate_leverage()
                         order.calculate_take_profit()
 
-                    except RejectedOrderError as e:
+                    except RejectedOrder as e:
                         pass
                 if order.position_size_usd > 0:
                     try:
@@ -113,7 +113,7 @@ def backtest_df_only_nb(
                         )
                         order.check_move_stop_loss_to_be(bar_index=bar_index, price_data=price_data)
                         order.check_move_trailing_stop_loss(bar_index=bar_index, price_data=price_data)
-                    except RejectedOrderError as e:
+                    except RejectedOrder as e:
                         pass
                     except DecreasePosition as e:
                         order.decrease_position(
@@ -239,7 +239,7 @@ def sim_6_nb(
                             tp_price=order.tp_price,
                         )
                     )
-                except RejectedOrderError as e:
+                except RejectedOrder as e:
                     pass
             if order.position_size_usd > 0:
                 try:
@@ -251,7 +251,7 @@ def sim_6_nb(
                     )
                     order.check_move_stop_loss_to_be(bar_index=bar_index, price_data=price_data)
                     order.check_move_trailing_stop_loss(bar_index=bar_index, price_data=price_data)
-                except RejectedOrderError as e:
+                except RejectedOrder as e:
                     pass
                 except DecreasePosition as e:
                     order.decrease_position(

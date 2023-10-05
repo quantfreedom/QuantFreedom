@@ -236,13 +236,19 @@ class OrderResult(NamedTuple):
     tp_price: float = np.nan
 
 
-class RejectedOrderError(Exception):
+class RejectedOrder(Exception):
     """Rejected order error."""
 
     order_status = None
+    entry_size_usd = None
 
-    def __init__(self, order_status: OrderStatus):
+    def __init__(
+        self,
+        order_status: OrderStatus,
+        entry_size_usd: float = None,
+    ):
         self.order_status = order_status
+        self.entry_size_usd = entry_size_usd
 
 
 class DecreasePosition(Exception):
