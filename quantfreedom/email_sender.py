@@ -37,7 +37,6 @@ class EmailSender:
         self._send_email(subject=subject, body=body, fig_filename=fig_filename)
 
     def _send_email(self, subject, body, fig_filename=None):
-        logging.info(f"Notifying by email to [{self.receiver}]")
         em = MIMEMultipart()
         em["From"] = self.sender_email
         em["To"] = self.receiver

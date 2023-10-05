@@ -25,17 +25,37 @@ from my_stuff import EmailSenderInfo, MufexTestKeys
 
 
 def create_directory_structure():
+    complete_path = os.path.join(".", "logs", "images")
+    isExist = os.path.exists(complete_path)
+    if not isExist:
+        os.makedirs(complete_path)
+
+    complete_path = os.path.join(".", "logs", "info")
+    isExist = os.path.exists(complete_path)
+    if not isExist:
+        os.makedirs(complete_path)
+
+    complete_path = os.path.join(".", "logs", "warnings")
+    isExist = os.path.exists(complete_path)
+    if not isExist:
+        os.makedirs(complete_path)
+
+    complete_path = os.path.join(".", "logs", "debug")
+    isExist = os.path.exists(complete_path)
+    if not isExist:
+        os.makedirs(complete_path)
+
+    complete_path = os.path.join(".", "logs", "errors")
+    isExist = os.path.exists(complete_path)
+    if not isExist:
+        os.makedirs(complete_path)
+
     complete_path = os.path.join(".", "logs", "entries")
     isExist = os.path.exists(complete_path)
     if not isExist:
         os.makedirs(complete_path)
 
-    complete_path = os.path.join(".", "logs", "images")
-    isExist = os.path.exists(complete_path)
-    if not isExist:
-        os.makedirs(complete_path)
-
-    complete_path = os.path.join(".", "logs", "images")
+    complete_path = os.path.join(".", "logs", "moved_sl")
     isExist = os.path.exists(complete_path)
     if not isExist:
         os.makedirs(complete_path)
@@ -55,40 +75,55 @@ def create_logging_handler(filename: str, formatter: str):
     return handler
 
 
-def configure_entry_logging():
-    print(f"Configuring entry log level [INFO]")
-    entry_logger = logging.getLogger("entry_logger")
-    filename = os.path.join(
-        ".",
-        "logs",
-        "entries",
-        f'entries_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log',
-    )
+def configure_logging():
     formatter = "%(asctime)s - %(levelname)s - %(message)s"
-    entry_logger.addHandler(create_logging_handler(filename, formatter))
 
-
-def configure_server_logging():
-    print(f"Configuring server log level [INFO]")
-    root = logging.getLogger()
+    root = logging.getLogger("info")
+    filename = os.path.join(".", "logs", "info", f'info_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
     root.setLevel(logging.INFO)
-    formatter = "%(asctime)s - %(levelname)s - %(message)s"
-    filename = filename = os.path.join(".", "logs", f'server_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
     root.addHandler(create_logging_handler(filename, formatter))
 
+    root = logging.getLogger("warnings")
+    filename = os.path.join(".", "logs", "warnings", f'warnings_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
+    root.setLevel(logging.INFO)
+    root.addHandler(create_logging_handler(filename, formatter))
 
-def configure_logging():
-    configure_server_logging()
-    configure_entry_logging()
+    filename = os.path.join(".", "logs", "errors", f'errors_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
+    root = logging.getLogger("errors")
+    root.setLevel(logging.INFO)
+    root.addHandler(create_logging_handler(filename, formatter))
+
+    filename = os.path.join(".", "logs", "debug", f'debug_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
+    root = logging.getLogger("debug")
+    root.setLevel(logging.INFO)
+    root.addHandler(create_logging_handler(filename, formatter))
+
+    logging.ENTRY = 9
+    logging.addLevelName(9, "Entry")
+    logging.MOVED_SL = 11
+    logging.addLevelName(11, "Moved Stop Loss")
+
+    filename = os.path.join(".", "logs", "entries", f'entry_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
+    root = logging.getLogger("entry")
+    root.setLevel(logging.INFO)
+    root.addHandler(create_logging_handler(filename, formatter))
+
+    filename = os.path.join(".", "logs", "moved_sl", f'moved_sl_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
+    root = logging.getLogger("moved_sl")
+    root.setLevel(logging.INFO)
+    root.addHandler(create_logging_handler(filename, formatter))
 
 
 if __name__ == "__main__":
     create_directory_structure()
 
     configure_logging()
-
-    server_logger = logging.getLogger()
-    server_logger.info("testing server log")
+    logging.getLogger("info").info("Testing info logs")
+    logging.getLogger("warnings").warning("Testing warning logs")
+    logging.getLogger("errors").error("Testing errors logs")
+    logging.getLogger("debug").info("Testing debug logs")
+    logging.getLogger("entry").info("Testing entry logs")
+    logging.getLogger("moved_sl").info("Testing moved stop loss")
 
     order_settings_arrays = OrderSettingsArrays(
         increase_position_type=np.array([IncreasePositionType.RiskPctAccountEntrySize]),

@@ -99,7 +99,6 @@ class Strategy:
             raise Exception(f"Something is wrong evaluting the RSI is below -> {e}")
 
     def return_plot_image(self, price_data: pd.DataFrame, entry_price, sl_price, tp_price, liq_price, **vargs):
-        logging.info(f"return_plot_image(self, price_data: pd.DataFrame, entry_price")
         graph_entry = [price_data.timestamp.iloc[-1]]
         fig = make_subplots(
             rows=2,

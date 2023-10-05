@@ -129,9 +129,6 @@ class LiveMufex(LiveExchange, Mufex):
         self.candles_df = self.get_candles_list_to_pd(candles_list=candles_list, col_end=-2)
         self.candles_np = self.candles_df.iloc[:, 1:].values
         time_it_took_in_seconds = self.get_current_time_seconds() - start_time
-        logging.info(
-            f"It took {time_it_took_in_seconds} seconds to download the candles"
-        )
 
     def check_long_hedge_mode_if_in_position(self, **vargs):
         if float(self.get_symbol_position_info(symbol=self.symbol)[0]["entryPrice"]) > 0:

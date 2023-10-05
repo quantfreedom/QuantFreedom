@@ -231,9 +231,6 @@ class Mufex(Exchange):
             except Exception as e:
                 raise Exception(f"Mufex Class Something is wrong with get_candles_df {response.get('message')} - > {e}")
         time_it_took_in_seconds = self.get_current_time_seconds() - start_time
-        logging.info(
-            f"It took {time_it_took_in_seconds} seconds or {round(time_it_took_in_seconds/60,2)} minutes to download the candles"
-        )
         print(
             f"It took {time_it_took_in_seconds} seconds or {round(time_it_took_in_seconds/60,2)} minutes to download the candles"
         )
