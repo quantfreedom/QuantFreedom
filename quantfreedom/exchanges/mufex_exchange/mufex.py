@@ -73,7 +73,7 @@ class Mufex(Exchange):
             response_json = response.json()
             return response_json
         except Exception as e:
-            raise Exception(f"Mufex Class Something wrong with __HTTP_post_request - > {e}")
+            raise Exception(f"Mufex Something wrong with __HTTP_post_request - > {e}")
 
     def __HTTP_post_request_no_params(self, end_point):
         time_stamp = str(int(time() * 1000))
@@ -91,7 +91,7 @@ class Mufex(Exchange):
             response_json = response.json()
             return response_json
         except Exception as e:
-            raise Exception(f"Mufex Class Something wrong with __HTTP_post_request_no_params - > {e}")
+            raise Exception(f"Mufex Something wrong with __HTTP_post_request_no_params - > {e}")
 
     def HTTP_get_request(
         self,
@@ -118,7 +118,7 @@ class Mufex(Exchange):
             response_json = response.json()
             return response_json
         except Exception as e:
-            raise Exception(f"Mufex Class Something wrong with HTTP_get_request - > {e}")
+            raise Exception(f"Mufex Something wrong with HTTP_get_request - > {e}")
 
     def HTTP_get_request_no_params(self, end_point):
         time_stamp = str(int(time() * 1000))
@@ -140,7 +140,7 @@ class Mufex(Exchange):
             response_json = response.json()
             return response_json
         except Exception as e:
-            raise Exception(f"Mufex Class Something wrong with HTTP_get_request_no_params - > {e}")
+            raise Exception(f"Mufex Something wrong with HTTP_get_request_no_params - > {e}")
 
     def __params_as_string(self, params):
         params_as_string = str(json.dumps(params))
@@ -229,7 +229,7 @@ class Mufex(Exchange):
                     # add one sec so we don't download the same candle two times
                     params["start"] = last_candle_time_ms + 1000
             except Exception as e:
-                raise Exception(f"Mufex Class Something is wrong with get_candles_df {response.get('message')} - > {e}")
+                raise Exception(f"Mufex Something is wrong with get_candles_df {response.get('message')} - > {e}")
         time_it_took_in_seconds = self.get_current_time_seconds() - start_time
         print(
             f"It took {time_it_took_in_seconds} seconds or {round(time_it_took_in_seconds/60,2)} minutes to download the candles"
@@ -252,7 +252,7 @@ class Mufex(Exchange):
             data_list = response["data"]["list"]
             return data_list
         except Exception as e:
-            raise Exception(f"Mufex Class get_all_symbols_info = Data or List is empty {response['message']} -> {e}")
+            raise Exception(f"Mufex get_all_symbols_info = Data or List is empty {response['message']} -> {e}")
 
     def get_symbol_info(self, symbol: str, **vargs):
         return self.get_all_symbols_info(params={"symbol": symbol})[0]
@@ -270,7 +270,7 @@ class Mufex(Exchange):
             data_list = response["data"]["list"][0]
             return data_list
         except Exception as e:
-            raise Exception(f"Mufex Class get_risk_limit_info = Data or List is empty {response['message']} -> {e}")
+            raise Exception(f"Mufex get_risk_limit_info = Data or List is empty {response['message']} -> {e}")
 
     def create_order(self, params: dict, **vargs):
         """
@@ -283,7 +283,7 @@ class Mufex(Exchange):
             order_id = response["data"]["orderId"]
             return order_id
         except Exception as e:
-            raise Exception(f"Mufex Class Something is wrong with create_order {response['message']} -> {e}")
+            raise Exception(f"Mufex Something is wrong with create_order {response['message']} -> {e}")
 
     def get_trading_fee_rates(self, **vargs):
         """
@@ -295,7 +295,7 @@ class Mufex(Exchange):
             data_list = response["data"]["list"][0]
             return data_list
         except Exception as e:
-            raise Exception(f"Mufex Class get_trading_fee_rates = Data or List is empty {response['message']} -> {e}")
+            raise Exception(f"Mufex get_trading_fee_rates = Data or List is empty {response['message']} -> {e}")
 
     def get_symbol_trading_fee_rates(self, symbol: str, **vargs):
         """
@@ -310,7 +310,7 @@ class Mufex(Exchange):
             return data_list
         except Exception as e:
             raise Exception(
-                f"Mufex Class get_symbol_trading_fee_rates = Data or List is empty {response['message']} -> {e}"
+                f"Mufex get_symbol_trading_fee_rates = Data or List is empty {response['message']} -> {e}"
             )
 
     def get_order_history(self, symbol: str, limit: int = 50, params: dict = {}, **vargs):
@@ -328,7 +328,7 @@ class Mufex(Exchange):
             data_list = response["data"]["list"]
             return data_list
         except Exception as e:
-            raise Exception(f"Mufex Class get_order_history = Data or List is empty {response['message']} -> {e}")
+            raise Exception(f"Mufex get_order_history = Data or List is empty {response['message']} -> {e}")
 
     def get_order_history_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **vargs):
         params["orderId"] = order_id
@@ -351,7 +351,7 @@ class Mufex(Exchange):
             data_list = response["data"]["list"]
             return data_list
         except Exception as e:
-            raise Exception(f"Mufex Class get_open_orders = Data or List is empty {response['message']} -> {e}")
+            raise Exception(f"Mufex get_open_orders = Data or List is empty {response['message']} -> {e}")
 
     def get_open_order_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **vargs):
         params["orderId"] = order_id
@@ -374,7 +374,7 @@ class Mufex(Exchange):
             data_list = response["data"]["list"]
             return data_list
         except Exception as e:
-            raise Exception(f"Mufex Class get_filled_orders = Data or List is empty {response['message']} -> {e}")
+            raise Exception(f"Mufex get_filled_orders = Data or List is empty {response['message']} -> {e}")
 
     def get_filled_orders_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **vargs):
         params["orderId"] = order_id
@@ -392,7 +392,7 @@ class Mufex(Exchange):
             return data_list
         except Exception as e:
             raise Exception(
-                f"Mufex Class get_account_position_info = Data or List is empty {response['message']} -> {e}"
+                f"Mufex get_account_position_info = Data or List is empty {response['message']} -> {e}"
             )
 
     def get_symbol_position_info(self, symbol: str, limit: int = 20, **vargs):
@@ -410,7 +410,7 @@ class Mufex(Exchange):
             return data_list
         except Exception as e:
             raise Exception(
-                f"Mufex Class get_symbol_position_info = Data or List is empty {response['message']} -> {e}"
+                f"Mufex get_symbol_position_info = Data or List is empty {response['message']} -> {e}"
             )
 
     def cancel_open_order(self, symbol: str, order_id: str, **vargs):
@@ -427,7 +427,7 @@ class Mufex(Exchange):
             response_order_id = response.get("data").get("orderId")
             return response_order_id == order_id or response["message"] == "OK"
         except Exception as e:
-            raise Exception(f"Mufex Class cancel_open_order = Something is wrong {response['message']} -> {e}")
+            raise Exception(f"Mufex cancel_open_order message = {response['message']} -> {e}")
 
     def cancel_all_open_order_per_symbol(self, symbol: str, **vargs):
         """
@@ -441,7 +441,7 @@ class Mufex(Exchange):
             response = self.__HTTP_post_request(end_point=end_point, params=params)
             return response["message"] == "OK"
         except Exception as e:
-            raise Exception(f"Mufex Class cancel_open_order = Something is wrong {response['message']} -> {e}")
+            raise Exception(f"Mufex cancel_open_order message = {response['message']} -> {e}")
 
     def adjust_order(self, params: dict = {}, **vargs):
         """
@@ -459,7 +459,7 @@ class Mufex(Exchange):
             else:
                 raise Exception
         except Exception as e:
-            raise Exception(f"Mufex Class adjust_order = Something is wrong {response['message']} -> {e}")
+            raise Exception(f"Mufex adjust_order message = {response['message']} -> {e}")
 
     def move_limit_order(self, symbol: str, order_id: str, new_price: float, asset_amount: float, **vargs):
         """
@@ -479,7 +479,7 @@ class Mufex(Exchange):
             else:
                 raise Exception
         except Exception as e:
-            raise Exception(f"Mufex Class move_limit_order = Something is wrong {response['message']} -> {e}")
+            raise Exception(f"Mufex move_limit_order message = {response['message']} -> {e}")
 
     def move_stop_order(self, symbol: str, order_id: str, new_price: float, asset_amount: float, **vargs):
         """
@@ -500,7 +500,7 @@ class Mufex(Exchange):
             else:
                 raise Exception
         except Exception as e:
-            raise Exception(f"Mufex Class move_stop_order = Something is wrong {response['message']} -> {e}")
+            raise Exception(f"Mufex move_stop_order message = {response['message']} -> {e}")
 
     def get_wallet_info(self, **vargs):
         """
@@ -513,7 +513,7 @@ class Mufex(Exchange):
             data_list = response["data"]["list"]
             return data_list
         except Exception as e:
-            raise Exception(f"Mufex Class get_wallet_info = Data or List is empty {response['message']} -> {e}")
+            raise Exception(f"Mufex get_wallet_info = Data or List is empty {response['message']} -> {e}")
 
     def get_wallet_info_of_asset(self, trading_in: str, **vargs):
         """
@@ -527,14 +527,14 @@ class Mufex(Exchange):
             return data_list
         except Exception as e:
             raise Exception(
-                f"Mufex Class get_wallet_info_of_asset = Data or List is empty {response['message']} -> {e}"
+                f"Mufex get_wallet_info_of_asset = Data or List is empty {response['message']} -> {e}"
             )
 
     def get_equity_of_asset(self, trading_in: str, **vargs):
         try:
             return float(self.get_wallet_info_of_asset(trading_in=trading_in)["equity"])
         except Exception as e:
-            raise Exception(f"Mufex Class Something is wrong with get_equity_of_asset -> {e}")
+            raise Exception(f"Mufex Something is wrong with get_equity_of_asset -> {e}")
 
     def set_position_mode(self, symbol: str, position_mode: PositionModeType, **vargs):
         """
@@ -552,7 +552,7 @@ class Mufex(Exchange):
             else:
                 raise Exception
         except Exception as e:
-            raise Exception(f"Mufex Class set_position_mode = Data or List is empty {response['message']} -> {e}")
+            raise Exception(f"Mufex set_position_mode = Data or List is empty {response['message']} -> {e}")
 
     def set_leverage_value(self, symbol: str, leverage: float, **vargs):
         """
@@ -572,7 +572,7 @@ class Mufex(Exchange):
             else:
                 raise Exception
         except Exception as e:
-            raise Exception(f"Mufex Class set_leverage_value = Data or List is empty {response['message']} -> {e}")
+            raise Exception(f"Mufex set_leverage_value = Data or List is empty {response['message']} -> {e}")
 
     def set_leverage_mode(self, symbol: str, leverage_mode: LeverageModeType, leverage: int = 5, **vargs):
         """
@@ -594,7 +594,7 @@ class Mufex(Exchange):
             else:
                 raise Exception
         except Exception as e:
-            raise Exception(f"Mufex Class set_leverage_mode = Data or List is empty {response['message']} -> {e}")
+            raise Exception(f"Mufex set_leverage_mode = Data or List is empty {response['message']} -> {e}")
 
     def check_if_order_filled(self, symbol: str, order_id: str, **vargs):
         """
@@ -617,7 +617,7 @@ class Mufex(Exchange):
                 if data_list:
                     return data_list[0]["orderId"]
         except Exception as e:
-            raise Exception(f"Mufex Class check_if_order_filled = Something wrong {response['message']} -> {e}")
+            raise Exception(f"Mufex check_if_order_filled = Something wrong {response['message']} -> {e}")
 
     def check_if_order_canceled(self, symbol: str, order_id: str, **vargs):
         """
@@ -638,7 +638,7 @@ class Mufex(Exchange):
                 if data_list:
                     return data_list[0]["orderId"]
         except Exception as e:
-            raise Exception(f"Mufex Class check_if_order_canceled = Something wrong {response['message']} -> {e}")
+            raise Exception(f"Mufex check_if_order_canceled = Something wrong {response['message']} -> {e}")
 
     def check_if_order_open(self, symbol: str, order_id: str, **vargs):
         """
@@ -659,7 +659,7 @@ class Mufex(Exchange):
                 if data_list:
                     return data_list[0]["orderId"]
         except Exception as e:
-            raise Exception(f"Mufex Class check_if_order_canceled = Something wrong {response['message']} -> {e}")
+            raise Exception(f"Mufex check_if_order_canceled = Something wrong {response['message']} -> {e}")
 
     """
     ##############################################################
