@@ -1,8 +1,0 @@
-sl init
-    sl to be
-        trailing sl
-    trailing sl
-sl based on
-    sl to be
-        trailing sl
-    trailing sl

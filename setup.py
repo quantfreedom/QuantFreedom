@@ -18,7 +18,7 @@ setup(
     url="https://github.com/QuantFreedom1022/quantfreedom",
     packages=find_packages(),
     install_requires=[
-        "ccxt==2.9.13",
+        "ccxt==4.0.61",
         "dash==2.9.1",
         "dash_bootstrap_templates",
         "ipywidgets==7.7.2",
@@ -28,9 +28,9 @@ setup(
         "notebook",
         "tqdm",
         'numba>=0.53.1; python_version < "3.10"',
-        'numba==0.56.4; python_version >= "3.10"',
-        "numpy==1.24.3",
-        "pandas==2.0.1",
+        'numba==0.57.1; python_version >= "3.10"',
+        "numpy==1.24.0",
+        "pandas==2.0.3",
     ],
     extras_require={
         "web": [

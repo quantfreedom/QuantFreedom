@@ -13,7 +13,6 @@ numba_cache
 .todo
 thinking.txt
 .mustache
-strategy/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
