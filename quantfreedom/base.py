@@ -45,7 +45,7 @@ bg_color = "#0b0b18"
 
 
 def backtest_df_only(
-    equity: float,
+    starting_equity: float,
     os_cart_arrays: OrderSettingsArrays,
     backtest_settings: BacktestSettings,
     exchange_settings: ExchangeSettings,
@@ -68,7 +68,7 @@ def backtest_df_only(
     print(f"Total candles to test: {total_indicator_settings * total_order_settings * total_bars:,}")
 
     strat_array = backtest_df_only_classes(
-        equity=equity,
+        starting_equity=starting_equity,
         os_cart_arrays=os_cart_arrays,
         backtest_settings=backtest_settings,
         exchange_settings=exchange_settings,

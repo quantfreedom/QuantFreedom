@@ -36,7 +36,7 @@ def get_order_settings(
 
 
 def backtest_df_only_classes(
-    equity: float,
+    starting_equity: float,
     os_cart_arrays: OrderSettings,
     exchange_settings: ExchangeSettings,
     backtest_settings: BacktestSettings,
@@ -67,18 +67,18 @@ def backtest_df_only_classes(
                 os_cart_arrays=os_cart_arrays,
             )
 
+            strategy.num_candles = int(-(order_settings.num_candles - 1))
+
             order = Order.instantiate(
-                equity=equity,
+                equity=starting_equity,
                 order_settings=order_settings,
                 exchange_settings=exchange_settings,
                 long_or_short=order_settings.long_or_short,
                 strat_records=strat_records,
             )
 
-            strategy.num_candles = int(order_settings.num_candles)
-
             # entries loop
-            for bar_index in range(strategy.loop_start, total_bars):
+            for bar_index in range(int(order_settings.num_candles - 1), total_bars):
                 strategy.set_candles(bar_index)
                 if strategy.evaluate():  # add in that we are also not at max entry amount
                     try:
@@ -126,7 +126,7 @@ def backtest_df_only_classes(
                             indicator_settings_index=indicator_settings_index,
                         )
             # Checking if gains
-            gains_pct = ((order.equity - order.equity) / order.equity) * 100
+            gains_pct = ((order.equity - starting_equity) / order.equity) * 100
             if gains_pct > backtest_settings.gains_pct_filter:
                 temp_strat_records = order.strat_records[: order.strat_records_filled]
                 pnl_array = temp_strat_records["real_pnl"]

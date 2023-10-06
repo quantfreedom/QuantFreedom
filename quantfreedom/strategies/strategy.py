@@ -37,6 +37,7 @@ class Strategy:
             self.__set_rsi()
         elif candle_processing_mode == CandleProcessingType.CandleBacktest:
             self.set_candles = self.__create_indicator_candle_by_candle
+            self.bar_index = -1
         elif candle_processing_mode == CandleProcessingType.LiveTrading:
             self.set_indicator_settings(indicator_settings_index)
             self.bar_index = -1
@@ -87,8 +88,7 @@ class Strategy:
         if we have a yes entry on candle 15 then in real life we wouldn't enter until 16
         so that is why we have to shift by one
         """
-        self.bar_index = bar_index
-        bar_start = max(-(self.num_candles - 1) + bar_index, 0)
+        bar_start = max(self.num_candles + bar_index, 0)
         self.closing_prices = self.candles.close.iloc[bar_start : bar_index + 1]
         self.rsi = (
             pta.rsi(
