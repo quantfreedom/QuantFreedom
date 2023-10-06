@@ -43,6 +43,7 @@ class LiveTrading:
 
         # logging stuff
         self.info_logger = logging.getLogger("info")
+        self.info_logger.setLevel(logging.DEBUG)
         self.debug_logger = logging.getLogger("debug")
         self.entry_logger = logging.getLogger("entry")
 

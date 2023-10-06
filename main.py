@@ -65,7 +65,7 @@ def configure_logging():
 
     filename = os.path.join(".", "logs", "info", f'info_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
     root = logging.getLogger("info")
-    root.setLevel(logging.INFO)
+    root.setLevel(logging.ERROR)
     root.addHandler(create_logging_handler(filename, formatter))
     root.info("Testing info logs")
 

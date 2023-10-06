@@ -30,14 +30,14 @@ class Strategy:
         self.indicator_settings_arrays = self.create_ind_cart_product_nb(IndicatorSettingsArrays())
 
         if candle_processing_mode == CandleProcessingType.RegularBacktest:
-            self.current_exit_signals = np.empty_like(candles.close.values)
-            self.set_candles = self.__set_bar_index
+            self.current_exit_signals = np.full_like(candles.close.values, np.nan)
+            self.create_indicator = self.__set_bar_index
             self.closing_prices = candles.close
             self.set_indicator_settings(indicator_settings_index=0)
             self.__set_rsi()
         elif candle_processing_mode == CandleProcessingType.CandleBacktest:
-            self.current_exit_signals = np.empty_like(candles.close.values)
-            self.set_candles = self.__create_indicator_candle_by_candle
+            self.current_exit_signals = np.full_like(candles.close.values, np.nan)
+            self.create_indicator = self.__create_indicator_candle_by_candle
             self.bar_index = -1
         elif candle_processing_mode == CandleProcessingType.LiveTrading:
             self.set_indicator_settings(indicator_settings_index)
@@ -91,7 +91,11 @@ class Strategy:
         """
         bar_start = max(self.num_candles + bar_index, 0)
         self.closing_prices = self.candles.close.iloc[bar_start : bar_index + 1]
-        self.rsi = (
+        self.rsi_exit = pta.rsi(
+            close=self.closing_prices,
+            length=self.rsi_lenth,
+        ).round(decimals=2)
+        self.rsi_entry = (
             pta.rsi(
                 close=self.closing_prices,
                 length=self.rsi_lenth,
@@ -123,12 +127,16 @@ class Strategy:
     #########################################################################
 
     def set_indicator_settings(self, indicator_settings_index):
-        self.loop_start = self.rsi_lenth = int(self.indicator_settings_arrays.rsi_lenth[indicator_settings_index])
+        self.rsi_lenth = int(self.indicator_settings_arrays.rsi_lenth[indicator_settings_index])
         self.rsi_is_below = int(self.indicator_settings_arrays.rsi_is_below[indicator_settings_index])
 
     def evaluate(self):
         try:
-            if self.rsi.iloc[self.bar_index] < self.rsi_is_below:
+            # exit price
+            if self.rsi_exit.iloc[self.bar_index] > 60:
+                self.current_exit_signals[self.bar_index] = self.candles.close.values[self.bar_index]
+
+            if self.rsi_entry.iloc[self.bar_index] < self.rsi_is_below:
                 return True
             else:
                 return False

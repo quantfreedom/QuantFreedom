@@ -79,7 +79,7 @@ def backtest_df_only_classes(
 
             # entries loop
             for bar_index in range(int(order_settings.num_candles - 1), total_bars):
-                strategy.set_candles(bar_index)
+                strategy.create_indicator(bar_index)
                 if strategy.evaluate():  # add in that we are also not at max entry amount
                     try:
                         order.calculate_stop_loss(
