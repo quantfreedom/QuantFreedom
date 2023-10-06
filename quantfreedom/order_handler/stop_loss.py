@@ -113,29 +113,29 @@ class StopLossLong:
             self.tsl_price_getter = self.__get_candle_body_price_close
             self.move_tsl_checker = self.check_move_trailing_stop_loss
 
-    def __get_candle_body_price_open(self, lookback, bar_index, price_data):
-        return price_data[lookback:bar_index, 0].min()
+    def __get_candle_body_price_open(self, lookback, bar_index, candles):
+        return candles[lookback:bar_index, 0].min()
 
-    def __get_candle_body_price_high(self, lookback, bar_index, price_data):
-        return price_data[lookback:bar_index, 1].min()
+    def __get_candle_body_price_high(self, lookback, bar_index, candles):
+        return candles[lookback:bar_index, 1].min()
 
-    def __get_candle_body_price_low(self, lookback, bar_index, price_data):
-        return price_data[lookback:bar_index, 2].min()
+    def __get_candle_body_price_low(self, lookback, bar_index, candles):
+        return candles[lookback:bar_index, 2].min()
 
-    def __get_candle_body_price_close(self, lookback, bar_index, price_data):
-        return price_data[lookback:bar_index, 3].min()
+    def __get_candle_body_price_close(self, lookback, bar_index, candles):
+        return candles[lookback:bar_index, 3].min()
 
     # main functions
     def pass_function(self, **vargs):
         pass
 
-    def sl_based_on_candle_body_calc(self, bar_index, price_data):
+    def sl_based_on_candle_body_calc(self, bar_index, candles):
         # lb will be bar index if sl isn't based on lookback because look back will be 0
         lookback = max(int((bar_index - 1) - self.sl_based_on_lookback), 0)
         candle_body = self.sl_price_getter(
             lookback=lookback,
             bar_index=bar_index,
-            price_data=price_data,
+            candles=candles,
         )
         self.sl_price = float(floor(candle_body - (candle_body * self.sl_based_on_add_pct)))
         return self.sl_price
@@ -151,7 +151,7 @@ class StopLossLong:
         self,
         average_entry,
         bar_index,
-        price_data,
+        candles,
         can_move_sl_to_be,
     ):
         if can_move_sl_to_be:
@@ -159,7 +159,7 @@ class StopLossLong:
             candle_body_ohlc = self.sl_to_be_price_getter(
                 lookback=bar_index,
                 bar_index=bar_index + 1,
-                price_data=price_data,
+                candles=candles,
             )
             pct_from_ae = (candle_body_ohlc - average_entry) / average_entry
             move_sl = pct_from_ae > self.sl_to_be_move_when_pct
@@ -174,12 +174,12 @@ class StopLossLong:
         self,
         average_entry,
         bar_index,
-        price_data,
+        candles,
     ):
         candle_body_ohlc = self.tsl_price_getter(
             lookback=bar_index,
             bar_index=bar_index + 1,
-            price_data=price_data,
+            candles=candles,
         )
         pct_from_ae = (candle_body_ohlc - average_entry) / average_entry
         move_sl = pct_from_ae > self.trail_sl_when_pct_from_candle_body

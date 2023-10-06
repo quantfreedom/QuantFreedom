@@ -11,7 +11,6 @@ import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 
 from quantfreedom.enums import (
-    AccountState,
     BacktestSettings,
     CandleBodyType,
     OrderSettingsArrays,
@@ -19,8 +18,8 @@ from quantfreedom.enums import (
     OrderStatus,
     or_dt,
 )
-from quantfreedom.helper_funcs import create_os_cart_product_nb
-from quantfreedom.simulate import backtest_df_only_nb, sim_6_nb
+from quantfreedom.simulate import backtest_df_only_classes, sim_6_nb
+from quantfreedom.strategies.strategy import Strategy
 
 pio.renderers.default = "browser"
 
@@ -46,25 +45,19 @@ bg_color = "#0b0b18"
 
 
 def backtest_df_only(
-    account_state: AccountState,
+    equity: float,
     os_cart_arrays: OrderSettingsArrays,
     backtest_settings: BacktestSettings,
     exchange_settings: ExchangeSettings,
-    price_data: pd.DataFrame,
-    entries: pd.DataFrame,
-    exit_signals: Optional[pd.DataFrame] = None,
+    candles: pd.DataFrame,
+    strategy: Strategy,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    entries = entries.shift(1, fill_value=False)
-
     # Creating Settings Vars
-    total_order_settings = os_cart_arrays.risk_account_pct_size.shape[0]
+    total_order_settings = os_cart_arrays[0].size
 
-    total_indicator_settings = entries.shape[1]
+    total_indicator_settings = strategy.indicator_settings_arrays[0].size
 
-    total_bars = entries.shape[0]
-
-    if exit_signals is None:
-        exit_signals = pd.DataFrame(np.zeros_like(entries.values))
+    total_bars = candles.shape[0]
 
     # Printing out total numbers of things
     print("Starting the backtest now ... and also here are some stats for your backtest.\n")
@@ -74,14 +67,13 @@ def backtest_df_only(
     print(f"\nTotal candles: {total_bars:,}")
     print(f"Total candles to test: {total_indicator_settings * total_order_settings * total_bars:,}")
 
-    strat_array = backtest_df_only_nb(
-        account_state=account_state,
+    strat_array = backtest_df_only_classes(
+        equity=equity,
         os_cart_arrays=os_cart_arrays,
         backtest_settings=backtest_settings,
         exchange_settings=exchange_settings,
-        price_data=price_data.values,
-        entries=entries.values,
-        exit_signals=exit_signals.values,
+        candles=candles.values,
+        strategy=strategy,
         total_bars=total_bars,
         total_indicator_settings=total_indicator_settings,
         total_order_settings=total_order_settings,
@@ -97,10 +89,9 @@ def backtest_df_only(
 
 
 def backtest_sim_6(
-    account_state: AccountState,
     os_cart_arrays: OrderSettingsArrays,
     exchange_settings: ExchangeSettings,
-    price_data: pd.DataFrame,
+    candles: pd.DataFrame,
     strat_res_df: pd.DataFrame,
     strat_indexes: list,
     entries: pd.DataFrame,
@@ -115,10 +106,9 @@ def backtest_sim_6(
         exit_signals = pd.DataFrame(np.zeros_like(entries.values))
 
     order_records_array = sim_6_nb(
-        account_state=account_state,
         os_cart_arrays=os_cart_arrays,
         exchange_settings=exchange_settings,
-        price_data=price_data.values,
+        candles=candles.values,
         entries=entries.values,
         strat_indexes_len=len(strat_indexes),
         exit_signals=exit_signals.values,
@@ -137,16 +127,16 @@ def backtest_sim_6(
 def plot_one_result(
     strat_result_index: int,
     strat_res_df: pd.DataFrame,
-    price_data: pd.DataFrame,
+    candles: pd.DataFrame,
     order_records_df: pd.DataFrame,
 ):
     indexes = tuple(strat_res_df.iloc[strat_result_index].iloc[[0, 1]].astype(int))
     index_selected_df = order_records_df[
         (order_records_df.ind_set_idx == indexes[0]) & (order_records_df.or_set_idx == indexes[1])
     ].reset_index()
-    price_data_index = price_data.index
-    results_bar_index = price_data_index[index_selected_df.bar_idx]
-    array_with_zeros = np.zeros_like(price_data_index.values, dtype=np.float_)
+    candles_index = candles.index
+    results_bar_index = candles_index[index_selected_df.bar_idx]
+    array_with_zeros = np.zeros_like(candles_index.values, dtype=np.float_)
     pnl_no_nan = index_selected_df[~np.isnan(index_selected_df["realized_pnl"])]["realized_pnl"]
     for a, b in pnl_no_nan.items():
         array_with_zeros[index_selected_df["bar_idx"].iloc[a]] = b
@@ -162,11 +152,11 @@ def plot_one_result(
     fig.add_traces(
         data=[
             go.Candlestick(
-                x=price_data_index,
-                open=price_data.open,
-                high=price_data.high,
-                low=price_data.low,
-                close=price_data.close,
+                x=candles_index,
+                open=candles.open,
+                high=candles.high,
+                low=candles.low,
+                close=candles.close,
                 name="Candles",
             ),
             go.Scatter(
@@ -225,7 +215,7 @@ def plot_one_result(
         data=[
             go.Scatter(
                 name="PnL",
-                x=price_data_index,
+                x=candles_index,
                 y=cumsum_pnl_array,
                 mode="lines",
                 line=dict(color="#247eb2"),

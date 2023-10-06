@@ -126,7 +126,7 @@ class LiveMufex(LiveExchange, Mufex):
                     f"LiveMufex Class Something is wrong with get_candles_df {response.get('message')} - > {e}"
                 )
         self.candles_df = self.get_candles_list_to_pd(candles_list=candles_list, col_end=-2)
-        self.candles_np = self.candles_df.iloc[:, 1:].values
+        self.candles_np = self.candles_df.values
 
     def check_long_hedge_mode_if_in_position(self, **vargs):
         if float(self.get_symbol_position_info(symbol=self.symbol)[0]["entryPrice"]) > 0:

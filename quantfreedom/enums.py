@@ -140,13 +140,6 @@ class TriggerDirectionTypeT(NamedTuple):
 TriggerDirectionType = TriggerDirectionTypeT()
 
 
-class AccountState(NamedTuple):
-    available_balance: float = 1000.0
-    cash_borrowed: float = 0.0
-    cash_used: float = 0.0
-    equity: float = 1000.0
-
-
 class BacktestSettings(NamedTuple):
     divide_records_array_size_by: float = 1.0
     gains_pct_filter: float = -np.inf
@@ -189,6 +182,7 @@ class OrderSettingsArrays(NamedTuple):
     trail_sl_based_on_candle_body_type: np.array
     trail_sl_by_pct: np.array
     trail_sl_when_pct_from_candle_body: np.array
+    num_candles: np.array
 
 
 class OrderSettings(NamedTuple):
@@ -211,6 +205,7 @@ class OrderSettings(NamedTuple):
     trail_sl_based_on_candle_body_type: int
     trail_sl_by_pct: float
     trail_sl_when_pct_from_candle_body: float
+    num_candles: int
 
 
 class OrderResult(NamedTuple):

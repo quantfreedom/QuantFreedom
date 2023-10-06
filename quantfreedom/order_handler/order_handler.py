@@ -2,7 +2,6 @@ from decimal import Decimal
 from typing import Optional
 import numpy as np
 from quantfreedom.enums import (
-    AccountState,
     DecreasePosition,
     OrderStatus,
     LongOrShortType,
@@ -22,7 +21,6 @@ class Order:
     obj_leverage = None
     obj_increase_posotion = None
     obj_take_profit = None
-    account_state = None
     exit_signals = None
     exchange_settings = None
     order_settings = None
@@ -236,10 +234,10 @@ class Order:
 
 
 class LongOrder(Order):
-    def calculate_stop_loss(self, bar_index, price_data):
+    def calculate_stop_loss(self, bar_index, candles):
         self.sl_price = self.obj_stop_loss.calculator(
             bar_index=bar_index,
-            price_data=price_data,
+            candles=candles,
         )
 
     def calculate_increase_posotion(self, entry_price):
@@ -307,19 +305,19 @@ class LongOrder(Order):
             exit_fee_pct=self.tp_fee_pct,
         )
 
-    def check_move_stop_loss_to_be(self, bar_index, price_data):
+    def check_move_stop_loss_to_be(self, bar_index, candles):
         self.obj_stop_loss.move_sl_to_be_checker(
             average_entry=self.average_entry,
             bar_index=bar_index,
-            price_data=price_data,
+            candles=candles,
             can_move_sl_to_be=self.can_move_sl_to_be,
         )
 
-    def check_move_trailing_stop_loss(self, bar_index, price_data):
+    def check_move_trailing_stop_loss(self, bar_index, candles):
         self.obj_stop_loss.move_tsl_checker(
             average_entry=self.average_entry,
             bar_index=bar_index,
-            price_data=price_data,
+            candles=candles,
         )
 
     def decrease_position(

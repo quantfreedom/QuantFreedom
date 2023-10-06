@@ -3,6 +3,38 @@ import numpy as np
 from quantfreedom.enums import OrderSettings, OrderSettingsArrays
 
 
+def get_to_the_upside_nb(
+    gains_pct: float,
+    wins_and_losses_array_no_be: np.array,
+):
+    x = np.arange(1, len(wins_and_losses_array_no_be) + 1)
+    y = wins_and_losses_array_no_be.cumsum()
+
+    xm = x.mean()
+    ym = y.mean()
+
+    y_ym = y - ym
+    y_ym_s = y_ym**2
+
+    x_xm = x - xm
+    x_xm_s = x_xm**2
+
+    b1 = (x_xm * y_ym).sum() / x_xm_s.sum()
+    b0 = ym - b1 * xm
+
+    y_pred = b0 + b1 * x
+
+    yp_ym = y_pred - ym
+
+    yp_ym_s = yp_ym**2
+
+    to_the_upside = yp_ym_s.sum() / y_ym_s.sum()
+
+    if gains_pct <= 0:
+        to_the_upside = -to_the_upside
+    return to_the_upside
+
+
 def create_os_cart_product_nb(order_settings_arrays: OrderSettingsArrays):
     # cart array loop
     n = 1
@@ -42,6 +74,7 @@ def create_os_cart_product_nb(order_settings_arrays: OrderSettingsArrays):
         trail_sl_based_on_candle_body_type=out.T[16],
         trail_sl_by_pct=out.T[17],
         trail_sl_when_pct_from_candle_body=out.T[18],
+        num_candles=out.T[19],
     )
 
 
@@ -66,4 +99,5 @@ def get_order_setting_tuple_from_index(order_settings_array: OrderSettingsArrays
         trail_sl_based_on_candle_body_type=order_settings_array.trail_sl_based_on_candle_body_type[index],
         trail_sl_by_pct=order_settings_array.trail_sl_by_pct[index],
         trail_sl_when_pct_from_candle_body=order_settings_array.trail_sl_when_pct_from_candle_body[index],
+        num_candles=order_settings_array.num_candles[index],
     )

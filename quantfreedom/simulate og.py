@@ -2,6 +2,7 @@ from typing import Optional
 import numpy as np
 
 from quantfreedom.enums import *
+from quantfreedom.order_handler.order_handler import Order
 
 
 def get_order_settings(
@@ -28,19 +29,19 @@ def get_order_settings(
         trail_sl_based_on_candle_body_type=os_cart_arrays.trail_sl_based_on_candle_body_type[settings_idx],
         trail_sl_by_pct=os_cart_arrays.trail_sl_by_pct[settings_idx],
         trail_sl_when_pct_from_candle_body=os_cart_arrays.trail_sl_when_pct_from_candle_body[settings_idx],
+        num_candles=os_cart_arrays.num_candles[settings_idx],
     )
 
 
 def backtest_df_only_nb(
-    account_state: AccountState,
-    os_cart_arrays: OrderSettings,
+    os_cart_arrays: OrderSettingsArrays,
     exchange_settings: ExchangeSettings,
     backtest_settings: BacktestSettings,
     total_indicator_settings: int,
     total_order_settings: int,
     total_bars: int,
     entries: np.array,
-    price_data: np.array,
+    candles: np.array,
     exit_signals: Optional[np.array] = None,
 ):
     # Creating strat records
@@ -57,27 +58,15 @@ def backtest_df_only_nb(
 
     num_entries = entries.shape[1]
 
-    strat = Strategy(
-        indicator_settings_array=cart_product(ind_settings),
-        total_candles=1000,
-        price_data=price_data,
-    )
-
     for indicator_settings_index in range(num_entries):
-        strat.ind_settings_or_results(indicator_settings_index)
+        current_indicator_entries = entries[:, indicator_settings_index]
+        current_exit_signals = exit_signals[:, indicator_settings_index]
 
         for order_settings_index in range(total_order_settings):
             order_settings = get_order_settings(order_settings_index, os_cart_arrays)
             # Account State Reset
-            account_state = AccountState(
-                available_balance=account_state.equity,
-                cash_borrowed=0.0,
-                cash_used=0.0,
-                equity=account_state.equity,
-            )
 
             order = Order.instantiate(
-                account_state=account_state,
                 order_settings=order_settings,
                 exchange_settings=exchange_settings,
                 long_or_short=order_settings.long_or_short,
@@ -86,15 +75,14 @@ def backtest_df_only_nb(
 
             # entries loop
             for bar_index in range(total_bars):
-                strat.set_price_data(bar_index)
-                if strat.evaluate():  # add in that we are also not at max entry amount
+                if current_indicator_entries[bar_index]:  # add in that we are also not at max entry amount
                     try:
                         order.calculate_stop_loss(
                             bar_index=bar_index,
-                            price_data=price_data,
+                            candles=candles,
                         )
                         order.calculate_increase_posotion(
-                            entry_price=price_data[
+                            entry_price=candles[
                                 bar_index, 0
                             ]  # entry price is open because we are getting the signal from the close of the previous candle
                         )
@@ -103,16 +91,16 @@ def backtest_df_only_nb(
 
                     except RejectedOrder as e:
                         pass
-                if order.position_size_usd > 0:
+                if order.position_size > 0:
                     try:
-                        order.check_stop_loss_hit(current_candle=price_data[bar_index, :])
-                        order.check_liq_hit(current_candle=price_data[bar_index, :])
+                        order.check_stop_loss_hit(current_candle=candles[bar_index, :])
+                        order.check_liq_hit(current_candle=candles[bar_index, :])
                         order.check_take_profit_hit(
-                            current_candle=price_data[bar_index, :],
-                            exit_signal=strat.current_exit_signals[bar_index],
+                            current_candle=candles[bar_index, :],
+                            exit_signal=current_exit_signals[bar_index],
                         )
-                        order.check_move_stop_loss_to_be(bar_index=bar_index, price_data=price_data)
-                        order.check_move_trailing_stop_loss(bar_index=bar_index, price_data=price_data)
+                        order.check_move_stop_loss_to_be(bar_index=bar_index, candles=candles)
+                        order.check_move_trailing_stop_loss(bar_index=bar_index, candles=candles)
                     except RejectedOrder as e:
                         pass
                     except DecreasePosition as e:
@@ -133,7 +121,7 @@ def backtest_df_only_nb(
                             indicator_settings_index=indicator_settings_index,
                         )
             # Checking if gains
-            gains_pct = ((order.equity - account_state.equity) / account_state.equity) * 100
+            gains_pct = ((order.equity - order.equity) / order.equity) * 100
             if gains_pct > backtest_settings.gains_pct_filter:
                 temp_strat_records = order.strat_records[: order.strat_records_filled]
                 pnl_array = temp_strat_records["real_pnl"]
@@ -169,17 +157,16 @@ def backtest_df_only_nb(
 
 
 def sim_6_nb(
-    account_state: AccountState,
     entries: np.array,
     exchange_settings: ExchangeSettings,
     indicator_indexes: np.array,
     os_cart_arrays: OrderSettings,
     or_settings_indexes: np.array,
-    price_data: np.array,
+    candles: np.array,
     strat_indexes_len: int,
     exit_signals: np.array,
 ):
-    total_bars = price_data.shape[0]
+    total_bars = candles.shape[0]
     order_records = np.empty(total_bars * strat_indexes_len, dtype=or_dt)
     total_order_records_filled = 0
 
@@ -190,15 +177,9 @@ def sim_6_nb(
         current_exit_signals = exit_signals[:, indicator_settings_index]
         order_settings = get_order_settings(order_settings_index, os_cart_arrays)
 
-        account_state = AccountState(
-            available_balance=account_state.equity,
-            cash_borrowed=0.0,
-            cash_used=0.0,
-            equity=account_state.equity,
-        )
 
         order = Order.instantiate(
-            account_state=account_state,
+            equity=equity,
             order_settings=order_settings,
             exchange_settings=exchange_settings,
             long_or_short=order_settings.long_or_short,
@@ -209,9 +190,9 @@ def sim_6_nb(
         for bar_index in range(total_bars):
             if current_indicator_entries[bar_index]:  # add in that we are also not at max entry amount
                 try:
-                    order.calculate_stop_loss(bar_index=bar_index, price_data=price_data)
+                    order.calculate_stop_loss(bar_index=bar_index, candles=candles)
                     order.calculate_increase_posotion(
-                        entry_price=price_data[
+                        entry_price=candles[
                             bar_index, 0
                         ]  # entry price is open because we are getting the signal from the close of the previous candle
                     )
@@ -232,7 +213,7 @@ def sim_6_nb(
                             possible_loss=order.possible_loss,
                             entry_size_usd=order.entry_size_usd,
                             entry_price=order.entry_price,
-                            position_size_usd=order.position_size_usd,
+                            position_size=order.position_size,
                             sl_pct=order.sl_pct,
                             sl_price=order.sl_price,
                             tp_pct=order.tp_pct,
@@ -241,16 +222,16 @@ def sim_6_nb(
                     )
                 except RejectedOrder as e:
                     pass
-            if order.position_size_usd > 0:
+            if order.position_size > 0:
                 try:
-                    order.check_stop_loss_hit(current_candle=price_data[bar_index, :])
-                    order.check_liq_hit(current_candle=price_data[bar_index, :])
+                    order.check_stop_loss_hit(current_candle=candles[bar_index, :])
+                    order.check_liq_hit(current_candle=candles[bar_index, :])
                     order.check_take_profit_hit(
-                        current_candle=price_data[bar_index, :],
+                        current_candle=candles[bar_index, :],
                         exit_signal=current_exit_signals[bar_index],
                     )
-                    order.check_move_stop_loss_to_be(bar_index=bar_index, price_data=price_data)
-                    order.check_move_trailing_stop_loss(bar_index=bar_index, price_data=price_data)
+                    order.check_move_stop_loss_to_be(bar_index=bar_index, candles=candles)
+                    order.check_move_trailing_stop_loss(bar_index=bar_index, candles=candles)
                 except RejectedOrder as e:
                     pass
                 except DecreasePosition as e:

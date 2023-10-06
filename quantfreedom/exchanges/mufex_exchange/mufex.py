@@ -1,3 +1,4 @@
+from datetime import timedelta
 import json
 import logging
 import hashlib
@@ -231,9 +232,8 @@ class Mufex(Exchange):
             except Exception as e:
                 raise Exception(f"Mufex Something is wrong with get_candles_df {response.get('message')} - > {e}")
         time_it_took_in_seconds = self.get_current_time_seconds() - start_time
-        print(
-            f"It took {time_it_took_in_seconds} seconds or {round(time_it_took_in_seconds/60,2)} minutes to download the candles"
-        )
+        td = str(timedelta(seconds=time_it_took_in_seconds)).split(":")
+        print(f"It took {td[1]} mins and {td[2]} seconds to download the candles")
         return self.get_candles_list_to_pd(candles_list=candles_list, col_end=-2)
 
     def get_all_symbols_info(self, category: str = "linear", limit: int = 1000, params: dict = {}, **vargs):
@@ -309,9 +309,7 @@ class Mufex(Exchange):
             data_list = response["data"]["list"][0]
             return data_list
         except Exception as e:
-            raise Exception(
-                f"Mufex get_symbol_trading_fee_rates = Data or List is empty {response['message']} -> {e}"
-            )
+            raise Exception(f"Mufex get_symbol_trading_fee_rates = Data or List is empty {response['message']} -> {e}")
 
     def get_order_history(self, symbol: str, limit: int = 50, params: dict = {}, **vargs):
         """
@@ -391,9 +389,7 @@ class Mufex(Exchange):
             data_list = response["data"]["list"]
             return data_list
         except Exception as e:
-            raise Exception(
-                f"Mufex get_account_position_info = Data or List is empty {response['message']} -> {e}"
-            )
+            raise Exception(f"Mufex get_account_position_info = Data or List is empty {response['message']} -> {e}")
 
     def get_symbol_position_info(self, symbol: str, limit: int = 20, **vargs):
         """
@@ -409,9 +405,7 @@ class Mufex(Exchange):
             data_list = response["data"]["list"]
             return data_list
         except Exception as e:
-            raise Exception(
-                f"Mufex get_symbol_position_info = Data or List is empty {response['message']} -> {e}"
-            )
+            raise Exception(f"Mufex get_symbol_position_info = Data or List is empty {response['message']} -> {e}")
 
     def cancel_open_order(self, symbol: str, order_id: str, **vargs):
         """
@@ -526,9 +520,7 @@ class Mufex(Exchange):
             data_list = response["data"]["list"][0]
             return data_list
         except Exception as e:
-            raise Exception(
-                f"Mufex get_wallet_info_of_asset = Data or List is empty {response['message']} -> {e}"
-            )
+            raise Exception(f"Mufex get_wallet_info_of_asset = Data or List is empty {response['message']} -> {e}")
 
     def get_equity_of_asset(self, trading_in: str, **vargs):
         try:

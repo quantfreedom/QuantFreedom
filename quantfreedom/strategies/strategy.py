@@ -17,76 +17,113 @@ class IndicatorSettingsArrays(NamedTuple):
 
 
 class Strategy:
-    indicator_setting_index = None
+    indicator_settings_index = None
+    num_candles = None
 
     def __init__(
         self,
         candle_processing_mode: CandleProcessingType,
         candles: pd.DataFrame = None,
-        num_candles: int = None,
-        indicator_setting_index: int = None,
+        indicator_settings_index: int = None,
     ) -> None:
         self.candles = candles
-        self.indicator_settings_array = self.__create_ind_cart_product_nb(IndicatorSettingsArrays())
+        self.indicator_settings_arrays = self.create_ind_cart_product_nb(IndicatorSettingsArrays())
+        self.current_exit_signals = np.empty_like(candles.close.values)
 
         if candle_processing_mode == CandleProcessingType.RegularBacktest:
-            self.create_indicator = self.__create_indicator_reg_backtest
+            self.set_candles = self.__set_bar_index
             self.closing_prices = candles.close
-            self.rsi = self.__get_rsi()
+            self.set_indicator_settings(indicator_settings_index=0)
+            self.__set_rsi()
         elif candle_processing_mode == CandleProcessingType.BacktestCandleByCandle:
-            if num_candles is None:
-                raise TypeError("num candles has to be > 1 or not None when backtesting candle by candle")
-            else:
-                self.num_candles = -(num_candles - 1)
-                self.set_price_data = self.__create_indicator_candle_by_candle
+            self.set_candles = self.__create_indicator_candle_by_candle
         elif candle_processing_mode == CandleProcessingType.LiveTrading:
-            self.ind_settings_or_results(indicator_setting_index)
+            self.set_indicator_settings(indicator_settings_index)
             self.bar_index = -1
 
+    #########################################################################
     #########################################################################
     ###################                                  ####################
     ################### Regular Backtest Functions Start ####################
     ###################                                  ####################
     #########################################################################
+    #########################################################################
 
-    def __create_indicator_reg_backtest(self, bar_index):
+    def __set_bar_index(self, bar_index):
         self.bar_index = bar_index
 
+    def __set_rsi(self):
+        """
+        we have to shift the info by one so that way we enter on the right candle
+        if we have a yes entry on candle 15 then in real life we wouldn't enter until 16
+        so that is why we have to shift by one
+        """
+        try:
+            self.rsi = (
+                pta.rsi(
+                    close=self.closing_prices,
+                    length=self.rsi_lenth,
+                )
+                .round(decimals=2)
+                .shift(1, fill_value=np.nan)
+            )
+        except Exception as e:
+            Exception(f"Strategy class __get_rsi = Something went wrong creating rsi -> {e}")
+
+    def get_rsi(self):
+        return self.rsi
+
+    #########################################################################
     #########################################################################
     ###################                                  ####################
     ################### Candle by Candle Backtest Start  ####################
     ###################                                  ####################
     #########################################################################
+    #########################################################################
 
     def __create_indicator_candle_by_candle(self, bar_index):
+        """
+        we have to shift the info by one so that way we enter on the right candle
+        if we have a yes entry on candle 15 then in real life we wouldn't enter until 16
+        so that is why we have to shift by one
+        """
         self.bar_index = bar_index
-        bar_start = max(self.num_candles + bar_index, 0)
-        self.closing_prices = self.candles.iloc[bar_start : bar_index + 1, 4]
-        self.rsi = pta.rsi(close=self.closing_prices, length=self.rsi_lenth).round(decimals=2)
+        bar_start = max(-(self.num_candles - 1) + bar_index, 0)
+        self.closing_prices = self.candles.close.iloc[bar_start : bar_index + 1]
+        self.rsi = (
+            pta.rsi(
+                close=self.closing_prices,
+                length=self.rsi_lenth,
+            )
+            .round(decimals=2)
+            .shift(1, fill_value=np.nan)
+        )
 
+    #########################################################################
     #########################################################################
     ###################                                  ####################
     ###################      Live Trading Start          ####################
     ###################                                  ####################
     #########################################################################
+    #########################################################################
 
-    def set_indicator_live_trading(self, price_data):
+    def set_indicator_live_trading(self, candles):
         try:
-            self.rsi = pta.rsi(close=price_data.close, length=self.rsi_lenth).round(decimals=2)
+            self.rsi = pta.rsi(close=candles.close, length=self.rsi_lenth).round(decimals=2)
         except Exception as e:
-            logging.error(f"Something went wrong creating rsi ")
-            Exception(f"Something went wrong creating rsi ")
+            Exception(f"Strategy class set_indicator_live_trading = Something went wrong creating rsi -> {e}")
 
+    #########################################################################
     #########################################################################
     ###################                                  ####################
     ###################     Strategy Functions Start     ####################
     ###################                                  ####################
     #########################################################################
+    #########################################################################
 
-    def ind_settings_or_results(self, indicator_setting_index):
-        self.rsi_lenth = int(self.indicator_settings_array.rsi_lenth[indicator_setting_index])
-        self.rsi_is_below = int(self.indicator_settings_array.rsi_is_below[indicator_setting_index])
-        print(f"\n\nRSI lenth = {self.rsi_lenth} and RSI is below {self.rsi_is_below}")
+    def set_indicator_settings(self, indicator_settings_index):
+        self.loop_start = self.rsi_lenth = int(self.indicator_settings_arrays.rsi_lenth[indicator_settings_index])
+        self.rsi_is_below = int(self.indicator_settings_arrays.rsi_is_below[indicator_settings_index])
 
     def evaluate(self):
         try:
@@ -95,11 +132,10 @@ class Strategy:
             else:
                 return False
         except Exception as e:
-            logging.error(f"Something is wrong evaluting the RSI is below -> {e}")
-            raise Exception(f"Something is wrong evaluting the RSI is below -> {e}")
+            Exception(f"Strategy class evaluate -> {e}")
 
-    def return_plot_image(self, price_data: pd.DataFrame, entry_price, sl_price, tp_price, liq_price, **vargs):
-        graph_entry = [price_data.timestamp.iloc[-1]]
+    def return_plot_image(self, candles: pd.DataFrame, entry_price, sl_price, tp_price, liq_price, **vargs):
+        graph_entry = [candles.index.iloc[-1]]
         fig = make_subplots(
             rows=2,
             cols=1,
@@ -108,11 +144,11 @@ class Strategy:
             vertical_spacing=0.02,
         )
         fig.add_candlestick(
-            x=price_data.timestamp,
-            open=price_data.open,
-            high=price_data.high,
-            low=price_data.low,
-            close=price_data.close,
+            x=candles.index,
+            open=candles.open,
+            high=candles.high,
+            low=candles.low,
+            close=candles.close,
             name="Candles",
             row=1,
             col=1,
@@ -160,7 +196,7 @@ class Strategy:
 
         # RSI
         fig.add_scatter(
-            x=price_data.timestamp,
+            x=candles.index,
             y=self.rsi,
             name="RSI",
             row=2,
@@ -177,7 +213,7 @@ class Strategy:
         fig.write_image(fig_filename)
         return fig_filename
 
-    def __create_ind_cart_product_nb(self, indicator_settings_array):
+    def create_ind_cart_product_nb(self, indicator_settings_array):
         # cart array loop
         n = 1
         for x in indicator_settings_array:

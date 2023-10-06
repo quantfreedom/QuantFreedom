@@ -112,7 +112,7 @@ class LiveTrading:
                             self.debug_logger("Calculating stop loss")
                             self.order.calculate_stop_loss(
                                 bar_index=bar_index,
-                                price_data=self.exchange.candles_np,
+                                candles=self.exchange.candles_np,
                             )
                             self.debug_logger("Calculating position size")
                             self.order.calculate_increase_posotion(
@@ -297,14 +297,14 @@ class LiveTrading:
                                 self.info_logger(f"self.order.check_move_stop_loss_to_be")
                                 self.order.check_move_stop_loss_to_be(
                                     bar_index=bar_index,
-                                    price_data=self.exchange.candles_np,
+                                    candles=self.exchange.candles_np,
                                 )
                                 self.info_logger(f"no moving stop loss")
                                 self.info_logger(f"self.order.check_move_trailing_stop_loss")
                                 self.__set_order_average_entry()
                                 self.order.check_move_trailing_stop_loss(
                                     bar_index=bar_index,
-                                    price_data=self.exchange.candles_np,
+                                    candles=self.exchange.candles_np,
                                 )
                                 self.info_logger(f"no trail stop loss")
                             except MoveStopLoss as result:
@@ -397,7 +397,7 @@ class LiveTrading:
     def __get_fig_filename(self, entry_price, sl_price, tp_price, liq_price):
         self.info_logger(f"Function: __get_fig_filename")
         return self.strategy.return_plot_image(
-            price_data=self.exchange.candles_df,
+            candles=self.exchange.candles_df,
             entry_price=entry_price,
             sl_price=sl_price,
             tp_price=tp_price,

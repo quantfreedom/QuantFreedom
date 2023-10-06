@@ -1,6 +1,5 @@
 import numpy as np
 from quantfreedom.enums import (
-    AccountState,
     DecreasePosition,
     LeverageStrategyType,
     OrderStatus,
@@ -54,13 +53,11 @@ class LeverageLong:
 
     def calculate_leverage(
         self,
-        account_state: AccountState,
         sl_price: float,
         average_entry: float,
         entry_size_usd: float,
     ):
         return self.leverage_calculator(
-            account_state=account_state,
             sl_price=sl_price,
             average_entry=average_entry,
             entry_size_usd=entry_size_usd,

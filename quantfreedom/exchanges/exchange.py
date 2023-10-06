@@ -75,6 +75,7 @@ class Exchange:
         candles_df = pd.DataFrame(candles, columns=["timestamp", "open", "high", "low", "close"])
         candles_df = candles_df.astype({"timestamp": "int64"})
         candles_df["timestamp"] = self.get_ms_time_to_pd_datetime(candles_df["timestamp"])
+        candles_df.set_index('timestamp', inplace=True)
         return candles_df
 
     def get_candles_to_dl_in_ms(self, candles_to_dl: int, timeframe_in_ms, limit: int):
