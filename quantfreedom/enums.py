@@ -143,7 +143,7 @@ TriggerDirectionType = TriggerDirectionTypeT()
 class BacktestSettings(NamedTuple):
     divide_records_array_size_by: float = 1.0
     gains_pct_filter: float = -np.inf
-    total_trade_filter: int = 0
+    total_trade_filter: int = -1
     upside_filter: float = -np.inf
 
 

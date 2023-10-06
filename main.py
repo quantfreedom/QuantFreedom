@@ -127,7 +127,7 @@ if __name__ == "__main__":
     order_settings_arrays = OrderSettingsArrays(
         increase_position_type=np.array([IncreasePositionType.RiskPctAccountEntrySize]),
         leverage_type=np.array([LeverageStrategyType.Dynamic]),
-        max_equity_risk_pct=np.array([0.002]) / 100,
+        max_equity_risk_pct=np.array([0.003]) / 100,
         long_or_short=np.array([LongOrShortType.Long]),
         risk_account_pct_size=np.array([0.001]) / 100,
         risk_reward=np.array([3.0]),
@@ -142,8 +142,9 @@ if __name__ == "__main__":
         take_profit_type=np.array([TakeProfitStrategyType.RiskReward]),
         tp_fee_type=np.array([TakeProfitFeeType.Limit]),
         trail_sl_based_on_candle_body_type=np.array([CandleBodyType.High]),
-        trail_sl_by_pct=np.array([0.1]) / 100,
-        trail_sl_when_pct_from_candle_body=np.array([0.1]) / 100,
+        trail_sl_by_pct=np.array([0.5]) / 100,
+        trail_sl_when_pct_from_candle_body=np.array([0.000001]) / 100,
+        num_candles=np.array([0]),
     )
     cart_order_settings = create_os_cart_product_nb(
         order_settings_arrays=order_settings_arrays,
@@ -156,17 +157,17 @@ if __name__ == "__main__":
     mufex = LiveMufex(
         api_key=MufexTestKeys.api_key,
         secret_key=MufexTestKeys.secret_key,
-        timeframe="5m",
+        timeframe="1m",
         symbol="BTCUSDT",
         trading_in="USDT",
-        candles_to_dl=400,
+        candles_to_dl=200,
         long_or_short=LongOrShortType.Long,
         use_test_net=True,
     )
     equity = mufex.get_equity_of_asset(trading_in="USDT")
 
     strategy = Strategy(
-        indicator_setting_index=0,
+        indicator_settings_index=0,
         candle_processing_mode=CandleProcessingType.LiveTrading,
     )
 

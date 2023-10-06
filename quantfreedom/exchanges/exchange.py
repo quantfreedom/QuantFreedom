@@ -58,6 +58,9 @@ class Exchange:
     def get_equity_of_asset(self, *vargs):
         pass
 
+    def move_stop_order(self, *vargs):
+        pass
+
     def get_current_time_seconds(self):
         return int(datetime.now().timestamp())
 
@@ -75,7 +78,7 @@ class Exchange:
         candles_df = pd.DataFrame(candles, columns=["timestamp", "open", "high", "low", "close"])
         candles_df = candles_df.astype({"timestamp": "int64"})
         candles_df["timestamp"] = self.get_ms_time_to_pd_datetime(candles_df["timestamp"])
-        candles_df.set_index('timestamp', inplace=True)
+        candles_df.set_index("timestamp", inplace=True)
         return candles_df
 
     def get_candles_to_dl_in_ms(self, candles_to_dl: int, timeframe_in_ms, limit: int):

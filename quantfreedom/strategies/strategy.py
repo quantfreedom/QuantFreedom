@@ -12,8 +12,8 @@ from quantfreedom.enums import CandleProcessingType
 
 
 class IndicatorSettingsArrays(NamedTuple):
-    rsi_lenth: np.array = np.array([14, 20])
-    rsi_is_below: np.array = np.array([50, 150, 200])
+    rsi_lenth: np.array = np.array([14, 30])
+    rsi_is_below: np.array = np.array([70, 60])
 
 
 class Strategy:
@@ -28,14 +28,15 @@ class Strategy:
     ) -> None:
         self.candles = candles
         self.indicator_settings_arrays = self.create_ind_cart_product_nb(IndicatorSettingsArrays())
-        self.current_exit_signals = np.empty_like(candles.close.values)
 
         if candle_processing_mode == CandleProcessingType.RegularBacktest:
+            self.current_exit_signals = np.empty_like(candles.close.values)
             self.set_candles = self.__set_bar_index
             self.closing_prices = candles.close
             self.set_indicator_settings(indicator_settings_index=0)
             self.__set_rsi()
         elif candle_processing_mode == CandleProcessingType.CandleBacktest:
+            self.current_exit_signals = np.empty_like(candles.close.values)
             self.set_candles = self.__create_indicator_candle_by_candle
             self.bar_index = -1
         elif candle_processing_mode == CandleProcessingType.LiveTrading:
