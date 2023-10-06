@@ -35,7 +35,7 @@ class Strategy:
             self.closing_prices = candles.close
             self.set_indicator_settings(indicator_settings_index=0)
             self.__set_rsi()
-        elif candle_processing_mode == CandleProcessingType.BacktestCandleByCandle:
+        elif candle_processing_mode == CandleProcessingType.CandleBacktest:
             self.set_candles = self.__create_indicator_candle_by_candle
         elif candle_processing_mode == CandleProcessingType.LiveTrading:
             self.set_indicator_settings(indicator_settings_index)

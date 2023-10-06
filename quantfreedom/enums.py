@@ -4,7 +4,7 @@ import numpy as np
 
 class CandleProcessingTypeT(NamedTuple):
     RegularBacktest: int = 0
-    BacktestCandleByCandle: int = 1
+    CandleBacktest: int = 1
     LiveTrading: int = 2
 
 
