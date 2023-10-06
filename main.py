@@ -35,27 +35,12 @@ def create_directory_structure():
     if not isExist:
         os.makedirs(complete_path)
 
-    complete_path = os.path.join(".", "logs", "warnings")
-    isExist = os.path.exists(complete_path)
-    if not isExist:
-        os.makedirs(complete_path)
-
     complete_path = os.path.join(".", "logs", "debug")
     isExist = os.path.exists(complete_path)
     if not isExist:
         os.makedirs(complete_path)
 
-    complete_path = os.path.join(".", "logs", "errors")
-    isExist = os.path.exists(complete_path)
-    if not isExist:
-        os.makedirs(complete_path)
-
     complete_path = os.path.join(".", "logs", "entries")
-    isExist = os.path.exists(complete_path)
-    if not isExist:
-        os.makedirs(complete_path)
-
-    complete_path = os.path.join(".", "logs", "moved_sl")
     isExist = os.path.exists(complete_path)
     if not isExist:
         os.makedirs(complete_path)
@@ -76,25 +61,13 @@ def create_logging_handler(filename: str, formatter: str):
 
 
 def configure_logging():
-    formatter = "%(asctime)s - %(message)s"
+    formatter = "%(asctime)s - %(levelname)s - %(message)s"
 
     filename = os.path.join(".", "logs", "info", f'info_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
     root = logging.getLogger("info")
     root.setLevel(logging.INFO)
     root.addHandler(create_logging_handler(filename, formatter))
     root.info("Testing info logs")
-
-    filename = os.path.join(".", "logs", "warnings", f'warnings_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
-    root = logging.getLogger("warnings")
-    root.setLevel(logging.INFO)
-    root.addHandler(create_logging_handler(filename, formatter))
-    root.info("Testing warning logs")
-
-    filename = os.path.join(".", "logs", "errors", f'errors_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
-    root = logging.getLogger("errors")
-    root.setLevel(logging.INFO)
-    root.addHandler(create_logging_handler(filename, formatter))
-    root.info("Testing errors logs")
 
     filename = os.path.join(".", "logs", "debug", f'debug_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
     root = logging.getLogger("debug")
@@ -109,14 +82,6 @@ def configure_logging():
     root.setLevel(logging.INFO)
     root.addHandler(create_logging_handler(filename, formatter))
     root.error("Testing entries logs")
-
-    logging.MOVED_SL = 11
-    logging.addLevelName(11, "Moved Stop Loss")
-    filename = os.path.join(".", "logs", "moved_sl", f'moved_sl_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
-    root = logging.getLogger("moved_sl")
-    root.setLevel(logging.INFO)
-    root.addHandler(create_logging_handler(filename, formatter))
-    root.info("Testing moved_sl logs")
 
 
 if __name__ == "__main__":
