@@ -280,9 +280,10 @@ class Mufex(Exchange):
         end_point = "/private/v1/trade/create"
         response = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
-            return response["data"]["orderId"]
+            order_id = response["data"]["orderId"]
+            return order_id
         except Exception as e:
-            raise Exception(f"Mufex Class Something is wrong with create_order -> {e}")
+            raise Exception(f"Mufex Class Something is wrong with create_order {response['message']} -> {e}")
 
     def get_trading_fee_rates(self, **vargs):
         """
@@ -332,23 +333,6 @@ class Mufex(Exchange):
     def get_order_history_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **vargs):
         params["orderId"] = order_id
         return self.get_order_history(symbol=symbol, params=params)[0]
-
-    def get_all_symbols_open_orders(self, **vargs):
-        """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_getopenorder
-
-        use link to see all Request Parameters
-        """
-        end_point = "/private/v1/trade/activity-orders"
-        response = self.HTTP_get_request_no_params(end_point=end_point)
-        try:
-            response["data"]["list"][0]
-            data_list = response["data"]["list"]
-            return data_list
-        except Exception as e:
-            raise Exception(
-                f"Mufex Class get_all_symbols_open_orders = Data or List is empty {response['message']} -> {e}"
-            )
 
     def get_open_orders(self, symbol: str, params: dict = {}, **vargs):
         """

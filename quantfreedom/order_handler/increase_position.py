@@ -88,7 +88,7 @@ class IncreasePositionLong:
                 sl_price=sl_price,
             )
 
-        self.__check_size_value(entry_size_asset=entry_size_usd / entry_price)
+        self.__check_size_value(entry_size_asset=entry_size_usd / entry_price, entry_size_usd=entry_size_usd)
         return (
             average_entry,
             entry_price,
@@ -99,15 +99,27 @@ class IncreasePositionLong:
         )
 
     def __get_possible_loss(self, account_state_equity, possible_loss):
-        possible_loss += account_state_equity * self.risk_account_pct_size  # will this work right?
+        possible_loss = round(possible_loss + account_state_equity * self.risk_account_pct_size)
 
-        if possible_loss > account_state_equity * self.max_equity_risk_pct:
-            raise RejectedOrder("possible loss too big")
-        return round(possible_loss, 2)
+        if possible_loss > round(account_state_equity * self.max_equity_risk_pct):
+            raise RejectedOrder(
+                msg=f"possible loss too big {possible_loss}",
+                order_status=OrderStatus.PossibleLossTooBig,
+            )
+        return possible_loss
 
-    def __check_size_value(self, entry_size_asset):
-        if self.max_asset_size < entry_size_asset < self.min_asset_size:
-            raise RejectedOrder("Long Increase - Size Value is either to big or too small")
+    def __check_size_value(self, entry_size_asset, entry_size_usd):
+        if entry_size_asset < self.min_asset_size:
+            raise RejectedOrder(
+                msg=f"Long Increase - Size Value is too small {entry_size_usd}",
+                order_status=OrderStatus.EntrySizeTooSmall,
+            )
+
+        elif entry_size_asset > self.max_asset_size:
+            raise RejectedOrder(
+                msg=f"Long Increase - Size Value is too big {entry_size_usd}",
+                order_status=OrderStatus.EntrySizeTooBig,
+            )
 
     def amount_based(self, **vargs):
         pass
@@ -164,18 +176,19 @@ class IncreasePositionLong:
             account_state_equity=account_state_equity,
         )
 
-        entry_size_usd = (
-            -possible_loss * entry_price * average_entry
-            + entry_price * position_size_usd * average_entry
-            - sl_price * entry_price * position_size_usd
-            + sl_price * entry_price * position_size_usd * self.market_fee_pct
-            + entry_price * position_size_usd * average_entry * self.market_fee_pct
-        ) / (
-            average_entry
-            * (entry_price - sl_price + entry_price * self.market_fee_pct + sl_price * self.market_fee_pct)
+        entry_size_usd = -(
+            (
+                -possible_loss * entry_price * average_entry
+                + entry_price * position_size_usd * average_entry
+                - sl_price * entry_price * position_size_usd
+                + sl_price * entry_price * position_size_usd * self.market_fee_pct
+                + entry_price * position_size_usd * average_entry * self.market_fee_pct
+            )
+            / (
+                average_entry
+                * (entry_price - sl_price + entry_price * self.market_fee_pct + sl_price * self.market_fee_pct)
+            )
         )
-        if entry_size_usd < 1:
-            raise RejectedOrder(order_status=OrderStatus.EntrySizeTooSmall, entry_size_usd=entry_size_usd)
         average_entry = (entry_size_usd + position_size_usd) / (
             (entry_size_usd / entry_price) + (position_size_usd / average_entry)
         )

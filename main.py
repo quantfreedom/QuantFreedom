@@ -78,25 +78,29 @@ def create_logging_handler(filename: str, formatter: str):
 def configure_logging():
     formatter = "%(asctime)s - %(message)s"
 
-    root = logging.getLogger("info")
     filename = os.path.join(".", "logs", "info", f'info_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
+    root = logging.getLogger("info")
     root.setLevel(logging.INFO)
     root.addHandler(create_logging_handler(filename, formatter))
+    root.info("Testing info logs")
 
-    root = logging.getLogger("warnings")
     filename = os.path.join(".", "logs", "warnings", f'warnings_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
+    root = logging.getLogger("warnings")
     root.setLevel(logging.INFO)
     root.addHandler(create_logging_handler(filename, formatter))
+    root.info("Testing warning logs")
 
     filename = os.path.join(".", "logs", "errors", f'errors_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
     root = logging.getLogger("errors")
     root.setLevel(logging.INFO)
     root.addHandler(create_logging_handler(filename, formatter))
+    root.info("Testing errors logs")
 
     filename = os.path.join(".", "logs", "debug", f'debug_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
     root = logging.getLogger("debug")
     root.setLevel(logging.INFO)
     root.addHandler(create_logging_handler(filename, formatter))
+    root.info("Testing debug logs")
 
     logging.ENTRY = 9
     logging.addLevelName(9, "Entry")
@@ -104,6 +108,7 @@ def configure_logging():
     root = logging.getLogger("entry")
     root.setLevel(logging.INFO)
     root.addHandler(create_logging_handler(filename, formatter))
+    root.error("Testing entries logs")
 
     logging.MOVED_SL = 11
     logging.addLevelName(11, "Moved Stop Loss")
@@ -111,18 +116,13 @@ def configure_logging():
     root = logging.getLogger("moved_sl")
     root.setLevel(logging.INFO)
     root.addHandler(create_logging_handler(filename, formatter))
+    root.info("Testing moved_sl logs")
 
 
 if __name__ == "__main__":
     create_directory_structure()
 
     configure_logging()
-    logging.getLogger("info").info("Testing info logs")
-    logging.getLogger("warnings").warning("Testing warning logs")
-    logging.getLogger("errors").error("Testing errors logs")
-    logging.getLogger("debug").info("Testing debug logs")
-    logging.getLogger("entry").info("Testing entry logs")
-    logging.getLogger("moved_sl").info("Testing moved stop loss")
 
     order_settings_arrays = OrderSettingsArrays(
         increase_position_type=np.array([IncreasePositionType.RiskPctAccountEntrySize]),
@@ -130,33 +130,33 @@ if __name__ == "__main__":
         max_equity_risk_pct=np.array([0.002]) / 100,
         long_or_short=np.array([LongOrShortType.Long]),
         risk_account_pct_size=np.array([0.001]) / 100,
-        risk_reward=np.array([2.0, 3.0, 5.0]),
-        sl_based_on_add_pct=np.array([0.01, 0.02, 0.03]) / 100,
-        sl_based_on_lookback=np.array([300]),
+        risk_reward=np.array([3.0]),
+        stop_loss_type=np.array([StopLossStrategyType.SLBasedOnCandleBody]),
+        sl_based_on_add_pct=np.array([0.01]) / 100,
+        sl_based_on_lookback=np.array([200]),
         sl_candle_body_type=np.array([CandleBodyType.Low]),
         sl_to_be_based_on_candle_body_type=np.array([CandleBodyType.Nothing]),
         sl_to_be_when_pct_from_candle_body=np.array([0.0]) / 100,
         sl_to_be_zero_or_entry_type=np.array([SLToBeZeroOrEntryType.Nothing]),
         static_leverage=np.array([0.0]),
-        stop_loss_type=np.array([StopLossStrategyType.SLBasedOnCandleBody]),
         take_profit_type=np.array([TakeProfitStrategyType.RiskReward]),
         tp_fee_type=np.array([TakeProfitFeeType.Limit]),
         trail_sl_based_on_candle_body_type=np.array([CandleBodyType.High]),
-        trail_sl_by_pct=np.array([1.0]) / 100,
-        trail_sl_when_pct_from_candle_body=np.array([3.0]) / 100,
+        trail_sl_by_pct=np.array([0.1]) / 100,
+        trail_sl_when_pct_from_candle_body=np.array([0.1]) / 100,
     )
     cart_order_settings = create_os_cart_product_nb(
         order_settings_arrays=order_settings_arrays,
     )
     order_settings = get_order_setting_tuple_from_index(
         order_settings_array=cart_order_settings,
-        index=2,
+        index=0,
     )
 
     mufex = LiveMufex(
         api_key=MufexTestKeys.api_key,
         secret_key=MufexTestKeys.secret_key,
-        timeframe="1m",
+        timeframe="5m",
         symbol="BTCUSDT",
         trading_in="USDT",
         candles_to_dl=400,
@@ -166,7 +166,7 @@ if __name__ == "__main__":
     equity = mufex.get_equity_of_asset(trading_in="USDT")
 
     strategy = Strategy(
-        indicator_setting_index=-1,
+        indicator_setting_index=0,
         candle_processing_mode=CandleProcessingType.LiveTrading,
     )
 

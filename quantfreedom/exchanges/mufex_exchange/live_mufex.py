@@ -109,7 +109,6 @@ class LiveMufex(LiveExchange, Mufex):
             "start": since_date_ms,
             "end": until_date_ms,
         }
-        start_time = self.get_current_time_seconds()
         while params["start"] + self.timeframe_in_ms < until_date_ms:
             response = self.HTTP_get_request(end_point=end_point, params=params)
             try:
@@ -194,4 +193,7 @@ class LiveMufex(LiveExchange, Mufex):
         return self.create_order(params=params)
 
     def get_long_hedge_mode_position_info(self):
+        return self.get_symbol_position_info(symbol=self.symbol)[0]
+
+    def check_if_sl_moved(self, symbol:str, order_id: str, **vargs):
         return self.get_symbol_position_info(symbol=self.symbol)[0]

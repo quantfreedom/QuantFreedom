@@ -70,6 +70,8 @@ class OrderStatusT(NamedTuple):
     RiskToBig: int = 8
     CashUsedExceed: int = 9
     EntrySizeTooSmall: int = 10
+    EntrySizeTooBig: int = 11
+    PossibleLossTooBig: int = 12
 
 
 OrderStatus = OrderStatusT()
@@ -237,52 +239,41 @@ class OrderResult(NamedTuple):
 
 
 class RejectedOrder(Exception):
-    """Rejected order error."""
-
-    order_status = None
-    entry_size_usd = None
-
     def __init__(
         self,
-        order_status: OrderStatus,
-        entry_size_usd: float = None,
+        order_status: OrderStatus = None,
+        msg: str = None,
     ):
         self.order_status = order_status
-        self.entry_size_usd = entry_size_usd
+        self.msg = msg
 
 
 class DecreasePosition(Exception):
-    """Rejected order error."""
-
-    order_status = None
-    exit_price = None
-
     def __init__(
         self,
-        order_status: OrderStatus,
-        exit_price: float,
-        exit_fee_pct: float,
+        order_status: OrderStatus = None,
+        exit_price: float = None,
+        exit_fee_pct: float = None,
+        msg: str = None,
     ):
         self.order_status = order_status
         self.exit_price = exit_price
         self.exit_fee_pct = exit_fee_pct
+        self.msg = msg
 
 
 class MoveStopLoss(Exception):
-    """Rejected order error."""
-
-    order_status = None
-    sl_price = None
-
     def __init__(
         self,
-        order_status: OrderStatus,
-        sl_price: float,
-        can_move_sl_to_be: bool,
+        order_status: OrderStatus = None,
+        sl_price: float = None,
+        can_move_sl_to_be: bool = None,
+        msg: str = None,
     ):
         self.order_status = order_status
         self.sl_price = sl_price
         self.can_move_sl_to_be = can_move_sl_to_be
+        self.msg = msg
 
 
 order_settings_array_dt = np.dtype(
