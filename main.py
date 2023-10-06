@@ -1,93 +1,159 @@
-import os
-import sys
-import logging
+import os, logging
+import numpy as np
 
-sys.dont_write_bytecode = True
-os.environ["NUMBA_DISABLE_JIT"] = "1"
-
-import quantfreedom as qf
-import pandas as pd
-from quantfreedom.indicators.talib_ind import *
-from quantfreedom.evaluators.evaluators import _is_below
-from quantfreedom.base.base import backtest_df_only
-from quantfreedom.enums.enums import (
-    CandleBody,
-    LeverageMode,
-    OrderType,
-    SizeType,
+from datetime import datetime
+from quantfreedom.email_sender import EmailSender
+from quantfreedom.enums import (
+    CandleBodyType,
+    CandleProcessingType,
+    IncreasePositionType,
+    LeverageStrategyType,
+    LongOrShortType,
+    OrderPlacementType,
     OrderSettingsArrays,
-    StaticVariables,
+    SLToBeZeroOrEntryType,
+    StopLossStrategyType,
+    TakeProfitFeeType,
+    TakeProfitStrategyType,
 )
+from quantfreedom.exchanges.mufex_exchange.live_mufex import LiveMufex
+from quantfreedom.helper_funcs import create_os_cart_product_nb, get_order_setting_tuple_from_index
+from quantfreedom.live_mode import LiveTrading
+from quantfreedom.order_handler.order_handler import LongOrder
+from quantfreedom.strategies.strategy import Strategy
+from my_stuff import EmailSenderInfo, MufexTestKeys
+
+
+def create_directory_structure():
+    complete_path = os.path.join(".", "logs", "images")
+    isExist = os.path.exists(complete_path)
+    if not isExist:
+        os.makedirs(complete_path)
+
+    complete_path = os.path.join(".", "logs", "info")
+    isExist = os.path.exists(complete_path)
+    if not isExist:
+        os.makedirs(complete_path)
+
+    complete_path = os.path.join(".", "logs", "debug")
+    isExist = os.path.exists(complete_path)
+    if not isExist:
+        os.makedirs(complete_path)
+
+    complete_path = os.path.join(".", "logs", "entries")
+    isExist = os.path.exists(complete_path)
+    if not isExist:
+        os.makedirs(complete_path)
+
+
+def create_logging_handler(filename: str, formatter: str):
+    handler = None
+    try:
+        handler = logging.FileHandler(
+            filename=filename,
+            mode="w",
+        )
+        handler.setFormatter(logging.Formatter(formatter))
+    except Exception as e:
+        print(f"Couldnt init logging system with file [{filename}]. Desc=[{e}]")
+
+    return handler
+
 
 def configure_logging():
-    root = logging.getLogger()
+    formatter = "%(asctime)s - %(levelname)s - %(message)s"
 
-    try:
-        handler = logging.FileHandler(filename='output.log', mode='w')
-    except Exception as e:
-        print(f'Couldnt init logging system with file [output.log]. Desc=[{e}]')
-        return False
+    filename = os.path.join(".", "logs", "info", f'info_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
+    root = logging.getLogger("info")
+    root.setLevel(logging.ERROR)
+    root.addHandler(create_logging_handler(filename, formatter))
+    root.info("Testing info logs")
 
-    print(f'Configuring log level [INFO]')
+    filename = os.path.join(".", "logs", "debug", f'debug_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
+    root = logging.getLogger("debug")
     root.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    root.addHandler(handler)
+    root.addHandler(create_logging_handler(filename, formatter))
+    root.info("Testing debug logs")
+
+    logging.ENTRY = 9
+    logging.addLevelName(9, "Entry")
+    filename = os.path.join(".", "logs", "entries", f'entry_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
+    root = logging.getLogger("entry")
+    root.setLevel(logging.INFO)
+    root.addHandler(create_logging_handler(filename, formatter))
+    root.error("Testing entries logs")
 
 
-def run_backtester():
+if __name__ == "__main__":
+    create_directory_structure()
 
-    prices = pd.read_hdf(os.path.join(os.getcwd(), 'tests', 'data','prices.hd5'))
-
-    # define the indicators
-    rsi = from_talib(
-        func_name='rsi',
-        nickname='rsi1',
-        price_data=prices,
-        #input_names = ['close'],
-        parameters = {'timeperiod': [15, 20, 25, 30]}
-    )
-
-    ema = from_talib(
-        func_name='ema',
-        nickname='ema1',
-        price_data=prices,
-        input_names = ['close'],
-        parameters = {'timeperiod': [50, 100]}
-    )
-
-    # get the entries
-    entries = _is_below(
-        want_to_evaluate=ema.data,
-        indicator_data=rsi.data,
-        # candle_ohlc= "open",
-        # user_args=[50,60],
-    )
-
-    static_vars = StaticVariables(
-        equity=1000.,
-        lev_mode=LeverageMode.LeastFreeCashUsed,
-        order_type=OrderType.LongEntry,
-        size_type=SizeType.RiskPercentOfAccount,
-    )
-
-    order_settings = OrderSettingsArrays(
-        max_equity_risk_pct=6.,
-        risk_reward=[2,4,5],
-        size_pct=1.,
-        sl_based_on=CandleBody.low,
-        sl_based_on_lookback=30,
-        sl_based_on_add_pct=.2,
-    )
-
-    backtest_df_only(
-        price_data=prices,
-        entries=entries,
-        static_variables_tuple=static_vars,
-        order_settings_arrays_tuple=order_settings,
-    )
-
-
-if __name__ == '__main__':
     configure_logging()
-    run_backtester()
+
+    order_settings_arrays = OrderSettingsArrays(
+        increase_position_type=np.array([IncreasePositionType.RiskPctAccountEntrySize]),
+        leverage_type=np.array([LeverageStrategyType.Dynamic]),
+        max_equity_risk_pct=np.array([0.003]) / 100,
+        long_or_short=np.array([LongOrShortType.Long]),
+        risk_account_pct_size=np.array([0.001]) / 100,
+        risk_reward=np.array([3.0]),
+        stop_loss_type=np.array([StopLossStrategyType.SLBasedOnCandleBody]),
+        sl_based_on_add_pct=np.array([0.01]) / 100,
+        sl_based_on_lookback=np.array([200]),
+        sl_candle_body_type=np.array([CandleBodyType.Low]),
+        sl_to_be_based_on_candle_body_type=np.array([CandleBodyType.Nothing]),
+        sl_to_be_when_pct_from_candle_body=np.array([0.0]) / 100,
+        sl_to_be_zero_or_entry_type=np.array([SLToBeZeroOrEntryType.Nothing]),
+        static_leverage=np.array([0.0]),
+        take_profit_type=np.array([TakeProfitStrategyType.RiskReward]),
+        tp_fee_type=np.array([TakeProfitFeeType.Limit]),
+        trail_sl_based_on_candle_body_type=np.array([CandleBodyType.High]),
+        trail_sl_by_pct=np.array([0.5]) / 100,
+        trail_sl_when_pct_from_candle_body=np.array([0.000001]) / 100,
+        num_candles=np.array([0]),
+    )
+    cart_order_settings = create_os_cart_product_nb(
+        order_settings_arrays=order_settings_arrays,
+    )
+    order_settings = get_order_setting_tuple_from_index(
+        order_settings_array=cart_order_settings,
+        index=0,
+    )
+
+    mufex = LiveMufex(
+        api_key=MufexTestKeys.api_key,
+        secret_key=MufexTestKeys.secret_key,
+        timeframe="1m",
+        symbol="BTCUSDT",
+        trading_in="USDT",
+        candles_to_dl=200,
+        long_or_short=LongOrShortType.Long,
+        use_test_net=True,
+    )
+    equity = mufex.get_equity_of_asset(trading_in="USDT")
+
+    strategy = Strategy(
+        indicator_settings_index=0,
+        candle_processing_mode=CandleProcessingType.LiveTrading,
+    )
+
+    order = LongOrder(
+        equity=equity,
+        order_settings=order_settings,
+        exchange_settings=mufex.exchange_settings,
+    )
+
+    email_sender = EmailSender(
+        smtp_server=EmailSenderInfo.smtp_server,
+        sender_email=EmailSenderInfo.sender_email,
+        password=EmailSenderInfo.password,
+        receiver=EmailSenderInfo.receiver,
+    )
+
+    LiveTrading(
+        exchange=mufex,
+        strategy=strategy,
+        order=order,
+        entry_order_type=OrderPlacementType.Market,
+        tp_order_type=OrderPlacementType.Limit,
+        email_sender=email_sender,
+    ).run()
