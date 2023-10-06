@@ -103,7 +103,7 @@ class IncreasePositionLong:
 
         if possible_loss > round(account_state_equity * self.max_equity_risk_pct):
             raise RejectedOrder(
-                msg=f"possible loss too big {possible_loss}",
+                msg=f"Possible loss too big {possible_loss} max risk is {round(account_state_equity * self.risk_account_pct_size)}",
                 order_status=OrderStatus.PossibleLossTooBig,
             )
         return possible_loss

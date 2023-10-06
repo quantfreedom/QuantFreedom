@@ -12,8 +12,8 @@ from quantfreedom.enums import CandleProcessingType
 
 
 class IndicatorSettingsArrays(NamedTuple):
-    rsi_lenth: np.array = np.array([15, 20])
-    rsi_is_below: np.array = np.array([30, 150, 200])
+    rsi_lenth: np.array = np.array([14, 20])
+    rsi_is_below: np.array = np.array([50, 150, 200])
 
 
 class Strategy:
