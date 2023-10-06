@@ -443,56 +443,64 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex Class cancel_open_order = Something is wrong {response['message']} -> {e}")
 
-    def adjust_open_order(self, symbol: str, order_id: str, new_price: float, asset_amount: float, **vargs):
+    def adjust_order(self, params: dict = {}, **vargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_replaceorder
-        """
-        end_point = "/private/v1/trade/replace"
-        params = {}
-        params["symbol"] = symbol
-        params["order_id"] = order_id
-        params["price"] = new_price
-        params["qty"] = asset_amount
-        try:
-            response = self.__HTTP_post_request(end_point=end_point, params=params)
-            response_order_id = response.get("data").get("orderId")
-            return response_order_id == order_id or response["message"] == "OK"
-        except Exception as e:
-            raise Exception(f"Mufex Class adjust_open_order = Something is wrong {response['message']} -> {e}")
 
-    def change_open_order_asset_amount(self, symbol: str, order_id: str, asset_amount: float, **vargs):
-        """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_replaceorder
+        you basically have to use the same info that you would for create order
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_placeorder
         """
         end_point = "/private/v1/trade/replace"
-        params = {}
-        params["symbol"] = symbol
-        params["order_id"] = order_id
-        params["qty"] = asset_amount
+        response = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
-            response = self.__HTTP_post_request(end_point=end_point, params=params)
             response_order_id = response.get("data").get("orderId")
-            return response_order_id == order_id or response["message"] == "OK"
+            if response_order_id == params["orderId"] or response["message"] == "OK":
+                return True
+            else:
+                raise Exception
         except Exception as e:
-            raise Exception(
-                f"Mufex Class change_open_order_asset_amount = Something is wrong {response['message']} -> {e}"
-            )
+            raise Exception(f"Mufex Class adjust_order = Something is wrong {response['message']} -> {e}")
 
-    def move_open_order(self, symbol: str, order_id: str, new_price: float, **vargs):
+    def move_limit_order(self, symbol: str, order_id: str, new_price: float, asset_amount: float, **vargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_replaceorder
         """
         end_point = "/private/v1/trade/replace"
         params = {}
         params["symbol"] = symbol
-        params["order_id"] = order_id
-        params["price"] = new_price
+        params["orderId"] = order_id
+        params["qty"] = str(asset_amount)
+        params["price"] = str(new_price)
+        response = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
-            response = self.__HTTP_post_request(end_point=end_point, params=params)
             response_order_id = response.get("data").get("orderId")
-            return response_order_id == order_id or response["message"] == "OK"
+            if response_order_id == params["orderId"] or response["message"] == "OK":
+                return True
+            else:
+                raise Exception
         except Exception as e:
-            raise Exception(f"Mufex Class move_open_order = Something is wrong {response['message']} -> {e}")
+            raise Exception(f"Mufex Class move_limit_order = Something is wrong {response['message']} -> {e}")
+
+    def move_stop_order(self, symbol: str, order_id: str, new_price: float, asset_amount: float, **vargs):
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_replaceorder
+
+        """
+        end_point = "/private/v1/trade/replace"
+        params = {}
+        params["symbol"] = symbol
+        params["orderId"] = order_id
+        params["qty"] = str(asset_amount)
+        params["triggerPrice"] = str(new_price)
+        response = self.__HTTP_post_request(end_point=end_point, params=params)
+        try:
+            response_order_id = response.get("data").get("orderId")
+            if response_order_id == params["orderId"] or response["message"] == "OK":
+                return True
+            else:
+                raise Exception
+        except Exception as e:
+            raise Exception(f"Mufex Class move_stop_order = Something is wrong {response['message']} -> {e}")
 
     def get_wallet_info(self, **vargs):
         """
