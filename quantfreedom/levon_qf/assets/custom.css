@@ -2,11 +2,12 @@ body {
   background-color: #0b0b18;
 }
 .custom-tabs-container {
-  width: 85%;
+  width: 100%;
+  background-color: #0b0b18;
 }
 .custom-tabs {
   border-top-left-radius: 3px;
-  background-color: #f9f9f9;
+  background-color: #0b0b18;
   padding: 0px 24px;
   border-bottom: 1px solid #d6d6d6;
 }
@@ -19,7 +20,7 @@ body {
   border-left: 0px !important;
   border-right: 0px !important;
   border-bottom: 0px !important;
-  background-color: #fafbfc;
+  background-color: #0b0b18;
   padding: 12px !important;
   font-family: "system-ui";
   display: flex !important;
@@ -28,8 +29,9 @@ body {
 }
 .custom-tab--selected {
   color: black;
+  background-color: #0b0b18;
   box-shadow: 1px 1px 0px white;
   border-left: 1px solid lightgrey !important;
   border-right: 1px solid lightgrey !important;
-  border-top: 3px solid #e36209 !important;
+  border-top: 3px solid #00ff1e !important;
 }

@@ -6,7 +6,7 @@ from plotly.subplots import make_subplots
 from quantfreedom._typing import pdFrame, Union, Array1d
 
 
-def _combine_evals(
+def combine_evals(
     first_eval_data: pdFrame,
     second_eval_data: pdFrame,
     plot_results: bool = False,
@@ -310,12 +310,12 @@ def _combine_evals(
     )
 
 
-def _is_above(
+def is_above(
     want_to_evaluate: pdFrame,
     user_args: Union[list[int, float], int, float, Array1d] = None,
     indicator_data: pdFrame = None,
     price_data: pdFrame = None,
-    candle_ohlc: str = None,
+    cand_ohlc: str = None,
     plot_results: bool = False,
 ) -> pdFrame:
     """
@@ -325,7 +325,7 @@ def _is_above(
 
     Summary
     -------
-    Think of this like I want to evaluate if the rsi is above [60,70,80] (user_args) or i want to evaluate if the ema is above btc (price_data) candle closes (candle_ohlc) or i want to evaluate if the ema is above the rsi (indicator_data). So you send what you want to evaluate in (want_to_evaluate) and then the rest.
+    Think of this like I want to evaluate if the rsi is above [60,70,80] (user_args) or i want to evaluate if the ema is above btc (price_data) candle closes (cand_ohlc) or i want to evaluate if the ema is above the rsi (indicator_data). So you send what you want to evaluate in (want_to_evaluate) and then the rest.
 
     Explainer Video
     ---------------
@@ -342,7 +342,7 @@ def _is_above(
         Indicator data like the rsi or atr
     price_data : pdFrame, None
         price data
-    candle_ohlc : str, None
+    cand_ohlc : str, None
         Only send this if you send price data as well: what part of the candle you want to evaluate
     plot_results : bool, False
         do you want to plot the results of the last column just to see if it is working properly.
@@ -416,14 +416,14 @@ def _is_above(
             fig.show()
 
     elif isinstance(price_data, pdFrame):
-        if candle_ohlc == None or candle_ohlc.lower() not in (
+        if cand_ohlc == None or cand_ohlc.lower() not in (
             "open",
             "high",
             "low",
             "close",
         ):
             raise ValueError(
-                "candle_ohlc must be open, high, low or close when sending price data"
+                "cand_ohlc must be open, high, low or close when sending price data"
             )
 
         eval_array = np.empty_like(want_to_evaluate, dtype=np.bool_)
@@ -431,7 +431,7 @@ def _is_above(
         eval_array_counter = 0
 
         for symbol in symbols:
-            temp_prices_values = price_data[symbol][candle_ohlc].values
+            temp_prices_values = price_data[symbol][cand_ohlc].values
             if not all(isinstance(x, (np.int_, np.float_)) for x in temp_prices_values):
                 raise ValueError("price data must be ints or floats")
 
@@ -443,7 +443,7 @@ def _is_above(
                 )
 
                 pd_multind_tuples = pd_multind_tuples + (
-                    want_to_evaluate.columns[eval_array_counter] + (candle_ohlc,),
+                    want_to_evaluate.columns[eval_array_counter] + (cand_ohlc,),
                 )
                 eval_array_counter += 1
 
@@ -617,7 +617,7 @@ def _is_above(
     )
 
 
-def _is_rising(
+def is_rising(
     want_to_evaluate: pdFrame,
     user_args: Union[list[int, float], int, float, Array1d] = None,
     plot_results: bool = False,
@@ -724,7 +724,7 @@ def _is_below(
     user_args: Union[list[int, float], int, float, Array1d] = None,
     indicator_data: pdFrame = None,
     price_data: pdFrame = None,
-    candle_ohlc: str = None,
+    cand_ohlc: str = None,
     plot_results: bool = False,
 ) -> pdFrame:
     """
@@ -734,7 +734,7 @@ def _is_below(
 
     Summary
     -------
-    Think of this like I want to evaluate if the rsi is below [60,70,80] (user_args) or i want to evaluate if the ema is below btc (price_data) candle closes (candle_ohlc) or i want to evaluate if the ema is below the rsi (indicator_data). So you send what you want to evaluate in (want_to_evaluate) and then the rest.
+    Think of this like I want to evaluate if the rsi is below [60,70,80] (user_args) or i want to evaluate if the ema is below btc (price_data) candle closes (cand_ohlc) or i want to evaluate if the ema is below the rsi (indicator_data). So you send what you want to evaluate in (want_to_evaluate) and then the rest.
 
     Explainer Video
     ---------------
@@ -751,7 +751,7 @@ def _is_below(
         Indicator data like the rsi or atr
     price_data : pdFrame, None
         price data
-    candle_ohlc : str, None
+    cand_ohlc : str, None
         Only send this if you send price data as well: what part of the candle you want to evaluate
     plot_results : bool, False
         do you want to plot the results of the last column just to see if it is working properly.
@@ -825,14 +825,14 @@ def _is_below(
             fig.show()
 
     elif isinstance(price_data, pdFrame):
-        if candle_ohlc == None or candle_ohlc.lower() not in (
+        if cand_ohlc == None or cand_ohlc.lower() not in (
             "open",
             "high",
             "low",
             "close",
         ):
             raise ValueError(
-                "candle_ohlc must be open, high, low or close when sending price data"
+                "cand_ohlc must be open, high, low or close when sending price data"
             )
 
         eval_array = np.empty_like(want_to_evaluate, dtype=np.bool_)
@@ -840,7 +840,7 @@ def _is_below(
         eval_array_counter = 0
 
         for symbol in symbols:
-            temp_prices_values = price_data[symbol][candle_ohlc].values
+            temp_prices_values = price_data[symbol][cand_ohlc].values
             if not all(isinstance(x, (np.int_, np.float_)) for x in temp_prices_values):
                 raise ValueError("price data must be ints or floats")
 
@@ -852,7 +852,7 @@ def _is_below(
                 )
 
                 pd_multind_tuples = pd_multind_tuples + (
-                    want_to_evaluate.columns[eval_array_counter] + (candle_ohlc,),
+                    want_to_evaluate.columns[eval_array_counter] + (cand_ohlc,),
                 )
                 eval_array_counter += 1
 
@@ -1024,4 +1024,3 @@ def _is_below(
             names=pd_col_names,
         ),
     )
-

@@ -1,1 +1,8 @@
-4 columns ohlc 3 coins 
+sl init
+    sl to be
+        trailing sl
+    trailing sl
+sl based on
+    sl to be
+        trailing sl
+    trailing sl

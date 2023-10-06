@@ -3,6 +3,7 @@ import numpy as np
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 
+from quantfreedom import get_candle_trace_data, append_to_trace_data_list
 from IPython import get_ipython
 from dash import Dash, dcc, html, dash_table
 from jupyter_dash import JupyterDash
@@ -10,11 +11,7 @@ from plotly.subplots import make_subplots
 from dash_bootstrap_templates import load_figure_template
 
 from quantfreedom.enums.enums import OrderType
-from quantfreedom._typing import pdFrame, RecordArray
-from quantfreedom.plotting.plot_helper_functions import (
-    get_candle_trace_data,
-    append_to_trace_data_list,
-)
+from quantfreedom._typing import pdFrame, RecordArray, pdIndex, Array1d
 
 np.set_printoptions(formatter={"float_kind": "{:.2f}".format})
 
@@ -36,63 +33,11 @@ except NameError:
 bg_color = "#0b0b18"
 
 
-def strat_dashboard(
+def tabs_test_levon(
     indicator_dict: dict,
     prices: pdFrame,
     order_records: RecordArray,
 ) -> JupyterDash:
-    """
-    Function Name
-    -------------
-        strat_dashboard
-
-    Quick Summary
-    -------------
-        Creates a dashboard with your trades, indicators, cumliative PnL and the order records of all the trades.
-
-    Explainer Video
-    ---------------
-        Coming_Soon
-
-    Required Parameters
-    -------------------
-    Variable Name: Variable Type
-
-    indicator_dict: dict
-        You need to create a dictionary of all your indicators.
-
-        If you have any indicators that need to go on the candle stick chart then make a key named candle_chart and inside of that you put your indicator values with keys called value with a number after it like in the example, then you provide the entries
-
-        If you have indicators that need their own chart then create a key called indicator with a number after it and then provide the indicator values and the entries in new keys.
-
-        Example:
-            indicator_dict = {
-                    "candle_chart": {
-                        "values1": ema_300_ind[[('BTCUSDT', 300)]],
-                        "values2": ema_600_ind[[('BTCUSDT', 600)]],
-                        "entries": entries[[("BTCUSDT", 30, 50, 300, 600)]],
-                        },
-                    "indicator1": {
-                        "values1": rsi_ind[[('BTCUSDT', 30)]],
-                        "entries": entries[[("BTCUSDT", 30, 50, 300, 600)]],
-                        },
-                    "indicator2": {
-                        "values1": atr_ind[[('BTCUSDT', 50)]],
-                        "entries": entries[[("BTCUSDT", 30, 50, 300, 600)]],
-                        },
-                    }
-    prices: pdFrame
-        Your prices info as one symbol like prices['BTCUSDT']
-
-    order_records: RecordArray
-        Order Records
-
-    Returns
-    -------
-    JupyterDash
-        Returns a jupyter dashboard that will open up in a new window when you click on the local host url
-    """
-
     amount_of_subplots = 0
 
     for keys in indicator_dict.keys():
@@ -245,18 +190,5 @@ def strat_dashboard(
         ),
     )
 
-    app.layout = html.Div(
-        [
-            html.Div(
-                candle_trades_and_ind,
-            ),
-            html.Div(
-                pnl_graph,
-            ),
-            html.Div(
-                d_table,
-            ),
-        ]
-    )
+    return candle_trades_and_ind, pnl_graph, d_table
 
-    return app.run_server(debug=True, port=3003)
