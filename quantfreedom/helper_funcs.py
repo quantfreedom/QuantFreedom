@@ -1,3 +1,4 @@
+from decimal import Decimal
 import numpy as np
 
 from quantfreedom.enums import OrderSettings, OrderSettingsArrays
@@ -75,29 +76,40 @@ def create_os_cart_product_nb(order_settings_arrays: OrderSettingsArrays):
         trail_sl_by_pct=out.T[17],
         trail_sl_when_pct_from_candle_body=out.T[18],
         num_candles=out.T[19],
+        entry_size_asset=out.T[20],
+        max_trades=out.T[21],
     )
 
 
-def get_order_setting_tuple_from_index(order_settings_array: OrderSettingsArrays, index: int):
+def get_order_setting(os_cart_arrays: OrderSettingsArrays, order_settings_index: int):
     return OrderSettings(
-        increase_position_type=order_settings_array.increase_position_type[index],
-        leverage_type=order_settings_array.leverage_type[index],
-        max_equity_risk_pct=order_settings_array.max_equity_risk_pct[index],
-        long_or_short=order_settings_array.long_or_short[index],
-        risk_account_pct_size=order_settings_array.risk_account_pct_size[index],
-        risk_reward=order_settings_array.risk_reward[index],
-        sl_based_on_add_pct=order_settings_array.sl_based_on_add_pct[index],
-        sl_based_on_lookback=order_settings_array.sl_based_on_lookback[index],
-        sl_candle_body_type=order_settings_array.sl_candle_body_type[index],
-        sl_to_be_based_on_candle_body_type=order_settings_array.sl_to_be_based_on_candle_body_type[index],
-        sl_to_be_when_pct_from_candle_body=order_settings_array.sl_to_be_when_pct_from_candle_body[index],
-        sl_to_be_zero_or_entry_type=order_settings_array.sl_to_be_zero_or_entry_type[index],
-        static_leverage=order_settings_array.static_leverage[index],
-        stop_loss_type=order_settings_array.stop_loss_type[index],
-        take_profit_type=order_settings_array.take_profit_type[index],
-        tp_fee_type=order_settings_array.tp_fee_type[index],
-        trail_sl_based_on_candle_body_type=order_settings_array.trail_sl_based_on_candle_body_type[index],
-        trail_sl_by_pct=order_settings_array.trail_sl_by_pct[index],
-        trail_sl_when_pct_from_candle_body=order_settings_array.trail_sl_when_pct_from_candle_body[index],
-        num_candles=order_settings_array.num_candles[index],
+        increase_position_type=os_cart_arrays.increase_position_type[order_settings_index],
+        leverage_type=os_cart_arrays.leverage_type[order_settings_index],
+        max_equity_risk_pct=os_cart_arrays.max_equity_risk_pct[order_settings_index],
+        long_or_short=os_cart_arrays.long_or_short[order_settings_index],
+        risk_account_pct_size=os_cart_arrays.risk_account_pct_size[order_settings_index],
+        risk_reward=os_cart_arrays.risk_reward[order_settings_index],
+        sl_based_on_add_pct=os_cart_arrays.sl_based_on_add_pct[order_settings_index],
+        sl_based_on_lookback=os_cart_arrays.sl_based_on_lookback[order_settings_index],
+        sl_candle_body_type=os_cart_arrays.sl_candle_body_type[order_settings_index],
+        sl_to_be_based_on_candle_body_type=os_cart_arrays.sl_to_be_based_on_candle_body_type[order_settings_index],
+        sl_to_be_when_pct_from_candle_body=os_cart_arrays.sl_to_be_when_pct_from_candle_body[order_settings_index],
+        sl_to_be_zero_or_entry_type=os_cart_arrays.sl_to_be_zero_or_entry_type[order_settings_index],
+        static_leverage=os_cart_arrays.static_leverage[order_settings_index],
+        stop_loss_type=os_cart_arrays.stop_loss_type[order_settings_index],
+        take_profit_type=os_cart_arrays.take_profit_type[order_settings_index],
+        tp_fee_type=os_cart_arrays.tp_fee_type[order_settings_index],
+        trail_sl_based_on_candle_body_type=os_cart_arrays.trail_sl_based_on_candle_body_type[order_settings_index],
+        trail_sl_by_pct=os_cart_arrays.trail_sl_by_pct[order_settings_index],
+        trail_sl_when_pct_from_candle_body=os_cart_arrays.trail_sl_when_pct_from_candle_body[order_settings_index],
+        num_candles=os_cart_arrays.num_candles[order_settings_index],
+        entry_size_asset=os_cart_arrays.entry_size_asset[order_settings_index],
+        max_trades=os_cart_arrays.max_trades[order_settings_index],
     )
+
+def round_size_by_tick_step(self, user_num: float, exchange_num: float) -> float:
+    user_num = str(user_num)
+    exchange_num = str(exchange_num)
+    int_num = int(Decimal(user_num) / Decimal(exchange_num))
+    float_num = float(Decimal(int_num) * Decimal(exchange_num))
+    return float_num

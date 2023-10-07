@@ -1,4 +1,3 @@
-from decimal import Decimal
 from typing import Optional
 import numpy as np
 from quantfreedom.custom_logger import CustomLogger
@@ -33,19 +32,23 @@ class Order:
     cash_used = 0.0
     equity = 0.0
 
+    total_trades = 0
     average_entry = 0.0
     entry_price = 0.0
+    entry_size_asset = 0.0
     entry_size_usd = 0.0
     exit_price = 0.0
     fees_paid = 0.0
     leverage = 1.0
     liq_price = 0.0
     order_status = 0.0
+    position_size_asset = 0.0
     position_size_usd = 0.0
     possible_loss = 0.0
     realized_pnl = 0.0
     sl_pct = 0.0
     sl_price = 0.0
+    total_trades = 0.0
     tp_pct = 0.0
     tp_price = 0.0
     can_move_sl_to_be = False
@@ -68,11 +71,12 @@ class Order:
         order_records: Optional[np.array] = None,
         total_order_records_filled: Optional[int] = None,
     ):
-        self.order_settings = order_settings
-        self.exchange_settings = exchange_settings
+        order_settings = order_settings
+        exchange_settings = exchange_settings
         self.equity = equity
         self.available_balance = equity
         self.info_logger = logger.info_logger
+        self.market_fee_pct = exchange_settings.market_fee_pct
 
         # this is not effecient ... this will not change
         if strat_records is None:
@@ -90,54 +94,56 @@ class Order:
             self.order_records = order_records
             self.total_order_records_filled = total_order_records_filled
 
-        if self.order_settings.tp_fee_type == TakeProfitFeeType.Nothing:
+        if order_settings.tp_fee_type == TakeProfitFeeType.Nothing:
             self.tp_fee_pct = 0.0
-        elif self.order_settings.tp_fee_type == TakeProfitFeeType.Limit:
-            self.tp_fee_pct = self.exchange_settings.limit_fee_pct
-        elif self.order_settings.tp_fee_type == TakeProfitFeeType.Market:
-            self.tp_fee_pct = self.exchange_settings.market_fee_pct
+        elif order_settings.tp_fee_type == TakeProfitFeeType.Limit:
+            self.tp_fee_pct = exchange_settings.limit_fee_pct
+        elif order_settings.tp_fee_type == TakeProfitFeeType.Market:
+            self.tp_fee_pct = exchange_settings.market_fee_pct
 
-        if self.order_settings.long_or_short == LongOrShortType.Long:
+        if order_settings.long_or_short == LongOrShortType.Long:
             self.obj_stop_loss = StopLossLong(
-                sl_based_on_add_pct=self.order_settings.sl_based_on_add_pct,
-                sl_based_on_lookback=self.order_settings.sl_based_on_lookback,
-                sl_candle_body_type=self.order_settings.sl_candle_body_type,
-                sl_to_be_based_on_candle_body_type=self.order_settings.sl_to_be_based_on_candle_body_type,
-                sl_to_be_when_pct_from_candle_body=self.order_settings.sl_to_be_when_pct_from_candle_body,
-                sl_to_be_zero_or_entry_type=self.order_settings.sl_to_be_zero_or_entry_type,
-                sl_type=self.order_settings.stop_loss_type,
-                trail_sl_based_on_candle_body_type=self.order_settings.trail_sl_based_on_candle_body_type,
-                trail_sl_by_pct=self.order_settings.trail_sl_by_pct,
-                trail_sl_when_pct_from_candle_body=self.order_settings.trail_sl_when_pct_from_candle_body,
-                market_fee_pct=self.exchange_settings.market_fee_pct,
                 logger=logger,
+                sl_based_on_add_pct=order_settings.sl_based_on_add_pct,
+                sl_based_on_lookback=order_settings.sl_based_on_lookback,
+                sl_candle_body_type=order_settings.sl_candle_body_type,
+                sl_to_be_based_on_candle_body_type=order_settings.sl_to_be_based_on_candle_body_type,
+                sl_to_be_when_pct_from_candle_body=order_settings.sl_to_be_when_pct_from_candle_body,
+                sl_to_be_zero_or_entry_type=order_settings.sl_to_be_zero_or_entry_type,
+                sl_type=order_settings.stop_loss_type,
+                trail_sl_based_on_candle_body_type=order_settings.trail_sl_based_on_candle_body_type,
+                trail_sl_by_pct=order_settings.trail_sl_by_pct,
+                trail_sl_when_pct_from_candle_body=order_settings.trail_sl_when_pct_from_candle_body,
+                market_fee_pct=exchange_settings.market_fee_pct,
             )
             self.obj_increase_posotion = IncreasePositionLong(
-                increase_position_type=self.order_settings.increase_position_type,
-                stop_loss_type=self.order_settings.stop_loss_type,
-                market_fee_pct=self.exchange_settings.market_fee_pct,
-                max_equity_risk_pct=self.order_settings.max_equity_risk_pct,
-                risk_account_pct_size=self.order_settings.risk_account_pct_size,
-                max_asset_size=self.exchange_settings.max_asset_size,
-                min_asset_size=self.exchange_settings.min_asset_size,
                 logger=logger,
+                increase_position_type=order_settings.increase_position_type,
+                stop_loss_type=order_settings.stop_loss_type,
+                market_fee_pct=exchange_settings.market_fee_pct,
+                max_equity_risk_pct=order_settings.max_equity_risk_pct,
+                risk_account_pct_size=order_settings.risk_account_pct_size,
+                max_asset_size=exchange_settings.max_asset_size,
+                min_asset_size=exchange_settings.min_asset_size,
+                entry_size_asset=order_settings.entry_size_asset,
+                max_trades=order_settings.max_trades,
             )
             self.obj_leverage = LeverageLong(
-                leverage_type=self.order_settings.leverage_type,
-                sl_type=self.order_settings.stop_loss_type,
-                market_fee_pct=self.exchange_settings.market_fee_pct,
-                max_leverage=self.exchange_settings.max_leverage,
-                static_leverage=self.order_settings.static_leverage,
-                mmr_pct=self.exchange_settings.mmr_pct,
                 logger=logger,
+                leverage_type=order_settings.leverage_type,
+                sl_type=order_settings.stop_loss_type,
+                market_fee_pct=exchange_settings.market_fee_pct,
+                max_leverage=exchange_settings.max_leverage,
+                static_leverage=order_settings.static_leverage,
+                mmr_pct=exchange_settings.mmr_pct,
             )
             self.obj_take_profit = TakeProfitLong(
-                take_profit_type=self.order_settings.take_profit_type,
-                risk_reward=self.order_settings.risk_reward,
-                tp_fee_pct=self.tp_fee_pct,
                 logger=logger,
+                take_profit_type=order_settings.take_profit_type,
+                risk_reward=order_settings.risk_reward,
+                tp_fee_pct=self.tp_fee_pct,
             )
-        elif self.order_settings.long_or_short == LongOrShortType.Short:
+        elif order_settings.long_or_short == LongOrShortType.Short:
             pass
 
     def pass_func(self, **vargs):
@@ -160,13 +166,6 @@ class Order:
 
     def calculate_take_profit(self):
         pass
-
-    def round_size_by_tick_step(self, user_num: float, exchange_num: float) -> float:
-        user_num = str(user_num)
-        exchange_num = str(exchange_num)
-        int_num = int(Decimal(user_num) / Decimal(exchange_num))
-        float_num = float(Decimal(int_num) * Decimal(exchange_num))
-        return float_num
 
     def move_stop_loss(
         self,
@@ -218,9 +217,12 @@ class Order:
         self.order_records[self.total_order_records_filled]["liq_price"] = order_result.liq_price
         self.order_records[self.total_order_records_filled]["order_status"] = order_result.order_status
         self.order_records[self.total_order_records_filled]["possible_loss"] = order_result.possible_loss
+        self.order_records[self.total_order_records_filled]["total_trades"] = order_result.total_trades
+        self.order_records[self.total_order_records_filled]["entry_size_asset"] = order_result.entry_size_asset
         self.order_records[self.total_order_records_filled]["entry_size_usd"] = order_result.entry_size_usd
         self.order_records[self.total_order_records_filled]["entry_price"] = order_result.entry_price
         self.order_records[self.total_order_records_filled]["exit_price"] = order_result.exit_price
+        self.order_records[self.total_order_records_filled]["position_size_asset"] = order_result.position_size_asset
         self.order_records[self.total_order_records_filled]["position_size_usd"] = order_result.position_size_usd
         self.order_records[self.total_order_records_filled]["realized_pnl"] = order_result.realized_pnl
         self.order_records[self.total_order_records_filled]["sl_pct"] = order_result.sl_pct * 100
@@ -251,18 +253,23 @@ class LongOrder(Order):
         (
             self.average_entry,
             self.entry_price,
+            self.entry_size_asset,
             self.entry_size_usd,
+            self.position_size_asset,
             self.position_size_usd,
             self.possible_loss,
+            self.total_trades,
             self.sl_pct,
         ) = self.obj_increase_posotion.calculate_increase_posotion(
             account_state_equity=self.equity,
             average_entry=self.average_entry,
             entry_price=entry_price,
             in_position=self.position_size_usd > 0,
+            position_size_asset=self.position_size_asset,
             position_size_usd=self.position_size_usd,
             possible_loss=self.possible_loss,
             sl_price=self.sl_price,
+            total_trades=self.total_trades,
         )
 
     def calculate_leverage(self):
@@ -296,13 +303,13 @@ class LongOrder(Order):
     def check_stop_loss_hit(self, current_candle):
         self.obj_stop_loss.sl_hit_checker(
             sl_hit=current_candle[2] < self.sl_price,
-            exit_fee_pct=self.exchange_settings.market_fee_pct,
+            exit_fee_pct=self.market_fee_pct,
         )
 
     def check_liq_hit(self, current_candle):
         self.obj_leverage.liq_hit_checker(
             liq_hit=current_candle[2] < self.liq_price,
-            exit_fee_pct=self.exchange_settings.market_fee_pct,
+            exit_fee_pct=self.market_fee_pct,
         )
 
     def check_take_profit_hit(self, current_candle, exit_signal):
@@ -341,7 +348,7 @@ class LongOrder(Order):
         # profit and loss calulation
         coin_size = self.position_size_usd / self.average_entry  # math checked
         pnl = coin_size * (self.exit_price - self.average_entry)  # math checked
-        fee_open = coin_size * self.average_entry * self.exchange_settings.market_fee_pct  # math checked
+        fee_open = coin_size * self.average_entry * self.market_fee_pct  # math checked
         fee_close = coin_size * self.exit_price * exit_fee_pct  # math checked
         self.fees_paid = fee_open + fee_close  # math checked
         self.realized_pnl = pnl - self.fees_paid  # math checked
@@ -376,8 +383,11 @@ class LongOrder(Order):
         self.leverage = 0.0
         self.liq_price = 0.0
         self.possible_loss = 0.0
+        self.total_trades = 0.0
+        self.entry_size_asset = 0.0
         self.entry_size_usd = 0.0
         self.entry_price = 0.0
+        self.position_size_asset = 0.0
         self.position_size_usd = 0.0
         self.sl_pct = 0.0
         self.sl_price = 0.0

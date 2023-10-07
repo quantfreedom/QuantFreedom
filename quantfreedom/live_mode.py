@@ -7,14 +7,13 @@ from quantfreedom.enums import (
     LongOrShortType,
     MoveStopLoss,
     OrderPlacementType,
-    OrderStatus,
     PositionModeType,
     RejectedOrder,
 )
 from quantfreedom.exchanges.live_exchange import LiveExchange
 from quantfreedom.order_handler.order_handler import Order
 from quantfreedom.strategies.strategy import Strategy
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 
 class LiveTrading:
@@ -37,13 +36,7 @@ class LiveTrading:
         self.strategy = strategy
         self.order = order
         self.email_sender = email_sender
-        self.send_error_msg = self.email_error_msg
-        self.send_plot_graph = self.send_entry_email
-        self.__get_plot_file = self.__get_fig_filename
         self.symbol = self.exchange.symbol
-        self.asset_tick_step = self.exchange.exchange_settings.asset_tick_step
-        self.price_tick_step = self.exchange.exchange_settings.price_tick_step
-        self.leverage_tick_step = self.exchange.exchange_settings.leverage_tick_step
 
         if self.exchange.position_mode == PositionModeType.HedgeMode:
             if self.exchange.long_or_short == LongOrShortType.Long:
@@ -82,12 +75,11 @@ class LiveTrading:
                 start_time = self.exchange.get_current_time_seconds()
                 self.exchange.set_candles_df_and_np()
                 td = str(timedelta(seconds=self.exchange.get_current_time_seconds() - start_time)).split(":")
-                self.info_logger.debug(
-                    f"It took {td[1]} min {td[2]} seconds to get {self.exchange.candles_df.shape[0]} candles"
-                )
+                num_candles = self.exchange.candles_np.shape[0]
+                self.info_logger.debug(f"It took {td[1]} min {td[2]} seconds to get {num_candles} candles")
 
                 # bar_index bar index is always the last bar ... so if we have 200 candles we are at index 200
-                bar_index = self.exchange.candles_np.shape[0] - 1
+                bar_index = num_candles - 1
                 msg = "Couldn't verify that the following orders were placed "
 
                 self.info_logger.debug("Setting indicator")
@@ -129,36 +121,13 @@ class LiveTrading:
 
                             # create variables
                             self.info_logger.debug("Setting asset size and prices based on tick step")
-                            entry_size_asset = self.order.entry_size_usd / self.order.entry_price
-                            entry_size_asset = self.order.round_size_by_tick_step(
-                                user_num=entry_size_asset,
-                                exchange_num=self.asset_tick_step,
-                            )
-
-                            entry_price = self.order.round_size_by_tick_step(
-                                user_num=self.order.entry_price,
-                                exchange_num=self.price_tick_step,
-                            )
-                            sl_price = self.order.round_size_by_tick_step(
-                                user_num=self.order.sl_price,
-                                exchange_num=self.price_tick_step,
-                            )
-                            tp_price = self.order.round_size_by_tick_step(
-                                user_num=self.order.tp_price,
-                                exchange_num=self.price_tick_step,
-                            )
-
-                            leverage = self.order.round_size_by_tick_step(
-                                user_num=self.order.leverage,
-                                exchange_num=self.leverage_tick_step,
-                            )
 
                             # place the order
                             send_verify_error = False
                             self.info_logger.info("Placing Entry Order")
                             entry_order_id = self.place_entry_order(
-                                asset_amount=entry_size_asset,
-                                entry_price=entry_price,
+                                asset_amount=self.order.entry_size_asset,
+                                entry_price=self.order.entry_price,
                             )
 
                             self.info_logger.info(f"Submitted entry order -> [order_id={entry_order_id}]")
@@ -192,7 +161,7 @@ class LiveTrading:
                             self.info_logger.info("Setting leverage")
                             if self.exchange.set_leverage_value(
                                 symbol=self.symbol,
-                                leverage=leverage,
+                                leverage=self.order.leverage,
                             ):
                                 self.info_logger.info(f"Leverage Changed")
                             else:
@@ -203,7 +172,7 @@ class LiveTrading:
                             self.info_logger.info(f"placing stop loss order")
                             sl_order_id = self.place_sl_order(
                                 asset_amount=self.ex_position_size_asset,
-                                trigger_price=sl_price,
+                                trigger_price=self.order.sl_price,
                             )
                             self.info_logger.info(f"Submitted SL order -> [order_id={sl_order_id}]")
 
@@ -211,7 +180,7 @@ class LiveTrading:
                             self.info_logger.info(f"placing take profit order")
                             tp_order_id = self.place_tp_order(
                                 asset_amount=self.ex_position_size_asset,
-                                tp_price=tp_price,
+                                tp_price=self.order.tp_price,
                             )
                             self.info_logger.info(f"Submitted TP order -> [order_id={tp_order_id}]")
 
@@ -247,7 +216,7 @@ class LiveTrading:
                                 )
                                 leverage_changed = self.exchange.set_leverage_value(
                                     symbol=self.symbol,
-                                    leverage=leverage,
+                                    leverage=self.order.leverage,
                                 )
                                 sl_placed = self.exchange.check_if_order_open(
                                     symbol=self.symbol,
@@ -308,22 +277,18 @@ class LiveTrading:
                             except MoveStopLoss as result:
                                 try:
                                     self.info_logger.info(f"Inside move stop loss check trade logs")
-                                    result_sl_price = self.order.round_size_by_tick_step(
-                                        user_num=result.sl_price,
-                                        exchange_num=self.price_tick_step,
-                                    )
                                     self.trade_logger.debug(
-                                        f"trying to move the stop loss from {self.order.sl_price} to {result_sl_price}"
+                                        f"trying to move the stop loss from {self.order.sl_price} to {result.sl_price}"
                                     )
                                     if self.exchange.move_stop_order(
                                         symbol=self.symbol,
                                         order_id=sl_order_id,
                                         asset_amount=self.ex_position_size_asset,
-                                        new_price=result_sl_price,
+                                        new_price=result.sl_price,
                                     ):
                                         self.order.update_stop_loss_live_trading(sl_price=result.sl_price)
                                         self.trade_logger.info(
-                                            f"Moved the stop loss from {self.order.sl_price} to {result_sl_price}"
+                                            f"Moved the stop loss from {self.order.sl_price} to {result.sl_price}"
                                         )
                                     else:
                                         self.trade_logger.info(f"Couldn't verify sl was moved {sl_order_id}")
