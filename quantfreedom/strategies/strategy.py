@@ -28,15 +28,14 @@ class Strategy:
     ) -> None:
         self.candles = candles
         self.indicator_settings_arrays = self.create_ind_cart_product_nb(IndicatorSettingsArrays())
+        self.current_exit_signals = np.full_like(candles.close.values, np.nan)
 
         if candle_processing_mode == CandleProcessingType.RegularBacktest:
-            self.current_exit_signals = np.full_like(candles.close.values, np.nan)
             self.create_indicator = self.__set_bar_index
             self.closing_prices = candles.close
             self.set_indicator_settings(indicator_settings_index=0)
             self.__set_rsi()
         elif candle_processing_mode == CandleProcessingType.CandleBacktest:
-            self.current_exit_signals = np.full_like(candles.close.values, np.nan)
             self.create_indicator = self.__create_indicator_candle_by_candle
             self.bar_index = -1
         elif candle_processing_mode == CandleProcessingType.LiveTrading:
@@ -61,7 +60,7 @@ class Strategy:
         so that is why we have to shift by one
         """
         try:
-            self.rsi = (
+            self.rsi_entry = (
                 pta.rsi(
                     close=self.closing_prices,
                     length=self.rsi_lenth,
@@ -69,6 +68,11 @@ class Strategy:
                 .round(decimals=2)
                 .shift(1, fill_value=np.nan)
             )
+            self.rsi_exit = pta.rsi(
+                close=self.closing_prices,
+                length=self.rsi_lenth,
+            ).round(decimals=2)
+            you = 1
         except Exception as e:
             Exception(f"Strategy class __get_rsi = Something went wrong creating rsi -> {e}")
 
@@ -133,8 +137,8 @@ class Strategy:
     def evaluate(self):
         try:
             # exit price
-            if self.rsi_exit.iloc[self.bar_index] > 60:
-                self.current_exit_signals[self.bar_index] = self.candles.close.values[self.bar_index]
+            if self.rsi_exit.iloc[self.bar_index] > 70:
+                self.current_exit_signals[self.bar_index] = self.candles.close.iloc[self.bar_index]
 
             if self.rsi_entry.iloc[self.bar_index] < self.rsi_is_below:
                 return True
