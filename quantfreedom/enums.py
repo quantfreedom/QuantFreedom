@@ -3,8 +3,8 @@ import numpy as np
 
 
 class CandleProcessingTypeT(NamedTuple):
-    RegularBacktest: int = 0
-    CandleBacktest: int = 1
+    Backtest: int = 0
+    RealBacktest: int = 1
     LiveTrading: int = 2
 
 

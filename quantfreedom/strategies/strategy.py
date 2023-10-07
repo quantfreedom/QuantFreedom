@@ -30,12 +30,12 @@ class Strategy:
         self.indicator_settings_arrays = self.create_ind_cart_product_nb(IndicatorSettingsArrays())
         self.current_exit_signals = np.full_like(candles.close.values, np.nan)
 
-        if candle_processing_mode == CandleProcessingType.RegularBacktest:
+        if candle_processing_mode == CandleProcessingType.Backtest:
             self.create_indicator = self.__set_bar_index
             self.closing_prices = candles.close
             self.set_indicator_settings(indicator_settings_index=0)
             self.__set_rsi()
-        elif candle_processing_mode == CandleProcessingType.CandleBacktest:
+        elif candle_processing_mode == CandleProcessingType.RealBacktest:
             self.create_indicator = self.__create_indicator_candle_by_candle
             self.bar_index = -1
         elif candle_processing_mode == CandleProcessingType.LiveTrading:
