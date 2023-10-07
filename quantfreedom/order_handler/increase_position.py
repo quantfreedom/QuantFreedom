@@ -33,6 +33,7 @@ class IncreasePositionLong:
         self.max_equity_risk_pct = max_equity_risk_pct
         self.max_asset_size = max_asset_size
         self.min_asset_size = min_asset_size
+        self.info_logger = logger.info_logger
 
         if stop_loss_type == StopLossStrategyType.SLBasedOnCandleBody:
             if increase_position_type == IncreasePositionType.RiskPctAccountEntrySize:
@@ -59,6 +60,7 @@ class IncreasePositionLong:
         possible_loss,
         sl_price,
     ):
+        self.info_logger.debug("")
         if in_position:
             (
                 average_entry,
@@ -91,6 +93,9 @@ class IncreasePositionLong:
             )
 
         self.__check_size_value(entry_size_asset=entry_size_usd / entry_price, entry_size_usd=entry_size_usd)
+        self.info_logger.debug(
+            f"Returning average_entry = {average_entry} entry_price={entry_price} entry_size_usd={entry_size_usd} position_size_usd ={position_size_usd} possible_loss = {possible_loss} sl_pct={sl_pct}"
+        )
         return (
             average_entry,
             entry_price,
@@ -101,6 +106,7 @@ class IncreasePositionLong:
         )
 
     def __get_possible_loss(self, account_state_equity, possible_loss):
+        self.info_logger.debug("")
         possible_loss = round(possible_loss + account_state_equity * self.risk_account_pct_size)
         max_equity_risk = round(account_state_equity * self.max_equity_risk_pct)
         if possible_loss > max_equity_risk:
@@ -111,6 +117,7 @@ class IncreasePositionLong:
         return possible_loss
 
     def __check_size_value(self, entry_size_asset, entry_size_usd):
+        self.info_logger.debug("")
         if entry_size_asset < self.min_asset_size:
             raise RejectedOrder(
                 msg=f"Size Value is too small {entry_size_usd}",
@@ -142,6 +149,7 @@ class IncreasePositionLong:
         possible_loss,
         sl_price,
     ):
+        self.info_logger.debug("")
         possible_loss = self.__get_possible_loss(
             possible_loss=possible_loss,
             account_state_equity=account_state_equity,
@@ -172,7 +180,7 @@ class IncreasePositionLong:
         sl_price,
     ):
         # need to put in checks to make sure the size isn't too big or goes over or something
-
+        self.info_logger.debug("")
         possible_loss = self.__get_possible_loss(
             possible_loss=possible_loss,
             account_state_equity=account_state_equity,
@@ -197,7 +205,6 @@ class IncreasePositionLong:
         sl_pct = (average_entry - sl_price) / average_entry
 
         position_size_usd += entry_size_usd
-
         return (
             average_entry,
             entry_price,

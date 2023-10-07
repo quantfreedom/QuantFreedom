@@ -25,58 +25,7 @@ from quantfreedom.strategies.strategy import Strategy
 from my_stuff import EmailSenderInfo, MufexTestKeys
 
 
-# def create_directory_structure():
-#     complete_path = os.path.join(".", "logs", "info")
-#     isExist = os.path.exists(complete_path)
-#     if not isExist:
-#         os.makedirs(complete_path)
-
-#     complete_path = os.path.join(".", "logs", "trades")
-#     isExist = os.path.exists(complete_path)
-#     if not isExist:
-#         os.makedirs(complete_path)
-
-#     complete_path = os.path.join(".", "logs", "images")
-#     isExist = os.path.exists(complete_path)
-#     if not isExist:
-#         os.makedirs(complete_path)
-
-
-# def create_logging_handler(filename: str, formatter: str):
-#     handler = None
-#     try:
-#         handler = logging.FileHandler(
-#             filename=filename,
-#             mode="w",
-#         )
-#         handler.setFormatter(logging.Formatter(formatter))
-#     except Exception as e:
-#         print(f"Couldnt init logging system with file [{filename}]. Desc=[{e}]")
-
-#     return handler
-
-
-# def configure_logging():
-#     formatter = "%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s() - %(message)s"
-
-#     filename = os.path.join(".", "logs", "info", f'info_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
-#     root = logging.getLogger("info")
-#     root.setLevel(logging.DEBUG)
-#     root.addHandler(create_logging_handler(filename, formatter))
-#     root.info("Testing info log")
-
-#     filename = os.path.join(".", "logs", "trades", f'trades_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
-#     root = logging.getLogger("trades")
-#     root.setLevel(logging.DEBUG)
-#     root.addHandler(create_logging_handler(filename, formatter))
-#     root.info("Testing trades log")
-
-
 if __name__ == "__main__":
-    # create_directory_structure()
-
-    # configure_logging()
-
     order_settings_arrays = OrderSettingsArrays(
         increase_position_type=np.array([IncreasePositionType.RiskPctAccountEntrySize]),
         leverage_type=np.array([LeverageStrategyType.Dynamic]),
@@ -106,10 +55,7 @@ if __name__ == "__main__":
         order_settings_array=cart_order_settings,
         index=0,
     )
-    logger = CustomLogger(
-        log_debug=True,
-        disable_logging=False,
-    )
+    logger = CustomLogger()
     mufex = LiveMufex(
         api_key=MufexTestKeys.api_key,
         secret_key=MufexTestKeys.secret_key,

@@ -24,6 +24,7 @@ class TakeProfitLong:
     ):
         self.risk_reward = risk_reward
         self.tp_fee_pct = tp_fee_pct
+        self.info_logger = logger.info_logger
 
         if take_profit_type != TakeProfitStrategyType.Nothing:
             if take_profit_type == TakeProfitStrategyType.RiskReward:
@@ -43,6 +44,7 @@ class TakeProfitLong:
                 self.tp_checker = self.check_take_profit_hit_provided_rr
 
     def calculate_take_profit(self, possible_loss, position_size_usd, average_entry):
+        self.info_logger.debug("")
         return self.take_profit_calculator(
             possible_loss=possible_loss,
             position_size_usd=position_size_usd,
@@ -50,9 +52,11 @@ class TakeProfitLong:
         )
 
     def pass_fucntion(self, **vargs):
+        self.info_logger.debug("")
         return np.nan, np.nan, 0
 
     def calculate_risk_reward(self, possible_loss, position_size_usd, average_entry):
+        self.info_logger.debug("")
         profit = possible_loss * self.risk_reward
         self.tp_price = (profit + position_size_usd * self.tp_fee_pct + position_size_usd) * (
             average_entry / (position_size_usd - position_size_usd * self.tp_fee_pct)
@@ -70,6 +74,7 @@ class TakeProfitLong:
         exit_fee_pct: float,
         **vargs,
     ):
+        self.info_logger.debug("")
         if current_candle[1] > self.tp_price:
             raise DecreasePosition(
                 exit_price=self.tp_price,
@@ -83,6 +88,7 @@ class TakeProfitLong:
         exit_fee_pct: float,
         **vargs,
     ):
+        self.info_logger.debug("")
         if not np.isnan(exit_signal):
             raise DecreasePosition(
                 exit_price=exit_signal,  # sending the close of the current candle for now as exit price

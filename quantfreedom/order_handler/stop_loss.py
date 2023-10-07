@@ -52,6 +52,7 @@ class StopLossLong:
         self.sl_based_on_lookback = sl_based_on_lookback
         self.sl_based_on_add_pct = sl_based_on_add_pct
         self.market_fee_pct = market_fee_pct
+        self.info_logger = logger.info_logger
 
         # setting up stop loss calulator
         if sl_type == StopLossStrategyType.SLBasedOnCandleBody:
@@ -116,15 +117,19 @@ class StopLossLong:
             self.move_tsl_checker = self.check_move_trailing_stop_loss
 
     def __get_candle_body_price_open(self, lookback, bar_index, candles):
+        self.info_logger.debug(f"")
         return candles[lookback:bar_index, 0].min()
 
     def __get_candle_body_price_high(self, lookback, bar_index, candles):
+        self.info_logger.debug(f"")
         return candles[lookback:bar_index, 1].min()
 
     def __get_candle_body_price_low(self, lookback, bar_index, candles):
+        self.info_logger.debug(f"")
         return candles[lookback:bar_index, 2].min()
 
     def __get_candle_body_price_close(self, lookback, bar_index, candles):
+        self.info_logger.debug(f"")
         return candles[lookback:bar_index, 3].min()
 
     # main functions
@@ -132,6 +137,7 @@ class StopLossLong:
         pass
 
     def sl_based_on_candle_body_calc(self, bar_index, candles):
+        self.info_logger.debug(f"")
         # lb will be bar index if sl isn't based on lookback because look back will be 0
         lookback = max(int((bar_index - 1) - self.sl_based_on_lookback), 0)
         candle_body = self.sl_price_getter(
@@ -144,9 +150,11 @@ class StopLossLong:
 
     # stop loss to break even zero or entry
     def __sl_to_be_zero(self, average_entry):
+        self.info_logger.debug(f"")
         return (self.market_fee_pct * average_entry + average_entry) / (1 - self.market_fee_pct)
 
     def __sl_to_be_entry(self, average_entry):
+        self.info_logger.debug(f"")
         return average_entry
 
     def check_move_stop_loss_to_be(
@@ -156,7 +164,9 @@ class StopLossLong:
         candles,
         can_move_sl_to_be,
     ):
+        self.info_logger.debug(f"")
         if can_move_sl_to_be:
+            self.info_logger.debug(f"Can move sl to break even")
             # Stop Loss to break even
             candle_body_ohlc = self.sl_to_be_price_getter(
                 lookback=bar_index,
@@ -166,6 +176,7 @@ class StopLossLong:
             pct_from_ae = (candle_body_ohlc - average_entry) / average_entry
             move_sl = pct_from_ae > self.sl_to_be_move_when_pct
             if move_sl:
+                self.info_logger.debug(f"Move sl true")
                 self.sl_price = self.sl_to_be_z_or_e(average_entry)
                 raise MoveStopLoss(
                     sl_price=self.sl_price,
@@ -178,6 +189,7 @@ class StopLossLong:
         bar_index,
         candles,
     ):
+        self.info_logger.debug("")
         candle_body_ohlc = self.tsl_price_getter(
             lookback=bar_index,
             bar_index=bar_index + 1,
@@ -188,15 +200,19 @@ class StopLossLong:
         if move_sl:
             temp_sl_price = candle_body_ohlc - candle_body_ohlc * self.trail_sl_by_pct
             if temp_sl_price > self.sl_price:
+                self.info_logger.debug(f"temp sl {temp_sl_price} > sl price {self.sl_price} - Will move trailing stop")
                 self.sl_price = temp_sl_price
-
                 raise MoveStopLoss(
                     sl_price=self.sl_price,
                     order_status=OrderStatus.MovedTrailingStopLoss,
                 )
+            else:
+                self.info_logger.debug(f"temp sl {temp_sl_price} < sl price {self.sl_price} - Wont move trailing stop")
 
     def check_stop_loss_hit(self, sl_hit: bool, exit_fee_pct: float):
+        self.info_logger.debug("")
         if sl_hit:
+            self.info_logger.debug(f"Stop loss hit true")
             raise DecreasePosition(
                 exit_price=self.sl_price,
                 order_status=OrderStatus.StopLossFilled,

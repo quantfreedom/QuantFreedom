@@ -37,6 +37,7 @@ class LeverageLong:
         self.max_leverage = max_leverage
         self.mmr_pct = mmr_pct
         self.static_leverage = static_leverage
+        self.info_logger = logger.info_logger
 
         if leverage_type == LeverageStrategyType.Static:
             self.leverage_calculator = self.set_static_leverage
@@ -59,6 +60,7 @@ class LeverageLong:
         average_entry: float,
         entry_size_usd: float,
     ):
+        self.info_logger.debug(f"")
         return self.leverage_calculator(
             sl_price=sl_price,
             average_entry=average_entry,
@@ -73,6 +75,7 @@ class LeverageLong:
         og_cash_used: float,
         og_cash_borrowed: float,
     ):
+        self.info_logger.debug(f"")
         # Getting Order Cost
         # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001064&language=en_US
         initial_margin = entry_size_usd / self.leverage
@@ -111,6 +114,7 @@ class LeverageLong:
         cash_borrowed: float,
         **vargs,
     ):
+        self.info_logger.debug(f"")
         return self.__calc_liq_price(
             entry_size_usd=entry_size_usd,
             leverage=self.static_leverage,
@@ -129,6 +133,7 @@ class LeverageLong:
         available_balance: float,
         cash_borrowed: float,
     ):
+        self.info_logger.debug(f"")
         self.leverage = -average_entry / (
             (sl_price - sl_price * 0.001)
             - average_entry
@@ -137,8 +142,10 @@ class LeverageLong:
         )
         self.leverage = round(self.leverage, 1)
         if self.leverage > self.max_leverage:
+            self.info_logger.debug(f"Setting leverage {self.leverage} to max leverage {self.max_leverage}")
             self.leverage = self.max_leverage
         elif self.leverage < 1:
+            self.info_logger.debug(f"Setting leverage {self.leverage} to {1}")
             self.leverage = 1
 
         return self.__calc_liq_price(
@@ -154,7 +161,9 @@ class LeverageLong:
         liq_hit: bool,
         exit_fee_pct: float,
     ):
+        self.info_logger.debug(f"")
         if liq_hit:
+            self.info_logger.debug(f"Liq hit")
             raise DecreasePosition(
                 exit_price=self.liq_price,
                 order_status=OrderStatus.LiquidationFilled,

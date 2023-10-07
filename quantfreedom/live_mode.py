@@ -67,7 +67,7 @@ class LiveTrading:
         pass
 
     def run(self):
-        self.info_logger.info(f"Starting the live mode run")
+        self.info_logger.info(f"Starting live trading")
         entry_order_id = 0
         tp_order_id = 0
         sl_order_id = 0
@@ -78,6 +78,7 @@ class LiveTrading:
         while True:
             try:
                 self.info_logger.info("Getting Candles")
+                print("Getting Candles")
                 start_time = self.exchange.get_current_time_seconds()
                 self.exchange.set_candles_df_and_np()
                 td = str(timedelta(seconds=self.exchange.get_current_time_seconds() - start_time)).split(":")
@@ -110,6 +111,7 @@ class LiveTrading:
                                 self.order.equity = self.exchange.get_equity_of_asset(
                                     trading_in=self.exchange.trading_in
                                 )
+                                self.order.possible_loss = 0.0
                             self.info_logger.debug("Calculating stop loss")
                             self.order.calculate_stop_loss(
                                 bar_index=bar_index,
@@ -356,7 +358,7 @@ class LiveTrading:
         )
         td = str(timedelta(seconds=ms_to_next_candle / 1000)).split(":")
         self.info_logger.info(f"Will sleep for {td[0]} hrs {td[1]} mins and {td[2]} seconds\n")
-        print(f"Will sleep for {td[0]} hrs {td[1]} mins and {td[2]}")
+        print(f"Will sleep for {td[0]} hrs {td[1]} mins and {td[2]} seconds")
 
         return int(ms_to_next_candle / 1000)
 

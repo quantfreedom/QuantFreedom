@@ -15,7 +15,7 @@ def delete_dir(
 ):
     """
     Delete info in directory
-    
+
     Parameters
     ----------
     p : path
@@ -35,9 +35,9 @@ def clear_cache():
     """
     for p in Path(dir_path).parent.parent.rglob("numba_cache"):
         delete_dir(p)
-    for p in Path(__file__).parent.parent.rglob("__pycache__"):
+    for p in Path(__file__).parent.parent.parent.rglob("__pycache__"):
         delete_dir(p)
-    for p in Path(__file__).parent.parent.rglob("*.py[co]"):
+    for p in Path(__file__).parent.parent.parent.rglob("*.py[co]"):
         p.unlink()
 
 
@@ -51,7 +51,7 @@ def pretty(
         var2=1000,
         var3=2.45,
     )
-        
+
     Parameters
     ----------
     object : namedtuple
@@ -95,7 +95,7 @@ def generate_candles(
         random seed number
     plot_candles : bool, False
         If the candles should be graphed or not.
-  
+
     ## What is being returned
     Returns
     -------
