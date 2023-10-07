@@ -1,4 +1,3 @@
-import logging
 from time import sleep
 from uuid import uuid4
 from quantfreedom.enums import LeverageModeType, LongOrShortType, PositionModeType

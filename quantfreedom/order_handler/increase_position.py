@@ -1,3 +1,4 @@
+from quantfreedom.custom_logger import CustomLogger
 from quantfreedom.enums import (
     IncreasePositionType,
     OrderStatus,
@@ -25,6 +26,7 @@ class IncreasePositionLong:
         max_equity_risk_pct: float,
         max_asset_size: float,
         min_asset_size: float,
+        logger: CustomLogger,
     ):
         self.market_fee_pct = market_fee_pct
         self.risk_account_pct_size = risk_account_pct_size
@@ -100,10 +102,10 @@ class IncreasePositionLong:
 
     def __get_possible_loss(self, account_state_equity, possible_loss):
         possible_loss = round(possible_loss + account_state_equity * self.risk_account_pct_size)
-
-        if possible_loss > round(account_state_equity * self.max_equity_risk_pct):
+        max_equity_risk = round(account_state_equity * self.max_equity_risk_pct)
+        if possible_loss > max_equity_risk:
             raise RejectedOrder(
-                msg=f"Possible loss too big {possible_loss} max risk is {round(account_state_equity * self.risk_account_pct_size)}",
+                msg=f"Possible loss = {possible_loss} max risk = {max_equity_risk}",
                 order_status=OrderStatus.PossibleLossTooBig,
             )
         return possible_loss
@@ -111,13 +113,13 @@ class IncreasePositionLong:
     def __check_size_value(self, entry_size_asset, entry_size_usd):
         if entry_size_asset < self.min_asset_size:
             raise RejectedOrder(
-                msg=f"Long Increase - Size Value is too small {entry_size_usd}",
+                msg=f"Size Value is too small {entry_size_usd}",
                 order_status=OrderStatus.EntrySizeTooSmall,
             )
 
         elif entry_size_asset > self.max_asset_size:
             raise RejectedOrder(
-                msg=f"Long Increase - Size Value is too big {entry_size_usd}",
+                msg=f"Size Value is too big {entry_size_usd}",
                 order_status=OrderStatus.EntrySizeTooBig,
             )
 

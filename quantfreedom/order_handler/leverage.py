@@ -1,4 +1,5 @@
 import numpy as np
+from quantfreedom.custom_logger import CustomLogger
 from quantfreedom.enums import (
     DecreasePosition,
     LeverageStrategyType,
@@ -30,6 +31,7 @@ class LeverageLong:
         max_leverage: float,
         mmr_pct: float,
         static_leverage: float,
+        logger: CustomLogger,
     ):
         self.market_fee_pct = market_fee_pct
         self.max_leverage = max_leverage

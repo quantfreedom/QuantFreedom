@@ -2,6 +2,7 @@ import os, logging
 import numpy as np
 
 from datetime import datetime
+from quantfreedom.custom_logger import CustomLogger
 from quantfreedom.email_sender import EmailSender
 from quantfreedom.enums import (
     CandleBodyType,
@@ -24,70 +25,57 @@ from quantfreedom.strategies.strategy import Strategy
 from my_stuff import EmailSenderInfo, MufexTestKeys
 
 
-def create_directory_structure():
-    complete_path = os.path.join(".", "logs", "images")
-    isExist = os.path.exists(complete_path)
-    if not isExist:
-        os.makedirs(complete_path)
+# def create_directory_structure():
+#     complete_path = os.path.join(".", "logs", "info")
+#     isExist = os.path.exists(complete_path)
+#     if not isExist:
+#         os.makedirs(complete_path)
 
-    complete_path = os.path.join(".", "logs", "info")
-    isExist = os.path.exists(complete_path)
-    if not isExist:
-        os.makedirs(complete_path)
+#     complete_path = os.path.join(".", "logs", "trades")
+#     isExist = os.path.exists(complete_path)
+#     if not isExist:
+#         os.makedirs(complete_path)
 
-    complete_path = os.path.join(".", "logs", "debug")
-    isExist = os.path.exists(complete_path)
-    if not isExist:
-        os.makedirs(complete_path)
-
-    complete_path = os.path.join(".", "logs", "entries")
-    isExist = os.path.exists(complete_path)
-    if not isExist:
-        os.makedirs(complete_path)
+#     complete_path = os.path.join(".", "logs", "images")
+#     isExist = os.path.exists(complete_path)
+#     if not isExist:
+#         os.makedirs(complete_path)
 
 
-def create_logging_handler(filename: str, formatter: str):
-    handler = None
-    try:
-        handler = logging.FileHandler(
-            filename=filename,
-            mode="w",
-        )
-        handler.setFormatter(logging.Formatter(formatter))
-    except Exception as e:
-        print(f"Couldnt init logging system with file [{filename}]. Desc=[{e}]")
+# def create_logging_handler(filename: str, formatter: str):
+#     handler = None
+#     try:
+#         handler = logging.FileHandler(
+#             filename=filename,
+#             mode="w",
+#         )
+#         handler.setFormatter(logging.Formatter(formatter))
+#     except Exception as e:
+#         print(f"Couldnt init logging system with file [{filename}]. Desc=[{e}]")
 
-    return handler
+#     return handler
 
 
-def configure_logging():
-    formatter = "%(asctime)s - %(levelname)s - %(message)s"
+# def configure_logging():
+#     formatter = "%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s() - %(message)s"
 
-    filename = os.path.join(".", "logs", "info", f'info_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
-    root = logging.getLogger("info")
-    root.setLevel(logging.ERROR)
-    root.addHandler(create_logging_handler(filename, formatter))
-    root.info("Testing info logs")
+#     filename = os.path.join(".", "logs", "info", f'info_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
+#     root = logging.getLogger("info")
+#     root.setLevel(logging.DEBUG)
+#     root.addHandler(create_logging_handler(filename, formatter))
+#     root.info("Testing info log")
 
-    filename = os.path.join(".", "logs", "debug", f'debug_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
-    root = logging.getLogger("debug")
-    root.setLevel(logging.INFO)
-    root.addHandler(create_logging_handler(filename, formatter))
-    root.info("Testing debug logs")
-
-    logging.ENTRY = 9
-    logging.addLevelName(9, "Entry")
-    filename = os.path.join(".", "logs", "entries", f'entry_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
-    root = logging.getLogger("entry")
-    root.setLevel(logging.INFO)
-    root.addHandler(create_logging_handler(filename, formatter))
-    root.error("Testing entries logs")
+#     filename = os.path.join(".", "logs", "trades", f'trades_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.log')
+#     root = logging.getLogger("trades")
+#     root.setLevel(logging.DEBUG)
+#     root.addHandler(create_logging_handler(filename, formatter))
+#     root.info("Testing trades log")
 
 
 if __name__ == "__main__":
-    create_directory_structure()
+    # create_directory_structure()
 
-    configure_logging()
+    # configure_logging()
 
     order_settings_arrays = OrderSettingsArrays(
         increase_position_type=np.array([IncreasePositionType.RiskPctAccountEntrySize]),
@@ -118,20 +106,24 @@ if __name__ == "__main__":
         order_settings_array=cart_order_settings,
         index=0,
     )
-
+    logger = CustomLogger(
+        log_debug=True,
+        disable_logging=False,
+    )
     mufex = LiveMufex(
         api_key=MufexTestKeys.api_key,
         secret_key=MufexTestKeys.secret_key,
         timeframe="1m",
         symbol="BTCUSDT",
         trading_in="USDT",
-        candles_to_dl=200,
+        candles_to_dl=400,
         long_or_short=LongOrShortType.Long,
         use_test_net=True,
     )
     equity = mufex.get_equity_of_asset(trading_in="USDT")
 
     strategy = Strategy(
+        logger=logger,
         indicator_settings_index=0,
         candle_processing_mode=CandleProcessingType.LiveTrading,
     )
@@ -140,6 +132,7 @@ if __name__ == "__main__":
         equity=equity,
         order_settings=order_settings,
         exchange_settings=mufex.exchange_settings,
+        logger=logger,
     )
 
     email_sender = EmailSender(
@@ -150,6 +143,7 @@ if __name__ == "__main__":
     )
 
     LiveTrading(
+        logger=logger,
         exchange=mufex,
         strategy=strategy,
         order=order,

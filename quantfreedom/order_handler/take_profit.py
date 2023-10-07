@@ -1,4 +1,5 @@
 import numpy as np
+from quantfreedom.custom_logger import CustomLogger
 from quantfreedom.enums import (
     DecreasePosition,
     OrderStatus,
@@ -19,6 +20,7 @@ class TakeProfitLong:
         take_profit_type: TakeProfitStrategyType,
         risk_reward: float,
         tp_fee_pct: float,
+        logger: CustomLogger,
     ):
         self.risk_reward = risk_reward
         self.tp_fee_pct = tp_fee_pct

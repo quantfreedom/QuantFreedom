@@ -9,6 +9,7 @@ from IPython import get_ipython
 import plotly.io as pio
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
+from quantfreedom.custom_logger import CustomLogger
 
 from quantfreedom.enums import (
     BacktestSettings,
@@ -51,6 +52,7 @@ def backtest_df_only(
     exchange_settings: ExchangeSettings,
     candles: pd.DataFrame,
     strategy: Strategy,
+    logger: CustomLogger,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     # Creating Settings Vars
     total_order_settings = os_cart_arrays[0].size
@@ -77,6 +79,7 @@ def backtest_df_only(
         total_bars=total_bars,
         total_indicator_settings=total_indicator_settings,
         total_order_settings=total_order_settings,
+        logger=logger,
     )
 
     strat_results_df = pd.DataFrame(strat_array).sort_values(

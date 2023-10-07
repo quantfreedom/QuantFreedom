@@ -1,5 +1,6 @@
 from math import floor
 import numpy as np
+from quantfreedom.custom_logger import CustomLogger
 
 from quantfreedom.enums import (
     CandleBodyType,
@@ -41,6 +42,7 @@ class StopLossLong:
         trail_sl_by_pct: float,
         trail_sl_when_pct_from_candle_body: float,
         market_fee_pct: float,
+        logger: CustomLogger,
     ):
         # variables
         self.sl_to_be_when_pct_from_candle_body = sl_to_be_when_pct_from_candle_body

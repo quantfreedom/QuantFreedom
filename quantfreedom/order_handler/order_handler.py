@@ -1,6 +1,7 @@
 from decimal import Decimal
 from typing import Optional
 import numpy as np
+from quantfreedom.custom_logger import CustomLogger
 from quantfreedom.enums import (
     DecreasePosition,
     OrderStatus,
@@ -62,6 +63,7 @@ class Order:
         equity: float,
         order_settings: OrderSettings,
         exchange_settings: ExchangeSettings,
+        logger: CustomLogger,
         strat_records: Optional[np.array] = None,
         order_records: Optional[np.array] = None,
         total_order_records_filled: Optional[int] = None,
@@ -70,6 +72,7 @@ class Order:
         self.exchange_settings = exchange_settings
         self.equity = equity
         self.available_balance = equity
+        self.info_logger = logger.info_logger
 
         # this is not effecient ... this will not change
         if strat_records is None:
@@ -107,6 +110,7 @@ class Order:
                 trail_sl_by_pct=self.order_settings.trail_sl_by_pct,
                 trail_sl_when_pct_from_candle_body=self.order_settings.trail_sl_when_pct_from_candle_body,
                 market_fee_pct=self.exchange_settings.market_fee_pct,
+                logger=logger,
             )
             self.obj_increase_posotion = IncreasePositionLong(
                 increase_position_type=self.order_settings.increase_position_type,
@@ -116,6 +120,7 @@ class Order:
                 risk_account_pct_size=self.order_settings.risk_account_pct_size,
                 max_asset_size=self.exchange_settings.max_asset_size,
                 min_asset_size=self.exchange_settings.min_asset_size,
+                logger=logger,
             )
             self.obj_leverage = LeverageLong(
                 leverage_type=self.order_settings.leverage_type,
@@ -124,11 +129,13 @@ class Order:
                 max_leverage=self.exchange_settings.max_leverage,
                 static_leverage=self.order_settings.static_leverage,
                 mmr_pct=self.exchange_settings.mmr_pct,
+                logger=logger,
             )
             self.obj_take_profit = TakeProfitLong(
                 take_profit_type=self.order_settings.take_profit_type,
                 risk_reward=self.order_settings.risk_reward,
                 tp_fee_pct=self.tp_fee_pct,
+                logger=logger,
             )
         elif self.order_settings.long_or_short == LongOrShortType.Short:
             pass

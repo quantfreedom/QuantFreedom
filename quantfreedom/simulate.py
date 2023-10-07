@@ -1,5 +1,6 @@
 from typing import Optional
 import numpy as np
+from quantfreedom.custom_logger import CustomLogger
 
 from quantfreedom.enums import *
 from quantfreedom.helper_funcs import get_to_the_upside_nb
@@ -45,6 +46,7 @@ def backtest_df_only_classes(
     total_order_settings: int,
     total_bars: int,
     candles: np.array,
+    logger: CustomLogger,
 ):
     # Creating strat records
     array_size = int(total_indicator_settings * total_order_settings / backtest_settings.divide_records_array_size_by)
@@ -75,6 +77,7 @@ def backtest_df_only_classes(
                 exchange_settings=exchange_settings,
                 long_or_short=order_settings.long_or_short,
                 strat_records=strat_records,
+                logger=logger,
             )
 
             # entries loop
