@@ -41,6 +41,7 @@ class Strategy:
         elif candle_processing_mode == CandleProcessingType.RealBacktest:
             self.create_indicator = self.__create_indicator_candle_by_candle
             self.bar_index = -1
+            self.closing_prices = candles[:, 3]
             self.current_exit_signals = np.full_like(self.closing_prices, np.nan)
         elif candle_processing_mode == CandleProcessingType.LiveTrading:
             self.set_indicator_settings(indicator_settings_index)
