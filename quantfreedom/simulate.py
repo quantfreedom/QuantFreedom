@@ -112,8 +112,8 @@ def backtest_df_only_classes(
                         info_logger.error(f"Exception placing order -> {e}")
                         raise Exception(f"Exception placing order -> {e}")
             # Checking if gains
-            gains_pct = ((order.equity - starting_equity) / order.equity) * 100
-            info_logger.debug(f"Ending equity is {order.equity} and gains pct is {gains_pct}")
+            gains_pct = round(((order.equity - starting_equity) / starting_equity) * 100, 2)
+            info_logger.debug(f"Starting eq={starting_equity} Ending eq={order.equity} gains pct={gains_pct}")
             if gains_pct > backtest_settings.gains_pct_filter:
                 temp_strat_records = order.strat_records[: order.strat_records_filled]
                 pnl_array = temp_strat_records["real_pnl"]

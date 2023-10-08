@@ -117,19 +117,6 @@ class IncreasePositionLong:
             )
 
         self.__check_size_too_big_or_small(entry_size_asset=entry_size_asset)
-        info_logger.info(
-            f"\n\
-average_entry={average_entry}\n\
-entry_price={entry_price}\n\
-entry_size_asset={entry_size_asset}\n\
-entry_size_usd={entry_size_usd}\n\
-position_size_asset={position_size_asset}\n\
-position_size_usd={position_size_usd}\n\
-possible_loss={possible_loss}\n\
-total_trades={total_trades}\n\
-sl_pct={sl_pct}"
-        )
-
         return (
             average_entry,
             entry_price,
@@ -145,13 +132,13 @@ sl_pct={sl_pct}"
     def __check_size_too_big_or_small(self, entry_size_asset):
         if entry_size_asset < self.min_asset_size:
             raise RejectedOrder(
-                msg=f"entry_size_asset={entry_size_asset} min_asset_size{self.min_asset_size}",
+                msg=f"Entry Size too small {entry_size_asset} min_asset_size={self.min_asset_size}",
                 order_status=OrderStatus.EntrySizeTooSmall,
             )
 
         elif entry_size_asset > self.max_asset_size:
             raise RejectedOrder(
-                msg=f"entry size asset={entry_size_asset} max asset size={self.max_asset_size}",
+                msg=f"Entry Size too big {entry_size_asset} max asset size={self.max_asset_size}",
                 order_status=OrderStatus.EntrySizeTooBig,
             )
         info_logger.debug(f"Entry size is fine")
@@ -161,11 +148,11 @@ sl_pct={sl_pct}"
         max_equity_risk = round(account_state_equity * self.max_equity_risk_pct)
         if possible_loss > max_equity_risk:
             raise RejectedOrder(
-                msg=f"Possible loss={possible_loss} max risk={max_equity_risk}",
+                msg=f"PL too big {possible_loss} max risk={max_equity_risk}",
                 order_status=OrderStatus.PossibleLossTooBig,
             )
         total_trades += 1
-        info_logger.debug(f"Possible loss={possible_loss} < max_equity_risk={max_equity_risk}")
+        info_logger.debug(f"Possible Loss is fine")
         return possible_loss, total_trades
 
     def __tt_amount_based(
@@ -185,10 +172,10 @@ sl_pct={sl_pct}"
         total_trades += 1
         if total_trades > self.max_trades:
             raise RejectedOrder(
-                msg=f"Total trades={total_trades} max trades={self.max_trades}",
+                msg=f"Max Trades to big {total_trades} mt={self.max_trades}",
                 order_status=OrderStatus.HitMaxTrades,
             )
-        info_logger.debug(f"total trades={total_trades} < max trades={self.max_trades}")
+        info_logger.debug(f"total trades is fine")
         return possible_loss, total_trades
 
     def smallest_entry_size_asset_not_in_pos(

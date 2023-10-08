@@ -26,9 +26,9 @@ if __name__ == "__main__":
     order_settings_arrays = OrderSettingsArrays(
         increase_position_type=np.array([IncreasePositionType.RiskPctAccountEntrySize]),
         leverage_type=np.array([LeverageStrategyType.Dynamic]),
-        max_equity_risk_pct=np.array([0.003]) / 100,
+        max_equity_risk_pct=np.array([0.03]) / 100,
         long_or_short=np.array([LongOrShortType.Long]),
-        risk_account_pct_size=np.array([0.001]) / 100,
+        risk_account_pct_size=np.array([0.01]) / 100,
         risk_reward=np.array([3.0]),
         stop_loss_type=np.array([StopLossStrategyType.SLBasedOnCandleBody]),
         sl_based_on_add_pct=np.array([0.01]) / 100,
@@ -42,7 +42,7 @@ if __name__ == "__main__":
         tp_fee_type=np.array([TakeProfitFeeType.Limit]),
         trail_sl_based_on_candle_body_type=np.array([CandleBodyType.High]),
         trail_sl_by_pct=np.array([0.5]) / 100,
-        trail_sl_when_pct_from_candle_body=np.array([0.000001]) / 100,
+        trail_sl_when_pct_from_candle_body=np.array([0.01]) / 100,
         num_candles=np.array([0]),
         entry_size_asset=np.array([0]),
         max_trades=np.array([0]),
@@ -70,6 +70,7 @@ if __name__ == "__main__":
         indicator_settings_index=0,
         candle_processing_mode=CandleProcessingType.LiveTrading,
         create_trades_logger=True,
+        log_debug=False,
     )
 
     order = LongOrder(

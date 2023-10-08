@@ -2,14 +2,23 @@ from typing import Optional
 import numpy as np
 from quantfreedom.custom_logger import CustomLogger
 from quantfreedom.enums import (
-    DecreasePosition,
     OrderStatus,
     LongOrShortType,
     OrderSettings,
     ExchangeSettings,
     OrderResult,
     TakeProfitFeeType,
+    CandleBodyType,
+    IncreasePositionType,
+    LeverageStrategyType,
+    LongOrShortType,
+    OrderSettings,
+    SLToBeZeroOrEntryType,
+    StopLossStrategyType,
+    TakeProfitFeeType,
+    TakeProfitStrategyType,
 )
+
 from quantfreedom.order_handler.increase_position import IncreasePositionLong
 from quantfreedom.order_handler.leverage import LeverageLong
 from quantfreedom.order_handler.stop_loss import StopLossLong
@@ -148,6 +157,32 @@ class Order:
         elif order_settings.long_or_short == LongOrShortType.Short:
             pass
 
+        info_logger.info(
+            f"\nOrder Settings:\n\
+long_or_short = {LongOrShortType._fields[int(order_settings.long_or_short)]}\n\
+increase_position_type = {IncreasePositionType._fields[int(order_settings.increase_position_type)]}\n\
+risk_account_pct_size = {round(order_settings.risk_account_pct_size*100,2)}\n\
+max_equity_risk_pct = {round(order_settings.max_equity_risk_pct*100,2)}\n\
+stop_loss_type = {StopLossStrategyType._fields[int(order_settings.stop_loss_type)]}\n\
+sl_candle_body_type = {CandleBodyType._fields[int(order_settings.sl_candle_body_type)]}\n\
+sl_based_on_add_pct = {round(order_settings.sl_based_on_add_pct*100,2)}\n\
+sl_based_on_lookback = {int(order_settings.sl_based_on_lookback)}\n\
+sl_to_be_based_on_candle_body_type = {CandleBodyType._fields[int(order_settings.sl_to_be_based_on_candle_body_type)]}\n\
+sl_to_be_when_pct_from_candle_body = {order_settings.sl_to_be_when_pct_from_candle_body}\n\
+sl_to_be_zero_or_entry_type = {SLToBeZeroOrEntryType._fields[int(order_settings.sl_to_be_zero_or_entry_type)]}\n\
+trail_sl_based_on_candle_body_type = {CandleBodyType._fields[int(order_settings.trail_sl_based_on_candle_body_type)]}\n\
+trail_sl_when_pct_from_candle_body = {round(order_settings.trail_sl_when_pct_from_candle_body*100,2)}\n\
+trail_sl_by_pct = {round(order_settings.trail_sl_by_pct*100,2)}\n\
+take_profit_type = {TakeProfitStrategyType._fields[int(order_settings.take_profit_type)]}\n\
+risk_reward = {int(order_settings.risk_reward)}\n\
+tp_fee_type = {TakeProfitFeeType._fields[int(order_settings.tp_fee_type)]}\n\
+leverage_type = {LeverageStrategyType._fields[int(order_settings.leverage_type)]}\n\
+static_leverage = {order_settings.static_leverage}\n\
+num_candles = {int(order_settings.num_candles)}\n\
+entry_size_asset = {order_settings.entry_size_asset}\n\
+max_trades = {int(order_settings.max_trades)}"
+        )
+
     def pass_func(self, **vargs):
         pass
 
@@ -163,10 +198,16 @@ class Order:
     def check_move_trailing_stop_loss(self, **vargs):
         pass
 
-    def calculate_leverage(self):
+    def calculate_leverage(self, **vargs):
         pass
 
-    def calculate_take_profit(self):
+    def calculate_take_profit(self, **vargs):
+        pass
+
+    def move_stop_loss(self, **vargs):
+        pass
+
+    def update_stop_loss_live_trading(self, **vargs):
         pass
 
     def fill_order_records(
@@ -220,6 +261,7 @@ class LongOrder(Order):
             bar_index=bar_index,
             candles=candles,
         )
+        info_logger.info(f"Sl_price={self.sl_price}")
 
     def calculate_increase_posotion(self, entry_price):
         (
@@ -243,6 +285,18 @@ class LongOrder(Order):
             sl_price=self.sl_price,
             total_trades=self.total_trades,
         )
+        info_logger.info(
+            f"\n\
+average_entry={self.average_entry}\n\
+entry_price={self.entry_price}\n\
+entry_size_asset={self.entry_size_asset}\n\
+entry_size_usd={self.entry_size_usd}\n\
+position_size_asset={self.position_size_asset}\n\
+position_size_usd={self.position_size_usd}\n\
+possible_loss={self.possible_loss}\n\
+total_trades={self.total_trades}\n\
+sl_pct={round(self.sl_pct*100,2)}"
+        )
 
     def calculate_leverage(self):
         (
@@ -260,6 +314,15 @@ class LongOrder(Order):
             cash_borrowed=self.cash_borrowed,
             entry_size_usd=self.entry_size_usd,
         )
+        info_logger.info(
+            f"\n\
+leverage={self.leverage}\n\
+liq_price={self.liq_price}\n\
+available_balance={self.available_balance}\n\
+cash_used={self.cash_used}\n\
+cash_borrowed={self.cash_borrowed}\n\
+can_move_sl_to_be= {self.can_move_sl_to_be}"
+        )
 
     def calculate_take_profit(self):
         (
@@ -271,6 +334,7 @@ class LongOrder(Order):
             position_size_usd=self.position_size_usd,
             average_entry=self.average_entry,
         )
+        info_logger.info(f"tp_price={self.tp_price} tp_pct={round(self.tp_pct*100,2)}")
 
     def check_stop_loss_hit(self, current_candle):
         self.obj_stop_loss.sl_hit_checker(
