@@ -1,6 +1,5 @@
 import logging
 from time import sleep
-from uuid import uuid4
 from quantfreedom.email_sender import EmailSender
 from quantfreedom.enums import (
     LongOrShortType,
