@@ -1,6 +1,7 @@
 my_stuff/
 logs/
 docs/
+math/
 tests/
 old_quantfreedom/
 .ipynb_checkpoints
