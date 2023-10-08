@@ -4,4 +4,4 @@ questions:
     ☐ fix the moving the stop loss order 
     ☐ look up literal unrol for numba so i can do the cart product with column names
     ☐ do debugger logs
-    ☐ when you are evaluating in live mode sending the bar index isn't going to be tru because you might only have an rsi 
+    ☐ when you are evaluating in live mode sending the bar index isn't going to be tru because you might only have an rsi

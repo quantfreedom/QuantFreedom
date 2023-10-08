@@ -14,6 +14,9 @@ from quantfreedom.order_handler.increase_position import IncreasePositionLong
 from quantfreedom.order_handler.leverage import LeverageLong
 from quantfreedom.order_handler.stop_loss import StopLossLong
 from quantfreedom.order_handler.take_profit import TakeProfitLong
+import logging
+
+info_logger = logging.getLogger("info")
 
 
 class Order:
@@ -32,7 +35,6 @@ class Order:
     cash_used = 0.0
     equity = 0.0
 
-    total_trades = 0
     average_entry = 0.0
     entry_price = 0.0
     entry_size_asset = 0.0
@@ -48,7 +50,7 @@ class Order:
     realized_pnl = 0.0
     sl_pct = 0.0
     sl_price = 0.0
-    total_trades = 0.0
+    total_trades = 0
     tp_pct = 0.0
     tp_price = 0.0
     can_move_sl_to_be = False
@@ -66,7 +68,6 @@ class Order:
         equity: float,
         order_settings: OrderSettings,
         exchange_settings: ExchangeSettings,
-        logger: CustomLogger,
         strat_records: Optional[np.array] = None,
         order_records: Optional[np.array] = None,
         total_order_records_filled: Optional[int] = None,
@@ -75,7 +76,6 @@ class Order:
         exchange_settings = exchange_settings
         self.equity = equity
         self.available_balance = equity
-        self.info_logger = logger.info_logger
         self.market_fee_pct = exchange_settings.market_fee_pct
 
         # this is not effecient ... this will not change
@@ -103,7 +103,6 @@ class Order:
 
         if order_settings.long_or_short == LongOrShortType.Long:
             self.obj_stop_loss = StopLossLong(
-                logger=logger,
                 sl_based_on_add_pct=order_settings.sl_based_on_add_pct,
                 sl_based_on_lookback=order_settings.sl_based_on_lookback,
                 sl_candle_body_type=order_settings.sl_candle_body_type,
@@ -115,9 +114,9 @@ class Order:
                 trail_sl_by_pct=order_settings.trail_sl_by_pct,
                 trail_sl_when_pct_from_candle_body=order_settings.trail_sl_when_pct_from_candle_body,
                 market_fee_pct=exchange_settings.market_fee_pct,
+                price_tick_step=exchange_settings.price_tick_step,
             )
             self.obj_increase_posotion = IncreasePositionLong(
-                logger=logger,
                 increase_position_type=order_settings.increase_position_type,
                 stop_loss_type=order_settings.stop_loss_type,
                 market_fee_pct=exchange_settings.market_fee_pct,
@@ -127,21 +126,24 @@ class Order:
                 min_asset_size=exchange_settings.min_asset_size,
                 entry_size_asset=order_settings.entry_size_asset,
                 max_trades=order_settings.max_trades,
+                price_tick_step=exchange_settings.price_tick_step,
+                asset_tick_step=exchange_settings.asset_tick_step,
             )
             self.obj_leverage = LeverageLong(
-                logger=logger,
                 leverage_type=order_settings.leverage_type,
                 sl_type=order_settings.stop_loss_type,
                 market_fee_pct=exchange_settings.market_fee_pct,
                 max_leverage=exchange_settings.max_leverage,
                 static_leverage=order_settings.static_leverage,
                 mmr_pct=exchange_settings.mmr_pct,
+                price_tick_step=exchange_settings.price_tick_step,
+                leverage_tick_step=exchange_settings.leverage_tick_step,
             )
             self.obj_take_profit = TakeProfitLong(
-                logger=logger,
                 take_profit_type=order_settings.take_profit_type,
                 risk_reward=order_settings.risk_reward,
                 tp_fee_pct=self.tp_fee_pct,
+                price_tick_step=exchange_settings.price_tick_step,
             )
         elif order_settings.long_or_short == LongOrShortType.Short:
             pass
@@ -166,37 +168,6 @@ class Order:
 
     def calculate_take_profit(self):
         pass
-
-    def move_stop_loss(
-        self,
-        sl_price: float,
-        order_status: int,
-        bar_index: int,
-        indicator_settings_index: int,
-        order_settings_index: int,
-    ) -> None:
-        self.sl_price = sl_price
-        self.sl_pct = (self.average_entry - sl_price) / self.average_entry
-        self.order_status = order_status
-        self.can_move_sl_to_be = False
-
-        self.or_filler(
-            order_result=OrderResult(
-                indicator_settings_index=indicator_settings_index,
-                order_settings_index=order_settings_index,
-                bar_index=bar_index,
-                order_status=self.order_status,
-                sl_price=self.sl_price,
-            ),
-        )
-
-    def update_stop_loss_live_trading(
-        self,
-        sl_price: float,
-    ):
-        self.sl_price = sl_price
-        self.sl_pct = (self.average_entry - sl_price) / self.average_entry
-        self.can_move_sl_to_be = False
 
     def fill_order_records(
         self,
@@ -229,8 +200,8 @@ class Order:
         self.order_records[self.total_order_records_filled]["sl_price"] = order_result.sl_price
         self.order_records[self.total_order_records_filled]["tp_pct"] = order_result.tp_pct * 100
         self.order_records[self.total_order_records_filled]["tp_price"] = order_result.tp_price
-
         self.total_order_records_filled += 1
+        info_logger.debug(f"Filled or and total or={self.total_order_records_filled}")
 
     def fill_strat_records(self, bar_index, order_settings_index, indicator_settings_index):
         self.strat_records[self.strat_records_filled]["bar_idx"] = bar_index
@@ -240,6 +211,7 @@ class Order:
         self.strat_records[self.strat_records_filled]["real_pnl"] = round(self.realized_pnl, 4)
 
         self.strat_records_filled += 1
+        info_logger.debug(f"Filled strat rec and total strat rec={self.strat_records_filled}")
 
 
 class LongOrder(Order):
@@ -334,6 +306,38 @@ class LongOrder(Order):
             candles=candles,
         )
 
+    def move_stop_loss(
+        self,
+        sl_price: float,
+        order_status: int,
+        bar_index: int,
+        indicator_settings_index: int,
+        order_settings_index: int,
+    ) -> None:
+        self.sl_price = sl_price
+        self.sl_pct = round((self.average_entry - sl_price) / self.average_entry, 4)
+        self.order_status = order_status
+        self.can_move_sl_to_be = False
+
+        self.or_filler(
+            order_result=OrderResult(
+                indicator_settings_index=indicator_settings_index,
+                order_settings_index=order_settings_index,
+                bar_index=bar_index,
+                order_status=self.order_status,
+                sl_price=self.sl_price,
+            ),
+        )
+        info_logger.debug(f"Filled order result")
+
+    def update_stop_loss_live_trading(
+        self,
+        sl_price: float,
+    ):
+        self.sl_price = sl_price
+        self.sl_pct = round((self.average_entry - sl_price) / self.average_entry, 4)
+        self.can_move_sl_to_be = False
+
     def decrease_position(
         self,
         order_status: OrderStatus,
@@ -351,10 +355,10 @@ class LongOrder(Order):
         fee_open = coin_size * self.average_entry * self.market_fee_pct  # math checked
         fee_close = coin_size * self.exit_price * exit_fee_pct  # math checked
         self.fees_paid = fee_open + fee_close  # math checked
-        self.realized_pnl = pnl - self.fees_paid  # math checked
+        self.realized_pnl = round(pnl - self.fees_paid, 4)  # math checked
 
         # Setting new equity
-        self.equity += self.realized_pnl
+        self.equity = round(self.realized_pnl + self.equity, 4)
         self.available_balance = self.equity
 
         self.strat_filler(
@@ -376,14 +380,20 @@ class LongOrder(Order):
                 realized_pnl=self.realized_pnl,
             )
         )
-
+        info_logger.info(
+            f"\n\
+realized_pnl={self.realized_pnl}\n\
+order_status= {OrderStatus._fields[self.order_status]}\n\
+available_balance={self.available_balance}\n\
+equity={self.equity}"
+        )
         self.cash_borrowed = 0.0
         self.cash_used = 0.0
         self.average_entry = 0.0
         self.leverage = 0.0
         self.liq_price = 0.0
         self.possible_loss = 0.0
-        self.total_trades = 0.0
+        self.total_trades = 0
         self.entry_size_asset = 0.0
         self.entry_size_usd = 0.0
         self.entry_price = 0.0

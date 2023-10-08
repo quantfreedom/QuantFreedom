@@ -7,6 +7,11 @@ from quantfreedom.enums import (
     RejectedOrder,
     StopLossStrategyType,
 )
+import logging
+
+from quantfreedom.helper_funcs import round_size_by_tick_step
+
+info_logger = logging.getLogger("info")
 
 
 class LeverageLong:
@@ -31,13 +36,15 @@ class LeverageLong:
         max_leverage: float,
         mmr_pct: float,
         static_leverage: float,
-        logger: CustomLogger,
+        leverage_tick_step: float,
+        price_tick_step: float,
     ):
         self.market_fee_pct = market_fee_pct
         self.max_leverage = max_leverage
         self.mmr_pct = mmr_pct
         self.static_leverage = static_leverage
-        self.info_logger = logger.info_logger
+        self.leverage_tick_step = leverage_tick_step
+        self.price_tick_step = price_tick_step
 
         if leverage_type == LeverageStrategyType.Static:
             self.leverage_calculator = self.set_static_leverage
@@ -60,7 +67,6 @@ class LeverageLong:
         average_entry: float,
         entry_size_usd: float,
     ):
-        self.info_logger.debug(f"")
         return self.leverage_calculator(
             sl_price=sl_price,
             average_entry=average_entry,
@@ -75,7 +81,6 @@ class LeverageLong:
         og_cash_used: float,
         og_cash_borrowed: float,
     ):
-        self.info_logger.debug(f"")
         # Getting Order Cost
         # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001064&language=en_US
         initial_margin = entry_size_usd / self.leverage
@@ -84,18 +89,32 @@ class LeverageLong:
         cash_used = initial_margin + fee_to_open + possible_bankruptcy_fee  # math checked
 
         if cash_used > og_available_balance:
-            raise RejectedOrder(order_status=OrderStatus.CashUsedExceed)
-
+            raise RejectedOrder(
+                msg=f"Cash used={cash_used} > available_balance={og_available_balance}",
+                order_status=OrderStatus.CashUsedExceed,
+            )
         else:
             # liq formula
             # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001067&language=en_US
-            available_balance = og_available_balance - cash_used
-            cash_used += og_cash_used
-            cash_borrowed = og_cash_borrowed + entry_size_usd - cash_used
+            available_balance = round(og_available_balance - cash_used, 4)
+            cash_used = round(og_cash_used + cash_used, 4)
+            cash_borrowed = round(og_cash_borrowed + entry_size_usd - cash_used, 4)
 
-            self.liq_price = round(average_entry * (1 - (1 / self.leverage) + self.mmr_pct), 2)  # math checked
+            liq_price = average_entry * (1 - (1 / self.leverage) + self.mmr_pct)  # math checked
+            self.liq_price = round_size_by_tick_step(
+                user_num=liq_price,
+                exchange_num=self.price_tick_step,
+            )
             can_move_sl_to_be = True
-
+            info_logger.info(
+                f"\n\
+leverage={self.leverage}\n\
+liq_price={self.liq_price}\n\
+available_balance={available_balance}\n\
+cash_used={cash_used}\n\
+cash_borrowed={cash_borrowed}\n\
+can_move_sl_to_be= {can_move_sl_to_be}"
+            )
         return (
             self.leverage,
             self.liq_price,
@@ -114,7 +133,7 @@ class LeverageLong:
         cash_borrowed: float,
         **vargs,
     ):
-        self.info_logger.debug(f"")
+        info_logger.debug(f"Leverage set too {self.leverage}")
         return self.__calc_liq_price(
             entry_size_usd=entry_size_usd,
             leverage=self.static_leverage,
@@ -133,20 +152,20 @@ class LeverageLong:
         available_balance: float,
         cash_borrowed: float,
     ):
-        self.info_logger.debug(f"")
-        self.leverage = -average_entry / (
-            (sl_price - sl_price * 0.001)
-            - average_entry
-            - self.mmr_pct * average_entry
-            # TODO: revisit the .001 to add to the sl if you make this backtester have the ability to go live
+        leverage = -average_entry / ((sl_price - sl_price * 0.001) - average_entry - self.mmr_pct * average_entry)
+        leverage = round_size_by_tick_step(
+            user_num=leverage,
+            exchange_num=self.leverage_tick_step,
         )
-        self.leverage = round(self.leverage, 1)
-        if self.leverage > self.max_leverage:
-            self.info_logger.debug(f"Setting leverage {self.leverage} to max leverage {self.max_leverage}")
+        if leverage > self.max_leverage:
+            info_logger.debug(f"Setting leverage from {leverage} to max leverage {self.max_leverage}")
             self.leverage = self.max_leverage
-        elif self.leverage < 1:
-            self.info_logger.debug(f"Setting leverage {self.leverage} to {1}")
+        elif leverage < 1:
+            info_logger.debug(f"Setting leverage from {leverage} to {1}")
             self.leverage = 1
+        else:
+            info_logger.debug(f"Leverage set too {leverage}")
+            self.leverage = leverage
 
         return self.__calc_liq_price(
             entry_size_usd=entry_size_usd,
@@ -161,9 +180,8 @@ class LeverageLong:
         liq_hit: bool,
         exit_fee_pct: float,
     ):
-        self.info_logger.debug(f"")
         if liq_hit:
-            self.info_logger.debug(f"Liq hit")
+            info_logger.debug(f"Liq hit")
             raise DecreasePosition(
                 exit_price=self.liq_price,
                 order_status=OrderStatus.LiquidationFilled,

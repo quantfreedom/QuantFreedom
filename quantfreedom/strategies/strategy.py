@@ -10,6 +10,12 @@ from plotly.subplots import make_subplots
 
 from quantfreedom.enums import CandleProcessingType
 from quantfreedom.custom_logger import CustomLogger
+import logging
+
+info_logger = logging.getLogger("info")
+
+DIR_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+FORMATTER = "%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s() - %(message)s"
 
 
 class IndicatorSettingsArrays(NamedTuple):
@@ -23,19 +29,28 @@ class Strategy:
 
     def __init__(
         self,
-        logger: CustomLogger,
         candle_processing_mode: CandleProcessingType,
         candles: np.array = None,
         indicator_settings_index: int = None,
+        log_debug: bool = True,
+        disable_logging: bool = False,
+        custom_path: str = DIR_PATH,
+        formatter: str = FORMATTER,
+        create_trades_logger: bool = False,
     ) -> None:
         self.candles = candles
         self.indicator_settings_arrays = self.create_ind_cart_product_nb(IndicatorSettingsArrays())
-        self.info_logger = logger.info_logger
-
+        CustomLogger(
+            log_debug=log_debug,
+            disable_logging=disable_logging,
+            custom_path=custom_path,
+            formatter=formatter,
+            create_trades_logger=create_trades_logger,
+        )
         if candle_processing_mode == CandleProcessingType.Backtest:
             self.create_indicator = self.__set_bar_index
             self.closing_prices = candles[:, 3]
-            self.set_indicator_settings(indicator_settings_index=0)
+            self.set_indicator_settings(indicator_settings_index)
             self.current_exit_signals = np.full_like(self.closing_prices, np.nan)
             self.__set_rsi()
         elif candle_processing_mode == CandleProcessingType.RealBacktest:
@@ -134,7 +149,7 @@ class Strategy:
         try:
             self.rsi_entry = pta.rsi(close=pd.Series(candles[:, 3]), length=self.rsi_length).round(decimals=2).values
             self.rsi_exit = pta.rsi(close=pd.Series(candles[:, 3]), length=self.rsi_length).round(decimals=2).values
-            self.info_logger.debug("Created rsi entry and rsi exit")
+            info_logger.debug("Created rsi entry and rsi exit")
         except Exception as e:
             raise Exception(f"Strategy class set_indicator_live_trading = Something went wrong creating rsi -> {e}")
 
@@ -149,7 +164,7 @@ class Strategy:
     def set_indicator_settings(self, indicator_settings_index):
         self.rsi_length = int(self.indicator_settings_arrays.rsi_length[indicator_settings_index])
         self.rsi_is_below = int(self.indicator_settings_arrays.rsi_is_below[indicator_settings_index])
-        self.info_logger.debug("Set rsi length rsi entry and rsi exit")
+        info_logger.debug("Set rsi length rsi entry and rsi exit")
 
     def evaluate(self):
         try:
@@ -157,10 +172,11 @@ class Strategy:
             if self.rsi_exit[self.bar_index] > 70:
                 self.current_exit_signals[self.bar_index] = self.closing_prices[self.bar_index]
             if self.rsi_entry[self.bar_index] < self.rsi_is_below:
-                self.info_logger.info(f"Entry time {self.rsi_entry[self.bar_index]} < {self.rsi_is_below}")
+                info_logger.info(f"\n\n")
+                info_logger.info(f"Entry time {self.rsi_entry[self.bar_index]} < {self.rsi_is_below}")
                 return True
             else:
-                self.info_logger.info(f"No entry {self.rsi_entry[self.bar_index]} < {self.rsi_is_below}")
+                info_logger.info(f"No entry {self.rsi_entry[self.bar_index]} < {self.rsi_is_below}")
                 return False
         except Exception as e:
             raise Exception(f"Strategy class evaluate error -> {e}")

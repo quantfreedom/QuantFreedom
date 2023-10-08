@@ -107,7 +107,8 @@ def get_order_setting(os_cart_arrays: OrderSettingsArrays, order_settings_index:
         max_trades=os_cart_arrays.max_trades[order_settings_index],
     )
 
-def round_size_by_tick_step(self, user_num: float, exchange_num: float) -> float:
+
+def round_size_by_tick_step(user_num: float, exchange_num: float) -> float:
     user_num = str(user_num)
     exchange_num = str(exchange_num)
     int_num = int(Decimal(user_num) / Decimal(exchange_num))

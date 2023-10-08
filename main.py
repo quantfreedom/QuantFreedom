@@ -1,7 +1,4 @@
-import os, logging
 import numpy as np
-
-from datetime import datetime
 from quantfreedom.custom_logger import CustomLogger
 from quantfreedom.email_sender import EmailSender
 from quantfreedom.enums import (
@@ -18,7 +15,7 @@ from quantfreedom.enums import (
     TakeProfitStrategyType,
 )
 from quantfreedom.exchanges.mufex_exchange.live_mufex import LiveMufex
-from quantfreedom.helper_funcs import create_os_cart_product_nb, get_order_setting_tuple_from_index
+from quantfreedom.helper_funcs import create_os_cart_product_nb, get_order_setting
 from quantfreedom.live_mode import LiveTrading
 from quantfreedom.order_handler.order_handler import LongOrder
 from quantfreedom.strategies.strategy import Strategy
@@ -47,15 +44,16 @@ if __name__ == "__main__":
         trail_sl_by_pct=np.array([0.5]) / 100,
         trail_sl_when_pct_from_candle_body=np.array([0.000001]) / 100,
         num_candles=np.array([0]),
+        entry_size_asset=np.array([0]),
+        max_trades=np.array([0]),
     )
-    cart_order_settings = create_os_cart_product_nb(
+    os_cart_arrays = create_os_cart_product_nb(
         order_settings_arrays=order_settings_arrays,
     )
-    order_settings = get_order_setting_tuple_from_index(
-        order_settings_array=cart_order_settings,
-        index=0,
+    order_settings = get_order_setting(
+        os_cart_arrays=os_cart_arrays,
+        order_settings_index=0,
     )
-    logger = CustomLogger()
     mufex = LiveMufex(
         api_key=MufexTestKeys.api_key,
         secret_key=MufexTestKeys.secret_key,
@@ -69,16 +67,15 @@ if __name__ == "__main__":
     equity = mufex.get_equity_of_asset(trading_in="USDT")
 
     strategy = Strategy(
-        logger=logger,
         indicator_settings_index=0,
         candle_processing_mode=CandleProcessingType.LiveTrading,
+        create_trades_logger=True,
     )
 
     order = LongOrder(
         equity=equity,
         order_settings=order_settings,
         exchange_settings=mufex.exchange_settings,
-        logger=logger,
     )
 
     email_sender = EmailSender(
@@ -89,7 +86,6 @@ if __name__ == "__main__":
     )
 
     LiveTrading(
-        logger=logger,
         exchange=mufex,
         strategy=strategy,
         order=order,

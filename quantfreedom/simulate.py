@@ -1,11 +1,11 @@
-from typing import Optional
 import numpy as np
-from quantfreedom.custom_logger import CustomLogger
-
+import logging
 from quantfreedom.enums import *
 from quantfreedom.helper_funcs import get_order_setting, get_to_the_upside_nb
 from quantfreedom.order_handler.order_handler import Order
 from quantfreedom.strategies.strategy import Strategy
+
+info_logger = logging.getLogger("info")
 
 
 def backtest_df_only_classes(
@@ -18,7 +18,6 @@ def backtest_df_only_classes(
     total_order_settings: int,
     total_bars: int,
     candles: np.array,
-    logger: CustomLogger,
 ):
     # Creating strat records
     array_size = int(total_indicator_settings * total_order_settings / backtest_settings.divide_records_array_size_by)
@@ -33,11 +32,11 @@ def backtest_df_only_classes(
     strat_records = np.empty(int(total_bars / 2), dtype=strat_records_dt)
 
     for indicator_settings_index in range(total_indicator_settings):
-        logger.info_logger.debug(f"Indicator settings index = {indicator_settings_index}")
+        info_logger.debug(f"Indicator settings index = {indicator_settings_index}")
         strategy.set_indicator_settings(indicator_settings_index=indicator_settings_index)
 
         for order_settings_index in range(total_order_settings):
-            logger.info_logger.debug(f"Order settings index = {order_settings_index}")
+            info_logger.debug(f"Order settings index = {order_settings_index}")
             order_settings = get_order_setting(
                 order_settings_index=order_settings_index,
                 os_cart_arrays=os_cart_arrays,
@@ -50,15 +49,16 @@ def backtest_df_only_classes(
                 exchange_settings=exchange_settings,
                 long_or_short=order_settings.long_or_short,
                 strat_records=strat_records,
-                logger=logger,
             )
-            logger.info_logger.debug(f"Created Order class")
+            info_logger.debug(f"Created Order class")
 
             # entries loop
             for bar_index in range(int(order_settings.num_candles - 1), total_bars):
                 strategy.create_indicator(bar_index)
                 if strategy.evaluate():  # add in that we are also not at max entry amount
-                    logger.info_logger.debug(f"Entry for Bar index = {bar_index}")
+                    info_logger.debug(
+                        f"ind_idx={indicator_settings_index} os_idx={order_settings_index} b_idx={bar_index}"
+                    )
                     try:
                         order.calculate_stop_loss(
                             bar_index=bar_index,
@@ -73,10 +73,10 @@ def backtest_df_only_classes(
                         order.calculate_take_profit()
 
                     except RejectedOrder as e:
-                        logger.info_logger.warning(f"RejectedOrder -> {e.msg}")
+                        info_logger.warning(f"RejectedOrder -> {e.msg}")
                         pass
                     except Exception as e:
-                        logger.info_logger.error(f"Exception placing order -> {e}")
+                        info_logger.error(f"Exception placing order -> {e}")
                         raise Exception(f"Exception placing order -> {e}")
                 if order.position_size_usd > 0:
                     try:
@@ -89,10 +89,9 @@ def backtest_df_only_classes(
                         order.check_move_stop_loss_to_be(bar_index=bar_index, candles=candles)
                         order.check_move_trailing_stop_loss(bar_index=bar_index, candles=candles)
                     except RejectedOrder as e:
-                        logger.info_logger.warning(f"RejectedOrder -> {e.msg}")
+                        info_logger.warning(f"RejectedOrder -> {e.msg}")
                         pass
                     except DecreasePosition as e:
-                        logger.info_logger.info(f"DecreasePosition -> {e.msg}")
                         order.decrease_position(
                             order_status=e.order_status,
                             exit_price=e.exit_price,
@@ -102,7 +101,6 @@ def backtest_df_only_classes(
                             order_settings_index=order_settings_index,
                         )
                     except MoveStopLoss as e:
-                        logger.info_logger.info(f"MoveStopLoss -> {e.msg}")
                         order.move_stop_loss(
                             sl_price=e.sl_price,
                             order_status=e.order_status,
@@ -110,9 +108,12 @@ def backtest_df_only_classes(
                             order_settings_index=order_settings_index,
                             indicator_settings_index=indicator_settings_index,
                         )
+                    except Exception as e:
+                        info_logger.error(f"Exception placing order -> {e}")
+                        raise Exception(f"Exception placing order -> {e}")
             # Checking if gains
             gains_pct = ((order.equity - starting_equity) / order.equity) * 100
-            logger.info_logger.debug(f"Ending equity is {order.equity} and gains pct is {gains_pct}")
+            info_logger.debug(f"Ending equity is {order.equity} and gains pct is {gains_pct}")
             if gains_pct > backtest_settings.gains_pct_filter:
                 temp_strat_records = order.strat_records[: order.strat_records_filled]
                 pnl_array = temp_strat_records["real_pnl"]
@@ -143,7 +144,7 @@ def backtest_df_only_classes(
                         strategy_result_records[result_records_filled]["ending_eq"] = order.equity
 
                         result_records_filled += 1
-        logger.info_logger.info(f"Starting New Loop\n\n")
+        info_logger.info(f"Starting New Loop\n\n")
     return strategy_result_records[:result_records_filled]
 
 
