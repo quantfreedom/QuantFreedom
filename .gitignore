@@ -12,7 +12,7 @@ old_quantfreedom/
 dist
 quantfreedom.egg-info
 numba_cache
-.todo
+*.todo
 thinking.txt
 .mustache
 
