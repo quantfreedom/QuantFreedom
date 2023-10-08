@@ -3,8 +3,8 @@ import numpy as np
 
 
 class CandleProcessingTypeT(NamedTuple):
-    RegularBacktest: int = 0
-    CandleBacktest: int = 1
+    Backtest: int = 0
+    RealBacktest: int = 1
     LiveTrading: int = 2
 
 
@@ -28,6 +28,7 @@ class IncreasePositionTypeT(NamedTuple):
     PctAccountEntrySize: int = 2
     RiskAmountEntrySize: int = 3
     RiskPctAccountEntrySize: int = 4
+    SmalletEntrySizeAsset: int = 5
 
 
 IncreasePositionType = IncreasePositionTypeT()
@@ -72,6 +73,7 @@ class OrderStatusT(NamedTuple):
     EntrySizeTooSmall: int = 10
     EntrySizeTooBig: int = 11
     PossibleLossTooBig: int = 12
+    HitMaxTrades: int = 13
 
 
 OrderStatus = OrderStatusT()
@@ -183,6 +185,8 @@ class OrderSettingsArrays(NamedTuple):
     trail_sl_by_pct: np.array
     trail_sl_when_pct_from_candle_body: np.array
     num_candles: np.array
+    entry_size_asset: np.array
+    max_trades: np.array
 
 
 class OrderSettings(NamedTuple):
@@ -206,6 +210,8 @@ class OrderSettings(NamedTuple):
     trail_sl_by_pct: float
     trail_sl_when_pct_from_candle_body: float
     num_candles: int
+    entry_size_asset: float
+    max_trades: int
 
 
 class OrderResult(NamedTuple):
@@ -222,13 +228,16 @@ class OrderResult(NamedTuple):
     liq_price: float = np.nan
     order_status: int = np.nan
     possible_loss: float = np.nan
+    entry_size_asset: float = np.nan
     entry_size_usd: float = np.nan
     entry_price: float = np.nan
     exit_price: float = np.nan
+    position_size_asset: float = np.nan
     position_size_usd: float = np.nan
     realized_pnl: float = np.nan
     sl_pct: float = np.nan
     sl_price: float = np.nan
+    total_trades: int = 0
     tp_pct: float = np.nan
     tp_price: float = np.nan
 
@@ -293,6 +302,9 @@ order_settings_array_dt = np.dtype(
         ("trail_sl_based_on_candle_body_type", np.int_),
         ("trail_sl_by_pct", np.float_),
         ("trail_sl_when_pct_from_candle_body", np.float_),
+        ("num_candles", np.int_),
+        ("entry_size_asset", np.float_),
+        ("max_trades", np.int_),
     ],
     align=True,
 )
@@ -313,9 +325,12 @@ or_dt = np.dtype(
         ("liq_price", np.float_),
         ("order_status", np.int_),
         ("possible_loss", np.float_),
+        ("total_trades", np.int_),
+        ("entry_size_asset", np.float_),
         ("entry_size_usd", np.float_),
         ("entry_price", np.float_),
         ("exit_price", np.float_),
+        ("position_size_asset", np.float_),
         ("position_size_usd", np.float_),
         ("realized_pnl", np.float_),
         ("sl_pct", np.float_),

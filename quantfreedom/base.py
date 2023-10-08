@@ -9,6 +9,7 @@ from IPython import get_ipython
 import plotly.io as pio
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
+from quantfreedom.custom_logger import CustomLogger
 
 from quantfreedom.enums import (
     BacktestSettings,

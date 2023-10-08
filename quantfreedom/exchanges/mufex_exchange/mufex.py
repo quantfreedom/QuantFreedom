@@ -7,7 +7,6 @@ from uuid import uuid4
 
 from requests import get, post
 from time import sleep, time
-from decimal import Decimal
 
 from quantfreedom.enums import (
     ExchangeSettings,
@@ -17,6 +16,8 @@ from quantfreedom.enums import (
 from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES, Exchange
 
 MUFEX_TIMEFRAMES = [1, 3, 5, 15, 30, 60, 120, 240, 360, 720, "D", "W", "M"]
+
+info_logger = logging.getLogger("info")
 
 
 class Mufex(Exchange):
@@ -53,6 +54,7 @@ class Mufex(Exchange):
     """
 
     def __HTTP_post_request(self, end_point, params):
+        info_logger.debug("")
         time_stamp = str(int(time() * 1000))
         params_as_string = self.__params_as_string(params=params)
         signature = self.__gen_signature(time_stamp=time_stamp, params_as_string=params_as_string)
@@ -77,6 +79,7 @@ class Mufex(Exchange):
             raise Exception(f"Mufex Something wrong with __HTTP_post_request - > {e}")
 
     def __HTTP_post_request_no_params(self, end_point):
+        info_logger.debug("")
         time_stamp = str(int(time() * 1000))
         signature = self.__gen_signature_no_params(time_stamp=time_stamp)
         headers = {
@@ -94,11 +97,8 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex Something wrong with __HTTP_post_request_no_params - > {e}")
 
-    def HTTP_get_request(
-        self,
-        end_point,
-        params,
-    ):
+    def HTTP_get_request(self, end_point, params):
+        info_logger.debug("")
         time_stamp = str(int(time() * 1000))
         params_as_path = self.__params_to_path(params=params)
         signature = self.__gen_signature(time_stamp=time_stamp, params_as_string=params_as_path)
@@ -122,6 +122,7 @@ class Mufex(Exchange):
             raise Exception(f"Mufex Something wrong with HTTP_get_request - > {e}")
 
     def HTTP_get_request_no_params(self, end_point):
+        info_logger.debug("")
         time_stamp = str(int(time() * 1000))
         signature = self.__gen_signature_no_params(time_stamp=time_stamp)
         headers = {
@@ -144,10 +145,12 @@ class Mufex(Exchange):
             raise Exception(f"Mufex Something wrong with HTTP_get_request_no_params - > {e}")
 
     def __params_as_string(self, params):
+        info_logger.debug("")
         params_as_string = str(json.dumps(params))
         return params_as_string
 
     def __params_to_path(self, params):
+        info_logger.debug("")
         entries = params.items()
         if not entries:
             pass
@@ -157,11 +160,13 @@ class Mufex(Exchange):
             return paramsString
 
     def __gen_signature(self, time_stamp, params_as_string):
+        info_logger.debug("")
         param_str = time_stamp + self.api_key + "5000" + params_as_string
         hash = hmac.new(bytes(self.secret_key, "utf-8"), param_str.encode("utf-8"), hashlib.sha256)
         return hash.hexdigest()
 
     def __gen_signature_no_params(self, time_stamp):
+        info_logger.debug("")
         param_str = time_stamp + self.api_key + "5000"
         hash = hmac.new(bytes(self.secret_key, "utf-8"), param_str.encode("utf-8"), hashlib.sha256)
         return hash.hexdigest()
@@ -197,6 +202,7 @@ class Mufex(Exchange):
 
         use link to see all Request Parameters
         """
+        info_logger.debug("")
         mufex_timeframe = self.__get_mufex_timeframe(timeframe=timeframe)
         timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
         candles_to_dl_ms = self.get_candles_to_dl_in_ms(candles_to_dl, timeframe_in_ms=timeframe_in_ms, limit=200)
@@ -243,6 +249,7 @@ class Mufex(Exchange):
         Paramaters:
         symbol
         """
+        info_logger.debug("")
         end_point = "/public/v1/instruments"
         params["limit"] = limit
         params["category"] = category
@@ -255,12 +262,14 @@ class Mufex(Exchange):
             raise Exception(f"Mufex get_all_symbols_info = Data or List is empty {response['message']} -> {e}")
 
     def get_symbol_info(self, symbol: str, **vargs):
+        info_logger.debug("")
         return self.get_all_symbols_info(params={"symbol": symbol})[0]
 
     def get_risk_limit_info(self, symbol: str, category: str = "linear", **vargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_risklimithead
         """
+        info_logger.debug("")
         end_point = "/public/v1/position-risk"
         params = {}
         params["category"] = category
@@ -277,6 +286,7 @@ class Mufex(Exchange):
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_placeorder
         use this website to see all the params
         """
+        info_logger.debug("")
         end_point = "/private/v1/trade/create"
         response = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
@@ -289,6 +299,7 @@ class Mufex(Exchange):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-tradingfeerate
         """
+        info_logger.debug("")
         end_point = "/private/v1/account/trade-fee"
         response = self.HTTP_get_request_no_params(end_point=end_point)
         try:
@@ -301,6 +312,7 @@ class Mufex(Exchange):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-tradingfeerate
         """
+        info_logger.debug("")
         end_point = "/private/v1/account/trade-fee"
         params = {}
         params["symbol"] = symbol
@@ -317,6 +329,7 @@ class Mufex(Exchange):
 
         use link to see all Request Parameters
         """
+        info_logger.debug("")
         end_point = "/private/v1/trade/orders"
         params["symbol"] = symbol
         params["limit"] = limit
@@ -329,6 +342,7 @@ class Mufex(Exchange):
             raise Exception(f"Mufex get_order_history = Data or List is empty {response['message']} -> {e}")
 
     def get_order_history_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **vargs):
+        info_logger.debug("")
         params["orderId"] = order_id
         return self.get_order_history(symbol=symbol, params=params)[0]
 
@@ -341,6 +355,7 @@ class Mufex(Exchange):
         orderId
         limit
         """
+        info_logger.debug("")
         end_point = "/private/v1/trade/activity-orders"
         params["symbol"] = symbol
         response = self.HTTP_get_request(end_point=end_point, params=params)
@@ -352,6 +367,7 @@ class Mufex(Exchange):
             raise Exception(f"Mufex get_open_orders = Data or List is empty {response['message']} -> {e}")
 
     def get_open_order_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **vargs):
+        info_logger.debug("")
         params["orderId"] = order_id
         return self.get_open_orders(symbol=symbol, params=params)[0]
 
@@ -363,6 +379,7 @@ class Mufex(Exchange):
 
         use link to see all Request Parameters
         """
+        info_logger.debug("")
         end_point = "/private/v1/trade/fills"
         params["symbol"] = symbol
         params["limit"] = limit
@@ -375,6 +392,7 @@ class Mufex(Exchange):
             raise Exception(f"Mufex get_filled_orders = Data or List is empty {response['message']} -> {e}")
 
     def get_filled_orders_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **vargs):
+        info_logger.debug("")
         params["orderId"] = order_id
         return self.get_filled_orders(symbol=symbol, params=params)[0]
 
@@ -382,6 +400,7 @@ class Mufex(Exchange):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_myposition
         """
+        info_logger.debug("")
         end_point = "/private/v1/account/positions"
         response = self.HTTP_get_request_no_params(end_point=end_point)
         try:
@@ -395,6 +414,7 @@ class Mufex(Exchange):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_myposition
         """
+        info_logger.debug("")
         end_point = "/private/v1/account/positions"
         params = {}
         params["symbol"] = symbol
@@ -411,6 +431,7 @@ class Mufex(Exchange):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-contract_cancelorder
         """
+        info_logger.debug("")
         end_point = "/private/v1/trade/cancel"
         params = {
             "symbol": symbol,
@@ -427,6 +448,7 @@ class Mufex(Exchange):
         """
         no link yet
         """
+        info_logger.debug("")
         end_point = "/private/v1/trade/cancel-all"
         params = {
             "symbol": symbol,
@@ -444,6 +466,7 @@ class Mufex(Exchange):
         you basically have to use the same info that you would for create order
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_placeorder
         """
+        info_logger.debug("")
         end_point = "/private/v1/trade/replace"
         response = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
@@ -459,6 +482,7 @@ class Mufex(Exchange):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_replaceorder
         """
+        info_logger.debug("")
         end_point = "/private/v1/trade/replace"
         params = {}
         params["symbol"] = symbol
@@ -480,6 +504,7 @@ class Mufex(Exchange):
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_replaceorder
 
         """
+        info_logger.debug("")
         end_point = "/private/v1/trade/replace"
         params = {}
         params["symbol"] = symbol
@@ -500,6 +525,7 @@ class Mufex(Exchange):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-balance
         """
+        info_logger.debug("")
         end_point = "/private/v1/account/balance"
         response = self.HTTP_get_request_no_params(end_point=end_point)
         try:
@@ -513,6 +539,7 @@ class Mufex(Exchange):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-balance
         """
+        info_logger.debug("")
         end_point = "/private/v1/account/balance"
         params = {"coin": trading_in}
         response = self.HTTP_get_request(end_point=end_point, params=params)
@@ -523,6 +550,7 @@ class Mufex(Exchange):
             raise Exception(f"Mufex get_wallet_info_of_asset = Data or List is empty {response['message']} -> {e}")
 
     def get_equity_of_asset(self, trading_in: str, **vargs):
+        info_logger.debug("")
         try:
             return float(self.get_wallet_info_of_asset(trading_in=trading_in)["equity"])
         except Exception as e:
@@ -532,6 +560,7 @@ class Mufex(Exchange):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_switchpositionmode
         """
+        info_logger.debug("")
         end_point = "/private/v1/account/set-position-mode"
         params = {
             "symbol": symbol,
@@ -550,6 +579,7 @@ class Mufex(Exchange):
         """
         No link yet
         """
+        info_logger.debug("")
         end_point = "/private/v1/account/set-leverage"
         leverage_str = str(leverage)
         params = {
@@ -571,6 +601,7 @@ class Mufex(Exchange):
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_marginswitch
         Cross/isolated mode. 0: cross margin mode; 1: isolated margin mode
         """
+        info_logger.debug("")
         end_point = "/private/v1/account/set-isolated"
         leverage_str = str(leverage)
         params = {
@@ -596,6 +627,7 @@ class Mufex(Exchange):
 
         use link to see all Request Parameters
         """
+        info_logger.debug("")
         end_point = "/private/v1/trade/fills"
         params = {}
         params["symbol"] = symbol
@@ -617,6 +649,7 @@ class Mufex(Exchange):
 
         use link to see all Request Parameters
         """
+        info_logger.debug("")
         end_point = "/private/v1/trade/orders"
         params = {}
         params["symbol"] = symbol
@@ -638,6 +671,7 @@ class Mufex(Exchange):
 
         use link to see all Request Parameters
         """
+        info_logger.debug("")
         end_point = "/private/v1/trade/activity-orders"
         params = {}
         params["symbol"] = symbol
@@ -666,25 +700,39 @@ class Mufex(Exchange):
     """
 
     def __get_mufex_timeframe(self, timeframe):
+        info_logger.debug("")
         return MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
 
     def set_leverage_mode_isolated(self, symbol: str):
+        info_logger.debug("")
         return self.set_leverage_mode(symbol=symbol, leverage_mode=1)
 
     def set_leverage_mode_cross(self, symbol: str):
+        info_logger.debug("")
         return self.set_leverage_mode(symbol=symbol, leverage_mode=0)
 
     def __get_fee_pcts(self, symbol):
+        info_logger.debug("")
         trading_fee_info = self.get_symbol_trading_fee_rates(symbol=symbol)
         market_fee_pct = float(trading_fee_info["takerFeeRate"])
         limit_fee_pct = float(trading_fee_info["makerFeeRate"])
         return market_fee_pct, limit_fee_pct
 
     def __get_mmr_pct(self, symbol, category: str = "linear"):
+        info_logger.debug("")
         risk_limit_info = self.get_risk_limit_info(symbol=symbol, category=category)
         return float(risk_limit_info["maintainMargin"])
 
+    def set_position_mode_as_hedge_mode(self, symbol):
+        info_logger.debug("")
+        self.set_position_mode(symbol=symbol, position_mode=1)
+
+    def set_position_mode_as_one_way_mode(self, symbol):
+        info_logger.debug("")
+        self.set_position_mode(symbol=symbol, position_mode=0)
+
     def __get_min_max_leverage_and_asset_size(self, symbol):
+        info_logger.debug("")
         symbol_info = self.get_symbol_info(symbol=symbol)
         max_leverage = float(symbol_info["leverageFilter"]["maxLeverage"])
         min_leverage = float(symbol_info["leverageFilter"]["minLeverage"])
@@ -703,12 +751,6 @@ class Mufex(Exchange):
             leverage_tick_step,
         )
 
-    def set_position_mode_as_hedge_mode(self, symbol):
-        self.set_position_mode(symbol=symbol, position_mode=1)
-
-    def set_position_mode_as_one_way_mode(self, symbol):
-        self.set_position_mode(symbol=symbol, position_mode=0)
-
     def set_exchange_settings(
         self,
         symbol: str,
@@ -718,6 +760,7 @@ class Mufex(Exchange):
         """
         Make sure you actually set your leverage mode and position mode first before running this function
         """
+        info_logger.debug("")
         market_fee_pct, limit_fee_pct = self.__get_fee_pcts(symbol=symbol)
         (
             max_leverage,
