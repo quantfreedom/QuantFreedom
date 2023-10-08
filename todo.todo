@@ -1,3 +1,5 @@
+find . | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf
+
 questions:
     ☐ fix the moving the stop loss order 
     ☐ look up literal unrol for numba so i can do the cart product with column names
