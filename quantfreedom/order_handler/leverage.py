@@ -106,15 +106,7 @@ class LeverageLong:
                 exchange_num=self.price_tick_step,
             )
             can_move_sl_to_be = True
-            info_logger.info(
-                f"\n\
-leverage={self.leverage}\n\
-liq_price={self.liq_price}\n\
-available_balance={available_balance}\n\
-cash_used={cash_used}\n\
-cash_borrowed={cash_borrowed}\n\
-can_move_sl_to_be= {can_move_sl_to_be}"
-            )
+            
         return (
             self.leverage,
             self.liq_price,

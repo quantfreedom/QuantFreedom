@@ -1,7 +1,20 @@
 from decimal import Decimal
 import numpy as np
+import logging
+from quantfreedom.enums import (
+    CandleBodyType,
+    IncreasePositionType,
+    LeverageStrategyType,
+    LongOrShortType,
+    OrderSettings,
+    OrderSettingsArrays,
+    SLToBeZeroOrEntryType,
+    StopLossStrategyType,
+    TakeProfitFeeType,
+    TakeProfitStrategyType,
+)
 
-from quantfreedom.enums import OrderSettings, OrderSettingsArrays
+info_logger = logging.getLogger("info")
 
 
 def get_to_the_upside_nb(
@@ -106,7 +119,6 @@ def get_order_setting(os_cart_arrays: OrderSettingsArrays, order_settings_index:
         entry_size_asset=os_cart_arrays.entry_size_asset[order_settings_index],
         max_trades=os_cart_arrays.max_trades[order_settings_index],
     )
-
 
 def round_size_by_tick_step(user_num: float, exchange_num: float) -> float:
     user_num = str(user_num)

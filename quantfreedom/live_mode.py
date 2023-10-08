@@ -16,6 +16,7 @@ from datetime import timedelta
 info_logger = logging.getLogger("info")
 trade_logger = logging.getLogger("trades")
 
+
 class LiveTrading:
     ex_position_size_usd = 0
     ex_average_entry = 0
@@ -58,6 +59,7 @@ class LiveTrading:
 
     def run(self):
         info_logger.info(f"Starting live trading")
+        print(f"Starting live trading")
         entry_order_id = 0
         tp_order_id = 0
         sl_order_id = 0
@@ -73,7 +75,7 @@ class LiveTrading:
                 self.exchange.set_candles_df_and_np()
                 td = str(timedelta(seconds=self.exchange.get_current_time_seconds() - start_time)).split(":")
                 num_candles = self.exchange.candles_np.shape[0]
-                info_logger.debug(f"It took {td[1]} min {td[2]} seconds to get {num_candles} candles")
+                info_logger.info(f"It took {td[1]} min {td[2]} seconds to get {num_candles} candles")
 
                 # bar_index bar index is always the last bar ... so if we have 200 candles we are at index 200
                 bar_index = num_candles - 1
@@ -81,10 +83,9 @@ class LiveTrading:
 
                 info_logger.debug("Setting indicator")
                 self.strategy.set_indicator_live_trading(self.exchange.candles_np)
-                info_logger.debug("Set indicator")
+                info_logger.info("Set indicator")
                 info_logger.info("Evaluating Strat")
                 if self.strategy.evaluate():
-                    info_logger.info("Evalute is true so now we see if we can get in a trade")
                     try:
                         try:
                             info_logger.debug("Setting ex postion size usd")
@@ -101,23 +102,16 @@ class LiveTrading:
                                     trading_in=self.exchange.trading_in
                                 )
                                 self.order.possible_loss = 0.0
-                            info_logger.debug("Calculating stop loss")
                             self.order.calculate_stop_loss(
                                 bar_index=bar_index,
                                 candles=self.exchange.candles_np,
                             )
-                            info_logger.debug("Calculating position size")
                             self.order.calculate_increase_posotion(
                                 # entry price is close of the last bar
                                 entry_price=self.exchange.candles_np[-1, 3],
                             )
-                            info_logger.debug("Calculating leverage")
                             self.order.calculate_leverage()
-                            info_logger.debug("Calculating take profit")
                             self.order.calculate_take_profit()
-
-                            # create variables
-                            info_logger.debug("Setting asset size and prices based on tick step")
 
                             # place the order
                             send_verify_error = False
@@ -146,7 +140,7 @@ class LiveTrading:
                             info_logger.info(f"checking if in position to cancel tp and sl")
                             self.__set_ex_position_size_asset()
                             if self.ex_position_size_asset > 0:
-                                info_logger.debug(f"We are in a pos and trying to cancle tp and sl")
+                                info_logger.info(f"We are in a pos and trying to cancle tp and sl")
                                 if self.exchange.cancel_all_open_order_per_symbol(symbol=self.symbol):
                                     info_logger.info(f"Canceled the orders")
                                 else:
@@ -166,7 +160,7 @@ class LiveTrading:
                                 msg += f"leverage was set "
                                 send_verify_error = True
 
-                            info_logger.info(f"placing stop loss order")
+                            info_logger.info(f"Submitting stop loss order")
                             sl_order_id = self.place_sl_order(
                                 asset_amount=self.ex_position_size_asset,
                                 trigger_price=self.order.sl_price,
@@ -174,7 +168,7 @@ class LiveTrading:
                             info_logger.info(f"Submitted SL order -> [order_id={sl_order_id}]")
 
                             sleep(0.5)
-                            info_logger.info(f"placing take profit order")
+                            info_logger.info(f"Submitting take profit order")
                             tp_order_id = self.place_tp_order(
                                 asset_amount=self.ex_position_size_asset,
                                 tp_price=self.order.tp_price,
@@ -194,19 +188,19 @@ class LiveTrading:
                                 msg += f"sl_order_id {sl_order_id} "
                                 send_verify_error = True
 
-                            info_logger.debug(f"tp_placed = self.exchange.check_if_order_open")
-                            tp_placed = self.exchange.check_if_order_open(
+                            info_logger.debug(f"Checking if tp was placed")
+                            if self.exchange.check_if_order_open(
                                 symbol=self.symbol,
                                 order_id=tp_order_id,
-                            )
-                            info_logger.debug(f"if not tp_placed")
-                            if not tp_placed:
-                                trade_logger.info(f"Couldn't verify tp order was filled {tp_order_id}")
+                            ):
+                                info_logger.info(f"take profit placed")
+                            else:
+                                info_logger.info(f"Couldn't verify tp order was filled {tp_order_id}")
                                 msg += f"tp_order_id {tp_order_id}"
                                 send_verify_error = True
 
-                            info_logger.debug(f"if send_verify_error")
                             if send_verify_error:
+                                info_logger.info("Something wan't verified so rechecking all")
                                 entry_placed = self.exchange.check_if_order_filled(
                                     symbol=self.symbol,
                                     order_id=entry_order_id,
@@ -226,8 +220,9 @@ class LiveTrading:
                                 verify_list = [entry_placed, leverage_changed, sl_placed, tp_placed]
                                 if not all(v == True for v in verify_list):
                                     logging.error(msg)
-                                    self.send_error_msg(msg=msg)
+                                    self.email_error_msg(msg=msg)
                                     break
+                                info_logger.info("All verified")
 
                             else:
                                 message = self.__create_entry_successful_message(
@@ -245,36 +240,33 @@ class LiveTrading:
                                 #     message=message,
                                 #     fig_filename=fig_filename,
                                 # )
+                                info_logger.info("Entry placed on exchange")
                                 trade_logger.info(f"{message}")
 
                         except RejectedOrder as e:
                             info_logger.info(f"RejectedOrder -> {e.msg}")
-                            print(f"RejectedOrder -> {e.msg}")
                             pass
                         except Exception as e:
-                            info_logger.info(f"Exception getting and placing entry -> {e}")
+                            info_logger.error(f"Exception getting and placing entry -> {e}")
                             raise Exception(f"Exception getting and placing entry -> {e}")
                         self.__set_ex_position_size_asset()
                         if self.ex_position_size_asset > 0:
                             info_logger.info(f"We are in a position ... checking to move stop loss")
                             try:
-                                info_logger.debug(f"self.order.check_move_stop_loss_to_be")
                                 self.order.check_move_stop_loss_to_be(
                                     bar_index=bar_index,
                                     candles=self.exchange.candles_np,
                                 )
-                                info_logger.debug(f"no moving stop loss to break even")
-                                info_logger.debug(f"self.order.check_move_trailing_stop_loss")
+                                info_logger.info(f"Wont move sl to be")
                                 self.__set_order_average_entry()
                                 self.order.check_move_trailing_stop_loss(
                                     bar_index=bar_index,
                                     candles=self.exchange.candles_np,
                                 )
-                                info_logger.debug(f"no trail stop loss")
+                                info_logger.info(f"Wont trail stop loss")
                             except MoveStopLoss as result:
                                 try:
-                                    info_logger.info(f"Inside move stop loss check trade logs")
-                                    trade_logger.debug(
+                                    info_logger.info(
                                         f"trying to move the stop loss from {self.order.sl_price} to {result.sl_price}"
                                     )
                                     if self.exchange.move_stop_order(
@@ -283,32 +275,28 @@ class LiveTrading:
                                         asset_amount=self.ex_position_size_asset,
                                         new_price=result.sl_price,
                                     ):
-                                        self.order.update_stop_loss_live_trading(sl_price=result.sl_price)
-                                        trade_logger.info(
-                                            f"Moved the stop loss from {self.order.sl_price} to {result.sl_price}"
+                                        info_logger.info(
+                                            f"Moved stop loss from {self.order.sl_price} to {result.sl_price}"
                                         )
+                                        self.order.update_stop_loss_live_trading(sl_price=result.sl_price)
                                     else:
-                                        trade_logger.info(f"Couldn't verify sl was moved {sl_order_id}")
+                                        info_logger.warning(f"Couldn't verify sl was moved {sl_order_id}")
                                 except Exception as e:
-                                    trade_logger.info(f"Something wrong with move stop loss -> {e}")
-                                    raise Exception(f"Something wrong with move stop loss -> {e}")
+                                    info_logger.error(f"Something wrong with MoveStopLoss exception -> {e}")
+                                    raise Exception(f"Something wrong with MoveStopLoss exception -> {e}")
                                 pass
-                            except RejectedOrder as e:
-                                print(f"RejectedOrder -> {e.msg}")
-                                info_logger.warning(f"RejectedOrder -> {e.msg}")
-                                pass
+                            except Exception as e:
+                                info_logger.error(f"Exception with checking if we should move sl -> {e}")
+                                raise Exception(f"Exception with checking if we should move sl -> {e}")
 
                     except Exception as e:
-                        info_logger.error(f"Something is wrong in the order creation part of live mode -> {e}")
-                        print(f"Something is wrong in the order creation part of live mode -> {e}")
-                        raise Exception(f"Something is wrong in the order creation part of live mode -> {e}")
+                        info_logger.error(f"Exception in the order creation part of live mode -> {e}")
+                        raise Exception(f"Exception in the order creation part of live mode -> {e}")
                 else:
-                    info_logger.info("No entry ... waiting to get next bar")
-                    print("No entry ... waiting to get next bar")
+                    pass
             except Exception as e:
-                info_logger.error(f"Something is wrong with getting candles -> {e}")
-                raise Exception(f"Something is wrong with getting candles -> {e}")
-            info_logger.debug(f"Last Candle {self.exchange.last_fetched_time_to_pd_datetime()}")
+                info_logger.error(f"Exception with getting candles -> {e}")
+                raise Exception(f"Exception with getting candles -> {e}")
             sleep(self.get_sleep_time_to_next_bar())
         info_logger.error("Server stopped")
 
@@ -319,25 +307,25 @@ class LiveTrading:
             - self.exchange.get_current_time_ms(),
         )
         td = str(timedelta(seconds=ms_to_next_candle / 1000)).split(":")
-        info_logger.info(f"Will sleep for {td[0]} hrs {td[1]} mins and {td[2]} seconds\n")
-        print(f"Will sleep for {td[0]} hrs {td[1]} mins and {td[2]} seconds")
+        info_logger.info(f"Will sleep for {td[0]} hrs {td[1]} mins and {td[2]} seconds till next bar\n")
+        print(f"Will sleep for {td[0]} hrs {td[1]} mins and {td[2]} seconds till next bar\n")
 
         return int(ms_to_next_candle / 1000)
 
     def place_entry_order(self, asset_amount, entry_price):
-        info_logger.debug(f".")
+        info_logger.debug(f"")
         return self.entry_order(
             asset_amount=asset_amount,
             price=entry_price,
         )
 
     def email_error_msg(self, msg):
-        info_logger.debug(f" ")
+        info_logger.debug(f"")
         self.email_sender.email_error_msg(msg=msg)
 
     def send_entry_email(self, entry_price, sl_price, tp_price, liq_price, body):
-        info_logger.debug(f" ")
-        fig_filename = self.__get_plot_file(
+        info_logger.debug(f"")
+        fig_filename = self.__get_fig_filename(
             entry_price=entry_price,
             sl_price=sl_price,
             tp_price=tp_price,
@@ -346,7 +334,7 @@ class LiveTrading:
         self.email_sender.email_new_order(body=body, fig_filename=fig_filename)
 
     def __get_fig_filename(self, entry_price, sl_price, tp_price, liq_price):
-        info_logger.debug(f" ")
+        info_logger.debug(f"")
         plot_img = self.strategy.return_plot_image(
             candles=self.exchange.candles_df,
             entry_price=entry_price,
@@ -357,19 +345,19 @@ class LiveTrading:
         return plot_img
 
     def __set_ex_position_size_asset(self):
-        info_logger.debug(f" ")
+        info_logger.debug(f"")
         self.ex_position_size_asset = float(self.get_position_info()["size"])
 
     def __set_ex_position_size_usd(self):
-        info_logger.debug(f" ")
+        info_logger.debug(f"")
         self.ex_position_size_usd = float(self.get_position_info()["positionValue"])
 
     def __set_order_average_entry(self):
-        info_logger.debug(f" ")
+        info_logger.debug(f"")
         self.order.average_entry = float(self.get_position_info()["entryPrice"])
 
     def __set_exchange_variables(self, entry_order_id, sl_order_id, tp_order_id):
-        info_logger.debug(f" ")
+        info_logger.debug(f"")
         pos_info = self.get_position_info()
         entry_info = self.exchange.get_filled_orders_by_order_id(symbol=self.symbol, order_id=entry_order_id)
         tp_info = self.exchange.get_open_order_by_order_id(symbol=self.symbol, order_id=tp_order_id)
@@ -397,39 +385,38 @@ class LiveTrading:
         info_logger.debug(f"set all the variables")
 
     def __get_pct_dif_above_average_entry(self, price, average_entry):
-        info_logger.debug(f" ")
+        info_logger.debug(f"")
         return (price - average_entry) / average_entry
 
     def __get_pct_dif_below_average_entry(self, price, average_entry):
-        info_logger.debug(f" ")
+        info_logger.debug(f"")
         return (average_entry - price) / average_entry
 
     def __create_entry_successful_message(self, entry_order_id, sl_order_id, tp_order_id):
-        info_logger.debug(f" ")
+        info_logger.debug(f"")
         self.__set_exchange_variables(
             entry_order_id=entry_order_id,
             sl_order_id=sl_order_id,
             tp_order_id=tp_order_id,
         )
-        message = f"\n\
-            An order was placed successfully\n\
-                    [ex_candle_closing_price={self.exchange.candles_np[-1,3]}]\n\
-                    [entry_price={self.order.entry_price}]\n\
-                    [ex_entry_price={self.ex_entry_price}]\n\
-                    [average_entry={self.order.average_entry}]\n\
-                    [ex_average_entry={self.ex_average_entry}]\n\
-                    [position_size_usd={self.order.position_size_usd}]\n\
-                    [ex_position_size_usd={self.ex_position_size_usd}]\n\
-                    [entry_size_usd={self.order.entry_size_usd}]\n\
-                    [ex_entry_size_usd={self.ex_entry_size_usd}]\n\
-                    [leverage={self.order.leverage}]\n\
-                    [ex_leverage={self.ex_leverage}]\n\
-                    [liq price={self.order.liq_price}]\n\
-                    [ex_liq price={self.ex_liq_price}]\n\
-                    [stop_loss_price={self.order.sl_price}]\n\
-                    [ex_stop_loss_price={self.ex_sl_price}]\n\
-                    [take_profit_price={self.order.tp_price}]\n\
-                    [ex_take_profit_price={self.ex_tp_price}]\n\
-                    [possible loss={self.order.possible_loss}]\n\
-                    [ex_possible loss={self.ex_possible_loss}]\n"
+        message = f"An order was placed successfully\n\
+[ex_candle_closing_price={self.exchange.candles_np[-1,3]}]\n\
+[entry_price={self.order.entry_price}]\n\
+[ex_entry_price={self.ex_entry_price}]\n\
+[average_entry={self.order.average_entry}]\n\
+[ex_average_entry={self.ex_average_entry}]\n\
+[position_size_usd={self.order.position_size_usd}]\n\
+[ex_position_size_usd={self.ex_position_size_usd}]\n\
+[entry_size_usd={self.order.entry_size_usd}]\n\
+[ex_entry_size_usd={self.ex_entry_size_usd}]\n\
+[leverage={self.order.leverage}]\n\
+[ex_leverage={self.ex_leverage}]\n\
+[liq price={self.order.liq_price}]\n\
+[ex_liq price={self.ex_liq_price}]\n\
+[stop_loss_price={self.order.sl_price}]\n\
+[ex_stop_loss_price={self.ex_sl_price}]\n\
+[take_profit_price={self.order.tp_price}]\n\
+[ex_take_profit_price={self.ex_tp_price}]\n\
+[possible loss={self.order.possible_loss}]\n\
+[ex_possible loss={self.ex_possible_loss}]\n"
         return message

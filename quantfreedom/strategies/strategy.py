@@ -19,8 +19,8 @@ FORMATTER = "%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s() - %(mes
 
 
 class IndicatorSettingsArrays(NamedTuple):
-    rsi_length: np.array = np.array([14])
-    rsi_is_below: np.array = np.array([70])
+    rsi_length: np.array = np.array([14, 20])
+    rsi_is_below: np.array = np.array([200, 75])
 
 
 class Strategy:
@@ -48,19 +48,23 @@ class Strategy:
             create_trades_logger=create_trades_logger,
         )
         if candle_processing_mode == CandleProcessingType.Backtest:
+            self.closing_prices = candles[:, 3]
             self.create_indicator = self.__set_bar_index
-            self.closing_prices = candles[:, 3]
-            self.set_indicator_settings(indicator_settings_index)
             self.current_exit_signals = np.full_like(self.closing_prices, np.nan)
-            self.__set_rsi()
+            self.set_indicator_settings = self.__set_ids_and_indicator
+
         elif candle_processing_mode == CandleProcessingType.RealBacktest:
-            self.create_indicator = self.__create_indicator_candle_by_candle
             self.bar_index = -1
             self.closing_prices = candles[:, 3]
+            self.create_indicator = self.__set_indicator_candle_by_candle
             self.current_exit_signals = np.full_like(self.closing_prices, np.nan)
+            self.set_indicator_settings = self.__set_ind_set
         elif candle_processing_mode == CandleProcessingType.LiveTrading:
-            self.set_indicator_settings(indicator_settings_index)
             self.bar_index = -1
+            self.__set_ind_set(indicator_settings_index=indicator_settings_index)
+
+    def get_rsi(self):
+        return self.rsi
 
     #########################################################################
     #########################################################################
@@ -73,14 +77,17 @@ class Strategy:
     def __set_bar_index(self, bar_index):
         self.bar_index = bar_index
 
-    def __set_rsi(self):
+    def __set_ids_and_indicator(self, indicator_settings_index: int):
         """
         we have to shift the info by one so that way we enter on the right candle
         if we have a yes entry on candle 15 then in real life we wouldn't enter until 16
         so that is why we have to shift by one
         """
+        self.rsi_length = int(self.indicator_settings_arrays.rsi_length[indicator_settings_index])
+        self.rsi_is_below = int(self.indicator_settings_arrays.rsi_is_below[indicator_settings_index])
+        info_logger.info(f"Indicator Settings: rsi_length={self.rsi_length} rsi_is_below={self.rsi_is_below}")
         try:
-            self.rsi_entry = (
+            self.rsi = (
                 pta.rsi(
                     close=pd.Series(self.closing_prices),
                     length=self.rsi_length,
@@ -89,19 +96,8 @@ class Strategy:
                 .shift(1, fill_value=np.nan)
                 .values
             )
-            self.rsi_exit = (
-                pta.rsi(
-                    close=pd.Series(self.closing_prices),
-                    length=self.rsi_length,
-                )
-                .round(decimals=2)
-                .values
-            )
         except Exception as e:
-            raise Exception(f"Strategy class __get_rsi = Something went wrong creating rsi -> {e}")
-
-    def get_rsi(self):
-        return self.rsi_entry
+            raise Exception(f"Exception creating rsi -> {e}")
 
     #########################################################################
     #########################################################################
@@ -111,7 +107,7 @@ class Strategy:
     #########################################################################
     #########################################################################
 
-    def __create_indicator_candle_by_candle(self, bar_index):
+    def __set_indicator_candle_by_candle(self, bar_index):
         """
         we have to shift the info by one so that way we enter on the right candle
         if we have a yes entry on candle 15 then in real life we wouldn't enter until 16
@@ -119,23 +115,18 @@ class Strategy:
         """
         bar_start = max(self.num_candles + bar_index, 0)
         closing_series = pd.Series(self.closing_prices[bar_start : bar_index + 1])
-        self.rsi_exit = (
-            pta.rsi(
-                close=closing_series,
-                length=self.rsi_length,
+        try:
+            self.rsi = (
+                pta.rsi(
+                    close=closing_series,
+                    length=self.rsi_length,
+                )
+                .round(decimals=2)
+                .shift(1, fill_value=np.nan)
+                .values
             )
-            .round(decimals=2)
-            .values
-        )
-        self.rsi_entry = (
-            pta.rsi(
-                close=closing_series,
-                length=self.rsi_length,
-            )
-            .round(decimals=2)
-            .shift(1, fill_value=np.nan)
-            .values
-        )
+        except Exception as e:
+            raise Exception(f"Exception creating rsi -> {e}")
 
     #########################################################################
     #########################################################################
@@ -147,11 +138,10 @@ class Strategy:
 
     def set_indicator_live_trading(self, candles):
         try:
-            self.rsi_entry = pta.rsi(close=pd.Series(candles[:, 3]), length=self.rsi_length).round(decimals=2).values
-            self.rsi_exit = pta.rsi(close=pd.Series(candles[:, 3]), length=self.rsi_length).round(decimals=2).values
-            info_logger.debug("Created rsi entry and rsi exit")
+            self.rsi = pta.rsi(close=pd.Series(candles[:, 3]), length=self.rsi_length).round(decimals=2).values
+            info_logger.debug("Created rsi entry")
         except Exception as e:
-            raise Exception(f"Strategy class set_indicator_live_trading = Something went wrong creating rsi -> {e}")
+            raise Exception(f"Exception creating rsi -> {e}")
 
     #########################################################################
     #########################################################################
@@ -161,22 +151,19 @@ class Strategy:
     #########################################################################
     #########################################################################
 
-    def set_indicator_settings(self, indicator_settings_index):
+    def __set_ind_set(self, indicator_settings_index):
         self.rsi_length = int(self.indicator_settings_arrays.rsi_length[indicator_settings_index])
         self.rsi_is_below = int(self.indicator_settings_arrays.rsi_is_below[indicator_settings_index])
-        info_logger.debug("Set rsi length rsi entry and rsi exit")
+        info_logger.info(f"Indicator Settings: rsi_length={self.rsi_length} rsi_is_below={self.rsi_is_below}")
 
     def evaluate(self):
         try:
-            # exit price
-            if self.rsi_exit[self.bar_index] > 70:
-                self.current_exit_signals[self.bar_index] = self.closing_prices[self.bar_index]
-            if self.rsi_entry[self.bar_index] < self.rsi_is_below:
+            if self.rsi[self.bar_index] < self.rsi_is_below:
                 info_logger.info(f"\n\n")
-                info_logger.info(f"Entry time {self.rsi_entry[self.bar_index]} < {self.rsi_is_below}")
+                info_logger.info(f"Entry time!!! rsi {self.rsi[self.bar_index]} is below {self.rsi_is_below}")
                 return True
             else:
-                info_logger.info(f"No entry {self.rsi_entry[self.bar_index]} < {self.rsi_is_below}")
+                info_logger.info(f"No entry rsi {self.rsi[self.bar_index]}")
                 return False
         except Exception as e:
             raise Exception(f"Strategy class evaluate error -> {e}")
