@@ -82,7 +82,7 @@ class LiveTrading:
                 msg = "Couldn't verify that the following orders were placed "
 
                 info_logger.debug("Setting indicator")
-                self.strategy.set_indicator_live_trading(self.exchange.candles_np)
+                self.strategy.set_indicator_live_trading(self.exchange.candles_df)
                 info_logger.info("Set indicator")
                 info_logger.info("Evaluating Strat")
                 if self.strategy.evaluate():
