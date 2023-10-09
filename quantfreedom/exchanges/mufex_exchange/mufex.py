@@ -207,14 +207,15 @@ class Mufex(Exchange):
         timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
         candles_to_dl_ms = self.get_candles_to_dl_in_ms(candles_to_dl, timeframe_in_ms=timeframe_in_ms, limit=200)
 
-        if until_date_ms:
-            since_date_ms = until_date_ms - candles_to_dl_ms + 5000
-        else:
-            until_date_ms = self.get_current_time_ms() - timeframe_in_ms
-            if since_date_ms:
-                since_date_ms = until_date_ms - candles_to_dl_ms + 5000
-            else:
+        if until_date_ms is None:
+            if since_date_ms is None:
+                until_date_ms = self.get_current_time_ms() - timeframe_in_ms
                 since_date_ms = until_date_ms - candles_to_dl_ms
+            else:
+                until_date_ms = since_date_ms + candles_to_dl_ms - 5000
+        else:
+            if since_date_ms is None:
+                since_date_ms = until_date_ms - candles_to_dl_ms - 5000
 
         candles_list = []
         end_point = "/public/v1/market/kline"

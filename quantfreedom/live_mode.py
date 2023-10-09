@@ -85,215 +85,209 @@ class LiveTrading:
                 self.strategy.set_indicator_live_trading(self.exchange.candles_df)
                 info_logger.info("Set indicator")
                 info_logger.info("Evaluating Strat")
+
                 if self.strategy.evaluate():
                     try:
-                        try:
-                            info_logger.debug("Setting ex postion size usd")
-                            self.__set_ex_position_size_usd()
-                            if self.ex_position_size_usd > 0:
-                                info_logger.debug("We are in a position updating order info")
-                                self.order.position_size_usd = self.ex_position_size_usd
-                                self.__set_order_average_entry()
+                        info_logger.debug("Setting ex postion size usd")
+                        self.__set_ex_position_size_usd()
+                        if self.ex_position_size_usd > 0:
+                            info_logger.debug("We are in a position updating order info")
+                            self.order.position_size_usd = self.ex_position_size_usd
+                            self.__set_order_average_entry()
+                        else:
+                            info_logger.debug("we are not in a position updating order info")
+                            self.order.position_size_usd = 0.0
+                            self.order.average_entry = 0.0
+                            self.order.equity = self.exchange.get_equity_of_asset(trading_in=self.exchange.trading_in)
+                            self.order.possible_loss = 0.0
+                        self.order.calculate_stop_loss(
+                            bar_index=bar_index,
+                            candles=self.exchange.candles_np,
+                        )
+                        self.order.calculate_increase_posotion(
+                            # entry price is close of the last bar
+                            entry_price=self.exchange.candles_np[-1, 3],
+                        )
+                        self.order.calculate_leverage()
+                        self.order.calculate_take_profit()
+
+                        # place the order
+                        send_verify_error = False
+                        info_logger.info("Placing Entry Order")
+                        entry_order_id = self.place_entry_order(
+                            asset_amount=self.order.entry_size_asset,
+                            entry_price=self.order.entry_price,
+                        )
+
+                        info_logger.info(f"Submitted entry order -> [order_id={entry_order_id}]")
+                        sleep(1)
+
+                        # check if order fileld
+                        info_logger.debug(f"Checking if entry order was filled")
+                        if self.exchange.check_if_order_filled(
+                            symbol=self.symbol,
+                            order_id=entry_order_id,
+                        ):
+                            info_logger.info("Entry was filled")
+                        else:
+                            msg += f"entry_order_id {entry_order_id} "
+                            send_verify_error = True
+                            info_logger.warning(f"Couldn't verify entry order was filled {entry_order_id}")
+
+                        # cancel other orders if in position
+                        info_logger.info(f"checking if in position to cancel tp and sl")
+                        self.__set_ex_position_size_asset()
+                        if self.ex_position_size_asset > 0:
+                            info_logger.info(f"We are in a pos and trying to cancle tp and sl")
+                            if self.exchange.cancel_all_open_order_per_symbol(symbol=self.symbol):
+                                info_logger.info(f"Canceled the orders")
                             else:
-                                info_logger.debug("we are not in a position updating order info")
-                                self.order.position_size_usd = 0.0
-                                self.order.average_entry = 0.0
-                                self.order.equity = self.exchange.get_equity_of_asset(
-                                    trading_in=self.exchange.trading_in
-                                )
-                                self.order.possible_loss = 0.0
-                            self.order.calculate_stop_loss(
+                                info_logger.warning("Wasn't able to verify that the tp and sl were canceled")
+
+                        sleep(0.5)
+
+                        # set the levergae
+                        info_logger.info("Setting leverage")
+                        if self.exchange.set_leverage_value(
+                            symbol=self.symbol,
+                            leverage=self.order.leverage,
+                        ):
+                            info_logger.info(f"Leverage Changed")
+                        else:
+                            info_logger.warning("Couldn't verify that leverage was set")
+                            msg += f"leverage was set "
+                            send_verify_error = True
+
+                        info_logger.info(f"Submitting stop loss order")
+                        sl_order_id = self.place_sl_order(
+                            asset_amount=self.ex_position_size_asset,
+                            trigger_price=self.order.sl_price,
+                        )
+                        info_logger.info(f"Submitted SL order -> [order_id={sl_order_id}]")
+
+                        sleep(0.5)
+                        info_logger.info(f"Submitting take profit order")
+                        tp_order_id = self.place_tp_order(
+                            asset_amount=self.ex_position_size_asset,
+                            tp_price=self.order.tp_price,
+                        )
+                        info_logger.info(f"Submitted TP order -> [order_id={tp_order_id}]")
+
+                        # sleep 1 second before checking to see if orders were placed
+                        sleep(1)
+                        info_logger.info(f"Checking if stop loss was placed")
+                        if self.exchange.check_if_order_open(
+                            symbol=self.symbol,
+                            order_id=sl_order_id,
+                        ):
+                            info_logger.info(f"Stop loss was placed")
+                        else:
+                            info_logger.warning(f"Couldn't verify sl order was placed {sl_order_id} ")
+                            msg += f"sl_order_id {sl_order_id} "
+                            send_verify_error = True
+
+                        info_logger.debug(f"Checking if tp was placed")
+                        if self.exchange.check_if_order_open(
+                            symbol=self.symbol,
+                            order_id=tp_order_id,
+                        ):
+                            info_logger.info(f"take profit placed")
+                        else:
+                            info_logger.info(f"Couldn't verify tp order was filled {tp_order_id}")
+                            msg += f"tp_order_id {tp_order_id}"
+                            send_verify_error = True
+
+                        if send_verify_error:
+                            info_logger.info("Something wan't verified so rechecking all")
+                            entry_placed = self.exchange.check_if_order_filled(
+                                symbol=self.symbol,
+                                order_id=entry_order_id,
+                            )
+                            leverage_changed = self.exchange.set_leverage_value(
+                                symbol=self.symbol,
+                                leverage=self.order.leverage,
+                            )
+                            sl_placed = self.exchange.check_if_order_open(
+                                symbol=self.symbol,
+                                order_id=sl_order_id,
+                            )
+                            tp_placed = self.exchange.check_if_order_open(
+                                symbol=self.symbol,
+                                order_id=tp_order_id,
+                            )
+                            verify_list = [entry_placed, leverage_changed, sl_placed, tp_placed]
+                            if not all(v == True for v in verify_list):
+                                logging.error(msg)
+                                self.email_error_msg(msg=msg)
+                                break
+                            info_logger.info("All verified")
+
+                        else:
+                            message = self.__create_entry_successful_message(
+                                entry_order_id=entry_order_id,
+                                sl_order_id=sl_order_id,
+                                tp_order_id=tp_order_id,
+                            )
+                            # fig_filename = self.__get_fig_filename(
+                            #     entry_price=self.ex_entry_price,
+                            #     sl_price=self.ex_sl_price,
+                            #     tp_price=self.ex_tp_price,
+                            #     liq_price=self.ex_liq_price,
+                            # )
+                            # self.email_sender.email_new_order(
+                            #     message=message,
+                            #     fig_filename=fig_filename,
+                            # )
+                            info_logger.info("Entry placed on exchange")
+                            trade_logger.info(f"{message}")
+
+                    except RejectedOrder as e:
+                        info_logger.info(f"RejectedOrder -> {e.msg}")
+                        pass
+                    except Exception as e:
+                        info_logger.error(f"Exception getting and placing entry -> {e}")
+                        raise Exception(f"Exception getting and placing entry -> {e}")
+                    self.__set_ex_position_size_asset()
+                    if self.ex_position_size_asset > 0:
+                        info_logger.info(f"We are in a position ... checking to move stop loss")
+                        try:
+                            self.order.check_move_stop_loss_to_be(
                                 bar_index=bar_index,
                                 candles=self.exchange.candles_np,
                             )
-                            self.order.calculate_increase_posotion(
-                                # entry price is close of the last bar
-                                entry_price=self.exchange.candles_np[-1, 3],
+                            info_logger.info(f"Wont move sl to be")
+                            self.__set_order_average_entry()
+                            self.order.check_move_trailing_stop_loss(
+                                bar_index=bar_index,
+                                candles=self.exchange.candles_np,
                             )
-                            self.order.calculate_leverage()
-                            self.order.calculate_take_profit()
-
-                            # place the order
-                            send_verify_error = False
-                            info_logger.info("Placing Entry Order")
-                            entry_order_id = self.place_entry_order(
-                                asset_amount=self.order.entry_size_asset,
-                                entry_price=self.order.entry_price,
-                            )
-
-                            info_logger.info(f"Submitted entry order -> [order_id={entry_order_id}]")
-                            sleep(1)
-
-                            # check if order fileld
-                            info_logger.debug(f"Checking if entry order was filled")
-                            if self.exchange.check_if_order_filled(
-                                symbol=self.symbol,
-                                order_id=entry_order_id,
-                            ):
-                                info_logger.info("Entry was filled")
-                            else:
-                                msg += f"entry_order_id {entry_order_id} "
-                                send_verify_error = True
-                                info_logger.warning(f"Couldn't verify entry order was filled {entry_order_id}")
-
-                            # cancel other orders if in position
-                            info_logger.info(f"checking if in position to cancel tp and sl")
-                            self.__set_ex_position_size_asset()
-                            if self.ex_position_size_asset > 0:
-                                info_logger.info(f"We are in a pos and trying to cancle tp and sl")
-                                if self.exchange.cancel_all_open_order_per_symbol(symbol=self.symbol):
-                                    info_logger.info(f"Canceled the orders")
-                                else:
-                                    info_logger.warning("Wasn't able to verify that the tp and sl were canceled")
-
-                            sleep(0.5)
-
-                            # set the levergae
-                            info_logger.info("Setting leverage")
-                            if self.exchange.set_leverage_value(
-                                symbol=self.symbol,
-                                leverage=self.order.leverage,
-                            ):
-                                info_logger.info(f"Leverage Changed")
-                            else:
-                                info_logger.warning("Couldn't verify that leverage was set")
-                                msg += f"leverage was set "
-                                send_verify_error = True
-
-                            info_logger.info(f"Submitting stop loss order")
-                            sl_order_id = self.place_sl_order(
-                                asset_amount=self.ex_position_size_asset,
-                                trigger_price=self.order.sl_price,
-                            )
-                            info_logger.info(f"Submitted SL order -> [order_id={sl_order_id}]")
-
-                            sleep(0.5)
-                            info_logger.info(f"Submitting take profit order")
-                            tp_order_id = self.place_tp_order(
-                                asset_amount=self.ex_position_size_asset,
-                                tp_price=self.order.tp_price,
-                            )
-                            info_logger.info(f"Submitted TP order -> [order_id={tp_order_id}]")
-
-                            # sleep 1 second before checking to see if orders were placed
-                            sleep(1)
-                            info_logger.info(f"Checking if stop loss was placed")
-                            if self.exchange.check_if_order_open(
-                                symbol=self.symbol,
-                                order_id=sl_order_id,
-                            ):
-                                info_logger.info(f"Stop loss was placed")
-                            else:
-                                info_logger.warning(f"Couldn't verify sl order was placed {sl_order_id} ")
-                                msg += f"sl_order_id {sl_order_id} "
-                                send_verify_error = True
-
-                            info_logger.debug(f"Checking if tp was placed")
-                            if self.exchange.check_if_order_open(
-                                symbol=self.symbol,
-                                order_id=tp_order_id,
-                            ):
-                                info_logger.info(f"take profit placed")
-                            else:
-                                info_logger.info(f"Couldn't verify tp order was filled {tp_order_id}")
-                                msg += f"tp_order_id {tp_order_id}"
-                                send_verify_error = True
-
-                            if send_verify_error:
-                                info_logger.info("Something wan't verified so rechecking all")
-                                entry_placed = self.exchange.check_if_order_filled(
-                                    symbol=self.symbol,
-                                    order_id=entry_order_id,
+                            info_logger.info(f"Wont trail stop loss")
+                        except MoveStopLoss as result:
+                            try:
+                                info_logger.info(
+                                    f"trying to move the stop loss from {self.order.sl_price} to {result.sl_price}"
                                 )
-                                leverage_changed = self.exchange.set_leverage_value(
-                                    symbol=self.symbol,
-                                    leverage=self.order.leverage,
-                                )
-                                sl_placed = self.exchange.check_if_order_open(
+                                if self.exchange.move_stop_order(
                                     symbol=self.symbol,
                                     order_id=sl_order_id,
-                                )
-                                tp_placed = self.exchange.check_if_order_open(
-                                    symbol=self.symbol,
-                                    order_id=tp_order_id,
-                                )
-                                verify_list = [entry_placed, leverage_changed, sl_placed, tp_placed]
-                                if not all(v == True for v in verify_list):
-                                    logging.error(msg)
-                                    self.email_error_msg(msg=msg)
-                                    break
-                                info_logger.info("All verified")
-
-                            else:
-                                message = self.__create_entry_successful_message(
-                                    entry_order_id=entry_order_id,
-                                    sl_order_id=sl_order_id,
-                                    tp_order_id=tp_order_id,
-                                )
-                                # fig_filename = self.__get_fig_filename(
-                                #     entry_price=self.ex_entry_price,
-                                #     sl_price=self.ex_sl_price,
-                                #     tp_price=self.ex_tp_price,
-                                #     liq_price=self.ex_liq_price,
-                                # )
-                                # self.email_sender.email_new_order(
-                                #     message=message,
-                                #     fig_filename=fig_filename,
-                                # )
-                                info_logger.info("Entry placed on exchange")
-                                trade_logger.info(f"{message}")
-
-                        except RejectedOrder as e:
-                            info_logger.info(f"RejectedOrder -> {e.msg}")
+                                    asset_amount=self.ex_position_size_asset,
+                                    new_price=result.sl_price,
+                                ):
+                                    info_logger.info(f"Moved stop loss from {self.order.sl_price} to {result.sl_price}")
+                                    self.order.update_stop_loss_live_trading(sl_price=result.sl_price)
+                                else:
+                                    info_logger.warning(f"Couldn't verify sl was moved {sl_order_id}")
+                            except Exception as e:
+                                info_logger.error(f"Something wrong with MoveStopLoss exception -> {e}")
+                                raise Exception(f"Something wrong with MoveStopLoss exception -> {e}")
                             pass
                         except Exception as e:
-                            info_logger.error(f"Exception getting and placing entry -> {e}")
-                            raise Exception(f"Exception getting and placing entry -> {e}")
-                        self.__set_ex_position_size_asset()
-                        if self.ex_position_size_asset > 0:
-                            info_logger.info(f"We are in a position ... checking to move stop loss")
-                            try:
-                                self.order.check_move_stop_loss_to_be(
-                                    bar_index=bar_index,
-                                    candles=self.exchange.candles_np,
-                                )
-                                info_logger.info(f"Wont move sl to be")
-                                self.__set_order_average_entry()
-                                self.order.check_move_trailing_stop_loss(
-                                    bar_index=bar_index,
-                                    candles=self.exchange.candles_np,
-                                )
-                                info_logger.info(f"Wont trail stop loss")
-                            except MoveStopLoss as result:
-                                try:
-                                    info_logger.info(
-                                        f"trying to move the stop loss from {self.order.sl_price} to {result.sl_price}"
-                                    )
-                                    if self.exchange.move_stop_order(
-                                        symbol=self.symbol,
-                                        order_id=sl_order_id,
-                                        asset_amount=self.ex_position_size_asset,
-                                        new_price=result.sl_price,
-                                    ):
-                                        info_logger.info(
-                                            f"Moved stop loss from {self.order.sl_price} to {result.sl_price}"
-                                        )
-                                        self.order.update_stop_loss_live_trading(sl_price=result.sl_price)
-                                    else:
-                                        info_logger.warning(f"Couldn't verify sl was moved {sl_order_id}")
-                                except Exception as e:
-                                    info_logger.error(f"Something wrong with MoveStopLoss exception -> {e}")
-                                    raise Exception(f"Something wrong with MoveStopLoss exception -> {e}")
-                                pass
-                            except Exception as e:
-                                info_logger.error(f"Exception with checking if we should move sl -> {e}")
-                                raise Exception(f"Exception with checking if we should move sl -> {e}")
-
-                    except Exception as e:
-                        info_logger.error(f"Exception in the order creation part of live mode -> {e}")
-                        raise Exception(f"Exception in the order creation part of live mode -> {e}")
+                            info_logger.error(f"Exception with checking if we should move sl -> {e}")
+                            raise Exception(f"Exception with checking if we should move sl -> {e}")
+                elif 1 > 4:
+                    # check if the current realized pnl is differnet than the last pnl and if it is return if we profit or loss email
+                    pass
                 else:
-                    #### do a self.strat.check strat stopped ... and then if it is stopped then send email within strat and then change the function to a pass function
                     pass
             except Exception as e:
                 info_logger.error(f"Exception with getting candles -> {e}")
