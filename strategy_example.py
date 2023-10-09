@@ -56,7 +56,7 @@ class MyStrategy(Strategy):
     def __init__(
         self,
         candle_processing_mode: CandleProcessingType,
-        candles: np.array = None,
+        candles: pd.DataFrame = None,
         indicator_settings_index: int = None,
         log_debug: bool = True,
         disable_logging: bool = False,
@@ -86,7 +86,7 @@ class MyStrategy(Strategy):
         elif candle_processing_mode == CandleProcessingType.RealBacktest:
             self.bar_index = -1
             self.closing_prices = candles[:, 3]
-            self.create_indicator = self.__set_indicator_candle_by_candle
+            self.create_indicator = self.__set_indicator_real_backtest
             self.current_exit_signals = np.full_like(self.closing_prices, np.nan)
             self.set_indicator_settings = self.__set_ind_set
 
@@ -102,7 +102,7 @@ class MyStrategy(Strategy):
     #########################################################################
     #########################################################################
 
-    def __set_bar_index(self, bar_index):
+    def __set_bar_index(self, bar_index, strat_num_candles):
         self.bar_index = bar_index
 
     def __set_ids_and_indicator(self, indicator_settings_index: int):
@@ -132,19 +132,19 @@ class MyStrategy(Strategy):
     #########################################################################
     #########################################################################
     ###################                                  ####################
-    ################### Candle by Candle Backtest Start  ####################
+    ###################        Real Backtesting          ####################
     ###################                                  ####################
     #########################################################################
     #########################################################################
 
-    def __set_indicator_candle_by_candle(self, bar_index):
+    def __set_indicator_real_backtest(self, bar_index, strat_num_candles):
         """
         we have to shift the info by one so that way we enter on the right candle
         if we have a yes entry on candle 15 then in real life we wouldn't enter until 16
         so that is why we have to shift by one
         """
-        bar_start = max(self.num_candles + bar_index, 0)
-        closing_series = pd.Series(self.closing_prices[bar_start : bar_index + 1])
+        start = max(strat_num_candles + bar_index, 0)
+        closing_series = pd.Series(self.closing_prices[start : bar_index + 1])
         try:
             self.rsi = (
                 pta.rsi(

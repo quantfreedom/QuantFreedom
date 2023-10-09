@@ -207,11 +207,14 @@ class Mufex(Exchange):
         timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
         candles_to_dl_ms = self.get_candles_to_dl_in_ms(candles_to_dl, timeframe_in_ms=timeframe_in_ms, limit=200)
 
-        if until_date_ms is None:
+        if until_date_ms:
+            since_date_ms = until_date_ms - candles_to_dl_ms + 5000
+        else:
             until_date_ms = self.get_current_time_ms() - timeframe_in_ms
-
-        if since_date_ms is None:
-            since_date_ms = until_date_ms - candles_to_dl_ms
+            if since_date_ms:
+                since_date_ms = until_date_ms - candles_to_dl_ms + 5000
+            else:
+                since_date_ms = until_date_ms - candles_to_dl_ms
 
         candles_list = []
         end_point = "/public/v1/market/kline"
@@ -239,7 +242,7 @@ class Mufex(Exchange):
                 raise Exception(f"Mufex Something is wrong with get_candles_df {response.get('message')} - > {e}")
         time_it_took_in_seconds = self.get_current_time_seconds() - start_time
         td = str(timedelta(seconds=time_it_took_in_seconds)).split(":")
-        print(f"It took {td[1]} mins and {td[2]} seconds to download the candles")
+        print(f"It took {td[1]} mins and {td[2]} seconds to download {len(candles_list)} candles")
         return self.get_candles_list_to_pd(candles_list=candles_list, col_end=-2)
 
     def get_all_symbols_info(self, category: str = "linear", limit: int = 1000, params: dict = {}, **vargs):

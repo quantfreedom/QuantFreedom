@@ -1,7 +1,8 @@
+import plotly.graph_objects as go
 from decimal import Decimal
 import numpy as np
 import logging
-
+import pandas as pd
 from quantfreedom.enums import OrderSettings, OrderSettingsArrays
 
 info_logger = logging.getLogger("info")
@@ -18,9 +19,13 @@ def get_to_the_upside_nb(
     ym = y.mean()
 
     y_ym = y - ym
+    if y_ym == 0:
+        y_ym = np.array([1])
     y_ym_s = y_ym**2
 
     x_xm = x - xm
+    if x_xm == 0:
+        x_xm = np.array([1])
     x_xm_s = x_xm**2
 
     b1 = (x_xm * y_ym).sum() / x_xm_s.sum()
@@ -117,3 +122,16 @@ def round_size_by_tick_step(user_num: float, exchange_num: float) -> float:
     int_num = int(Decimal(user_num) / Decimal(exchange_num))
     float_num = float(Decimal(int_num) * Decimal(exchange_num))
     return float_num
+
+
+def plot_candles(candles: pd.DataFrame):
+    fig = go.Figure()
+    fig.add_candlestick(
+        x=candles.index,
+        open=candles.open,
+        high=candles.high,
+        low=candles.low,
+        close=candles.close,
+        name="Candles",
+    )
+    fig.show()

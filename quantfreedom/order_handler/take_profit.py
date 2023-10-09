@@ -68,7 +68,6 @@ class TakeProfitLong:
         )
         tp_pct = round((self.tp_price - average_entry) / average_entry, 4)
 
-        info_logger.debug(f"tp_price={self.tp_price} tp_pct={tp_pct}")
         return self.tp_price, tp_pct, OrderStatus.EntryFilled
 
     def calculate_take_profit_pct(self, **vargs):

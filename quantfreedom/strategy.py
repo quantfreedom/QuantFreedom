@@ -51,7 +51,6 @@ FORMATTER = "%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s() - %(mes
 
 class Strategy:
     set_indicator_settings = None
-    num_candles = None
     create_indicator = None
 
     def __init__(
@@ -101,7 +100,7 @@ class Strategy:
     #########################################################################
     #########################################################################
 
-    def __set_bar_index(self, bar_index):
+    def __set_bar_index(self, bar_index, strat_num_candles):
         # self.bar_index = bar_index
         pass
 
@@ -138,13 +137,13 @@ class Strategy:
     #########################################################################
     #########################################################################
 
-    def __set_indicator_candle_by_candle(self, bar_index):
+    def __set_indicator_candle_by_candle(self, bar_index, strat_num_candles):
         """
         we have to shift the info by one so that way we enter on the right candle
         if we have a yes entry on candle 15 then in real life we wouldn't enter until 16
         so that is why we have to shift by one
         """
-        # bar_start = max(self.num_candles + bar_index, 0)
+        # bar_start = max(strat_num_candles + bar_index, 0)
         # closing_series = pd.Series(self.closing_prices[bar_start : bar_index + 1])
         # try:
         #     self.rsi = (

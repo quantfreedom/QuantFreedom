@@ -292,6 +292,8 @@ class LiveTrading:
                     except Exception as e:
                         info_logger.error(f"Exception in the order creation part of live mode -> {e}")
                         raise Exception(f"Exception in the order creation part of live mode -> {e}")
+                elif self.strategy.stop_strategy:
+                    exit(1)
                 else:
                     pass
             except Exception as e:

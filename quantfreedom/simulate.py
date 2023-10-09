@@ -42,7 +42,7 @@ def backtest_df_only_classes(
                 os_cart_arrays=os_cart_arrays,
             )
 
-            strategy.num_candles = int(-(order_settings.num_candles - 1))
+            strat_num_candles = int(-(order_settings.num_candles - 1))
             order = Order.instantiate(
                 equity=starting_equity,
                 order_settings=order_settings,
@@ -54,10 +54,10 @@ def backtest_df_only_classes(
 
             # entries loop
             for bar_index in range(int(order_settings.num_candles - 1), total_bars):
-                strategy.create_indicator(bar_index)
+                strategy.create_indicator(bar_index=bar_index, strat_num_candles=strat_num_candles)
                 if strategy.evaluate():  # add in that we are also not at max entry amount
                     info_logger.debug(
-                        f"ind_idx={indicator_settings_index} os_idx={order_settings_index} b_idx={bar_index}"
+                        f"ind_idx={indicator_settings_index} os_idx={order_settings_index} b_idx={bar_index} timestamp={strategy.candles.index[bar_index]}"
                     )
                     try:
                         order.calculate_stop_loss(
