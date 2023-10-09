@@ -18,7 +18,7 @@ from quantfreedom.exchanges.mufex_exchange.live_mufex import LiveMufex
 from quantfreedom.helper_funcs import create_os_cart_product_nb, get_order_setting
 from quantfreedom.live_mode import LiveTrading
 from quantfreedom.order_handler.order_handler import LongOrder
-from quantfreedom.strategies.strategy import Strategy
+from quantfreedom.strategy import Strategy
 from my_stuff import EmailSenderInfo, MufexTestKeys
 
 

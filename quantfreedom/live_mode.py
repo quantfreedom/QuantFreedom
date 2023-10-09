@@ -10,7 +10,7 @@ from quantfreedom.enums import (
 )
 from quantfreedom.exchanges.live_exchange import LiveExchange
 from quantfreedom.order_handler.order_handler import Order
-from quantfreedom.strategies.strategy import Strategy
+from quantfreedom.strategy import Strategy
 from datetime import timedelta
 
 info_logger = logging.getLogger("info")

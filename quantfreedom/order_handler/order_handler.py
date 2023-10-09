@@ -159,28 +159,28 @@ class Order:
 
         info_logger.info(
             f"\nOrder Settings:\n\
-long_or_short = {LongOrShortType._fields[int(order_settings.long_or_short)]}\n\
-increase_position_type = {IncreasePositionType._fields[int(order_settings.increase_position_type)]}\n\
+long_or_short = {LongOrShortType._fields[order_settings.long_or_short]}\n\
+increase_position_type = {IncreasePositionType._fields[order_settings.increase_position_type]}\n\
 risk_account_pct_size = {round(order_settings.risk_account_pct_size*100,2)}\n\
 max_equity_risk_pct = {round(order_settings.max_equity_risk_pct*100,2)}\n\
-stop_loss_type = {StopLossStrategyType._fields[int(order_settings.stop_loss_type)]}\n\
-sl_candle_body_type = {CandleBodyType._fields[int(order_settings.sl_candle_body_type)]}\n\
+stop_loss_type = {StopLossStrategyType._fields[order_settings.stop_loss_type]}\n\
+sl_candle_body_type = {CandleBodyType._fields[order_settings.sl_candle_body_type]}\n\
 sl_based_on_add_pct = {round(order_settings.sl_based_on_add_pct*100,2)}\n\
-sl_based_on_lookback = {int(order_settings.sl_based_on_lookback)}\n\
-sl_to_be_based_on_candle_body_type = {CandleBodyType._fields[int(order_settings.sl_to_be_based_on_candle_body_type)]}\n\
+sl_based_on_lookback = {order_settings.sl_based_on_lookback}\n\
+sl_to_be_based_on_candle_body_type = {CandleBodyType._fields[order_settings.sl_to_be_based_on_candle_body_type]}\n\
 sl_to_be_when_pct_from_candle_body = {order_settings.sl_to_be_when_pct_from_candle_body}\n\
-sl_to_be_zero_or_entry_type = {SLToBeZeroOrEntryType._fields[int(order_settings.sl_to_be_zero_or_entry_type)]}\n\
-trail_sl_based_on_candle_body_type = {CandleBodyType._fields[int(order_settings.trail_sl_based_on_candle_body_type)]}\n\
+sl_to_be_zero_or_entry_type = {SLToBeZeroOrEntryType._fields[order_settings.sl_to_be_zero_or_entry_type]}\n\
+trail_sl_based_on_candle_body_type = {CandleBodyType._fields[order_settings.trail_sl_based_on_candle_body_type]}\n\
 trail_sl_when_pct_from_candle_body = {round(order_settings.trail_sl_when_pct_from_candle_body*100,2)}\n\
 trail_sl_by_pct = {round(order_settings.trail_sl_by_pct*100,2)}\n\
-take_profit_type = {TakeProfitStrategyType._fields[int(order_settings.take_profit_type)]}\n\
-risk_reward = {int(order_settings.risk_reward)}\n\
-tp_fee_type = {TakeProfitFeeType._fields[int(order_settings.tp_fee_type)]}\n\
-leverage_type = {LeverageStrategyType._fields[int(order_settings.leverage_type)]}\n\
+take_profit_type = {TakeProfitStrategyType._fields[order_settings.take_profit_type]}\n\
+risk_reward = {order_settings.risk_reward}\n\
+tp_fee_type = {TakeProfitFeeType._fields[order_settings.tp_fee_type]}\n\
+leverage_type = {LeverageStrategyType._fields[order_settings.leverage_type]}\n\
 static_leverage = {order_settings.static_leverage}\n\
-num_candles = {int(order_settings.num_candles)}\n\
+num_candles = {order_settings.num_candles}\n\
 entry_size_asset = {order_settings.entry_size_asset}\n\
-max_trades = {int(order_settings.max_trades)}"
+max_trades = {order_settings.max_trades}"
         )
 
     def pass_func(self, **vargs):
