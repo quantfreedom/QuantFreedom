@@ -292,9 +292,8 @@ class LiveTrading:
                     except Exception as e:
                         info_logger.error(f"Exception in the order creation part of live mode -> {e}")
                         raise Exception(f"Exception in the order creation part of live mode -> {e}")
-                elif self.strategy.stop_strategy:
-                    exit(1)
                 else:
+                    #### do a self.strat.check strat stopped ... and then if it is stopped then send email within strat and then change the function to a pass function
                     pass
             except Exception as e:
                 info_logger.error(f"Exception with getting candles -> {e}")
