@@ -1,18 +1,8 @@
 from decimal import Decimal
 import numpy as np
 import logging
-from quantfreedom.enums import (
-    CandleBodyType,
-    IncreasePositionType,
-    LeverageStrategyType,
-    LongOrShortType,
-    OrderSettings,
-    OrderSettingsArrays,
-    SLToBeZeroOrEntryType,
-    StopLossStrategyType,
-    TakeProfitFeeType,
-    TakeProfitStrategyType,
-)
+
+from quantfreedom.enums import OrderSettings, OrderSettingsArrays
 
 info_logger = logging.getLogger("info")
 
@@ -69,28 +59,28 @@ def create_os_cart_product_nb(order_settings_arrays: OrderSettingsArrays):
             out[j * m : (j + 1) * m, k + 1 :] = out[0:m, k + 1 :]
 
     return OrderSettingsArrays(
-        increase_position_type=out.T[0],
-        leverage_type=out.T[1],
+        increase_position_type=out.T[0].astype(np.int_),
+        leverage_type=out.T[1].astype(np.int_),
         max_equity_risk_pct=out.T[2],
-        long_or_short=out.T[3],
+        long_or_short=out.T[3].astype(np.int_),
         risk_account_pct_size=out.T[4],
         risk_reward=out.T[5],
         sl_based_on_add_pct=out.T[6],
-        sl_based_on_lookback=out.T[7],
-        sl_candle_body_type=out.T[8],
-        sl_to_be_based_on_candle_body_type=out.T[9],
+        sl_based_on_lookback=out.T[7].astype(np.int_),
+        sl_candle_body_type=out.T[8].astype(np.int_),
+        sl_to_be_based_on_candle_body_type=out.T[9].astype(np.int_),
         sl_to_be_when_pct_from_candle_body=out.T[10],
-        sl_to_be_zero_or_entry_type=out.T[11],
+        sl_to_be_zero_or_entry_type=out.T[11].astype(np.int_),
         static_leverage=out.T[12],
-        stop_loss_type=out.T[13],
-        take_profit_type=out.T[14],
-        tp_fee_type=out.T[15],
-        trail_sl_based_on_candle_body_type=out.T[16],
+        stop_loss_type=out.T[13].astype(np.int_),
+        take_profit_type=out.T[14].astype(np.int_),
+        tp_fee_type=out.T[15].astype(np.int_),
+        trail_sl_based_on_candle_body_type=out.T[16].astype(np.int_),
         trail_sl_by_pct=out.T[17],
-        trail_sl_when_pct_from_candle_body=out.T[18],
-        num_candles=out.T[19],
-        entry_size_asset=out.T[20],
-        max_trades=out.T[21],
+        trail_sl_when_pct_from_candle_body=out.T[18].astype(np.int_),
+        num_candles=out.T[19].astype(np.int_),
+        entry_size_asset=out.T[20].astype(np.int_),
+        max_trades=out.T[21].astype(np.int_),
     )
 
 
@@ -119,6 +109,7 @@ def get_order_setting(os_cart_arrays: OrderSettingsArrays, order_settings_index:
         entry_size_asset=os_cart_arrays.entry_size_asset[order_settings_index],
         max_trades=os_cart_arrays.max_trades[order_settings_index],
     )
+
 
 def round_size_by_tick_step(user_num: float, exchange_num: float) -> float:
     user_num = str(user_num)
