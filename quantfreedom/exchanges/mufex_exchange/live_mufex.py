@@ -15,8 +15,8 @@ class LiveMufex(LiveExchange, Mufex):
         api_key: str,
         secret_key: str,
         symbol: str,
-        trading_in: str,
         timeframe: str,
+        trading_in: str,
         use_test_net: bool,
         long_or_short: LongOrShortType,
         candles_to_dl: int = None,
@@ -31,13 +31,14 @@ class LiveMufex(LiveExchange, Mufex):
             symbol,
             timeframe,
             trading_in,
+            use_test_net,
+            long_or_short,
             candles_to_dl,
             keep_volume_in_candles,
-            long_or_short,
-            use_test_net,
             position_mode,
             leverage_mode,
         )
+
         self.category = category
         self.mufex_timeframe = MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
 
@@ -125,9 +126,7 @@ class LiveMufex(LiveExchange, Mufex):
                     params["start"] = last_candle_time_ms + 1000
                     self.last_fetched_ms_time = last_candle_time_ms
             except Exception as e:
-                raise Exception(
-                    f"LiveMufex Class Something is wrong with get_candles_df {response.get('message')} - > {e}"
-                )
+                raise Exception(f"Exception getting_candles_df {response.get('message')} - > {e}")
         self.candles_df = self.get_candles_list_to_pd(candles_list=candles_list, col_end=-2)
         self.candles_np = self.candles_df.values
 

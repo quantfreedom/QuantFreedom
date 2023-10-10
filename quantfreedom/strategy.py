@@ -202,84 +202,8 @@ class Strategy:
         #     raise Exception(f"Strategy class evaluate error -> {e}")
         pass
 
-    def return_plot_image(self, candles: pd.DataFrame, entry_price, sl_price, tp_price, liq_price, **vargs):
-        graph_entry = [candles.index.iloc[-1]]
-        fig = make_subplots(
-            rows=2,
-            cols=1,
-            row_heights=[0.7, 0.3],
-            shared_xaxes=True,
-            vertical_spacing=0.02,
-        )
-        fig.add_candlestick(
-            x=candles.index,
-            open=candles.open,
-            high=candles.high,
-            low=candles.low,
-            close=candles.close,
-            name="Candles",
-            row=1,
-            col=1,
-        )
-        # entry
-        fig.add_scatter(
-            x=graph_entry,
-            y=[entry_price],
-            mode="markers",
-            marker=dict(size=10, color="Blue"),
-            name=f"Entry",
-            row=1,
-            col=1,
-        )
-        # take profit
-        fig.add_scatter(
-            x=graph_entry,
-            y=[tp_price],
-            mode="markers",
-            marker=dict(size=10, symbol="arrow-up", color="Green"),
-            name=f"Take Profit",
-            row=1,
-            col=1,
-        )
-        # stop loss
-        fig.add_scatter(
-            x=graph_entry,
-            y=[sl_price],
-            mode="markers",
-            marker=dict(size=10, symbol="octagon", color="orange"),
-            name=f"Stop Loss",
-            row=1,
-            col=1,
-        )
-        # liq price
-        fig.add_scatter(
-            x=graph_entry,
-            y=[liq_price],
-            mode="markers",
-            marker=dict(size=10, symbol="hexagram", color="red"),
-            name=f"Liq Price",
-            row=1,
-            col=1,
-        )
-
-        # RSI
-        fig.add_scatter(
-            x=candles.index,
-            y=self.rsi,
-            name="RSI",
-            row=2,
-            col=1,
-        )
-        fig.update_layout(xaxis_rangeslider_visible=False)
-        fig.show()
-        fig_filename = os.path.join(
-            ".",
-            "logs",
-            "images",
-            f'{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.png',
-        )
-        fig.write_image(fig_filename)
-        return fig_filename
+    def get_strategy_plot_filename(self, **vargs):
+        pass
 
     def create_ind_cart_product_nb(self, indicator_settings_array):
         # cart array loop

@@ -1,4 +1,5 @@
 import logging
+import os
 from time import sleep
 from quantfreedom.email_sender import EmailSender
 from quantfreedom.enums import (
@@ -11,7 +12,8 @@ from quantfreedom.enums import (
 from quantfreedom.exchanges.live_exchange import LiveExchange
 from quantfreedom.order_handler.order_handler import Order
 from quantfreedom.strategy import Strategy
-from datetime import timedelta
+from datetime import datetime, timedelta
+from plotly.subplots import make_subplots
 
 info_logger = logging.getLogger("info")
 trade_logger = logging.getLogger("trades")
@@ -114,7 +116,7 @@ class LiveTrading:
                         # place the order
                         send_verify_error = False
                         info_logger.info("Placing Entry Order")
-                        entry_order_id = self.place_entry_order(
+                        entry_order_id = self.entry_order(
                             asset_amount=self.order.entry_size_asset,
                             entry_price=self.order.entry_price,
                         )
@@ -223,21 +225,24 @@ class LiveTrading:
                             info_logger.info("All verified")
 
                         else:
-                            message = self.__create_entry_successful_message(
+                            self.__set_exchange_variables(
                                 entry_order_id=entry_order_id,
                                 sl_order_id=sl_order_id,
                                 tp_order_id=tp_order_id,
                             )
-                            # fig_filename = self.__get_fig_filename(
-                            #     entry_price=self.ex_entry_price,
-                            #     sl_price=self.ex_sl_price,
-                            #     tp_price=self.ex_tp_price,
-                            #     liq_price=self.ex_liq_price,
-                            # )
-                            # self.email_sender.email_new_order(
-                            #     message=message,
-                            #     fig_filename=fig_filename,
-                            # )
+                            message = self.__create_entry_successful_message()
+                            entry_filename = self.__get_entry_plot_filename(
+                                entry_price=self.ex_entry_price,
+                                sl_price=self.ex_sl_price,
+                                tp_price=self.ex_tp_price,
+                                liq_price=self.ex_liq_price,
+                            )
+                            strategy_filename = self.strategy.get_strategy_plot_filename()
+                            self.email_sender.email_new_order(
+                                message=message,
+                                entry_filename=entry_filename,
+                                strategy_filename=strategy_filename,
+                            )
                             info_logger.info("Entry placed on exchange")
                             trade_logger.info(f"{message}")
 
@@ -284,9 +289,9 @@ class LiveTrading:
                         except Exception as e:
                             info_logger.error(f"Exception with checking if we should move sl -> {e}")
                             raise Exception(f"Exception with checking if we should move sl -> {e}")
-                elif 1 > 4:
-                    # check if the current realized pnl is differnet than the last pnl and if it is return if we profit or loss email
-                    pass
+                # elif 1 > 4:
+                #     check if the current realized pnl is differnet than the last pnl and if it is return if we profit or loss email
+                #     pass
                 else:
                     pass
             except Exception as e:
@@ -307,37 +312,9 @@ class LiveTrading:
 
         return int(ms_to_next_candle / 1000)
 
-    def place_entry_order(self, asset_amount, entry_price):
-        info_logger.debug(f"")
-        return self.entry_order(
-            asset_amount=asset_amount,
-            price=entry_price,
-        )
-
     def email_error_msg(self, msg):
         info_logger.debug(f"")
         self.email_sender.email_error_msg(msg=msg)
-
-    def send_entry_email(self, entry_price, sl_price, tp_price, liq_price, body):
-        info_logger.debug(f"")
-        fig_filename = self.__get_fig_filename(
-            entry_price=entry_price,
-            sl_price=sl_price,
-            tp_price=tp_price,
-            liq_price=liq_price,
-        )
-        self.email_sender.email_new_order(body=body, fig_filename=fig_filename)
-
-    def __get_fig_filename(self, entry_price, sl_price, tp_price, liq_price):
-        info_logger.debug(f"")
-        plot_img = self.strategy.return_plot_image(
-            candles=self.exchange.candles_df,
-            entry_price=entry_price,
-            sl_price=sl_price,
-            tp_price=tp_price,
-            liq_price=liq_price,
-        )
-        return plot_img
 
     def __set_ex_position_size_asset(self):
         info_logger.debug(f"")
@@ -361,9 +338,9 @@ class LiveTrading:
         self.ex_position_size_asset = float(pos_info.get("size"))
         self.ex_position_size_usd = float(pos_info.get("positionValue"))
         self.ex_average_entry = float(pos_info.get("entryPrice"))
+        self.ex_entry_price = float(entry_info.get("execPrice"))
         self.ex_entry_size_asset = float(entry_info.get("execQty"))
         self.ex_entry_size_usd = float(entry_info.get("execValue"))
-        self.ex_entry_price = float(entry_info.get("execPrice"))
         self.ex_leverage = float(pos_info.get("leverage"))
         self.ex_liq_price = float(pos_info.get("liqPrice"))
         self.ex_liq_pct = self.get_liq_pct(price=self.ex_liq_price, average_entry=self.ex_average_entry)
@@ -387,13 +364,8 @@ class LiveTrading:
         info_logger.debug(f"")
         return (average_entry - price) / average_entry
 
-    def __create_entry_successful_message(self, entry_order_id, sl_order_id, tp_order_id):
+    def __create_entry_successful_message(self):
         info_logger.debug(f"")
-        self.__set_exchange_variables(
-            entry_order_id=entry_order_id,
-            sl_order_id=sl_order_id,
-            tp_order_id=tp_order_id,
-        )
         message = f"An order was placed successfully\n\
 [ex_candle_closing_price={self.exchange.candles_np[-1,3]}]\n\
 [entry_price={self.order.entry_price}]\n\
@@ -415,3 +387,83 @@ class LiveTrading:
 [possible loss={self.order.possible_loss}]\n\
 [ex_possible loss={self.ex_possible_loss}]\n"
         return message
+
+    def __get_entry_plot_filename(self, entry_price, sl_price, tp_price, liq_price, **vargs):
+        graph_entry = [self.exchange.candles_df.index[-1]]
+        fig = make_subplots(
+            rows=2,
+            cols=1,
+            row_heights=[0.7, 0.3],
+            shared_xaxes=True,
+            vertical_spacing=0.02,
+        )
+        fig.add_candlestick(
+            x=self.exchange.candles_df.index,
+            open=self.exchange.candles_df.open,
+            high=self.exchange.candles_df.high,
+            low=self.exchange.candles_df.low,
+            close=self.exchange.candles_df.close,
+            name="Exchange order",
+            row=1,
+            col=1,
+        )
+        # entry
+        fig.add_scatter(
+            x=graph_entry,
+            y=[self.ex_entry_price],
+            mode="markers",
+            marker=dict(size=10, color="Blue"),
+            name=f"Entry",
+            row=1,
+            col=1,
+        )
+        # average entry
+        fig.add_scatter(
+            x=graph_entry,
+            y=[self.ex_average_entry],
+            mode="markers",
+            marker=dict(size=10, color="purple"),
+            name=f"Entry",
+            row=1,
+            col=1,
+        )
+        # take profit
+        fig.add_scatter(
+            x=graph_entry,
+            y=[self.ex_tp_price],
+            mode="markers",
+            marker=dict(size=10, symbol="arrow-up", color="Green"),
+            name=f"Take Profit",
+            row=1,
+            col=1,
+        )
+        # stop loss
+        fig.add_scatter(
+            x=graph_entry,
+            y=[self.ex_sl_price],
+            mode="markers",
+            marker=dict(size=10, symbol="octagon", color="orange"),
+            name=f"Stop Loss",
+            row=1,
+            col=1,
+        )
+        # liq price
+        fig.add_scatter(
+            x=graph_entry,
+            y=[self.ex_liq_price],
+            mode="markers",
+            marker=dict(size=10, symbol="hexagram", color="red"),
+            name=f"Liq Price",
+            row=1,
+            col=1,
+        )
+        fig.update_layout(xaxis_rangeslider_visible=False)
+        fig.show()
+        entry_filename = os.path.join(
+            ".",
+            "logs",
+            "images",
+            f'{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.png',
+        )
+        fig.write_image(entry_filename)
+        return entry_filename

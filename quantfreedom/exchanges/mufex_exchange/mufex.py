@@ -26,7 +26,7 @@ class Mufex(Exchange):
         self,
         api_key: str,
         secret_key: str,
-        use_test_net: bool = False,
+        use_test_net: bool,
     ):
         """
         main docs page https://www.mufex.finance/apidocs/derivatives/contract/index.html
@@ -36,10 +36,10 @@ class Mufex(Exchange):
         """
         super().__init__(api_key, secret_key, use_test_net)
 
-        if not use_test_net:
-            self.url_start = "https://api.mufex.finance"
-        else:
+        if use_test_net:
             self.url_start = "https://api.testnet.mufex.finance"
+        else:
+            self.url_start = "https://api.mufex.finance"
 
     """
     ################################################################
@@ -245,6 +245,22 @@ class Mufex(Exchange):
         td = str(timedelta(seconds=time_it_took_in_seconds)).split(":")
         print(f"It took {td[1]} mins and {td[2]} seconds to download {len(candles_list)} candles")
         return self.get_candles_list_to_pd(candles_list=candles_list, col_end=-2)
+
+    def get_closed_pnl(self, symbol: str, limit: int = 10, params: dict = {}, **vargs):
+        """
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_closedprofitandloss
+        """
+        info_logger.debug("")
+        end_point = "/private/v1/account/closed-pnl"
+        params["symbol"] = symbol
+        params["limit"] = limit
+        response = self.HTTP_get_request(end_point=end_point, params=params)
+        try:
+            response["data"]["list"][0]
+            data_list = response["data"]["list"]
+            return data_list
+        except Exception as e:
+            raise Exception(f"Data or List is empty {response['message']} -> {e}")
 
     def get_all_symbols_info(self, category: str = "linear", limit: int = 1000, params: dict = {}, **vargs):
         """
@@ -577,7 +593,7 @@ class Mufex(Exchange):
             else:
                 raise Exception
         except Exception as e:
-            raise Exception(f"Mufex set_position_mode = Data or List is empty {response['message']} -> {e}")
+            raise Exception(f"Exception {response['message']} -> {e}")
 
     def set_leverage_value(self, symbol: str, leverage: float, **vargs):
         """
