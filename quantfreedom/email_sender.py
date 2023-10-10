@@ -34,7 +34,7 @@ class EmailSender:
     def email_new_order(self, message: str, entry_filename, strategy_filename):
         subject = "Order has been placed"
         body = message
-        self._send_email(subject=subject, body=body, entry_filename=entry_filename)
+        self._send_email(subject=subject, body=body, entry_filename=entry_filename, strategy_filename=strategy_filename)
 
     def _send_email(self, subject, body, entry_filename=None, strategy_filename=None):
         em = MIMEMultipart()
@@ -54,8 +54,9 @@ class EmailSender:
             with open(file=entry_filename, mode="rb") as f:
                 img_data = f.read()
                 em.attach(MIMEImage(img_data, name=entry_filename))
-
+            f.close()
         if strategy_filename is not None:
             with open(file=strategy_filename, mode="rb") as f:
                 img_data = f.read()
                 em.attach(MIMEImage(img_data, name=strategy_filename))
+            f.close()
