@@ -1,3 +1,4 @@
+import logging
 import os
 import numpy as np
 import pandas as pd
@@ -39,7 +40,7 @@ def clear_cache():
         p.unlink()
 
 
-def pretty(
+def pretty_qf(
     object: tuple,
 ):
     """
@@ -60,10 +61,10 @@ def pretty(
         items = []
         indent = str("    ")
         for x in range(len(object)):
-            items.append(indent + object._fields[x] + " = " + str(object[x]) + ",\n")
-        print(type(object).__name__ + "(" + "\n" + "".join(items) + ")")
+            items.append(indent + object._fields[x] + " = " + str(object[x]) + "\n")
+        return type(object).__name__ + "(" + "\n" + "".join(items) + ")"
     except:
-        print(object)
+        return object
 
 
 def generate_candles(

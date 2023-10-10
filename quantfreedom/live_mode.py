@@ -13,7 +13,27 @@ from quantfreedom.exchanges.live_exchange import LiveExchange
 from quantfreedom.order_handler.order_handler import Order
 from quantfreedom.strategy import Strategy
 from datetime import datetime, timedelta
-from plotly.subplots import make_subplots
+from dash_bootstrap_templates import load_figure_template
+from jupyter_dash import JupyterDash
+from dash import Dash
+from IPython import get_ipython
+import dash_bootstrap_components as dbc
+import plotly.graph_objects as go
+
+load_figure_template("darkly")
+dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
+try:
+    shell = str(get_ipython())
+    if "ZMQInteractiveShell" in shell:
+        app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
+    elif shell == "TerminalInteractiveShell":
+        app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
+    else:
+        app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
+except NameError:
+    app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
+
+bg_color = "#0b0b18"
 
 info_logger = logging.getLogger("info")
 trade_logger = logging.getLogger("trades")
@@ -73,11 +93,8 @@ class LiveTrading:
             try:
                 info_logger.info("Getting Candles")
                 print("Getting Candles")
-                start_time = self.exchange.get_current_time_seconds()
                 self.exchange.set_candles_df_and_np()
-                td = str(timedelta(seconds=self.exchange.get_current_time_seconds() - start_time)).split(":")
                 num_candles = self.exchange.candles_np.shape[0]
-                info_logger.info(f"It took {td[1]} min {td[2]} seconds to get {num_candles} candles")
 
                 # bar_index bar index is always the last bar ... so if we have 200 candles we are at index 200
                 bar_index = num_candles - 1
@@ -85,9 +102,8 @@ class LiveTrading:
 
                 info_logger.debug("Setting indicator")
                 self.strategy.set_indicator_live_trading(self.exchange.candles_df)
-                info_logger.info("Set indicator")
-                info_logger.info("Evaluating Strat")
 
+                info_logger.info("Evaluating Strat")
                 if self.strategy.evaluate():
                     try:
                         info_logger.debug("Setting ex postion size usd")
@@ -102,6 +118,7 @@ class LiveTrading:
                             self.order.average_entry = 0.0
                             self.order.equity = self.exchange.get_equity_of_asset(trading_in=self.exchange.trading_in)
                             self.order.possible_loss = 0.0
+
                         self.order.calculate_stop_loss(
                             bar_index=bar_index,
                             candles=self.exchange.candles_np,
@@ -220,8 +237,7 @@ class LiveTrading:
                             verify_list = [entry_placed, leverage_changed, sl_placed, tp_placed]
                             if not all(v == True for v in verify_list):
                                 logging.error(msg)
-                                self.email_error_msg(msg=msg)
-                                break
+                                raise Exception(msg)
                             info_logger.info("All verified")
 
                         else:
@@ -231,12 +247,7 @@ class LiveTrading:
                                 tp_order_id=tp_order_id,
                             )
                             message = self.__create_entry_successful_message()
-                            entry_filename = self.__get_entry_plot_filename(
-                                entry_price=self.ex_entry_price,
-                                sl_price=self.ex_sl_price,
-                                tp_price=self.ex_tp_price,
-                                liq_price=self.ex_liq_price,
-                            )
+                            entry_filename = self.__get_entry_plot_filename()
                             strategy_filename = self.strategy.get_strategy_plot_filename()
                             self.email_sender.email_new_order(
                                 message=message,
@@ -247,11 +258,11 @@ class LiveTrading:
                             trade_logger.info(f"{message}")
 
                     except RejectedOrder as e:
-                        info_logger.info(f"RejectedOrder -> {e.msg}")
+                        info_logger.warning(f"RejectedOrder -> {e.msg}")
                         pass
                     except Exception as e:
-                        info_logger.error(f"Exception getting and placing entry -> {e}")
-                        raise Exception(f"Exception getting and placing entry -> {e}")
+                        info_logger.error(f"Exception Entry -> {e}")
+                        raise Exception(f"Exception Entry -> {e}")
                     self.__set_ex_position_size_asset()
                     if self.ex_position_size_asset > 0:
                         info_logger.info(f"We are in a position ... checking to move stop loss")
@@ -283,22 +294,23 @@ class LiveTrading:
                                 else:
                                     info_logger.warning(f"Couldn't verify sl was moved {sl_order_id}")
                             except Exception as e:
-                                info_logger.error(f"Something wrong with MoveStopLoss exception -> {e}")
-                                raise Exception(f"Something wrong with MoveStopLoss exception -> {e}")
+                                info_logger.error(f"Exception MoveStopLoss -> {e}")
+                                raise Exception(f"Exception MoveStopLoss -> {e}")
                             pass
                         except Exception as e:
-                            info_logger.error(f"Exception with checking if we should move sl -> {e}")
-                            raise Exception(f"Exception with checking if we should move sl -> {e}")
+                            info_logger.error(f"Exception checking MoveStopLoss -> {e}")
+                            raise Exception(f"Exception checking MoveStopLoss -> {e}")
                 # elif 1 > 4:
                 #     check if the current realized pnl is differnet than the last pnl and if it is return if we profit or loss email
                 #     pass
                 else:
                     pass
             except Exception as e:
-                info_logger.error(f"Exception with getting candles -> {e}")
-                raise Exception(f"Exception with getting candles -> {e}")
+                info_logger.error(f"Exception -> {e}")
+                info_logger.error("Server stopped")
+                self.email_error_msg(msg=f"Exception -> {e}")
+                raise Exception(f"Exception -> {e}")
             sleep(self.get_sleep_time_to_next_bar())
-        info_logger.error("Server stopped")
 
     def get_sleep_time_to_next_bar(self):
         ms_to_next_candle = max(
@@ -317,19 +329,19 @@ class LiveTrading:
         self.email_sender.email_error_msg(msg=msg)
 
     def __set_ex_position_size_asset(self):
-        info_logger.debug(f"")
+        info_logger.debug(f"Setting position size asset")
         self.ex_position_size_asset = float(self.get_position_info()["size"])
 
     def __set_ex_position_size_usd(self):
-        info_logger.debug(f"")
+        info_logger.debug(f"Setting position size usd")
         self.ex_position_size_usd = float(self.get_position_info()["positionValue"])
 
     def __set_order_average_entry(self):
-        info_logger.debug(f"")
+        info_logger.debug(f"Setting average entry")
         self.order.average_entry = float(self.get_position_info()["entryPrice"])
 
     def __set_exchange_variables(self, entry_order_id, sl_order_id, tp_order_id):
-        info_logger.debug(f"")
+        info_logger.debug(f"setting all exchange vars")
         pos_info = self.get_position_info()
         entry_info = self.exchange.get_filled_orders_by_order_id(symbol=self.symbol, order_id=entry_order_id)
         tp_info = self.exchange.get_open_order_by_order_id(symbol=self.symbol, order_id=tp_order_id)
@@ -354,18 +366,17 @@ class LiveTrading:
         fee_close = coin_size * self.ex_sl_price * self.exchange.exchange_settings.market_fee_pct  # math checked
         self.fees_paid = fee_open + fee_close  # math checked
         self.ex_possible_loss = round(-(pnl - self.fees_paid), 4)
-        info_logger.debug(f"set all the variables")
 
     def __get_pct_dif_above_average_entry(self, price, average_entry):
-        info_logger.debug(f"")
-        return (price - average_entry) / average_entry
+        info_logger.debug(f"getting pct")
+        return round(((price - average_entry) / average_entry) * 100, 2)
 
     def __get_pct_dif_below_average_entry(self, price, average_entry):
-        info_logger.debug(f"")
-        return (average_entry - price) / average_entry
+        info_logger.debug(f"getting pct")
+        return round(((average_entry - price) / average_entry) * 100, 2)
 
     def __create_entry_successful_message(self):
-        info_logger.debug(f"")
+        info_logger.debug(f"Creating message")
         message = f"An order was placed successfully\n\
 [ex_candle_closing_price={self.exchange.candles_np[-1,3]}]\n\
 [entry_price={self.order.entry_price}]\n\
@@ -388,15 +399,10 @@ class LiveTrading:
 [ex_possible loss={self.ex_possible_loss}]\n"
         return message
 
-    def __get_entry_plot_filename(self, entry_price, sl_price, tp_price, liq_price, **vargs):
+    def __get_entry_plot_filename(self):
+        info_logger.debug("Getting entry plot file")
         graph_entry = [self.exchange.candles_df.index[-1]]
-        fig = make_subplots(
-            rows=2,
-            cols=1,
-            row_heights=[0.7, 0.3],
-            shared_xaxes=True,
-            vertical_spacing=0.02,
-        )
+        fig = go.Figure()
         fig.add_candlestick(
             x=self.exchange.candles_df.index,
             open=self.exchange.candles_df.open,
@@ -404,8 +410,6 @@ class LiveTrading:
             low=self.exchange.candles_df.low,
             close=self.exchange.candles_df.close,
             name="Exchange order",
-            row=1,
-            col=1,
         )
         # entry
         fig.add_scatter(
@@ -414,8 +418,6 @@ class LiveTrading:
             mode="markers",
             marker=dict(size=10, color="Blue"),
             name=f"Entry",
-            row=1,
-            col=1,
         )
         # average entry
         fig.add_scatter(
@@ -424,8 +426,6 @@ class LiveTrading:
             mode="markers",
             marker=dict(size=10, color="purple"),
             name=f"Entry",
-            row=1,
-            col=1,
         )
         # take profit
         fig.add_scatter(
@@ -434,18 +434,14 @@ class LiveTrading:
             mode="markers",
             marker=dict(size=10, symbol="arrow-up", color="Green"),
             name=f"Take Profit",
-            row=1,
-            col=1,
         )
         # stop loss
         fig.add_scatter(
             x=graph_entry,
             y=[self.ex_sl_price],
             mode="markers",
-            marker=dict(size=10, symbol="octagon", color="orange"),
+            marker=dict(size=10, symbol="x", color="orange"),
             name=f"Stop Loss",
-            row=1,
-            col=1,
         )
         # liq price
         fig.add_scatter(
@@ -454,8 +450,6 @@ class LiveTrading:
             mode="markers",
             marker=dict(size=10, symbol="hexagram", color="red"),
             name=f"Liq Price",
-            row=1,
-            col=1,
         )
         fig.update_layout(xaxis_rangeslider_visible=False)
         fig.show()

@@ -1,28 +1,36 @@
 from datetime import timedelta
-from quantfreedom.enums import ExchangeSettings
-from quantfreedom.exchanges.apex_github.apexpro.constants import NETWORKID_TEST
-from quantfreedom.exchanges.apex_github.apexpro.http_private import HttpPrivate
-from quantfreedom.exchanges.apex_github.apexpro.http_private_stark_key_sign import HttpPrivateStark
-from quantfreedom.exchanges.apex_github.apexpro.http_public import HttpPublic
+import hashlib
+import hmac
+import json
+import time
+
+from requests import get, post
+
+from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES, Exchange
 
 APEX_TIMEFRAMES = ["1", "3", "5", "15", "30", "60", "120", "240", "360", "720", "D", "W", "M"]
+# ------------ API URLs ------------
+APEX_HTTP_MAIN = "https://pro.apex.exchange"
+APEX_HTTP_TEST = "https://testnet.pro.apex.exchange"
+APEX_WS_MAIN = "wss://quote.pro.apex.exchange"
+APEX_WS_TEST = "wss://quote-qa.pro.apex.exchange"
+
+# ------------ network_id ------------
+NETWORKID_MAIN = 1
+NETWORKID_TEST = 5
 
 
-class Apex:
+class Apex(Exchange):
     def __init__(
         self,
-        symbol: str,
         api_key: str,
         secret_key: str,
-        passphrase: str,
-        stark_private_key: str,
+        use_test_net: bool,
         stark_public_key: str,
+        stark_private_key: str,
         stark_public_key_y_coordinate: str,
-        keep_volume_in_candles: bool = False,
-        use_test_net: bool = False,
     ):
-        self.symbol = symbol
-        self.volume_yes_no = -2
+        super().__init__(api_key, secret_key, use_test_net)
         if use_test_net:
             self.url_start = "https://testnet.pro.apex.exchange"
             self.network_id = NETWORKID_TEST
@@ -30,140 +38,119 @@ class Apex:
             self.url_start = "https://pro.apex.exchange"
             self.network_id = NETWORKID_TEST
 
-        self.__set_exchange_settings()
-        # self.__set_position_mode(position_mode=position_mode)
+    headers = {
+        "APEX-SIGNATURE": signature,
+        "APEX-API-KEY": self.api_key_credentials.get("key"),
+        "APEX-TIMESTAMP": str(now_iso),
+        "APEX-PASSPHRASE": self.api_key_credentials.get("passphrase"),
+    }
 
-        if keep_volume_in_candles:
-            self.volume_yes_no = -1
+    def __HTTP_post_request(self, end_point, params):
+        time_stamp = str(int(time() * 1000))
+        params_as_string = self.__params_as_string(params=params)
+        signature = self.__gen_signature(time_stamp=time_stamp, params_as_string=params_as_string)
+        headers = {
+            "MF-ACCESS-API-KEY": self.api_key,
+            "MF-ACCESS-SIGN": signature,
+            "MF-ACCESS-SIGN-TYPE": "2",
+            "MF-ACCESS-TIMESTAMP": time_stamp,
+            "MF-ACCESS-RECV-WINDOW": "5000",
+            "Content-Type": "application/json",
+        }
+
         try:
-            self.timeframe = APEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
-            self.timeframe_in_ms = timedelta(minutes=self.timeframe).seconds * 1000
-        except:
-            raise TypeError(f"You need to send the following {UNIVERSAL_TIMEFRAMES}")
+            response = post(
+                url=self.url_start + end_point,
+                headers=headers,
+                data=params_as_string,
+            )
+            response_json = response.json()
+            return response_json
+        except Exception as e:
+            raise Exception(f"Mufex Something wrong with __HTTP_post_request - > {e}")
 
-        self.public_client = HttpPublic(endpoint=self.url_start)
-        self.public_configs = self.public_client.configs()
-
-        self.private_client = HttpPrivate(
-            endpoint=self.url_start,
-            network_id=self.network_id,
-            api_key_credentials={
-                "key": api_key,
-                "secret": secret_key,
-                "passphrase": passphrase,
-            },
-        )
-        self.private_configs = self.private_client.configs()
-        self.private_configs.get_user()
-
-        self.private_stark_client = HttpPrivateStark(
-            endpoint=self.url_start,
-            network_id=self.network_id,
-            stark_private_key=stark_private_key,
-            stark_public_key=stark_public_key,
-            stark_public_key_y_coordinate=stark_public_key_y_coordinate,
-            api_key_credentials={
-                "key": api_key,
-                "secret": secret_key,
-                "passphrase": passphrase,
-            },
-        )
-        self.private_configs = self.private_client.configs()
-        self.private_configs.get_user()
-
-    def create_limit_entry_order(
-        self,
-        symbol,
-        side,
-        type,
-        size,
-        limitFeeRate=None,
-        limitFee=None,
-        price=None,
-        accountId=None,
-        timeInForce="GOOD_TIL_CANCEL",
-        reduceOnly=False,
-        triggerPrice=None,
-        triggerPriceType=None,
-        trailingPercent=None,
-        clientId=None,
-        expiration=None,
-        expirationEpochSeconds=None,
-        isPositionTpsl=False,
-        signature=None,
-    ):
-        self.private_stark_client.create_order(
-            symbol,
-            side,
-            type,
-            size,
-            limitFeeRate=None,
-            limitFee=None,
-            price=None,
-            accountId=None,
-            timeInForce="GOOD_TIL_CANCEL",
-            reduceOnly=False,
-            triggerPrice=None,
-            triggerPriceType=None,
-            trailingPercent=None,
-            clientId=None,
-            expiration=None,
-            expirationEpochSeconds=None,
-            isPositionTpsl=False,
-            signature=None,
-        )
-
-    def __set_exchange_settings(self):
-        account_info = self.private_client.get_account_v2()["data"]["accounts"][0]
-        self.__set_mmr_pct()
-        self.__set_min_max_leverage_and_coin_size()
-        self.exchange_settings = ExchangeSettings(
-            market_fee_pct=float(account_info["takerFeeRate"]),
-            limit_fee_pct=float(account_info["makerFeeRate"]),
-            mmr_pct=self.mmr_pct,
-            max_leverage=self.max_leverage,
-            min_leverage=self.min_leverage,
-            max_coin_size_value=self.max_coin_size_value,
-            min_coin_size_value=self.min_coin_size_value,
-        )
-
-    def __set_fee_pcts(self):
-        end_point = "/private/v1/account/trade-fee"
-        params = {
-            "symbol": self.symbol,
+    def __HTTP_post_request_no_params(self, end_point):
+        time_stamp = str(int(time() * 1000))
+        signature = self.__gen_signature_no_params(time_stamp=time_stamp)
+        headers = {
+            "MF-ACCESS-API-KEY": self.api_key,
+            "MF-ACCESS-SIGN": signature,
+            "MF-ACCESS-SIGN-TYPE": "2",
+            "MF-ACCESS-TIMESTAMP": time_stamp,
+            "MF-ACCESS-RECV-WINDOW": "5000",
+            "Content-Type": "application/json",
         }
         try:
-            trading_fees = self.HTTP_get_request(end_point=end_point, params=params)["data"]["list"][0]
-            self.market_fee_pct = float(trading_fees["takerFeeRate"])
-            self.limit_fee_pct = float(trading_fees["makerFeeRate"])
-        except KeyError as e:
-            raise KeyError(f"Something is wrong setting fee pct {e}")
+            response = post(url=self.url_start + end_point, headers=headers)
+            response_json = response.json()
+            return response_json
+        except Exception as e:
+            raise Exception(f"Mufex Something wrong with __HTTP_post_request_no_params - > {e}")
 
-    def __set_mmr_pct(self):
-        end_point = "/public/v1/position-risk"
-        params = {
-            "category": self.category,
-            "symbol": self.symbol,
+    def HTTP_get_request(self, end_point, params):
+        time_stamp = str(int(time() * 1000))
+        params_as_path = self.__params_to_path(params=params)
+        signature = self.__gen_signature(time_stamp=time_stamp, params_as_string=params_as_path)
+        headers = {
+            "MF-ACCESS-API-KEY": self.api_key,
+            "MF-ACCESS-SIGN": signature,
+            "MF-ACCESS-SIGN-TYPE": "2",
+            "MF-ACCESS-TIMESTAMP": time_stamp,
+            "MF-ACCESS-RECV-WINDOW": "5000",
+            "Content-Type": "application/json",
         }
-        try:
-            mmr_pct = self.HTTP_get_request(end_point=end_point, params=params)
-            self.mmr_pct = mmr_pct["data"]["list"][0]["maintainMargin"]
-        except KeyError as e:
-            raise KeyError(f"Something is wrong setting mmr pct {e}")
 
-    def __set_min_max_leverage_and_coin_size(self):
-        end_point = "/public/v1/instruments"
-        params = {
-            "category": self.category,
-            "symbol": self.symbol,
+        try:
+            response = get(
+                url=self.url_start + end_point + "?" + params_as_path,
+                headers=headers,
+            )
+            response_json = response.json()
+            return response_json
+        except Exception as e:
+            raise Exception(f"Mufex Something wrong with HTTP_get_request - > {e}")
+
+    def HTTP_get_request_no_params(self, end_point):
+        time_stamp = str(int(time() * 1000))
+        signature = self.__gen_signature_no_params(time_stamp=time_stamp)
+        headers = {
+            "MF-ACCESS-API-KEY": self.api_key,
+            "MF-ACCESS-SIGN": signature,
+            "MF-ACCESS-SIGN-TYPE": "2",
+            "MF-ACCESS-TIMESTAMP": time_stamp,
+            "MF-ACCESS-RECV-WINDOW": "5000",
+            "Content-Type": "application/json",
         }
-        try:
-            symbol_info_og = self.HTTP_get_request(end_point=end_point, params=params)
-            symbol_info = symbol_info_og["data"]["list"][0]
-            self.max_leverage = float(symbol_info["leverageFilter"]["maxLeverage"])
-            self.min_leverage = float(symbol_info["leverageFilter"]["minLeverage"])
-            self.max_coin_size_value = float(symbol_info["lotSizeFilter"]["maxTradingQty"])
-            self.min_coin_size_value = float(symbol_info["lotSizeFilter"]["minTradingQty"])
 
-        except KeyError as e:
-            raise KeyError(f"Something is wrong setting min max leveage coin size {e}")
+        try:
+            response = get(
+                url=self.url_start + end_point,
+                headers=headers,
+            )
+            response_json = response.json()
+            return response_json
+        except Exception as e:
+            raise Exception(f"Mufex Something wrong with HTTP_get_request_no_params - > {e}")
+
+    def __params_as_string(self, params):
+        params_as_string = str(json.dumps(params))
+        return params_as_string
+
+    def __params_to_path(self, params):
+        entries = params.items()
+        if not entries:
+            pass
+
+        paramsString = "&".join("{key}={value}".format(key=x[0], value=x[1]) for x in entries if x[1] is not None)
+        if paramsString:
+            return paramsString
+
+    def __gen_signature(self, time_stamp, params_as_string):
+        param_str = time_stamp + self.api_key + "5000" + params_as_string
+        hash = hmac.new(bytes(self.secret_key, "utf-8"), param_str.encode("utf-8"), hashlib.sha256)
+        return hash.hexdigest()
+
+    def __gen_signature_no_params(self, time_stamp):
+        param_str = time_stamp + self.api_key + "5000"
+        hash = hmac.new(bytes(self.secret_key, "utf-8"), param_str.encode("utf-8"), hashlib.sha256)
+        return hash.hexdigest()

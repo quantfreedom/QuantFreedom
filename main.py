@@ -25,20 +25,20 @@ if __name__ == "__main__":
     order_settings_arrays = OrderSettingsArrays(
         long_or_short=np.array([LongOrShortType.Long]),
         increase_position_type=np.array([IncreasePositionType.SmalletEntrySizeAsset]),
-        risk_account_pct_size=np.array([0]) / 100,
-        max_equity_risk_pct=np.array([0]) / 100,
+        risk_account_pct_size=np.array([0]),
+        max_equity_risk_pct=np.array([0]),
         stop_loss_type=np.array([StopLossStrategyType.SLBasedOnCandleBody]),
         sl_candle_body_type=np.array([CandleBodyType.Low]),
-        sl_based_on_add_pct=np.array([0.01]) / 100,
+        sl_based_on_add_pct=np.array([0.05]),
         sl_based_on_lookback=np.array([50]),
         sl_to_be_based_on_candle_body_type=np.array([CandleBodyType.Low]),
         sl_to_be_zero_or_entry_type=np.array([SLToBeZeroOrEntryType.ZeroLoss]),
-        sl_to_be_when_pct_from_candle_body=np.array([2.0]) / 100,
+        sl_to_be_when_pct_from_candle_body=np.array([2.0]),
         trail_sl_based_on_candle_body_type=np.array([CandleBodyType.Nothing]),
-        trail_sl_when_pct_from_candle_body=np.array([0]) / 100,
-        trail_sl_by_pct=np.array([0]) / 100,
+        trail_sl_when_pct_from_candle_body=np.array([0]),
+        trail_sl_by_pct=np.array([0]),
         take_profit_type=np.array([TakeProfitStrategyType.RiskReward]),
-        risk_reward=np.array([4]),
+        risk_reward=np.array([2]),
         tp_fee_type=np.array([TakeProfitFeeType.Limit]),
         leverage_type=np.array([LeverageStrategyType.Dynamic]),
         static_leverage=np.array([0.0]),
@@ -53,17 +53,6 @@ if __name__ == "__main__":
         os_cart_arrays=os_cart_arrays,
         order_settings_index=0,
     )
-    mufex = LiveMufex(
-        api_key=MufexKeys.api_key,
-        secret_key=MufexKeys.secret_key,
-        timeframe="5m",
-        symbol="BTCUSDT",
-        trading_in="USDT",
-        candles_to_dl=200,
-        long_or_short=LongOrShortType.Long,
-        use_test_net=False,
-    )
-    equity = mufex.get_equity_of_asset(trading_in="USDT")
 
     strategy = MyRsiStrategy(
         indicator_settings_index=0,
@@ -72,12 +61,24 @@ if __name__ == "__main__":
         log_debug=True,
         price_range_high=[30000],
         price_range_low=[26000],
-        pivot_low_lookback=[20],
-        lookback_div_period=[20],
+        pivot_low_lookback=[30],
+        lookback_div_period=[30],
         rsi_length=[14],
         rsi_is_below=[40],
         rsi_buffer=[0.5],
     )
+
+    mufex = LiveMufex(
+        api_key=MufexKeys.api_key,
+        secret_key=MufexKeys.secret_key,
+        timeframe="1m",
+        symbol="BTCUSDT",
+        trading_in="USDT",
+        candles_to_dl=200,
+        long_or_short=LongOrShortType.Long,
+        use_test_net=False,
+    )
+    equity = mufex.get_equity_of_asset(trading_in="USDT")
 
     order = LongOrder(
         equity=equity,
