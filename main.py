@@ -60,11 +60,11 @@ if __name__ == "__main__":
         create_trades_logger=True,
         log_debug=True,
         price_range_high=[27700],
-        price_range_low=[27000],
+        price_range_low=[26000],
         pivot_low_lookback=[30],
         lookback_div_period=[30],
         rsi_length=[14],
-        rsi_is_below=[40],
+        rsi_is_below=[200],
         rsi_buffer=[0.5],
     )
 

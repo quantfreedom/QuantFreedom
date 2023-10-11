@@ -3,6 +3,8 @@ logs/
 docs/
 math/
 tests/
+nightcandles/
+nighttest/
 old_quantfreedom/
 .ipynb_checkpoints
 .vscode
@@ -15,6 +17,7 @@ numba_cache
 *.todo
 thinking.txt
 .mustache
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
