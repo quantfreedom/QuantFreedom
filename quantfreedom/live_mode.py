@@ -80,9 +80,11 @@ class LiveTrading:
         pass
 
     def run(self):
+        latest_pnl = 0
+        self.last_pnl = 0
         info_logger.info(f"Starting live trading")
         print(f"Starting live trading")
-        self.last_pnl = self.exchange.get_latest_pnl_result(symbol=self.symbol)
+        # self.last_pnl = self.exchange.get_latest_pnl_result(symbol=self.symbol)
         entry_order_id = 0
         tp_order_id = 0
         sl_order_id = 0
@@ -103,7 +105,7 @@ class LiveTrading:
 
                 info_logger.debug("Setting indicator")
                 self.strategy.set_indicator_live_trading(self.exchange.candles_df)
-                latest_pnl = self.exchange.get_latest_pnl_result(symbol=self.symbol)
+                # latest_pnl = self.exchange.get_latest_pnl_result(symbol=self.symbol)
                 info_logger.info("Evaluating Strat")
                 if self.strategy.evaluate():
                     try:

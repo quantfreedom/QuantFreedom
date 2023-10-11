@@ -3,8 +3,7 @@ logs/
 docs/
 math/
 tests/
-nightcandles/
-nighttest/
+nightvision/
 old_quantfreedom/
 .ipynb_checkpoints
 .vscode
