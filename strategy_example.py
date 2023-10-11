@@ -48,7 +48,7 @@ def create_ind_cart_product():
     )
 
 
-class MyStrategy(Strategy):
+class StrategyExample(Strategy):
     set_indicator_settings = None
     num_candles = None
     create_indicator = None

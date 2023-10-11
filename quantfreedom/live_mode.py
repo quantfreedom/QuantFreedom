@@ -82,6 +82,7 @@ class LiveTrading:
     def run(self):
         info_logger.info(f"Starting live trading")
         print(f"Starting live trading")
+        self.last_pnl = self.exchange.get_latest_pnl_result(symbol=self.symbol)
         entry_order_id = 0
         tp_order_id = 0
         sl_order_id = 0
@@ -102,7 +103,7 @@ class LiveTrading:
 
                 info_logger.debug("Setting indicator")
                 self.strategy.set_indicator_live_trading(self.exchange.candles_df)
-
+                latest_pnl = self.exchange.get_latest_pnl_result(symbol=self.symbol)
                 info_logger.info("Evaluating Strat")
                 if self.strategy.evaluate():
                     try:
@@ -300,9 +301,10 @@ class LiveTrading:
                         except Exception as e:
                             info_logger.error(f"Exception checking MoveStopLoss -> {e}")
                             raise Exception(f"Exception checking MoveStopLoss -> {e}")
-                # elif 1 > 4:
-                #     check if the current realized pnl is differnet than the last pnl and if it is return if we profit or loss email
-                #     pass
+                elif latest_pnl != self.last_pnl:
+                    info_logger.info(f"Got a new pnl {latest_pnl}")
+                    self.email_sender.email_pnl(pnl=latest_pnl)
+                    self.last_pnl = latest_pnl
                 else:
                     pass
             except Exception as e:
@@ -401,14 +403,15 @@ class LiveTrading:
 
     def __get_entry_plot_filename(self):
         info_logger.debug("Getting entry plot file")
-        graph_entry = [self.exchange.candles_df.index[-1]]
+        last_20 = self.exchange.candles_df[-20:]
+        graph_entry = [last_20.index[-1]]
         fig = go.Figure()
         fig.add_candlestick(
-            x=self.exchange.candles_df.index,
-            open=self.exchange.candles_df.open,
-            high=self.exchange.candles_df.high,
-            low=self.exchange.candles_df.low,
-            close=self.exchange.candles_df.close,
+            x=last_20.index,
+            open=last_20.open,
+            high=last_20.high,
+            low=last_20.low,
+            close=last_20.close,
             name="Exchange order",
         )
         # entry

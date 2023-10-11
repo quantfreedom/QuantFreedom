@@ -262,6 +262,10 @@ class Mufex(Exchange):
             return data_list
         except Exception as e:
             raise Exception(f"Data or List is empty {response['message']} -> {e}")
+        
+    def get_latest_pnl_result(self, symbol: str, **vargs):
+        info_logger.debug("Calling get closed pnl")
+        return float(self.get_closed_pnl(symbol=symbol)[0]['closedPnl'])
 
     def get_all_symbols_info(self, category: str = "linear", limit: int = 1000, params: dict = {}, **vargs):
         """

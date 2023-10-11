@@ -61,6 +61,12 @@ class Exchange:
     def move_stop_order(self, *vargs):
         pass
 
+    def get_latest_pnl_result(self, *vargs):
+        pass
+
+    def get_closed_pnl(self, *vargs):
+        pass
+
     def get_current_time_seconds(self):
         return int(datetime.now().timestamp())
 
