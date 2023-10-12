@@ -1,5 +1,5 @@
 {
-  "name": "playing-around-10",
+  "name": "playing-around-7",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -12,6 +12,7 @@
     "vite": "3.2.1"
   },
   "dependencies": {
+    "navy": "^5.0.1",
     "night-vision": "0.3.2"
   },
   "keywords": [],

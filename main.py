@@ -30,7 +30,7 @@ if __name__ == "__main__":
         stop_loss_type=np.array([StopLossStrategyType.SLBasedOnCandleBody]),
         sl_candle_body_type=np.array([CandleBodyType.Low]),
         sl_based_on_add_pct=np.array([0.05]),
-        sl_based_on_lookback=np.array([50]),
+        sl_based_on_lookback=np.array([10]),
         sl_to_be_based_on_candle_body_type=np.array([CandleBodyType.Low]),
         sl_to_be_zero_or_entry_type=np.array([SLToBeZeroOrEntryType.ZeroLoss]),
         sl_to_be_when_pct_from_candle_body=np.array([2.0]),
