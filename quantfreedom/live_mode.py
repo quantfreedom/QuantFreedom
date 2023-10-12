@@ -252,11 +252,11 @@ class LiveTrading:
                             message = self.__create_entry_successful_message()
                             entry_filename = self.__get_entry_plot_filename()
                             strategy_filename = self.strategy.get_strategy_plot_filename()
-                            self.email_sender.email_new_order(
-                                message=message,
-                                entry_filename=entry_filename,
-                                strategy_filename=strategy_filename,
-                            )
+                            # self.email_sender.email_new_order(
+                            #     message=message,
+                            #     entry_filename=entry_filename,
+                            #     strategy_filename=strategy_filename,
+                            # )
                             info_logger.info("Entry placed on exchange")
                             trade_logger.info(f"{message}")
 

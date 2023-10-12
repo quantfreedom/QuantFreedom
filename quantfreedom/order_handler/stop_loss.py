@@ -147,10 +147,10 @@ class StopLossLong:
 
     def sl_based_on_candle_body_calc(self, bar_index, candles):
         # lb will be bar index if sl isn't based on lookback because look back will be 0
-        lookback = max(int((bar_index - 1) - self.sl_based_on_lookback), 0)
+        lookback = max(bar_index - self.sl_based_on_lookback, 0)
         candle_body = self.sl_price_getter(
             lookback=lookback,
-            bar_index=bar_index,
+            bar_index=bar_index + 1,
             candles=candles,
         )
         sl_price = candle_body - (candle_body * self.sl_based_on_add_pct)
