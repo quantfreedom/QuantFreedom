@@ -2,8 +2,6 @@ my_stuff/
 logs/
 docs/
 math/
-tests/
-nightvision/
 old_quantfreedom/
 .ipynb_checkpoints
 .vscode

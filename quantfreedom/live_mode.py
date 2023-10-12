@@ -384,23 +384,24 @@ class LiveTrading:
         message = f"An order was placed successfully\n\
 [ex_candle_closing_price={self.exchange.candles_np[-1,3]}]\n\
 [entry_price={self.order.entry_price}]\n\
-[ex_entry_price={self.ex_entry_price}]\n\
+[ex_entry_price={self.ex_entry_price}]\n\n\
 [average_entry={self.order.average_entry}]\n\
-[ex_average_entry={self.ex_average_entry}]\n\
+[ex_average_entry={self.ex_average_entry}]\n\n\
 [position_size_usd={self.order.position_size_usd}]\n\
-[ex_position_size_usd={self.ex_position_size_usd}]\n\
+[ex_position_size_usd={self.ex_position_size_usd}]\n\n\
 [entry_size_usd={self.order.entry_size_usd}]\n\
-[ex_entry_size_usd={self.ex_entry_size_usd}]\n\
+[ex_entry_size_usd={self.ex_entry_size_usd}]\n\n\
 [leverage={self.order.leverage}]\n\
-[ex_leverage={self.ex_leverage}]\n\
+[ex_leverage={self.ex_leverage}]\n\n\
 [liq price={self.order.liq_price}]\n\
-[ex_liq price={self.ex_liq_price}]\n\
+[ex_liq price={self.ex_liq_price}]\n\n\
+[candle low={self.exchange.candles_np[-1,2]}]\n\
 [stop_loss_price={self.order.sl_price}]\n\
-[ex_stop_loss_price={self.ex_sl_price}]\n\
+[ex_stop_loss_price={self.ex_sl_price}]\n\n\
 [take_profit_price={self.order.tp_price}]\n\
-[ex_take_profit_price={self.ex_tp_price}]\n\
+[ex_take_profit_price={self.ex_tp_price}]\n\n\
 [possible loss={self.order.possible_loss}]\n\
-[ex_possible loss={self.ex_possible_loss}]\n"
+[ex_possible loss={self.ex_possible_loss}]\n\n"
         return message
 
     def __get_entry_plot_filename(self):
@@ -419,9 +420,9 @@ class LiveTrading:
         # entry
         fig.add_scatter(
             x=graph_entry,
-            y=[self.ex_entry_price],
+            y=[self.order.entry_price],
             mode="markers",
-            marker=dict(size=10, color="Blue"),
+            marker=dict(size=10, color="LightSeaGreen"),
             name=f"Entry",
         )
         # average entry
@@ -429,7 +430,7 @@ class LiveTrading:
             x=graph_entry,
             y=[self.ex_average_entry],
             mode="markers",
-            marker=dict(size=10, color="purple"),
+            marker=dict(size=10, color="purple", symbol='arrow-up'),
             name=f"Entry",
         )
         # take profit
@@ -437,7 +438,7 @@ class LiveTrading:
             x=graph_entry,
             y=[self.ex_tp_price],
             mode="markers",
-            marker=dict(size=10, symbol="arrow-up", color="Green"),
+            marker=dict(size=10, symbol="star", color="Green"),
             name=f"Take Profit",
         )
         # stop loss
