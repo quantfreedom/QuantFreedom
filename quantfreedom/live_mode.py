@@ -431,7 +431,7 @@ class LiveTrading:
             y=[self.ex_average_entry],
             mode="markers",
             marker=dict(size=10, color="purple", symbol='arrow-up'),
-            name=f"Entry",
+            name=f"Average Entry",
         )
         # take profit
         fig.add_scatter(
