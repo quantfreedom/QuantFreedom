@@ -9,11 +9,7 @@
 [OVERLAY name=Trades, ctx=Canvas, version=1.0.0]
 
 prop('buyColor', {  type: 'color', def: '#08b2c6' })
-// prop('sellColor', {  type: 'color', def: '#e42633' })
 prop('radius', {  type: 'number', def: 4 })
-// prop('showLabels', {  type: 'boolean', def: true })
-// prop('markerOutline', {  type: 'boolean', def: true })
-// prop('outlineWidth', {  type: 'number', def: 4 })
 
 // Draw function (called on each update)
 // Library provides a lot of useful variables to make
@@ -24,17 +20,7 @@ draw(ctx) {
 
     ctx.fillStyle = $props.buyColor
     ctx.beginPath()
-    iterArcs(ctx, data, layout)
+    ctx.arc(data[0][0], data[0][2], 4, 0, Math.PI * 2, false)
     ctx.fill()
 
-}
-
-// Iter through arcs
-iterArcs(ctx, data, layout) {
-    const radius = $props.radius
-    let p = data[2]
-    let x = layout.ti2x(p[0])
-    let y = layout.value2y(p[2])
-    ctx.moveTo(x+radius, y)
-    ctx.arc(x, y, radius, 0, Math.PI * 2, false)
 }
