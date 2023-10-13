@@ -1,12 +1,7 @@
 
 // Navy ~ 0.1-lite
 
-// <ds>Simple trades</ds>
-// Format: [<timestamp>, <dir>, <price>, <?label>]
-// <dir> :: 1 for buy -1 for sell
-// <price> :: trade price
-// <?label> :: trade label
-// [OVERLAY name=Trades, ctx=Canvas, version=1.0.0]
+[OVERLAY name=Trades, ctx=Canvas, version=1.0.0]
 
 prop('buyColor', {  type: 'color', def: '#08b2c6' })
 prop('radius', {  type: 'number', def: 4 })
