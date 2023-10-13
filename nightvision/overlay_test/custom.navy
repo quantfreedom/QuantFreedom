@@ -1,10 +1,10 @@
 
 // Navy ~ 0.1-lite
 
-[OVERLAY name=Trades, ctx=Canvas, version=1.0.0]
+[OVERLAY name=Trades, ctx=Canvas, version=1.0.0];
 
-prop('buyColor', {  type: 'color', def: '#08b2c6' })
-prop('radius', {  type: 'number', def: 4 })
+prop('buyColor', {  type: 'color', def: '#08b2c6' });
+prop('radius', {  type: 'number', def: 4 });
 
 // Draw function (called on each update)
 // Library provides a lot of useful variables to make
