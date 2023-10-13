@@ -430,7 +430,7 @@ class LiveTrading:
             x=graph_entry,
             y=[self.ex_average_entry],
             mode="markers",
-            marker=dict(size=10, color="purple", symbol='arrow-up'),
+            marker=dict(size=10, color="purple", symbol="arrow-up"),
             name=f"Average Entry",
         )
         # take profit
@@ -458,7 +458,6 @@ class LiveTrading:
             name=f"Liq Price",
         )
         fig.update_layout(xaxis_rangeslider_visible=False)
-        fig.show()
         entry_filename = os.path.join(
             ".",
             "logs",
