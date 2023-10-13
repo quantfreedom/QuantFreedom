@@ -1,13 +1,6 @@
 import candles from "./data/candles.json";
 
 class DataLoader {
-  // constructor() {
-  //   this.URL = "https://api1.binance.com/api/v3/klines";
-  //   this.SYM = "BTCUSDT";
-  //   this.TF = "1m"; // See binance api definitions
-
-  //   this.loading = false;
-  // }
 
   load(callback, number) {
     callback({

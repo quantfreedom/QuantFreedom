@@ -17,7 +17,7 @@ let chart = new NightVision("chart-container", {
 });
 
 let dl = new DataLoader();
-let counter = 30;
+let counter = 1;
 
 dl.load((data) => {
   chart.data = data; // Set the initial data
@@ -26,28 +26,6 @@ dl.load((data) => {
 }, counter);
 
 counter++;
-
-// function loadMore() {
-//   let data = chart.hub.mainOv.data;
-//   let t0 = data[0][0];
-//   if (chart.range[0] < t0) {
-//     dl.loadPast(t0 - 300000, (chunk) => {
-//       // Add a new chunk at the beginning
-//       data.unshift(...chunk);
-//       // Yo need to update "data"
-//       // when the data range is changed
-//       chart.update("data");
-//       chart.se.uploadAndExec();
-//     });
-//   }
-// }
-
-// Load new data when user scrolls left
-// chart.events.on("app:$range-update", loadMore);
-
-// // Plus check for updates every second
-// setInterval(loadMore, 500);
-
 function updateCandles() {
   if (counter < 300) {
     let data = chart.hub.mainOv.data;
