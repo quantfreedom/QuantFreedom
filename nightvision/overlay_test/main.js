@@ -16,7 +16,7 @@ let chart = new NightVision("chart-container", {
   data,
   autoResize: true,
   colors: { back: "#111113", grid: "#2e2f3055" },
-  scripts: [Trades] // Add the script
+  // scripts: [Trades] // Add the script
 });
 
 // Refernce for experiments
