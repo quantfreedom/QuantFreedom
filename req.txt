@@ -1,0 +1,7 @@
+pandas==2.0.3
+pandas-ta==0.3.14b0
+numpy==1.24.0
+plotly==5.16.1
+kaleido==0.1.0.post1
+dash-bootstrap-templates==1.0.8
+jupyter-dash==0.4.2
