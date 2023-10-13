@@ -123,7 +123,6 @@ class StrategyExample(Strategy):
                     length=self.rsi_length,
                 )
                 .round(decimals=2)
-                .shift(1, fill_value=np.nan)
                 .values
             )
         except Exception as e:
@@ -152,7 +151,6 @@ class StrategyExample(Strategy):
                     length=self.rsi_length,
                 )
                 .round(decimals=2)
-                .shift(1, fill_value=np.nan)
                 .values
             )
         except Exception as e:

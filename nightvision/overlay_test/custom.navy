@@ -1,54 +1,40 @@
+
 // Navy ~ 0.1-lite
-// ^^^ First comment should provide a NavyJS version
 
-// Meta tag
-[OVERLAY name=Custom, ctx=Canvas, author=ChartMaster, version=1.0.0]
+// <ds>Simple trades</ds>
+// Format: [<timestamp>, <dir>, <price>, <?label>]
+// <dir> :: 1 for buy -1 for sell
+// <price> :: trade price
+// <?label> :: trade label
+[OVERLAY name=Trades, ctx=Canvas, version=1.0.0]
 
-// Define new props
-// (the same as in 'settings.props' of Overlay object)
-prop('radius', {  type: 'number', def: 3 })
-
-// Any variables/constants
-const _3Y = 60 * 60 * 24 * 365 * 3 * 1000
+prop('buyColor', {  type: 'color', def: '#08b2c6' })
+// prop('sellColor', {  type: 'color', def: '#e42633' })
+prop('radius', {  type: 'number', def: 4 })
+// prop('showLabels', {  type: 'boolean', def: true })
+// prop('markerOutline', {  type: 'boolean', def: true })
+// prop('outlineWidth', {  type: 'number', def: 4 })
 
 // Draw function (called on each update)
 // Library provides a lot of useful variables to make
 // overlays ($core in the main collection)
 draw(ctx) {
-
-    ctx.strokeStyle = $props.back
-    ctx.lineWidth = 1
     const layout = $core.layout
     const data = $core.data // Full dataset
-    const view = $core.view // Visible view
+
+    ctx.fillStyle = $props.buyColor
+    ctx.beginPath()
+    iterArcs(ctx, data, layout)
+    ctx.fill()
+
+}
+
+// Iter through arcs
+iterArcs(ctx, data, layout) {
     const radius = $props.radius
-
-    for (var i = view.i1, n = view.i2; i <= n; i++) {
-        ctx.beginPath()
-        let p = data[i]
-        // Mapping function used to transform values into
-        // coordinates
-        let x = layout.time2x(p[0])
-        let y = layout.value2y(p[1])
-        ctx.fillStyle = gradient(p[1])
-        ctx.arc(x, y, radius, 0, Math.PI * 2, false)
-        ctx.fill()
-    }
+    let p = data[2]
+    let x = layout.ti2x(p[0])
+    let y = layout.value2y(p[2])
+    ctx.moveTo(x+radius, y)
+    ctx.arc(x, y, radius, 0, Math.PI * 2, false)
 }
-
-// Make a gradient depending on the y-value
-gradient(val) {
-    let lo = $core.layout.$lo * 1.01
-    let hi = $core.layout.$hi * 0.99
-    let pos = (val - lo) / (hi - lo)
-    let h = (1.0 - pos) * 240
-    return "hsl(" + h + ", 90%, 50%)"
-}
-
-// Legend formatter, Array of [value, color] pairs
-// x represents one data item e.g. [<time>, <value>]
-legend(x) => [
-    [x[1], gradient(x[1])],
-    ['°F', 'white'],
-    [new Date(x[0] + _3Y).toLocaleDateString(), 'gray']
-]
