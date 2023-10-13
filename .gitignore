@@ -4,6 +4,7 @@ docs/
 math/
 old_quantfreedom/
 nightvision/
+init_script.sh
 .ipynb_checkpoints
 .vscode
 .idea
