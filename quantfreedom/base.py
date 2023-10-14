@@ -20,7 +20,7 @@ from quantfreedom.enums import (
     or_dt,
 )
 from quantfreedom.simulate import backtest_df_only_classes, sim_6_nb
-from quantfreedom.strategy import Strategy
+from quantfreedom.strategies.strategy import Strategy
 
 pio.renderers.default = "browser"
 

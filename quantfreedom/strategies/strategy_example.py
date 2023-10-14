@@ -1,7 +1,7 @@
 import logging
 import pandas as pd
 import numpy as np
-import pandas_ta as pta
+import talib
 
 from typing import NamedTuple
 
@@ -54,7 +54,7 @@ class StrategyExample(Strategy):
     def __init__(
         self,
         candle_processing_mode: CandleProcessingType,
-        candles: pd.DataFrame = None,
+        candles: np.array = None,
         indicator_settings_index: int = None,
         log_debug: bool = True,
         disable_logging: bool = False,
@@ -115,14 +115,7 @@ class StrategyExample(Strategy):
         self.rsi_is_below = self.indicator_settings_arrays.rsi_is_below[indicator_settings_index]
         info_logger.info(f"Indicator Settings: rsi_length={self.rsi_length} rsi_is_below={self.rsi_is_below}")
         try:
-            self.rsi = (
-                pta.rsi(
-                    close=pd.Series(self.closing_prices),
-                    length=self.rsi_length,
-                )
-                .round(decimals=2)
-                .values
-            )
+            self.rsi = np.around(talib.RSI(self.candles.values[:,3], 14),2)
         except Exception as e:
             raise Exception(f"Exception creating rsi -> {e}")
 

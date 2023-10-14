@@ -1,8 +1,9 @@
-from datetime import timedelta
 import json
 import logging
 import hashlib
 import hmac
+import numpy as np
+from datetime import timedelta
 from quantfreedom.utils import pretty_qf
 from requests import get, post
 from time import sleep, time
@@ -13,6 +14,17 @@ from quantfreedom.enums import (
     PositionModeType,
 )
 from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES, Exchange
+
+candles_dt = np.dtype(
+    [
+        ("timestamp", np.int64),
+        ("open", np.float_),
+        ("high", np.float_),
+        ("low", np.float_),
+        ("close", np.float_),
+    ],
+    align=True,
+)
 
 MUFEX_TIMEFRAMES = [1, 3, 5, 15, 30, 60, 120, 240, 360, 720, "D", "W", "M"]
 
@@ -245,7 +257,27 @@ class Mufex(Exchange):
         td = str(timedelta(seconds=time_it_took_in_seconds)).split(":")
         print(f"It took {td[1]} mins and {td[2]} seconds to download {len(candles_list)} candles")
         info_logger.info(f"It took {td[1]} mins and {td[2]} seconds to download {len(candles_list)} candles")
-        return self.get_candles_list_to_pd(candles_list=candles_list, col_end=-2)
+
+        candles_np_raw = np.array(candles_list, dtype=np.float_)[:, :-2]
+        candles_np = np.empty(
+            candles_np_raw.shape[0],
+            dtype=np.dtype(
+                [
+                    ("timestamp", np.int64),
+                    ("open", np.float_),
+                    ("high", np.float_),
+                    ("low", np.float_),
+                    ("close", np.float_),
+                ],
+                align=True,
+            ),
+        )
+        candles_np["timestamp"] = candles_np_raw[:, 0]
+        candles_np["open"] = candles_np_raw[:, 1]
+        candles_np["high"] = candles_np_raw[:, 2]
+        candles_np["low"] = candles_np_raw[:, 3]
+        candles_np["close"] = candles_np_raw[:, 4]
+        return candles_np
 
     def get_closed_pnl(self, symbol: str, limit: int = 10, params: dict = {}, **vargs):
         """

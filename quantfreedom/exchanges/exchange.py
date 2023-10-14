@@ -79,12 +79,10 @@ class Exchange:
     def get_ms_time_to_pd_datetime(self, time_in_ms):
         return pd.to_datetime(time_in_ms / 1000, unit="s")
 
-    def get_candles_list_to_pd(self, candles_list, col_end: int):
-        candles = np.array(candles_list, dtype=np.float_)[:, :col_end]
-        candles_df = pd.DataFrame(candles, columns=["timestamp", "open", "high", "low", "close"])
-        candles_df = candles_df.astype({"timestamp": "int64"})
-        candles_df["timestamp"] = self.get_ms_time_to_pd_datetime(candles_df["timestamp"])
-        candles_df.set_index("timestamp", inplace=True)
+    def turn_candles_list_to_pd(self, candles_np):
+        candles_df = pd.DataFrame(candles_np)
+        candles_df["datetime"] = self.get_ms_time_to_pd_datetime(candles_df["timestamp"])
+        candles_df.set_index("datetime", inplace=True)
         return candles_df
 
     def get_candles_to_dl_in_ms(self, candles_to_dl: int, timeframe_in_ms, limit: int):
