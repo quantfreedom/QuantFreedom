@@ -262,10 +262,10 @@ class Mufex(Exchange):
             return data_list
         except Exception as e:
             raise Exception(f"Data or List is empty {response['message']} -> {e}")
-        
+
     def get_latest_pnl_result(self, symbol: str, **vargs):
         info_logger.debug("Calling get closed pnl")
-        return float(self.get_closed_pnl(symbol=symbol)[0]['closedPnl'])
+        return float(self.get_closed_pnl(symbol=symbol)[0]["closedPnl"])
 
     def get_all_symbols_info(self, category: str = "linear", limit: int = 1000, params: dict = {}, **vargs):
         """
@@ -774,15 +774,18 @@ class Mufex(Exchange):
         info_logger.debug(f"returning {true_false}")
         return true_false
 
+    def __int_value_of_step_size(self, step_size: str):
+        return step_size.index("1") - step_size.index(".")
+
     def __get_min_max_leverage_and_asset_size(self, symbol):
         symbol_info = self.get_symbol_info(symbol=symbol)
         max_leverage = float(symbol_info["leverageFilter"]["maxLeverage"])
         min_leverage = float(symbol_info["leverageFilter"]["minLeverage"])
-        leverage_tick_step = float(symbol_info["leverageFilter"]["leverageStep"])
         max_asset_size = float(symbol_info["lotSizeFilter"]["maxTradingQty"])
         min_asset_size = float(symbol_info["lotSizeFilter"]["minTradingQty"])
-        asset_tick_step = float(symbol_info["lotSizeFilter"]["qtyStep"])
-        price_tick_step = float(symbol_info["priceFilter"]["tickSize"])
+        asset_tick_step = self.__int_value_of_step_size(symbol_info["lotSizeFilter"]["qtyStep"])
+        price_tick_step = self.__int_value_of_step_size(symbol_info["priceFilter"]["tickSize"])
+        leverage_tick_step = self.__int_value_of_step_size(symbol_info["leverageFilter"]["leverageStep"])
         info_logger.debug(
             f"Returning\n\
 max_leverage={max_leverage}\n\

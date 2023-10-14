@@ -1,19 +1,11 @@
-from datetime import datetime
-import logging
 import os
-import pandas as pd
 import numpy as np
-
-from typing import NamedTuple
-from plotly.subplots import make_subplots
 
 from quantfreedom.enums import CandleProcessingType
 from quantfreedom.custom_logger import CustomLogger
-import logging
 
-info_logger = logging.getLogger("info")
 
-DIR_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+DIR_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 FORMATTER = "%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s() - %(message)s"
 
 

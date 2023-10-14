@@ -1,17 +1,15 @@
-from datetime import datetime
 import logging
-import os
 import pandas as pd
 import numpy as np
 import pandas_ta as pta
 
 from typing import NamedTuple
-from plotly.subplots import make_subplots
 
 from quantfreedom.enums import CandleProcessingType
 import logging
 
-from quantfreedom.strategy import DIR_PATH, FORMATTER, Strategy
+from quantfreedom.strategies.strategy import DIR_PATH, FORMATTER, Strategy
+
 
 info_logger = logging.getLogger("info")
 
