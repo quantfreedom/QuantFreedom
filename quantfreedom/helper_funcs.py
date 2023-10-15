@@ -41,7 +41,7 @@ def get_to_the_upside_nb(
 
     if gains_pct <= 0:
         to_the_upside = -to_the_upside
-    return to_the_upside
+    return round(to_the_upside,4)
 
 
 def create_os_cart_product_nb(order_settings_arrays: OrderSettingsArrays):
@@ -82,7 +82,7 @@ def create_os_cart_product_nb(order_settings_arrays: OrderSettingsArrays):
         tp_fee_type=out.T[15].astype(np.int_),
         trail_sl_based_on_candle_body_type=out.T[16].astype(np.int_),
         trail_sl_by_pct=out.T[17],
-        trail_sl_when_pct_from_candle_body=out.T[18].astype(np.int_),
+        trail_sl_when_pct_from_candle_body=out.T[18],
         num_candles=out.T[19].astype(np.int_),
         entry_size_asset=out.T[20].astype(np.int_),
         max_trades=out.T[21].astype(np.int_),
