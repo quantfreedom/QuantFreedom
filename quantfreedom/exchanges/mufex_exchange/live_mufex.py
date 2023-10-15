@@ -1,5 +1,6 @@
 from time import sleep
 from uuid import uuid4
+import numpy as np
 from quantfreedom.enums import LeverageModeType, LongOrShortType, PositionModeType
 from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES
 from quantfreedom.exchanges.live_exchange import LiveExchange
@@ -95,7 +96,7 @@ class LiveMufex(LiveExchange, Mufex):
         except Exception as e:
             raise Exception(f"LiveMufex Class Something is wrong with set_init_last_fetched_time -> {e}")
 
-    def set_candles_df_and_np(self, **vargs):
+    def set_candles_np(self, **vargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
         """
@@ -131,8 +132,26 @@ class LiveMufex(LiveExchange, Mufex):
                     info_logger.debug(f"self.last_fetched_ms_time={self.last_fetched_time_to_pd_datetime()}")
             except Exception as e:
                 raise Exception(f"Exception getting_candles_df {response.get('message')} - > {e}")
-        self.candles_df = self.get_candles_list_to_pd(candles_list=candles_list, col_end=-2)
-        self.candles_np = self.candles_df.values
+        candles_np_raw = np.array(candles_list, dtype=np.float_)[:, :-2]
+        candles_np = np.empty(
+            candles_np_raw.shape[0],
+            dtype=np.dtype(
+                [
+                    ("timestamp", np.int64),
+                    ("open", np.float_),
+                    ("high", np.float_),
+                    ("low", np.float_),
+                    ("close", np.float_),
+                ],
+                align=True,
+            ),
+        )
+        candles_np["timestamp"] = candles_np_raw[:, 0]
+        candles_np["open"] = candles_np_raw[:, 1]
+        candles_np["high"] = candles_np_raw[:, 2]
+        candles_np["low"] = candles_np_raw[:, 3]
+        candles_np["close"] = candles_np_raw[:, 4]
+        self.candles_np = candles_np
 
     def check_long_hedge_mode_if_in_position(self, **vargs):
         info_logger.debug("Calling get symbol position info")

@@ -173,5 +173,5 @@ class StrategyExample(Strategy):
 
         self.indicator_cart_product = IndicatorSettingsArrays(
             rsi_length=out.T[0].astype(np.int_),
-            rsi_is_below=out.T[1].astype(np.int_),
+            rsi_is_below=out.T[1],
         )

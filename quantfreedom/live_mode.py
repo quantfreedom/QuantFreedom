@@ -11,7 +11,6 @@ from quantfreedom.enums import (
 )
 from quantfreedom.exchanges.live_exchange import LiveExchange
 from quantfreedom.order_handler.order_handler import Order
-from quantfreedom.strategy import Strategy
 from datetime import datetime, timedelta
 from dash_bootstrap_templates import load_figure_template
 from jupyter_dash import JupyterDash
@@ -19,6 +18,8 @@ from dash import Dash
 from IPython import get_ipython
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
+
+from quantfreedom.strategies.strategy import Strategy
 
 load_figure_template("darkly")
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
@@ -100,7 +101,7 @@ class LiveTrading:
             try:
                 info_logger.info("Getting Candles")
                 print("Getting Candles")
-                self.exchange.set_candles_df_and_np()
+                self.exchange.set_candles_np()
                 num_candles = self.exchange.candles_np.shape[0]
 
                 # bar_index bar index is always the last bar ... so if we have 200 candles we are at index 200
@@ -108,7 +109,7 @@ class LiveTrading:
                 msg = "Couldn't verify that the following orders were placed "
 
                 info_logger.debug("Setting indicator")
-                self.strategy.set_indicator_live_trading(self.exchange.candles_df)
+                self.strategy.set_indicator_live_trading(self.exchange.candles_np)
                 try:
                     latest_pnl = self.exchange.get_latest_pnl_result(symbol=self.symbol)
                 except Exception as e:
@@ -135,7 +136,7 @@ class LiveTrading:
                         )
                         self.order.calculate_increase_posotion(
                             # entry price is close of the last bar
-                            entry_price=self.exchange.candles_np[-1, 3],
+                            entry_price=self.exchange.candles_np["close"][-1],
                         )
                         self.order.calculate_leverage()
                         self.order.calculate_take_profit()
@@ -299,7 +300,9 @@ class LiveTrading:
                                     asset_amount=self.ex_position_size_asset,
                                     new_price=result.sl_price,
                                 ):
-                                    info_logger.info(f"Moved stop loss from {self.order.sl_price:,} to {result.sl_price:,}")
+                                    info_logger.info(
+                                        f"Moved stop loss from {self.order.sl_price:,} to {result.sl_price:,}"
+                                    )
                                     self.order.update_stop_loss_live_trading(sl_price=result.sl_price)
                                 else:
                                     info_logger.warning(f"Couldn't verify sl was moved {sl_order_id}")
@@ -351,6 +354,22 @@ class LiveTrading:
         info_logger.debug(f"Setting average entry")
         self.order.average_entry = float(self.get_position_info()["entryPrice"])
 
+    def __set_ex_possible_loss(self):
+        coin_size = self.ex_position_size_asset
+        pnl = coin_size * (self.ex_sl_price - self.ex_average_entry)
+        fee_open = coin_size * self.ex_average_entry * self.exchange.exchange_settings.market_fee_pct  # math checked
+        fee_close = coin_size * self.ex_sl_price * self.exchange.exchange_settings.market_fee_pct  # math checked
+        self.fees_paid = fee_open + fee_close  # math checked
+        self.ex_possible_loss = round(abs(pnl - self.fees_paid), 4)
+
+    def __set_ex_possible_profit(self):
+        coin_size = self.ex_position_size_asset
+        pnl = coin_size * (self.ex_tp_price - self.ex_average_entry)
+        fee_open = coin_size * self.ex_average_entry * self.exchange.exchange_settings.market_fee_pct  # math checked
+        fee_close = coin_size * self.ex_tp_price * self.exchange.exchange_settings.limit_fee_pct  # math checked
+        self.fees_paid = fee_open + fee_close  # math checked
+        self.ex_possible_profit = round(abs(pnl - self.fees_paid), 4)
+
     def __set_exchange_variables(self, entry_order_id, sl_order_id, tp_order_id):
         info_logger.debug(f"setting all exchange vars")
         pos_info = self.get_position_info()
@@ -378,22 +397,27 @@ class LiveTrading:
         self.fees_paid = fee_open + fee_close  # math checked
         self.ex_possible_loss = round(-(pnl - self.fees_paid), 4)
 
-    def __get_pct_dif_above_average_entry(self, price, average_entry):
-        info_logger.debug(f"getting pct")
-        return round(((price - average_entry) / average_entry) * 100, 2)
-
-    def __get_pct_dif_below_average_entry(self, price, average_entry):
-        info_logger.debug(f"getting pct")
-        return round(((average_entry - price) / average_entry) * 100, 2)
+    def __get_pct_difference(self, starting_num, diff_num):
+        info_logger.debug(f"getting pct difference")
+        return round(abs((starting_num - diff_num) / starting_num) * 100, 2)
 
     def __create_entry_successful_message(self):
         info_logger.debug(f"Creating message")
+        entry_slippage = self.__get_pct_difference(self.order.entry_price, self.ex_entry_price)
+        avg_entry_slippage = self.__get_pct_difference(self.order.average_entry, self.ex_average_entry)
+        ex_sl_pct = self.__get_pct_difference(self.ex_average_entry, self.ex_sl_price)
+        ex_tp_pct = self.__get_pct_difference(self.ex_average_entry, self.ex_tp_price)
+        self.__set_ex_possible_loss()
+        self.__set_ex_possible_profit()
+
         message = f"An order was placed successfully\n\
-[ex_candle_closing_price={self.exchange.candles_np[-1,3]:,}]\n\
+[ex_candle_closing_price={self.exchange.candles_np['close'][-1]:,}]\n\
 [entry_price={self.order.entry_price:,}]\n\
-[ex_entry_price={self.ex_entry_price:,}]\n\n\
+[ex_entry_price={self.ex_entry_price:,}]\n\
+[Entry slippage={entry_slippage}]\n\n\
 [average_entry={self.order.average_entry:,}]\n\
-[ex_average_entry={self.ex_average_entry:,}]\n\n\
+[ex_average_entry={self.ex_average_entry:,}]\n\
+[Average Entry slippage={avg_entry_slippage}]\n\n\
 [position_size_usd={self.order.position_size_usd:,}]\n\
 [ex_position_size_usd={self.ex_position_size_usd:,}]\n\n\
 [entry_size_usd={self.order.entry_size_usd:,}]\n\
@@ -402,26 +426,29 @@ class LiveTrading:
 [ex_leverage={self.ex_leverage:,}]\n\n\
 [liq price={self.order.liq_price:,}]\n\
 [ex_liq price={self.ex_liq_price:,}]\n\n\
-[candle low={self.exchange.candles_np[-1,2]:,}]\n\
+[candle low={self.exchange.candles_np['low'][-1]:,}]\n\
 [stop_loss_price={self.order.sl_price:,}]\n\
-[ex_stop_loss_price={self.ex_sl_price:,}]\n\n\
+[ex_stop_loss_price={self.ex_sl_price:,}]\n\
+[ex_sl_pct={ex_sl_pct}]\n\n\
 [take_profit_price={self.order.tp_price:,}]\n\
 [ex_take_profit_price={self.ex_tp_price:,}]\n\n\
+[ex_tp_pct={ex_tp_pct}]\n\n\
 [possible loss={self.order.possible_loss:,}]\n\
-[ex_possible loss={self.ex_possible_loss:,}]\n\n"
+[ex_possible loss={self.ex_possible_loss:,}]\n\
+[ex_possible profit={self.ex_possible_profit:,}]\n\n"
         return message
 
     def __get_entry_plot_filename(self):
         info_logger.debug("Getting entry plot file")
-        last_20 = self.exchange.candles_df[-20:]
-        graph_entry = [last_20.index[-1]]
+        last_20 = self.exchange.candles_np[-20:]
+        graph_entry = [last_20["timestamp"][-1]]
         fig = go.Figure()
         fig.add_candlestick(
-            x=last_20.index,
-            open=last_20.open,
-            high=last_20.high,
-            low=last_20.low,
-            close=last_20.close,
+            x=last_20["timestamp"],
+            open=last_20["open"],
+            high=last_20["high"],
+            low=last_20["low"],
+            close=last_20["close"],
             name="Exchange order",
         )
         # entry

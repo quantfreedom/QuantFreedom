@@ -4,6 +4,8 @@ import numpy as np
 
 from datetime import datetime, timedelta
 
+from quantfreedom.enums import ExchangeSettings
+
 UNIVERSAL_SIDES = ["buy", "sell"]
 UNIVERSAL_TIMEFRAMES = ["1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"]
 TIMEFRAMES_IN_MINUTES = [1, 3, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 10080, 43800]
@@ -13,7 +15,7 @@ class Exchange:
     candles_list = None
     volume_yes_no_start = None
     volume_yes_no_end = None
-    exchange_settings = None
+    exchange_settings: ExchangeSettings = None
 
     def __init__(
         self,

@@ -253,10 +253,6 @@ class Mufex(Exchange):
 
             except Exception as e:
                 raise Exception(f"Mufex get_candles_df {response.get('message')} - > {e}")
-        time_it_took_in_seconds = self.get_current_time_seconds() - start_time
-        td = str(timedelta(seconds=time_it_took_in_seconds)).split(":")
-        print(f"It took {td[1]} mins and {td[2]} seconds to download {len(candles_list)} candles")
-        info_logger.info(f"It took {td[1]} mins and {td[2]} seconds to download {len(candles_list)} candles")
 
         candles_np_raw = np.array(candles_list, dtype=np.float_)[:, :-2]
         candles_np = np.empty(
@@ -277,6 +273,11 @@ class Mufex(Exchange):
         candles_np["high"] = candles_np_raw[:, 2]
         candles_np["low"] = candles_np_raw[:, 3]
         candles_np["close"] = candles_np_raw[:, 4]
+
+        time_it_took_in_seconds = self.get_current_time_seconds() - start_time
+        td = str(timedelta(seconds=time_it_took_in_seconds)).split(":")
+        print(f"It took {td[1]} mins and {td[2]} seconds to download {len(candles_list)} candles")
+        info_logger.info(f"It took {td[1]} mins and {td[2]} seconds to download {len(candles_list)} candles")
         return candles_np
 
     def get_closed_pnl(self, symbol: str, limit: int = 10, params: dict = {}, **vargs):
