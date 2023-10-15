@@ -66,6 +66,7 @@ class TakeProfitLong:
             + (average_entry * position_size_usd)
             + (average_entry * self.market_fee_pct * position_size_usd)
         ) / (position_size_usd * (1 - self.tp_fee_pct))
+        
         self.tp_price = round_size_by_tick_step(
             user_num=tp_price,
             exchange_num=self.price_tick_step,
