@@ -1,5 +1,6 @@
 pandas==2.0.3
 numpy==1.24.0
+ta-lib==0.4.28
 plotly==5.16.1
 kaleido==0.1.0
 dash-bootstrap-templates==1.0.8
