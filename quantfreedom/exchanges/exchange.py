@@ -4,6 +4,8 @@ import numpy as np
 
 from datetime import datetime, timedelta
 
+from quantfreedom.enums import ExchangeSettings
+
 UNIVERSAL_SIDES = ["buy", "sell"]
 UNIVERSAL_TIMEFRAMES = ["1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"]
 TIMEFRAMES_IN_MINUTES = [1, 3, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 10080, 43800]
@@ -13,7 +15,7 @@ class Exchange:
     candles_list = None
     volume_yes_no_start = None
     volume_yes_no_end = None
-    exchange_settings = None
+    exchange_settings: ExchangeSettings = None
 
     def __init__(
         self,
@@ -61,6 +63,12 @@ class Exchange:
     def move_stop_order(self, *vargs):
         pass
 
+    def get_latest_pnl_result(self, *vargs):
+        pass
+
+    def get_closed_pnl(self, *vargs):
+        pass
+
     def get_current_time_seconds(self):
         return int(datetime.now().timestamp())
 
@@ -73,12 +81,10 @@ class Exchange:
     def get_ms_time_to_pd_datetime(self, time_in_ms):
         return pd.to_datetime(time_in_ms / 1000, unit="s")
 
-    def get_candles_list_to_pd(self, candles_list, col_end: int):
-        candles = np.array(candles_list, dtype=np.float_)[:, :col_end]
-        candles_df = pd.DataFrame(candles, columns=["timestamp", "open", "high", "low", "close"])
-        candles_df = candles_df.astype({"timestamp": "int64"})
-        candles_df["timestamp"] = self.get_ms_time_to_pd_datetime(candles_df["timestamp"])
-        candles_df.set_index("timestamp", inplace=True)
+    def turn_candles_list_to_pd(self, candles_np):
+        candles_df = pd.DataFrame(candles_np)
+        candles_df["datetime"] = self.get_ms_time_to_pd_datetime(candles_df["timestamp"])
+        candles_df.set_index("datetime", inplace=True)
         return candles_df
 
     def get_candles_to_dl_in_ms(self, candles_to_dl: int, timeframe_in_ms, limit: int):

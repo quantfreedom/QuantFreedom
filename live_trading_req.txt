@@ -1,0 +1,8 @@
+pandas==2.0.3
+python-dateutil==2.8.2
+pandas-ta==0.3.14b0
+numpy==1.24.0
+plotly==5.16.1
+kaleido==0.1.0
+dash-bootstrap-templates==1.0.8
+jupyter-dash==0.4.2

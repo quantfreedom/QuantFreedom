@@ -36,6 +36,12 @@ class CustomLogger:
         return handler
 
     def __set_loggers(self, log_debug, formatter, custom_path, create_trades_logger):
+        # creating images folder
+        complete_path = os.path.join(custom_path, "logs", "images")
+        isExist = os.path.exists(complete_path)
+        if not isExist:
+            os.makedirs(complete_path)
+            
         # Info logs
         complete_path = os.path.join(custom_path, "logs")
         isExist = os.path.exists(complete_path)

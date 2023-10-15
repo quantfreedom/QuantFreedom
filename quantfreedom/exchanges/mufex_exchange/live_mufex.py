@@ -1,5 +1,6 @@
 from time import sleep
 from uuid import uuid4
+import numpy as np
 from quantfreedom.enums import LeverageModeType, LongOrShortType, PositionModeType
 from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES
 from quantfreedom.exchanges.live_exchange import LiveExchange
@@ -15,8 +16,8 @@ class LiveMufex(LiveExchange, Mufex):
         api_key: str,
         secret_key: str,
         symbol: str,
-        trading_in: str,
         timeframe: str,
+        trading_in: str,
         use_test_net: bool,
         long_or_short: LongOrShortType,
         candles_to_dl: int = None,
@@ -31,13 +32,14 @@ class LiveMufex(LiveExchange, Mufex):
             symbol,
             timeframe,
             trading_in,
+            use_test_net,
+            long_or_short,
             candles_to_dl,
             keep_volume_in_candles,
-            long_or_short,
-            use_test_net,
             position_mode,
             leverage_mode,
         )
+
         self.category = category
         self.mufex_timeframe = MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
 
@@ -94,11 +96,10 @@ class LiveMufex(LiveExchange, Mufex):
         except Exception as e:
             raise Exception(f"LiveMufex Class Something is wrong with set_init_last_fetched_time -> {e}")
 
-    def set_candles_df_and_np(self, **vargs):
+    def set_candles_np(self, **vargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
         """
-        info_logger.debug("")
         # i think maybe you have to add 5 seconds to the current time because maybe we do it too fast
         until_date_ms = self.get_current_time_ms() - self.timeframe_in_ms + 5000
         since_date_ms = until_date_ms - self.candles_to_dl_ms
@@ -118,21 +119,42 @@ class LiveMufex(LiveExchange, Mufex):
                 new_candles = response["data"]["list"]
                 last_candle_time_ms = int(new_candles[-1][0])
                 if last_candle_time_ms == params["start"]:
+                    info_logger.debug("last times are the same. sleep .2 and try again")
                     sleep(0.2)
                 else:
                     candles_list.extend(new_candles)
                     # add one sec so we don't download the same candle two times
-                    params["start"] = last_candle_time_ms + 1000
+                    params["start"] = last_candle_time_ms + 2000
+                    info_logger.debug(
+                        f"set params start as lc + 2 sec {self.get_ms_time_to_pd_datetime(params['start'])}"
+                    )
                     self.last_fetched_ms_time = last_candle_time_ms
+                    info_logger.debug(f"self.last_fetched_ms_time={self.last_fetched_time_to_pd_datetime()}")
             except Exception as e:
-                raise Exception(
-                    f"LiveMufex Class Something is wrong with get_candles_df {response.get('message')} - > {e}"
-                )
-        self.candles_df = self.get_candles_list_to_pd(candles_list=candles_list, col_end=-2)
-        self.candles_np = self.candles_df.values
+                raise Exception(f"Exception getting_candles_df {response.get('message')} - > {e}")
+        candles_np_raw = np.array(candles_list, dtype=np.float_)[:, :-2]
+        candles_np = np.empty(
+            candles_np_raw.shape[0],
+            dtype=np.dtype(
+                [
+                    ("timestamp", np.int64),
+                    ("open", np.float_),
+                    ("high", np.float_),
+                    ("low", np.float_),
+                    ("close", np.float_),
+                ],
+                align=True,
+            ),
+        )
+        candles_np["timestamp"] = candles_np_raw[:, 0]
+        candles_np["open"] = candles_np_raw[:, 1]
+        candles_np["high"] = candles_np_raw[:, 2]
+        candles_np["low"] = candles_np_raw[:, 3]
+        candles_np["close"] = candles_np_raw[:, 4]
+        self.candles_np = candles_np
 
     def check_long_hedge_mode_if_in_position(self, **vargs):
-        info_logger.debug("")
+        info_logger.debug("Calling get symbol position info")
         if float(self.get_symbol_position_info(symbol=self.symbol)[0]["entryPrice"]) > 0:
             return True
         else:
@@ -151,6 +173,7 @@ class LiveMufex(LiveExchange, Mufex):
             "timeInForce": time_in_force,
             "orderLinkId": uuid4().hex,
         }
+        info_logger.debug("Calling create order")
         return self.create_order(params=params)
 
     def create_long_hedge_mode_tp_limit_order(
@@ -168,6 +191,7 @@ class LiveMufex(LiveExchange, Mufex):
             "reduceOnly": True,
             "orderLinkId": uuid4().hex,
         }
+        info_logger.debug("Calling create order")
         return self.create_order(params=params)
 
     def create_long_hedge_mode_sl_order(
@@ -186,12 +210,9 @@ class LiveMufex(LiveExchange, Mufex):
             "triggerDirection": 2,
             "orderLinkId": uuid4().hex,
         }
+        info_logger.debug("Calling create order")
         return self.create_order(params=params)
 
     def get_long_hedge_mode_position_info(self):
-        info_logger.debug("")
-        return self.get_symbol_position_info(symbol=self.symbol)[0]
-
-    def check_if_sl_moved(self, symbol: str, order_id: str, **vargs):
-        info_logger.debug("")
+        info_logger.debug("Calling get symbol position info")
         return self.get_symbol_position_info(symbol=self.symbol)[0]

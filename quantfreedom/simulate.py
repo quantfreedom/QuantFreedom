@@ -3,7 +3,7 @@ import logging
 from quantfreedom.enums import *
 from quantfreedom.helper_funcs import get_order_setting, get_to_the_upside_nb
 from quantfreedom.order_handler.order_handler import Order
-from quantfreedom.strategy import Strategy
+from quantfreedom.strategies.strategy import Strategy
 
 info_logger = logging.getLogger("info")
 
@@ -17,7 +17,6 @@ def backtest_df_only_classes(
     total_indicator_settings: int,
     total_order_settings: int,
     total_bars: int,
-    candles: np.array,
 ):
     # Creating strat records
     array_size = int(total_indicator_settings * total_order_settings / backtest_settings.divide_records_array_size_by)
@@ -42,7 +41,7 @@ def backtest_df_only_classes(
                 os_cart_arrays=os_cart_arrays,
             )
 
-            strategy.num_candles = int(-(order_settings.num_candles - 1))
+            strat_num_candles = int(-(order_settings.num_candles - 1))
             order = Order.instantiate(
                 equity=starting_equity,
                 order_settings=order_settings,
@@ -54,30 +53,6 @@ def backtest_df_only_classes(
 
             # entries loop
             for bar_index in range(int(order_settings.num_candles - 1), total_bars):
-                strategy.create_indicator(bar_index)
-                if strategy.evaluate():  # add in that we are also not at max entry amount
-                    info_logger.debug(
-                        f"ind_idx={indicator_settings_index} os_idx={order_settings_index} b_idx={bar_index}"
-                    )
-                    try:
-                        order.calculate_stop_loss(
-                            bar_index=bar_index,
-                            candles=candles,
-                        )
-                        order.calculate_increase_posotion(
-                            entry_price=candles[
-                                bar_index, 0
-                            ]  # entry price is open because we are getting the signal from the close of the previous candle
-                        )
-                        order.calculate_leverage()
-                        order.calculate_take_profit()
-
-                    except RejectedOrder as e:
-                        info_logger.warning(f"RejectedOrder -> {e.msg}")
-                        pass
-                    except Exception as e:
-                        info_logger.error(f"Exception placing order -> {e}")
-                        raise Exception(f"Exception placing order -> {e}")
                 if order.position_size_usd > 0:
                     try:
                         order.check_stop_loss_hit(current_candle=candles[bar_index, :])
@@ -108,6 +83,26 @@ def backtest_df_only_classes(
                             order_settings_index=order_settings_index,
                             indicator_settings_index=indicator_settings_index,
                         )
+                    except Exception as e:
+                        info_logger.error(f"Exception placing order -> {e}")
+                        raise Exception(f"Exception placing order -> {e}")
+                strategy.create_indicator(bar_index=bar_index, strat_num_candles=strat_num_candles)
+                if strategy.evaluate():  # add in that we are also not at max entry amount
+                    info_logger.debug(
+                        f"ind_idx={indicator_settings_index} os_idx={order_settings_index} b_idx={bar_index} timestamp={strategy.candles.index[bar_index]}"
+                    )
+                    try:
+                        order.calculate_stop_loss(
+                            bar_index=bar_index,
+                            candles=candles,
+                        )
+                        order.calculate_increase_posotion(entry_price=candles[bar_index, 3])
+                        order.calculate_leverage()
+                        order.calculate_take_profit()
+
+                    except RejectedOrder as e:
+                        info_logger.warning(f"RejectedOrder -> {e.msg}")
+                        pass
                     except Exception as e:
                         info_logger.error(f"Exception placing order -> {e}")
                         raise Exception(f"Exception placing order -> {e}")
@@ -178,6 +173,35 @@ def sim_6_nb(
         )
 
         for bar_index in range(total_bars):
+            if order.position_size_usd > 0:
+                try:
+                    order.check_stop_loss_hit(current_candle=candles[bar_index, :])
+                    order.check_liq_hit(current_candle=candles[bar_index, :])
+                    order.check_take_profit_hit(
+                        current_candle=candles[bar_index, :],
+                        exit_signal=current_exit_signals[bar_index],
+                    )
+                    order.check_move_stop_loss_to_be(bar_index=bar_index, candles=candles)
+                    order.check_move_trailing_stop_loss(bar_index=bar_index, candles=candles)
+                except RejectedOrder as e:
+                    pass
+                except DecreasePosition as e:
+                    order.decrease_position(
+                        order_status=e.order_status,
+                        exit_price=e.exit_price,
+                        exit_fee_pct=e.exit_fee_pct,
+                        bar_index=bar_index,
+                        indicator_settings_index=indicator_settings_index,
+                        order_settings_index=order_settings_index,
+                    )
+                except MoveStopLoss as e:
+                    order.move_stop_loss(
+                        sl_price=e.sl_price,
+                        order_status=e.order_status,
+                        bar_index=bar_index,
+                        order_settings_index=order_settings_index,
+                        indicator_settings_index=indicator_settings_index,
+                    )
             if current_indicator_entries[bar_index]:  # add in that we are also not at max entry amount
                 try:
                     order.calculate_stop_loss(bar_index=bar_index, candles=candles)
@@ -212,35 +236,6 @@ def sim_6_nb(
                     )
                 except RejectedOrder as e:
                     pass
-            if order.position_size_usd > 0:
-                try:
-                    order.check_stop_loss_hit(current_candle=candles[bar_index, :])
-                    order.check_liq_hit(current_candle=candles[bar_index, :])
-                    order.check_take_profit_hit(
-                        current_candle=candles[bar_index, :],
-                        exit_signal=current_exit_signals[bar_index],
-                    )
-                    order.check_move_stop_loss_to_be(bar_index=bar_index, candles=candles)
-                    order.check_move_trailing_stop_loss(bar_index=bar_index, candles=candles)
-                except RejectedOrder as e:
-                    pass
-                except DecreasePosition as e:
-                    order.decrease_position(
-                        order_status=e.order_status,
-                        exit_price=e.exit_price,
-                        exit_fee_pct=e.exit_fee_pct,
-                        bar_index=bar_index,
-                        indicator_settings_index=indicator_settings_index,
-                        order_settings_index=order_settings_index,
-                    )
-                except MoveStopLoss as e:
-                    order.move_stop_loss(
-                        sl_price=e.sl_price,
-                        order_status=e.order_status,
-                        bar_index=bar_index,
-                        order_settings_index=order_settings_index,
-                        indicator_settings_index=indicator_settings_index,
-                    )
         order_records = order.order_records
         total_order_records_filled = order.total_order_records_filled
 

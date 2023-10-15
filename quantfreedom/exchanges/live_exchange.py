@@ -17,7 +17,6 @@ class LiveExchange(Exchange):
     candles_list = None
     last_fetched_ms_time = None
     candles_np = None
-    candles_df = None
 
     def __init__(
         self,
@@ -59,7 +58,7 @@ class LiveExchange(Exchange):
     def set_init_last_fetched_time(self, *vargs):
         pass
 
-    def set_candles_df_and_np(self, *vargs):
+    def set_candles_np(self, *vargs):
         pass
 
     def get_long_hedge_mode_position_info(self, *vargs):
