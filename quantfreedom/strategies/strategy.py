@@ -190,24 +190,25 @@ class Strategy:
 
     def create_ind_cart_product_nb(self, indicator_settings_array):
         # cart array loop
-        n = 1
-        for x in indicator_settings_array:
-            n *= x.size
-        out = np.empty((n, len(indicator_settings_array)))
+        # n = 1
+        # for x in indicator_settings_array:
+        #     n *= x.size
+        # out = np.empty((n, len(indicator_settings_array)))
 
-        for i in range(len(indicator_settings_array)):
-            m = int(n / indicator_settings_array[i].size)
-            out[:n, i] = np.repeat(indicator_settings_array[i], m)
-            n //= indicator_settings_array[i].size
+        # for i in range(len(indicator_settings_array)):
+        #     m = int(n / indicator_settings_array[i].size)
+        #     out[:n, i] = np.repeat(indicator_settings_array[i], m)
+        #     n //= indicator_settings_array[i].size
 
-        n = indicator_settings_array[-1].size
-        for k in range(len(indicator_settings_array) - 2, -1, -1):
-            n *= indicator_settings_array[k].size
-            m = int(n / indicator_settings_array[k].size)
-            for j in range(1, indicator_settings_array[k].size):
-                out[j * m : (j + 1) * m, k + 1 :] = out[0:m, k + 1 :]
+        # n = indicator_settings_array[-1].size
+        # for k in range(len(indicator_settings_array) - 2, -1, -1):
+        #     n *= indicator_settings_array[k].size
+        #     m = int(n / indicator_settings_array[k].size)
+        #     for j in range(1, indicator_settings_array[k].size):
+        #         out[j * m : (j + 1) * m, k + 1 :] = out[0:m, k + 1 :]
 
-        return IndicatorSettingsArrays(
-            rsi_length=out.T[0],
-            rsi_is_below=out.T[1],
-        )
+        # return IndicatorSettingsArrays(
+        #     rsi_length=out.T[0],
+        #     rsi_is_below=out.T[1],
+        # )
+        pass

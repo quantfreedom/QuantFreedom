@@ -19,6 +19,7 @@ from quantfreedom.helper_funcs import create_os_cart_product_nb, get_order_setti
 from quantfreedom.live_mode import LiveTrading
 from quantfreedom.order_handler.order_handler import LongOrder
 from my_stuff import EmailSenderInfo, MufexTestKeys
+from quantfreedom.strategies.strategy_example import StrategyExample
 
 
 if __name__ == "__main__":
@@ -44,7 +45,7 @@ if __name__ == "__main__":
         static_leverage=np.array([0.0]),
         num_candles=np.array([0]),
         entry_size_asset=np.array([0.0]),
-        max_trades=np.array([1]),
+        max_trades=np.array([3]),
     )
     os_cart_arrays = create_os_cart_product_nb(
         order_settings_arrays=order_settings_arrays,
@@ -54,18 +55,13 @@ if __name__ == "__main__":
         order_settings_index=0,
     )
 
-    strategy = MyRsiStrategy(
-        indicator_settings_index=0,
+    strategy = StrategyExample(
         candle_processing_mode=CandleProcessingType.LiveTrading,
         create_trades_logger=True,
         log_debug=True,
-        price_range_high=[27700],
-        price_range_low=[27000],
-        pivot_low_lookback=[30],
-        lookback_div_period=[30],
         rsi_length=[14],
-        rsi_is_below=[200],
-        rsi_buffer=[0.5],
+        rsi_is_below=[500],
+        indicator_settings_index=0,
     )
 
     mufex = LiveMufex(

@@ -319,7 +319,7 @@ class LiveTrading:
             except Exception as e:
                 info_logger.error(f"Exception -> {e}")
                 info_logger.error("Server stopped")
-                self.email_error_msg(msg=f"Exception -> {e}")
+                self.email_sender.email_error_msg(msg=f"Exception -> {e}")
                 raise Exception(f"Exception -> {e}")
             sleep(self.get_sleep_time_to_next_bar())
 
@@ -334,10 +334,6 @@ class LiveTrading:
         print(f"Will sleep for {td[0]} hrs {td[1]} mins and {td[2]} seconds till next bar\n")
 
         return int(ms_to_next_candle / 1000)
-
-    def email_error_msg(self, msg):
-        info_logger.debug(f"")
-        self.email_sender.email_error_msg(msg=msg)
 
     def __set_ex_position_size_asset(self):
         info_logger.debug(f"Setting position size asset")
@@ -377,16 +373,18 @@ class LiveTrading:
         self.ex_position_size_asset = float(pos_info.get("size"))
         self.ex_position_size_usd = float(pos_info.get("positionValue"))
         self.ex_average_entry = float(pos_info.get("entryPrice"))
+        self.avg_entry_slippage = self.__get_pct_difference(self.order.average_entry, self.ex_average_entry)
         self.ex_entry_price = float(entry_info.get("execPrice"))
+        self.entry_slippage = self.__get_pct_difference(self.order.entry_price, self.ex_entry_price)
         self.ex_entry_size_asset = float(entry_info.get("execQty"))
         self.ex_entry_size_usd = float(entry_info.get("execValue"))
         self.ex_leverage = float(pos_info.get("leverage"))
         self.ex_liq_price = float(pos_info.get("liqPrice"))
         self.ex_liq_pct = self.__get_pct_difference(starting_num=self.ex_average_entry, diff_num=self.ex_liq_price)
         self.ex_tp_price = float(tp_info.get("price"))
-        self.ex_tp_pct = self.get_tp_pct(starting_num=self.ex_average_entry, diff_num=self.ex_tp_price)
+        self.ex_tp_pct = self.__get_pct_difference(starting_num=self.ex_average_entry, diff_num=self.ex_tp_price)
         self.ex_sl_price = float(sl_info.get("triggerPrice"))
-        self.ex_sl_pct = self.get_sl_pct(starting_num=self.ex_average_entry, diff_num=self.ex_sl_price)
+        self.ex_sl_pct = self.__get_pct_difference(starting_num=self.ex_average_entry, diff_num=self.ex_sl_price)
         coin_size = self.ex_position_size_asset
         pnl = coin_size * (self.ex_sl_price - self.ex_average_entry)
         fee_open = coin_size * self.ex_average_entry * self.exchange.exchange_settings.market_fee_pct  # math checked
@@ -400,10 +398,6 @@ class LiveTrading:
 
     def __create_entry_successful_message(self):
         info_logger.debug(f"Creating message")
-        entry_slippage = self.__get_pct_difference(self.order.entry_price, self.ex_entry_price)
-        avg_entry_slippage = self.__get_pct_difference(self.order.average_entry, self.ex_average_entry)
-        ex_sl_pct = self.__get_pct_difference(self.ex_average_entry, self.ex_sl_price)
-        ex_tp_pct = self.__get_pct_difference(self.ex_average_entry, self.ex_tp_price)
         self.__set_ex_possible_loss()
         self.__set_ex_possible_profit()
 
@@ -411,10 +405,10 @@ class LiveTrading:
 [ex_candle_closing_price={self.exchange.candles_np['close'][-1]:,}]\n\
 [entry_price={self.order.entry_price:,}]\n\
 [ex_entry_price={self.ex_entry_price:,}]\n\
-[Entry slippage={entry_slippage}]\n\n\
+[Entry slippage={self.entry_slippage}]\n\n\
 [average_entry={self.order.average_entry:,}]\n\
 [ex_average_entry={self.ex_average_entry:,}]\n\
-[Average Entry slippage={avg_entry_slippage}]\n\n\
+[Average Entry slippage={self.avg_entry_slippage}]\n\n\
 [position_size_usd={self.order.position_size_usd:,}]\n\
 [ex_position_size_usd={self.ex_position_size_usd:,}]\n\n\
 [entry_size_usd={self.order.entry_size_usd:,}]\n\
@@ -422,17 +416,18 @@ class LiveTrading:
 [leverage={self.order.leverage:,}]\n\
 [ex_leverage={self.ex_leverage:,}]\n\n\
 [liq price={self.order.liq_price:,}]\n\
-[ex_liq price={self.ex_liq_price:,}]\n\n\
+[ex_liq price={self.ex_liq_price:,}]\n\
+[ex_liq_pct={self.ex_liq_pct:,}]\n\n\
 [candle low={self.exchange.candles_np['low'][-1]:,}]\n\
 [stop_loss_price={self.order.sl_price:,}]\n\
 [ex_stop_loss_price={self.ex_sl_price:,}]\n\
-[ex_sl_pct={ex_sl_pct}]\n\n\
+[ex_sl_pct={self.ex_sl_pct}]\n\n\
 [take_profit_price={self.order.tp_price:,}]\n\
 [ex_take_profit_price={self.ex_tp_price:,}]\n\n\
-[ex_tp_pct={ex_tp_pct}]\n\n\
+[ex_tp_pct={self.ex_tp_pct}]\n\n\
 [possible loss={self.order.possible_loss:,}]\n\
 [ex_possible loss={self.ex_possible_loss:,}]\n\
-[ex_possible profit={self.ex_possible_profit:,}]\n\n"
+[ex_possible profit={self.ex_possible_profit:,}]\n"
         return message
 
     def __get_entry_plot_filename(self):
@@ -490,6 +485,7 @@ class LiveTrading:
             name=f"Liq Price",
         )
         fig.update_layout(xaxis_rangeslider_visible=False)
+        fig.show()
         entry_filename = os.path.join(
             ".",
             "logs",

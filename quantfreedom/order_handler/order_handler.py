@@ -288,15 +288,15 @@ class LongOrder(Order):
         )
         info_logger.info(
             f"\n\
-average_entry={self.average_entry}\n\
-entry_price={self.entry_price}\n\
-entry_size_asset={self.entry_size_asset}\n\
-entry_size_usd={self.entry_size_usd}\n\
-position_size_asset={self.position_size_asset}\n\
-position_size_usd={self.position_size_usd}\n\
-possible_loss={self.possible_loss}\n\
-total_trades={self.total_trades}\n\
-sl_pct={round(self.sl_pct*100,2)}"
+average_entry={self.average_entry:,}\n\
+entry_price={self.entry_price:,}\n\
+entry_size_asset={self.entry_size_asset:,}\n\
+entry_size_usd={self.entry_size_usd:,}\n\
+position_size_asset={self.position_size_asset:,}\n\
+position_size_usd={self.position_size_usd:,}\n\
+possible_loss={self.possible_loss:,}\n\
+total_trades={self.total_trades:,}\n\
+sl_pct={round(self.sl_pct*100,2):,}"
         )
 
     def calculate_leverage(self):
@@ -318,10 +318,10 @@ sl_pct={round(self.sl_pct*100,2)}"
         info_logger.info(
             f"\n\
 leverage={self.leverage}\n\
-liq_price={self.liq_price}\n\
-available_balance={self.available_balance}\n\
-cash_used={self.cash_used}\n\
-cash_borrowed={self.cash_borrowed}\n\
+liq_price={self.liq_price:,}\n\
+available_balance={self.available_balance:,}\n\
+cash_used={self.cash_used:,}\n\
+cash_borrowed={self.cash_borrowed:,}\n\
 can_move_sl_to_be= {self.can_move_sl_to_be}"
         )
 
@@ -335,7 +335,7 @@ can_move_sl_to_be= {self.can_move_sl_to_be}"
             position_size_usd=self.position_size_usd,
             average_entry=self.average_entry,
         )
-        info_logger.info(f"tp_price={self.tp_price} tp_pct={round(self.tp_pct*100,2)}")
+        info_logger.info(f"tp_price={self.tp_price:,} tp_pct={round(self.tp_pct*100,2)}")
 
     def check_stop_loss_hit(self, current_candle):
         self.obj_stop_loss.sl_hit_checker(
