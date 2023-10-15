@@ -41,7 +41,7 @@ def get_to_the_upside_nb(
 
     if gains_pct <= 0:
         to_the_upside = -to_the_upside
-    return round(to_the_upside,4)
+    return round(to_the_upside, 4)
 
 
 def create_os_cart_product_nb(order_settings_arrays: OrderSettingsArrays):

@@ -122,22 +122,22 @@ class StopLossLong:
             self.move_tsl_checker = self.check_move_trailing_stop_loss
 
     def __get_candle_body_price_open(self, lookback, bar_index, candles):
-        price = candles['open'][lookback:bar_index].min()
+        price = candles["open"][lookback : bar_index + 1].min()
         info_logger.debug(f"Open Price = {price}")
         return price
 
     def __get_candle_body_price_high(self, lookback, bar_index, candles):
-        price = candles['high'][lookback:bar_index].min()
+        price = candles["high"][lookback : bar_index + 1].min()
         info_logger.debug(f"High Price = {price}")
         return price
 
     def __get_candle_body_price_low(self, lookback, bar_index, candles):
-        price = candles['low'][lookback:bar_index].min()
+        price = candles["low"][lookback : bar_index + 1].min()
         info_logger.debug(f"Low Price = {price}")
         return price
 
     def __get_candle_body_price_close(self, lookback, bar_index, candles):
-        price = candles['close'][lookback:bar_index].min()
+        price = candles["close"][lookback : bar_index + 1].min()
         info_logger.debug(f"Close Price = {price}")
         return price
 
@@ -150,7 +150,7 @@ class StopLossLong:
         lookback = max(bar_index - self.sl_based_on_lookback, 0)
         candle_body = self.sl_price_getter(
             lookback=lookback,
-            bar_index=bar_index + 1,
+            bar_index=bar_index,
             candles=candles,
         )
         sl_price = candle_body - (candle_body * self.sl_based_on_add_pct)
@@ -186,7 +186,7 @@ class StopLossLong:
             # Stop Loss to break even
             candle_body_ohlc = self.sl_to_be_price_getter(
                 lookback=bar_index,
-                bar_index=bar_index + 1,
+                bar_index=bar_index,
                 candles=candles,
             )
             pct_from_ae = round((candle_body_ohlc - average_entry) / average_entry, 2)
@@ -214,7 +214,7 @@ class StopLossLong:
     ):
         candle_body_ohlc = self.tsl_price_getter(
             lookback=bar_index,
-            bar_index=bar_index + 1,
+            bar_index=bar_index,
             candles=candles,
         )
         pct_from_ae = round((candle_body_ohlc - average_entry) / average_entry, 2)

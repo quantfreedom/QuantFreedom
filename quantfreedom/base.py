@@ -59,13 +59,14 @@ def backtest_df_only(
     backtest_settings: BacktestSettings,
     exchange_settings: ExchangeSettings,
     strategy: Strategy,
+    candles: np.array,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     # Creating Settings Vars
     total_order_settings = os_cart_arrays[0].size
 
     total_indicator_settings = strategy.indicator_cart_product[0].size
 
-    total_bars = strategy.candles.size
+    total_bars = candles.size
 
     # Printing out total numbers of things
     print("Starting the backtest now ... and also here are some stats for your backtest.\n")
@@ -117,18 +118,18 @@ def backtest_df_only(
             # entries loop
             for bar_index in range(starting_bar, total_bars):
                 info_logger.debug(
-                    f"ind_idx={indicator_settings_index:,} os_idx={order_settings_index:,} b_idx={bar_index} timestamp={pd.to_datetime(strategy.candles['timestamp'][bar_index], unit='ms')}"
+                    f"ind_idx={indicator_settings_index:,} os_idx={order_settings_index:,} b_idx={bar_index} timestamp={pd.to_datetime(candles['timestamp'][bar_index], unit='ms')}"
                 )
                 if order.position_size_usd > 0:
                     try:
-                        order.check_stop_loss_hit(current_candle=strategy.candles[bar_index])
-                        order.check_liq_hit(current_candle=strategy.candles[bar_index])
+                        order.check_stop_loss_hit(current_candle=candles[bar_index])
+                        order.check_liq_hit(current_candle=candles[bar_index])
                         order.check_take_profit_hit(
-                            current_candle=strategy.candles[bar_index],
+                            current_candle=candles[bar_index],
                             exit_signal=strategy.current_exit_signals[bar_index],
                         )
-                        order.check_move_stop_loss_to_be(bar_index=bar_index, candles=strategy.candles)
-                        order.check_move_trailing_stop_loss(bar_index=bar_index, candles=strategy.candles)
+                        order.check_move_stop_loss_to_be(bar_index=bar_index, candles=candles)
+                        order.check_move_trailing_stop_loss(bar_index=bar_index, candles=candles)
                     except RejectedOrder as e:
                         info_logger.warning(f"RejectedOrder -> {e.msg}")
                         pass
@@ -155,8 +156,8 @@ def backtest_df_only(
                 strategy.create_indicator(bar_index=bar_index, starting_bar=starting_bar)
                 if strategy.evaluate():  # add in that we are also not at max entry amount
                     try:
-                        order.calculate_stop_loss(bar_index=bar_index, candles=strategy.candles)
-                        order.calculate_increase_posotion(entry_price=strategy.candles["close"][bar_index])
+                        order.calculate_stop_loss(bar_index=bar_index, candles=candles)
+                        order.calculate_increase_posotion(entry_price=candles["close"][bar_index])
                         order.calculate_leverage()
                         order.calculate_take_profit()
 

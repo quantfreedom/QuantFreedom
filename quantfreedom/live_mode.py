@@ -18,7 +18,7 @@ from dash import Dash
 from IPython import get_ipython
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
-
+import pandas as pd
 from quantfreedom.strategies.strategy import Strategy
 
 load_figure_template("darkly")
@@ -63,9 +63,6 @@ class LiveTrading:
             if self.exchange.long_or_short == LongOrShortType.Long:
                 self.place_sl_order = self.exchange.create_long_hedge_mode_sl_order
                 self.get_position_info = self.exchange.get_long_hedge_mode_position_info
-                self.get_tp_pct = self.__get_pct_dif_above_average_entry
-                self.get_sl_pct = self.__get_pct_dif_below_average_entry
-                self.get_liq_pct = self.__get_pct_dif_below_average_entry
                 if entry_order_type == OrderPlacementType.Market:
                     self.entry_order = self.exchange.create_long_hedge_mode_entry_market_order
 
@@ -385,11 +382,11 @@ class LiveTrading:
         self.ex_entry_size_usd = float(entry_info.get("execValue"))
         self.ex_leverage = float(pos_info.get("leverage"))
         self.ex_liq_price = float(pos_info.get("liqPrice"))
-        self.ex_liq_pct = self.get_liq_pct(price=self.ex_liq_price, average_entry=self.ex_average_entry)
+        self.ex_liq_pct = self.__get_pct_difference(starting_num=self.ex_average_entry, diff_num=self.ex_liq_price)
         self.ex_tp_price = float(tp_info.get("price"))
-        self.ex_tp_pct = self.get_tp_pct(price=self.ex_tp_price, average_entry=self.ex_average_entry)
+        self.ex_tp_pct = self.get_tp_pct(starting_num=self.ex_average_entry, diff_num=self.ex_tp_price)
         self.ex_sl_price = float(sl_info.get("triggerPrice"))
-        self.ex_sl_pct = self.get_sl_pct(price=self.ex_sl_price, average_entry=self.ex_average_entry)
+        self.ex_sl_pct = self.get_sl_pct(starting_num=self.ex_average_entry, diff_num=self.ex_sl_price)
         coin_size = self.ex_position_size_asset
         pnl = coin_size * (self.ex_sl_price - self.ex_average_entry)
         fee_open = coin_size * self.ex_average_entry * self.exchange.exchange_settings.market_fee_pct  # math checked
@@ -441,10 +438,11 @@ class LiveTrading:
     def __get_entry_plot_filename(self):
         info_logger.debug("Getting entry plot file")
         last_20 = self.exchange.candles_np[-20:]
-        graph_entry = [last_20["timestamp"][-1]]
+        last_20_datetimes = pd.to_datetime(last_20["timestamp"], unit="ms")
+        graph_entry = [last_20_datetimes[-1]]
         fig = go.Figure()
         fig.add_candlestick(
-            x=last_20["timestamp"],
+            x=last_20_datetimes,
             open=last_20["open"],
             high=last_20["high"],
             low=last_20["low"],
