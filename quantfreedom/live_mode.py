@@ -490,7 +490,7 @@ class LiveTrading:
             ".",
             "logs",
             "images",
-            f'entry_{datetime.now().strftime("%m-%d-%Y_%H-%M-%S")}.png',
+            f'entry_{datetime.utcnow().strftime("%m-%d-%Y_%H-%M-%S")}.png',
         )
         fig.write_image(entry_filename)
         return entry_filename
