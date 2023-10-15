@@ -44,6 +44,8 @@ FORMATTER = "%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s() - %(mes
 class Strategy:
     set_indicator_settings = None
     create_indicator = None
+    indicator_cart_product = None
+    current_exit_signals = None
 
     def __init__(
         self,
@@ -57,6 +59,7 @@ class Strategy:
         create_trades_logger: bool = False,
     ) -> None:
         self.candles = candles
+        self.candle_processing_mode = candle_processing_mode
         CustomLogger(
             log_debug=log_debug,
             disable_logging=disable_logging,
@@ -97,13 +100,6 @@ class Strategy:
         pass
 
     def __set_ids_and_indicator(self, indicator_settings_index: int):
-        """
-        we have to shift the indicator by one so that way we enter on the right candle
-        if we have a yes entry on candle 15 then in real life we wouldn't enter until 16
-        so that is why we have to shift by one
-
-        if you have an exit then you don't have to shift
-        """
         # self.rsi_length = int(self.indicator_settings_arrays.rsi_length[indicator_settings_index])
         # self.rsi_is_below = int(self.indicator_settings_arrays.rsi_is_below[indicator_settings_index])
         # info_logger.info(f"Indicator Settings: rsi_length={self.rsi_length} rsi_is_below={self.rsi_is_below}")
@@ -129,12 +125,7 @@ class Strategy:
     #########################################################################
     #########################################################################
 
-    def __set_indicator_candle_by_candle(self, bar_index, strat_num_candles):
-        """
-        we have to shift the info by one so that way we enter on the right candle
-        if we have a yes entry on candle 15 then in real life we wouldn't enter until 16
-        so that is why we have to shift by one
-        """
+    def __set_indicator_candle_by_candle(self, bar_index, starting_bar):
         # bar_start = max(strat_num_candles + bar_index, 0)
         # closing_series = pd.Series(self.closing_prices[bar_start : bar_index + 1])
         # try:

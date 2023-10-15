@@ -19,12 +19,12 @@ def get_to_the_upside_nb(
     ym = y.mean()
 
     y_ym = y - ym
-    if y_ym == 0:
+    if y_ym.all() == 0:
         y_ym = np.array([1])
     y_ym_s = y_ym**2
 
     x_xm = x - xm
-    if x_xm == 0:
+    if x_xm.all() == 0:
         x_xm = np.array([1])
     x_xm_s = x_xm**2
 
@@ -62,11 +62,6 @@ def create_os_cart_product_nb(order_settings_arrays: OrderSettingsArrays):
         m = int(n / order_settings_arrays[k].size)
         for j in range(1, order_settings_arrays[k].size):
             out[j * m : (j + 1) * m, k + 1 :] = out[0:m, k + 1 :]
-
-    if out.T[19].any() < 1:
-        raise Exception(
-            "If you are in regular backtsting mode you must have this set as one. If you are in real backtesting mode this must be 1 or greater"
-        )
 
     return OrderSettingsArrays(
         increase_position_type=out.T[0].astype(np.int_),

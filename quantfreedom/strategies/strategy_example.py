@@ -15,35 +15,8 @@ info_logger = logging.getLogger("info")
 
 
 class IndicatorSettingsArrays(NamedTuple):
-    rsi_length: np.array = np.array([14, 20])
-    rsi_is_below: np.array = np.array([200, 75])
-
-
-indicator_settings_array = IndicatorSettingsArrays()
-
-
-def create_ind_cart_product():
-    n = 1
-    for x in indicator_settings_array:
-        n *= x.size
-    out = np.empty((n, len(indicator_settings_array)))
-
-    for i in range(len(indicator_settings_array)):
-        m = int(n / indicator_settings_array[i].size)
-        out[:n, i] = np.repeat(indicator_settings_array[i], m)
-        n //= indicator_settings_array[i].size
-
-    n = indicator_settings_array[-1].size
-    for k in range(len(indicator_settings_array) - 2, -1, -1):
-        n *= indicator_settings_array[k].size
-        m = int(n / indicator_settings_array[k].size)
-        for j in range(1, indicator_settings_array[k].size):
-            out[j * m : (j + 1) * m, k + 1 :] = out[0:m, k + 1 :]
-
-    return IndicatorSettingsArrays(
-        rsi_length=out.T[0].astype(np.int_),
-        rsi_is_below=out.T[1].astype(np.int_),
-    )
+    rsi_length: np.array
+    rsi_is_below: np.array
 
 
 class StrategyExample(Strategy):
@@ -53,6 +26,11 @@ class StrategyExample(Strategy):
 
     def __init__(
         self,
+        rsi_length: [np.array, list],
+        rsi_is_below: [np.array, list],
+        #
+        # My stuff up top
+        #
         candle_processing_mode: CandleProcessingType,
         candles: np.array = None,
         indicator_settings_index: int = None,
@@ -73,19 +51,23 @@ class StrategyExample(Strategy):
             create_trades_logger,
         )
 
-        self.indicator_settings_arrays = create_ind_cart_product()
+        self.candles = candles
+        self.indicator_settings_arrays = IndicatorSettingsArrays(
+            rsi_length=np.asarray(rsi_length),
+            rsi_is_below=np.asarray(rsi_is_below),
+        )
+
+        self.__set_ind_cart_product()
 
         if candle_processing_mode == CandleProcessingType.Backtest:
-            self.closing_prices = candles[:, 3]
             self.create_indicator = self.__set_bar_index
-            self.current_exit_signals = np.full_like(self.closing_prices, np.nan)
+            self.current_exit_signals = np.full_like(candles["close"], np.nan)
             self.set_indicator_settings = self.__set_ids_and_indicator
 
         elif candle_processing_mode == CandleProcessingType.RealBacktest:
             self.bar_index = -1
-            self.closing_prices = candles[:, 3]
             self.create_indicator = self.__set_indicator_real_backtest
-            self.current_exit_signals = np.full_like(self.closing_prices, np.nan)
+            self.current_exit_signals = np.full_like(candles["close"], np.nan)
             self.set_indicator_settings = self.__set_ind_set
 
         elif candle_processing_mode == CandleProcessingType.LiveTrading:
@@ -100,22 +82,17 @@ class StrategyExample(Strategy):
     #########################################################################
     #########################################################################
 
-    def __set_bar_index(self, bar_index, strat_num_candles):
+    def __set_bar_index(self, bar_index, **vargs):
         self.bar_index = bar_index
+        info_logger.debug(f"Set bar index in strat")
 
     def __set_ids_and_indicator(self, indicator_settings_index: int):
-        """
-        we have to shift the indicator by one so that way we enter on the right candle
-        if we have a yes entry on candle 15 then in real life we wouldn't enter until 16
-        so that is why we have to shift by one
-
-        if you have an exit then you don't have to shift
-        """
-        self.rsi_length = self.indicator_settings_arrays.rsi_length[indicator_settings_index]
-        self.rsi_is_below = self.indicator_settings_arrays.rsi_is_below[indicator_settings_index]
+        self.rsi_length = self.indicator_cart_product.rsi_length[indicator_settings_index]
+        self.rsi_is_below = self.indicator_cart_product.rsi_is_below[indicator_settings_index]
         info_logger.info(f"Indicator Settings: rsi_length={self.rsi_length} rsi_is_below={self.rsi_is_below}")
         try:
-            self.rsi = np.around(talib.RSI(self.candles.values[:,3], 14),2)
+            self.rsi = np.around(talib.RSI(self.candles["close"], self.rsi_length), 2)
+            info_logger.debug("Created rsi entry")
         except Exception as e:
             raise Exception(f"Exception creating rsi -> {e}")
 
@@ -127,23 +104,11 @@ class StrategyExample(Strategy):
     #########################################################################
     #########################################################################
 
-    def __set_indicator_real_backtest(self, bar_index, strat_num_candles):
-        """
-        we have to shift the info by one so that way we enter on the right candle
-        if we have a yes entry on candle 15 then in real life we wouldn't enter until 16
-        so that is why we have to shift by one
-        """
-        start = max(strat_num_candles + bar_index, 0)
-        closing_series = pd.Series(self.closing_prices[start : bar_index + 1])
+    def __set_indicator_real_backtest(self, bar_index, starting_bar):
+        start = max(bar_index - starting_bar, 0)
         try:
-            self.rsi = (
-                pta.rsi(
-                    close=closing_series,
-                    length=self.rsi_length,
-                )
-                .round(decimals=2)
-                .values
-            )
+            self.rsi = np.around(talib.RSI(self.candles["close"][start : bar_index + 1], self.rsi_length), 2)
+            info_logger.debug("Created rsi entry")
         except Exception as e:
             raise Exception(f"Exception creating rsi -> {e}")
 
@@ -157,7 +122,7 @@ class StrategyExample(Strategy):
 
     def set_indicator_live_trading(self, candles):
         try:
-            self.rsi = pta.rsi(close=pd.Series(candles[:, 3]), length=self.rsi_length).round(decimals=2).values
+            self.rsi = np.around(talib.RSI(candles["close"], self.rsi_length), 2)
             info_logger.debug("Created rsi entry")
         except Exception as e:
             raise Exception(f"Exception creating rsi -> {e}")
@@ -171,18 +136,42 @@ class StrategyExample(Strategy):
     #########################################################################
 
     def __set_ind_set(self, indicator_settings_index):
-        self.rsi_length = self.indicator_settings_arrays.rsi_length[indicator_settings_index]
-        self.rsi_is_below = self.indicator_settings_arrays.rsi_is_below[indicator_settings_index]
+        self.rsi_length = self.indicator_cart_product.rsi_length[indicator_settings_index]
+        self.rsi_is_below = self.indicator_cart_product.rsi_is_below[indicator_settings_index]
         info_logger.info(f"Indicator Settings: rsi_length={self.rsi_length} rsi_is_below={self.rsi_is_below}")
 
     def evaluate(self):
         try:
-            if self.rsi[self.bar_index] < self.rsi_is_below:
+            current_rsi = self.rsi[self.bar_index]
+            if current_rsi < self.rsi_is_below:
                 info_logger.info(f"\n\n")
-                info_logger.info(f"Entry time!!! rsi {self.rsi[self.bar_index]} is below {self.rsi_is_below}")
+                info_logger.info(f"Entry time!!! rsi {current_rsi} is below {self.rsi_is_below}")
                 return True
             else:
-                info_logger.info(f"No entry rsi {self.rsi[self.bar_index]}")
+                info_logger.info(f"No entry rsi {current_rsi}")
                 return False
         except Exception as e:
             raise Exception(f"Strategy class evaluate error -> {e}")
+
+    def __set_ind_cart_product(self):
+        n = 1
+        for x in self.indicator_settings_arrays:
+            n *= x.size
+        out = np.empty((n, len(self.indicator_settings_arrays)))
+
+        for i in range(len(self.indicator_settings_arrays)):
+            m = int(n / self.indicator_settings_arrays[i].size)
+            out[:n, i] = np.repeat(self.indicator_settings_arrays[i], m)
+            n //= self.indicator_settings_arrays[i].size
+
+        n = self.indicator_settings_arrays[-1].size
+        for k in range(len(self.indicator_settings_arrays) - 2, -1, -1):
+            n *= self.indicator_settings_arrays[k].size
+            m = int(n / self.indicator_settings_arrays[k].size)
+            for j in range(1, self.indicator_settings_arrays[k].size):
+                out[j * m : (j + 1) * m, k + 1 :] = out[0:m, k + 1 :]
+
+        self.indicator_cart_product = IndicatorSettingsArrays(
+            rsi_length=out.T[0].astype(np.int_),
+            rsi_is_below=out.T[1].astype(np.int_),
+        )

@@ -17,7 +17,6 @@ def backtest_df_only_classes(
     total_indicator_settings: int,
     total_order_settings: int,
     total_bars: int,
-    candles: np.array,
 ):
     # Creating strat records
     array_size = int(total_indicator_settings * total_order_settings / backtest_settings.divide_records_array_size_by)

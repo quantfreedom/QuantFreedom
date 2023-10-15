@@ -338,13 +338,13 @@ can_move_sl_to_be= {self.can_move_sl_to_be}"
 
     def check_stop_loss_hit(self, current_candle):
         self.obj_stop_loss.sl_hit_checker(
-            sl_hit=current_candle[2] < self.sl_price,
+            sl_hit=current_candle['low'] < self.sl_price,
             exit_fee_pct=self.market_fee_pct,
         )
 
     def check_liq_hit(self, current_candle):
         self.obj_leverage.liq_hit_checker(
-            liq_hit=current_candle[2] < self.liq_price,
+            liq_hit=current_candle['low'] < self.liq_price,
             exit_fee_pct=self.market_fee_pct,
         )
 

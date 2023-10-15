@@ -122,22 +122,22 @@ class StopLossLong:
             self.move_tsl_checker = self.check_move_trailing_stop_loss
 
     def __get_candle_body_price_open(self, lookback, bar_index, candles):
-        price = candles[lookback:bar_index, 0].min()
+        price = candles['open'][lookback:bar_index].min()
         info_logger.debug(f"Open Price = {price}")
         return price
 
     def __get_candle_body_price_high(self, lookback, bar_index, candles):
-        price = candles[lookback:bar_index, 1].min()
+        price = candles['high'][lookback:bar_index].min()
         info_logger.debug(f"High Price = {price}")
         return price
 
     def __get_candle_body_price_low(self, lookback, bar_index, candles):
-        price = candles[lookback:bar_index, 2].min()
+        price = candles['low'][lookback:bar_index].min()
         info_logger.debug(f"Low Price = {price}")
         return price
 
     def __get_candle_body_price_close(self, lookback, bar_index, candles):
-        price = candles[lookback:bar_index, 3].min()
+        price = candles['close'][lookback:bar_index].min()
         info_logger.debug(f"Close Price = {price}")
         return price
 

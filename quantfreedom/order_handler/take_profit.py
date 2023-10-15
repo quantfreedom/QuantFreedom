@@ -79,7 +79,7 @@ class TakeProfitLong:
         exit_fee_pct: float,
         **vargs,
     ):
-        if current_candle[1] > self.tp_price:
+        if current_candle['high'] > self.tp_price:
             info_logger.debug("Take Profit Hit")
             raise DecreasePosition(
                 exit_price=self.tp_price,
