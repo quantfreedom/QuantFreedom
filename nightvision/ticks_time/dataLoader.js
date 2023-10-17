@@ -1,62 +1,28 @@
 class DataLoader {
-    constructor() {
-        this.URL = "https://api1.binance.com/api/v3/klines";
-        this.SYM = "BTCUSDT";
-        this.TF = "1m"; // See binance api definitions
-
-        this.loading = false;
+    load(callback) {
+      callback({
+        panes: [
+          {
+            overlays: [
+              {
+                name: "BTC Tether US Binance",
+                type: "Candles",
+                data: [
+                  [1697241180000, 26830.0, 26833.7, 26827.5, 26827.6],
+                  [1697241240000, 26827.6, 26830.9, 26824.6, 26830.9],
+                  [1697241300000, 26830.9, 26840.1, 26830.9, 26839.7],
+                  [1697241360000, 26839.7, 26840.7, 26834.2, 26834.2],
+                  [1697241420000, 26834.2, 26848.6, 26834.2, 26848.0],
+                  [1697241480000, 26848.0, 26849.7, 26844.9, 26844.9],
+                  [1697241600000, 26844.9, 26849.8, 26844.9, 26849.7],
+                ],
+              },
+            ],
+          },
+        ],
+      });
     }
-
-    async load(callback) {
-        let url = `${this.URL}?symbol=${this.SYM}&interval=${this.TF}`;
-        let result = await fetch(url);
-        let data = await result.json();
-        callback({
-            panes: [{
-                overlays: [{
-                    name: "BTC Tether US Binance",
-                    type: "Candles",
-                    data: data.map((x) => this.format(x))
-                }],
-                scripts: [{
-                    type: 'EMA',
-                    props: { length: 200 }
-                }, {
-                    type: 'BB'
-                }]
-            }, {
-                scripts: [{
-                    type: 'MACD'
-                }]
-            }, {
-                scripts: [{
-                    type: 'Stoch'
-                }]
-            }]
-        });
-    }
-
-    async loadMore(endTime, callback) {
-        if (this.loading) return;
-        this.loading = true;
-        let url = `${this.URL}?symbol=${this.SYM}&interval=${this.TF}`;
-        url += `&endTime=${endTime}`;
-        let result = await fetch(url);
-        let data = await result.json();
-        callback(data.map((x) => this.format(x)));
-        this.loading = false;
-    }
-
-    format(x) {
-        return [
-            x[0],
-            parseFloat(x[1]),
-            parseFloat(x[2]),
-            parseFloat(x[3]),
-            parseFloat(x[4]),
-            parseFloat(x[7])
-        ];
-    }
-}
-
-export { DataLoader };
+  }
+  
+  export { DataLoader };
+  

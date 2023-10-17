@@ -1,8 +1,7 @@
 import "./style.css";
 import { NightVision } from "night-vision";
 import { DataLoader } from "./dataLoader.js";
-import wsx from "./wsx.js";
-import sampler from "./ohlcvSampler.js";
+import ticks from "./tick.json";
 
 document.querySelector("#app").innerHTML = `
 <style>
@@ -10,68 +9,69 @@ body {
     background-color: #0c0d0e;
 }
 </style>
-<h1>Night Vision Charts</h1>
 <div id="chart-container"></div>
 `;
-let chart = new NightVision("chart-container", {});
+
+let chart = new NightVision("chart-container", {
+  autoResize: true,
+  colors: { back: "#111113", grid: "#2e2f3055" },
+  config: {},
+});
 
 let dl = new DataLoader();
-
-// Load the first piece of the data
 dl.load((data) => {
   chart.data = data; // Set the initial data
   chart.fullReset(); // Reset tre time-range
   chart.se.uploadAndExec(); // Upload & exec scripts
 });
 
-function loadMore() {
-  let data = chart.hub.mainOv.data;
-  let t0 = data[0][0];
-  if (chart.range[0] < t0) {
-    dl.loadMore(t0 - 1, (chunk) => {
-      // Add a new chunk at the beginning
-      data.unshift(...chunk);
-      // Yo need to update "data"
-      // when the data range is changed
-      chart.update("data");
-      chart.se.uploadAndExec();
-    });
-  }
-}
-
-// Send an update to the script engine
-async function update() {
-  await chart.se.updateData();
-  var delay; // Floating update rate
-  if (chart.hub.mainOv.dataSubset.length < 1000) {
-    delay = 10;
-  } else {
-    delay = 1000;
-  }
-  setTimeout(update, delay);
-}
-
-// Load new data when user scrolls left
-chart.events.on("app:$range-update", loadMore);
-
-// Plus check for updates every second
-setInterval(loadMore, 500);
-
-// TA + chart update loop
-setTimeout(update, 0);
-
+let counter = 0;
 // Setup a trade data stream
-wsx.init([dl.SYM]);
-wsx.ontrades = (d) => {
+function updateCandles() {
   if (!chart.hub.mainOv) return;
-  let data = chart.hub.mainOv.data;
-  let trade = {
-    price: d.price,
-    volume: d.price * d.size,
-  };
-  if (sampler(data, trade)) {
+  let chart_data = chart.hub.mainOv.data;
+  if (sample(chart_data, counter)) {
     chart.update("data"); // New candle
-    chart.scroll(); // Scroll forward
+    // chart.scroll(); // Scroll forward
+  } else {
+    chart.update("data");
+    // chart.scroll(); // Scroll forward
   }
-};
-window.wsx = wsx;
+
+  counter++;
+}
+
+function sample(chart_data, counter, tf = 60000) {
+  let last_candle = chart_data[chart_data.length - 1];
+  let current_tick = ticks[counter];
+  if (!last_candle) return;
+  let tick_timestamp = current_tick[0];
+  let tick_volume = current_tick[2];
+  let tick_price = current_tick[1];
+  let time_next = last_candle[0] + tf;
+
+  if (tick_timestamp < time_next) {
+    // And new zero-height candle
+    let add_tick_to_candle = [
+      last_candle[0],
+      tick_price,
+      tick_price,
+      tick_price,
+      tick_price,
+      tick_volume,
+    ];
+    //callback('candle-close', symbol)
+    chart_data.push(add_tick_to_candle);
+    return true; // Make update('range')
+  } else {
+    last_candle[0] = time_next
+    last_candle[2] = Math.max(tick_price, last_candle[2]);
+    last_candle[3] = Math.min(tick_price, last_candle[3]);
+    last_candle[4] = tick_price;
+    last_candle[5] += tick_volume;
+    return false; // Make regular('update')
+  }
+}
+setInterval(updateCandles, 100);
+// Refernce for experiments
+window.chart = chart;
