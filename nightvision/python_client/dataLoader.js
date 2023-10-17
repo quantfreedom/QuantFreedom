@@ -1,4 +1,4 @@
-import candles from "./data/candles.json";
+import candles from "./data/data.json";
 
 class DataLoader {
 

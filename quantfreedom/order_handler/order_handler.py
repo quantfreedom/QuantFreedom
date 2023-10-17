@@ -218,6 +218,7 @@ max_trades = {order_settings.max_trades}"
         self.order_records[self.total_order_records_filled]["ind_set_idx"] = order_result.indicator_settings_index
         self.order_records[self.total_order_records_filled]["or_set_idx"] = order_result.order_settings_index
         self.order_records[self.total_order_records_filled]["bar_idx"] = order_result.bar_index
+        self.order_records[self.total_order_records_filled]["timestamp"] = order_result.timestamp
 
         self.order_records[self.total_order_records_filled]["equity"] = order_result.equity
         self.order_records[self.total_order_records_filled]["available_balance"] = order_result.available_balance
@@ -376,6 +377,7 @@ can_move_sl_to_be= {self.can_move_sl_to_be}"
         sl_price: float,
         order_status: int,
         bar_index: int,
+        timestamp: int,
         indicator_settings_index: int,
         order_settings_index: int,
     ) -> None:
@@ -389,6 +391,7 @@ can_move_sl_to_be= {self.can_move_sl_to_be}"
                 indicator_settings_index=indicator_settings_index,
                 order_settings_index=order_settings_index,
                 bar_index=bar_index,
+                timestamp=timestamp,
                 order_status=self.order_status,
                 sl_price=self.sl_price,
             ),
@@ -409,6 +412,7 @@ can_move_sl_to_be= {self.can_move_sl_to_be}"
         exit_price: float,
         exit_fee_pct: float,
         bar_index: int,
+        timestamp: int,
         indicator_settings_index: int,
         order_settings_index: int,
     ):
@@ -436,7 +440,8 @@ can_move_sl_to_be= {self.can_move_sl_to_be}"
             order_result=OrderResult(
                 indicator_settings_index=indicator_settings_index,
                 order_settings_index=order_settings_index,
-                bar_index=bar_index + 1,
+                timestamp=timestamp,
+                bar_index=bar_index,
                 equity=self.equity,
                 available_balance=self.available_balance,
                 fees_paid=self.fees_paid,

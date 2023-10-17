@@ -1,7 +1,9 @@
-import candles from "./data/candles.json";
-import entries from "./data/entries.json";
-import stoploss from "./data/stop_loss.json";
-import takeprofit from "./data/take_profit.json";
+import data from "./data/data.json";
+
+var entries = data.entries
+var stoplosses = data.stoplosses
+var takeprofits = data.takeprofits
+var candles = data.candles
 
 class DataLoader {
   load(callback, number) {
@@ -19,14 +21,14 @@ class DataLoader {
             {
               name: "Stop Loss",
               type: "StopLosses",
-              data: stoploss.slice(0, number),
+              data: stoplosses.slice(0, number),
               settings: {},
               props: {},
             },
             {
               name: "Take Profit",
               type: "TakeProfits",
-              data: takeprofit.slice(0, number),
+              data: takeprofits.slice(0, number),
               settings: {},
               props: {},
             },
@@ -51,10 +53,10 @@ class DataLoader {
     return entries.slice(number - 1, number)[0];
   }
   more_sl(number) {
-    return stoploss.slice(number - 1, number)[0];
+    return stoplosses.slice(number - 1, number)[0];
   }
   more_tp(number) {
-    return takeprofit.slice(number - 1, number)[0];
+    return takeprofits.slice(number - 1, number)[0];
   }
 }
 

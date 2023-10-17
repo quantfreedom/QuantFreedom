@@ -218,6 +218,7 @@ class OrderResult(NamedTuple):
     indicator_settings_index: int
     order_settings_index: int
     bar_index: int
+    timestamp: int
     equity: float = np.nan
     available_balance: float = np.nan
     cash_borrowed: float = np.nan
@@ -315,6 +316,7 @@ or_dt = np.dtype(
         ("ind_set_idx", np.int_),
         ("or_set_idx", np.int_),
         ("bar_idx", np.int_),
+        ("timestamp", np.int64),
         ("equity", np.float_),
         ("available_balance", np.float_),
         ("cash_borrowed", np.float_),

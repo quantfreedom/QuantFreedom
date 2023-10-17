@@ -17,7 +17,7 @@ let chart = new NightVision("chart-container", {
 });
 
 let dl = new DataLoader();
-let counter = 1;
+let counter = 2;
 
 dl.load((data) => {
   chart.data = data; // Set the initial data
