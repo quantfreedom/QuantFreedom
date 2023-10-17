@@ -3,6 +3,7 @@ logs/
 docs/
 math/
 old_quantfreedom/
+nb_quantfreedom/
 my_main.py
 init_script.sh
 .ipynb_checkpoints

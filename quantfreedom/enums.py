@@ -189,6 +189,34 @@ class OrderSettingsArrays(NamedTuple):
     max_trades: np.array
 
 
+class TestStaticOrderSettings(NamedTuple):
+    increase_position_type: int
+    leverage_type: int
+    long_or_short: int
+    sl_candle_body_type: int
+    sl_to_be_based_on_candle_body_type: int
+    sl_to_be_zero_or_entry_type: int
+    stop_loss_type: int
+    take_profit_type: int
+    tp_fee_type: int
+    trail_sl_based_on_candle_body_type: int
+
+
+class TestDynamicOrderSettings(NamedTuple):
+    max_equity_risk_pct: np.array
+    risk_account_pct_size: np.array
+    risk_reward: np.array
+    sl_based_on_add_pct: np.array
+    sl_based_on_lookback: np.array
+    sl_to_be_when_pct_from_candle_body: np.array
+    static_leverage: np.array
+    trail_sl_by_pct: np.array
+    trail_sl_when_pct_from_candle_body: np.array
+    num_candles: np.array
+    entry_size_asset: np.array
+    max_trades: np.array
+
+
 class OrderSettings(NamedTuple):
     increase_position_type: int
     leverage_type: int
