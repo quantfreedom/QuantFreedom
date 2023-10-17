@@ -7,8 +7,8 @@
 
 // Define new props
 // (the same as in 'settings.props' of Overlay object)
-prop('size', {  type: 'number', def: '12' })
-prop('color', {  type: 'color', def: '#00b33c' })
+prop('size', {  type: 'number', def: '6' })
+prop('color', {  type: 'color', def: '#00E7EC' })
 
 // Any variables/constants
 const _3Y = 60 * 60 * 24 * 365 * 3 * 1000
@@ -22,6 +22,7 @@ draw(ctx) {
 
     ctx.fillStyle = $props.color
     ctx.strokeStyle = $props.color
+    
     const half = $props.size
     const side = half * 2
     const data = view.src

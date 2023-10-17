@@ -27,9 +27,15 @@ dl.load((data) => {
 
 counter++;
 function updateCandles() {
-  if (counter < 300) {
-    let data = chart.hub.mainOv.data;
-    data.push(dl.getMore(counter));
+  if (counter < 9) {
+    let stoploss = chart.hub.chart.overlays[1].data;
+    let entries = chart.hub.chart.overlays[0].data;
+    let takeprofit = chart.hub.chart.overlays[2].data;
+    let candles = chart.hub.chart.overlays[3].data;
+    entries.push(dl.more_entries(counter));
+    stoploss.push(dl.more_sl(counter));
+    takeprofit.push(dl.more_tp(counter));
+    candles.push(dl.more_candles(counter));
     // print(data);
     chart.update("data");
     chart.scroll();
@@ -37,6 +43,6 @@ function updateCandles() {
   }
 }
 
-setInterval(updateCandles, 200);
+setInterval(updateCandles, 400);
 // Refernce for experiments
 window.chart = chart;

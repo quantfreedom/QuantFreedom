@@ -7,7 +7,7 @@
 
 // Define new props
 // (the same as in 'settings.props' of Overlay object)
-prop('radius', {  type: 'number', def: 10 })
+prop('radius', {  type: 'number', def: 6 })
 prop('size', {  type: 'number', def: '6' })
 prop('linewidth', {  type: 'number', def: '8' })
 prop('color', {  type: 'color', def: '#b800e6' })

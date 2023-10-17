@@ -7,7 +7,7 @@
 
 // Define new props
 // (the same as in 'settings.props' of Overlay object)
-prop('size', {  type: 'number', def: '10' })
+prop('size', {  type: 'number', def: '6' })
 prop('color', {  type: 'color', def: '#b800e6' })
 
 // Any variables/constants

@@ -12,6 +12,7 @@
   "description": "",
   "dependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.4.6",
+    "fastify": "^4.24.2",
     "night-vision": "^0.3.3",
     "vite": "^4.4.11"
   }

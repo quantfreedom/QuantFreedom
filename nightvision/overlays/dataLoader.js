@@ -1,9 +1,12 @@
 import data from "./data/data.json";
 
-var entries = data.entries
-var stoplosses = data.stoplosses
-var takeprofits = data.takeprofits
-var candles = data.candles
+var entries = data.entries;
+var stoplosses = data.sl_prices;
+var takeprofits = data.tp_prices;
+var candles = data.candles;
+var rsi = data.rsi;
+var tp_filled = data.tp_filled;
+var sl_filled = data.sl_filled;
 
 class DataLoader {
   load(callback, number) {
@@ -32,7 +35,20 @@ class DataLoader {
               settings: {},
               props: {},
             },
-
+            {
+              name: "Filled TP",
+              type: "TPFilled",
+              data: tp_filled.slice(0, number),
+              settings: {},
+              props: {},
+            },
+            {
+              name: "Filled SL",
+              type: "SLFilled",
+              data: sl_filled.slice(0, number),
+              settings: {},
+              props: {},
+            },
             {
               name: "BTC Tether US Binance",
               type: "Candles",
@@ -42,10 +58,22 @@ class DataLoader {
             },
           ],
         },
+        {
+          settings: {},
+          overlays: [
+            {
+              name: "Rsi",
+              type: "Spline",
+              data: rsi.slice(0, number),
+            },
+          ],
+        },
       ],
     });
   }
-
+  candle_length() {
+    return candles.length;
+  }
   more_candles(number) {
     return candles.slice(number - 1, number)[0];
   }
@@ -57,6 +85,15 @@ class DataLoader {
   }
   more_tp(number) {
     return takeprofits.slice(number - 1, number)[0];
+  }
+  more_filled_sl(number) {
+    return sl_filled.slice(number - 1, number)[0];
+  }
+  more_filled_tp(number) {
+    return tp_filled.slice(number - 1, number)[0];
+  }
+  more_rsi(number) {
+    return rsi.slice(number - 1, number)[0];
   }
 }
 

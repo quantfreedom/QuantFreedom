@@ -1,0 +1,21 @@
+name: Continuous Integration
+
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+
+env:
+  TZ: 'UTC'
+
+jobs:
+  test:
+    uses: fastify/workflows/.github/workflows/plugins-ci.yml@v3
+    with:
+      lint: true
+      license-check: true

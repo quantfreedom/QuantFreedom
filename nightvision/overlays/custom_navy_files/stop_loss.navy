@@ -7,9 +7,9 @@
 
 // Define new props
 // (the same as in 'settings.props' of Overlay object)
-prop('size', {  type: 'number', def: '6' })
-prop('linewidth', {  type: 'number', def: '8' })
-prop('color', {  type: 'color', def: '#e60000' })
+prop('size', {  type: 'number', def: '20' })
+prop('linewidth', {  type: 'number', def: '20' })
+prop('color', {  type: 'color', def: '#FB9B3B' })
 
 // Any variables/constants
 const _3Y = 60 * 60 * 24 * 365 * 3 * 1000
@@ -26,7 +26,6 @@ draw(ctx) {
     const half = $props.size
     const side = half * 2
     const data = view.src
-    ctx.lineWidth = $props.linewidth
     ctx.beginPath()
     for (var i = view.i1, n = view.i2; i <= n; i++) {
         let p = data[i]
@@ -37,5 +36,5 @@ draw(ctx) {
         ctx.moveTo(x-side, y+side)
         ctx.lineTo(x+side, y-side)
     }
-    ctx.stroke()
+    ctx.fill()
 }
