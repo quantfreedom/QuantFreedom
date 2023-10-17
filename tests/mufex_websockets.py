@@ -7,7 +7,7 @@ from my_stuff import MufexKeys
 
 def on_open(ws):
     print("opened")
-    ws.send(json.dumps({"op": "auth", "args": MufexKeys.api_key}))
+    # ws.send(json.dumps({"op": "auth", "args": MufexKeys.api_key}))
     ws.send(json.dumps({"op": "subscribe", "args": ["trades-100.BTCUSDT"]}))
 
 
