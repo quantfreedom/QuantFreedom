@@ -23,7 +23,7 @@ let chart = new NightVision("chart-container", {
 });
 
 let dl = new DataLoader();
-let counter = 15;
+let counter = 2;
 
 dl.load((data) => {
   chart.data = data; // Set the initial data
@@ -34,7 +34,7 @@ dl.load((data) => {
 counter++;
 var candle_length = dl.candle_length();
 function updateCandles() {
-  if (counter < 100) {
+  if (counter < candle_length) {
     let entries = chart.hub.chart.overlays[0].data;
     entries.push(dl.more_entries(counter));
 

@@ -7,8 +7,8 @@
 
 // Define new props
 // (the same as in 'settings.props' of Overlay object)
-prop('size', {  type: 'number', def: '20' })
-prop('linewidth', {  type: 'number', def: '20' })
+prop('size', {  type: 'number', def: '4' })
+prop('linewidth', {  type: 'number', def: '4' })
 prop('color', {  type: 'color', def: '#FB9B3B' })
 
 // Any variables/constants
@@ -23,6 +23,8 @@ draw(ctx) {
 
     ctx.fillStyle = $props.color
     ctx.strokeStyle = $props.color
+    ctx.lineWidth = $props.linewidth
+    
     const half = $props.size
     const side = half * 2
     const data = view.src
@@ -31,10 +33,11 @@ draw(ctx) {
         let p = data[i]
         let x = layout.ti2x(p[0], i)
         let y = layout.value2y(p[1])
-        ctx.moveTo(x-side, y-side)
+        ctx.moveTo(x-half, y-half)
+        ctx.lineTo(x+side, y-half)
         ctx.lineTo(x+side, y+side)
-        ctx.moveTo(x-side, y+side)
-        ctx.lineTo(x+side, y-side)
+        ctx.lineTo(x-half, y+side)
     }
+    ctx.stroke()
     ctx.fill()
 }
