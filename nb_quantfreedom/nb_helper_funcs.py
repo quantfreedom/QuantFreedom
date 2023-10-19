@@ -8,7 +8,7 @@ from numba import njit
 info_logger = logging.getLogger("info")
 
 
-@njit()
+@njit(cache=True))
 def get_to_the_upside_nb(
     gains_pct: float,
     wins_and_losses_array_no_be: np.array,
@@ -45,7 +45,7 @@ def get_to_the_upside_nb(
     return round(to_the_upside, 4)
 
 
-@njit()
+@njit(cache=True))
 def create_os_cart_product_nb(order_settings_arrays: OrderSettingsArrays):
     # cart array loop
     n = 1
@@ -91,7 +91,7 @@ def create_os_cart_product_nb(order_settings_arrays: OrderSettingsArrays):
     )
 
 
-@njit()
+@njit(cache=True))
 def get_order_setting(os_cart_arrays: OrderSettingsArrays, order_settings_index: int):
     return OrderSettings(
         increase_position_type=os_cart_arrays.increase_position_type[order_settings_index],
