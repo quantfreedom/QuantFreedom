@@ -1,5 +1,6 @@
 from numba.experimental import jitclass
 import numpy as np
+from nb_quantfreedom.nb_custom_logger import nb_CustomLogger
 
 from nb_quantfreedom.nb_helper_funcs import nb_round_size_by_tick_step
 from nb_quantfreedom.nb_order_handler.nb_class_helpers import nb_GetMinPrice, nb_GetPrice
@@ -12,6 +13,7 @@ class nb_Leverage:
 
     def calculate_leverage(
         self,
+logger: nb_CustomLogger,
         available_balance: float,
         average_entry: float,
         cash_borrowed: float,
@@ -26,6 +28,7 @@ class nb_Leverage:
 
     def check_liq_hit(
         self,
+logger: nb_CustomLogger,
         bar_index: int,
         current_candle: np.array,
         exit_fee_pct: float,
@@ -35,6 +38,7 @@ class nb_Leverage:
 
     def calc_liq_price(
         self,
+logger: nb_CustomLogger,
         average_entry: float,
         entry_size_usd: float,
         leverage: float,
@@ -51,6 +55,7 @@ class nb_Leverage:
 class nb_Long_SLev(nb_Leverage):
     def calculate_leverage(
         self,
+logger: nb_CustomLogger,
         available_balance: float,
         average_entry: float,
         cash_borrowed: float,
@@ -98,6 +103,7 @@ class nb_Long_DLev(nb_Leverage):
 
     def calculate_leverage(
         self,
+logger: nb_CustomLogger,
         available_balance: float,
         average_entry: float,
         cash_borrowed: float,
@@ -152,6 +158,7 @@ class nb_Long_DLev(nb_Leverage):
 class nb_Long_Leverage(nb_Leverage):
     def check_liq_hit(
         self,
+logger: nb_CustomLogger,
         current_candle: np.array,
         exit_fee_pct: float,
         liq_price: float,
@@ -173,6 +180,7 @@ class nb_Long_Leverage(nb_Leverage):
 
     def calc_liq_price(
         self,
+logger: nb_CustomLogger,
         average_entry: float,
         entry_size_usd: float,
         leverage: float,

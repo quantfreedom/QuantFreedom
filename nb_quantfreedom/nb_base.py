@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from numba import njit
+from nb_quantfreedom.nb_custom_logger import nb_CustomLogger, nb_WontLog
 
 from nb_quantfreedom.nb_helper_funcs import get_to_the_upside_nb, nb_get_dos
 from nb_quantfreedom.nb_enums import (
@@ -12,6 +13,7 @@ from nb_quantfreedom.nb_enums import (
     ExchangeSettings,
     IncreasePositionType,
     LeverageStrategyType,
+    LoggerSettings,
     LongOrShortType,
     MoveStopLoss,
     OrderResult,
@@ -19,11 +21,12 @@ from nb_quantfreedom.nb_enums import (
     OrderStatus,
     PriceGetterType,
     RejectedOrder,
-    SLToBeZeroOrEntryType,
+    ZeroOrEntryType,
     StopLossStrategyType,
     TakeProfitFeeType,
     TakeProfitStrategyType,
     StaticOrderSettings,
+    ZeroOrEntryType,
     strat_df_array_dt,
 )
 from nb_quantfreedom.nb_order_handler.nb_decrease_position import nb_DecreasePosition, nb_Long_DP
@@ -70,8 +73,42 @@ def backtest_df_only(
     exchange_settings: ExchangeSettings,
     starting_equity: float,
     static_os: StaticOrderSettings,
-    strategy: Strategy,
+    strategy: nb_Strategy,
+    logger_settings: LoggerSettings,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    #########################################
+    #########################################
+    #########################################
+                    Logger
+                    Logger
+                    Logger
+    #########################################
+    #########################################
+    #########################################
+    """
+    if logger_settings:
+        nb_CustomLogger().set_loggers(
+            log_debug=logger_settings.log_debug,
+            create_trades_logger=logger_settings.create_trades_logger,
+            custom_path=logger_settings.custom_path,
+            formatter=logger_settings.formatter,
+        )
+        logger = nb_CustomLogger()
+    else:
+        logger = nb_WontLog()
+
+    """
+    #########################################
+    #########################################
+    #########################################
+                    Trading
+                    Trading
+                    Trading
+    #########################################
+    #########################################
+    #########################################
+    """
     if static_os.long_or_short == LongOrShortType.Long:
         # Decrease Position
         dec_pos_calculator = nb_Long_DP()
@@ -89,36 +126,36 @@ def backtest_df_only(
         """
 
         # setting up stop loss calulator
-        if static_os.stop_loss_type == StopLossStrategyType.SLBasedOnCandleBody:
+        if static_os.sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
             sl_calculator = nb_Long_SLBCB()
             checker_sl_hit = nb_Long_StopLoss()
             if static_os.pg_min_max_sl_bcb == PriceGetterType.Min:
                 sl_bcb_price_getter = nb_GetMinPrice()
             elif static_os.pg_min_max_sl_bcb == PriceGetterType.Max:
                 sl_bcb_price_getter = nb_GetMaxPrice()
-        elif static_os.stop_loss_type == StopLossStrategyType.Nothing:
+        elif static_os.sl_strategy_type == StopLossStrategyType.Nothing:
             sl_calculator = nb_StopLoss()
             sl_bcb_price_getter = nb_StopLoss()
 
         # setting up stop loss break even checker
-        if static_os.sl_to_be:
+        if static_os.sl_to_be_bool:
             checker_sl_to_be = nb_Long_StopLoss()
             # setting up stop loss be zero or entry
-            if static_os.sl_to_be_ze_type == SLToBeZeroOrEntryType.ZeroLoss:
+            if static_os.z_or_e_type == ZeroOrEntryType.ZeroLoss:
                 set_z_e = nb_Long_SLToZero()
-            elif static_os.sl_to_be_ze_type == SLToBeZeroOrEntryType.AverageEntry:
+            elif static_os.z_or_e_type == ZeroOrEntryType.AverageEntry:
                 set_z_e = nb_Long_SLToEntry()
         else:
             checker_sl_to_be = nb_StopLoss()
             set_z_e = nb_ZeroOrEntry()
 
         # setting up stop loss break even checker
-        if static_os.trail_sl:
+        if static_os.trail_sl_bool:
             checker_tsl = nb_Long_StopLoss()
         else:
             checker_tsl = nb_StopLoss()
 
-        if static_os.trail_sl or static_os.sl_to_break_even:
+        if static_os.trail_sl_bool or static_os.sl_to_be_bool:
             sl_mover = nb_MoveSL()
         else:
             sl_mover = nb_StopLoss()
@@ -135,7 +172,7 @@ def backtest_df_only(
         #########################################
         """
 
-        if static_os.stop_loss_type == StopLossStrategyType.SLBasedOnCandleBody:
+        if static_os.sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
             if static_os.increase_position_type == IncreasePositionType.RiskPctAccountEntrySize:
                 inc_pos_calculator = nb_Long_RPAandSLB()
 
@@ -154,7 +191,7 @@ def backtest_df_only(
         #########################################
         """
 
-        if static_os.leverage_type == LeverageStrategyType.Dynamic:
+        if static_os.leverage_strategy_type == LeverageStrategyType.Dynamic:
             lev_calculator = nb_Long_DLev()
         else:
             lev_calculator = nb_Long_SLev()
@@ -172,10 +209,10 @@ def backtest_df_only(
         #########################################
         """
 
-        if static_os.take_profit_type == TakeProfitStrategyType.RiskReward:
+        if static_os.tp_strategy_type == TakeProfitStrategyType.RiskReward:
             tp_calculator = nb_Long_RR()
             checker_tp_hit = nb_Long_TPHitReg()
-        elif static_os.take_profit_type == TakeProfitStrategyType.Provided:
+        elif static_os.tp_strategy_type == TakeProfitStrategyType.Provided:
             pass
     """
     #########################################
@@ -238,6 +275,7 @@ def backtest_df_only(
         exit_fee_pct=exit_fee_pct,
         inc_pos_calculator=inc_pos_calculator,
         lev_calculator=lev_calculator,
+        logger=logger,
         set_z_e=set_z_e,
         sl_bcb_price_getter=sl_bcb_price_getter,
         sl_calculator=sl_calculator,
@@ -271,6 +309,7 @@ def nb_run_backtest(
     exchange_settings: ExchangeSettings,
     exit_fee_pct: float,
     inc_pos_calculator: nb_IncreasePosition,
+    logger: nb_CustomLogger,
     lev_calculator: nb_Leverage,
     set_z_e: nb_ZeroOrEntry,
     sl_bcb_price_getter: nb_PriceGetter,
@@ -284,6 +323,7 @@ def nb_run_backtest(
     tp_calculator: nb_TakeProfit,
 ):
     market_fee_pct = exchange_settings.market_fee_pct
+    leverage_tick_step = exchange_settings.leverage_tick_step
     price_tick_step = exchange_settings.price_tick_step
     asset_tick_step = exchange_settings.asset_tick_step
     min_asset_size = exchange_settings.min_asset_size
@@ -312,7 +352,7 @@ def nb_run_backtest(
 
             print(f"Created Order class")
 
-            starting_bar = calc_starting_bar(dynamic_order_settings.num_candles)
+            starting_bar = calc_starting_bar.starting_bar_calc(dynamic_order_settings.num_candles)
 
             order_result = OrderResult(
                 indicator_settings_index=-1,
@@ -352,7 +392,7 @@ def nb_run_backtest(
             # entries loop
             for bar_index in range(starting_bar, total_bars):
                 print(
-                    f"ind_idx={indicator_settings_index:,} os_idx={dos_index:,} b_idx={bar_index} timestamp={pd.to_datetime(candles[bar_index, CandleBodyType.Timestamp], unit='ms')}"
+                    f"ind_idx={indicator_settings_index:,} dos_idx={dos_index:,} bar_idx={bar_index} timestamp={pd.to_datetime(candles[bar_index, CandleBodyType.Timestamp], unit='ms')}"
                 )
                 if order_result.position_size_usd > 0:
                     try:
@@ -360,17 +400,20 @@ def nb_run_backtest(
                             current_candle=candles[bar_index, :],
                             exit_fee_pct=market_fee_pct,
                             sl_price=order_result.sl_price,
+                            logger=logger,
                         )
                         checker_liq_hit.check_liq_hit(
                             current_candle=candles[bar_index, :],
                             exit_fee_pct=market_fee_pct,
                             liq_price=order_result.liq_price,
+                            logger=logger,
                         )
 
                         checker_tp_hit.check_tp_hit(
                             current_candle=candles[bar_index, :],
                             exit_fee_pct=exit_fee_pct,
                             tp_price=order_result.tp_price,
+                            logger=logger,
                         )
 
                         checker_sl_to_be.check_move_stop_loss_to_be(
@@ -382,6 +425,7 @@ def nb_run_backtest(
                             sl_price=order_result.sl_price,
                             sl_to_be_move_when_pct=dynamic_order_settings.sl_to_be_when_pct,
                             price_tick_step=price_tick_step,
+                            logger=logger,
                         )
 
                         checker_tsl.check_move_trailing_stop_loss(
@@ -394,6 +438,7 @@ def nb_run_backtest(
                             sl_price=order_result.sl_price,
                             trail_sl_by_pct=dynamic_order_settings.trail_sl_by_pct,
                             trail_sl_when_pct=dynamic_order_settings.trail_sl_when_pct,
+                            logger=logger,
                         )
                     except RejectedOrder as e:
                         print(f"RejectedOrder -> {e.msg}")
@@ -408,6 +453,7 @@ def nb_run_backtest(
                             order_status=e.order_status,
                             sl_price=e.sl_price,
                             timestamp=candles[bar_index : CandleBodyType.Timestamp],
+                            logger=logger,
                         )
                     except DecreasePosition as e:
                         equity, fees_paid, realized_pnl = dec_pos_calculator.decrease_position(
@@ -418,6 +464,7 @@ def nb_run_backtest(
                             market_fee_pct=market_fee_pct,
                             order_status=e.order_status,
                             position_size_asset=order_result.position_size_asset,
+                            logger=logger,
                         )
                         # Fill pnl array
                         pnl_array[filled_pnl_counter] = realized_pnl
@@ -455,8 +502,8 @@ def nb_run_backtest(
                             tp_price=0.0,
                         )
                     except Exception as e:
-                        print(f"Exception placing order -> {e}")
-                        raise Exception(f"Exception placing order -> {e}")
+                        print(f"Exception moving or decreasing order -> {e}")
+                        raise Exception(f"Exception moving or decreasing order -> {e}")
                 strategy.create_indicator(bar_index=bar_index, starting_bar=starting_bar)  # TODO: this
                 if strategy.evaluate():  # TODO: this and add in that we are also not at max entry amount
                     try:
@@ -468,6 +515,7 @@ def nb_run_backtest(
                             sl_based_on_lookback=dynamic_order_settings.sl_based_on_lookback,
                             sl_bcb_price_getter=sl_bcb_price_getter,
                             sl_bcb_type=dynamic_order_settings.sl_bcb_type,
+                            logger=logger,
                         )
                         (
                             average_entry,
@@ -497,6 +545,7 @@ def nb_run_backtest(
                             risk_account_pct_size=dynamic_order_settings.risk_account_pct_size,
                             sl_price=sl_price,
                             total_trades=order_result.total_trades,
+                            logger=logger,
                         )
 
                         (
@@ -516,6 +565,9 @@ def nb_run_backtest(
                             mmr_pct=mmr_pct,
                             sl_price=sl_price,
                             static_leverage=dynamic_order_settings.static_leverage,
+                            leverage_tick_step=leverage_tick_step,
+                            price_tick_step=price_tick_step,
+                            logger=logger,
                         )
 
                         (
@@ -530,6 +582,7 @@ def nb_run_backtest(
                             price_tick_step=price_tick_step,
                             risk_reward=dynamic_order_settings.risk_reward,
                             tp_fee_pct=exit_fee_pct,
+                            logger=logger,
                         )
                         order_result = OrderResult(
                             # where we are at

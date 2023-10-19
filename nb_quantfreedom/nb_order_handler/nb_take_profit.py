@@ -1,4 +1,5 @@
 import numpy as np
+from nb_quantfreedom.nb_custom_logger import nb_CustomLogger
 from nb_quantfreedom.nb_helper_funcs import nb_round_size_by_tick_step
 from numba.experimental import jitclass
 
@@ -12,6 +13,7 @@ class nb_TakeProfit:
 
     def calculate_take_profit(
         self,
+        logger: nb_CustomLogger,
         average_entry: float,
         market_fee_pct: float,
         position_size_usd: float,
@@ -24,6 +26,7 @@ class nb_TakeProfit:
 
     def check_tp_hit(
         self,
+        logger: nb_CustomLogger,
         current_candle: np.array,
         exit_fee_pct: float,
         tp_price: float,
@@ -36,6 +39,7 @@ class nb_TakeProfit:
 class nb_Long_RR(nb_TakeProfit):
     def calculate_take_profit(
         self,
+        logger: nb_CustomLogger,
         average_entry: float,
         market_fee_pct: float,
         position_size_usd: float,
@@ -70,6 +74,7 @@ class nb_Long_RR(nb_TakeProfit):
 class nb_Long_TPHitReg(nb_TakeProfit):
     def check_tp_hit(
         self,
+        logger: nb_CustomLogger,
         current_candle: np.array,
         exit_fee_pct: float,
         tp_price: float,
@@ -93,6 +98,7 @@ class nb_Long_TPHitReg(nb_TakeProfit):
 class nb_Long_TPHitProvided(nb_TakeProfit):
     def check_tp_hit(
         self,
+        logger: nb_CustomLogger,
         bar_index: int,
         current_candle: np.array,
         exit_fee_pct: float,

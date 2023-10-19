@@ -1,4 +1,5 @@
 from numba.experimental import jitclass
+from nb_quantfreedom.nb_custom_logger import nb_CustomLogger
 
 from nb_quantfreedom.nb_enums import OrderResult, OrderStatus
 
@@ -9,6 +10,7 @@ class nb_DecreasePosition:
 
     def decrease_position(
         self,
+        logger: nb_CustomLogger,
         average_entry: float,
         bar_index: int,
         dos_index: int,
@@ -28,6 +30,7 @@ class nb_DecreasePosition:
 class nb_Long_DP(nb_DecreasePosition):
     def decrease_position(
         self,
+        logger: nb_CustomLogger,
         average_entry: float,
         equity: float,
         exit_fee_pct: float,
@@ -44,7 +47,7 @@ class nb_Long_DP(nb_DecreasePosition):
 
         # Setting new equity
         equity = round(realized_pnl + equity, 4)
-        print(
+        logger.debug(
             f"\n\
 realized_pnl={realized_pnl}\n\
 order_status= {OrderStatus._fields[order_status]}\n\

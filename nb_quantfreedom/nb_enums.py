@@ -1,5 +1,9 @@
 from typing import NamedTuple
 import numpy as np
+import os
+
+DIR_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+FORMATTER = "%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s() - %(message)s"
 
 
 class CandleProcessingTypeT(NamedTuple):
@@ -75,7 +79,7 @@ class OrderStatusT(NamedTuple):
     EntrySizeTooSmall: int = 10
     EntrySizeTooBig: int = 11
     PossibleLossTooBig: int = 12
-    Nothing: int = 99999999
+    Nothing: int = 999999
 
 
 OrderStatus = OrderStatusT()
@@ -100,24 +104,24 @@ PositionModeType = PositionModeTypeT()
 class PriceGetterTypeT(NamedTuple):
     Min: int = 0
     Max: int = 1
-    Nothing: int = 9999999999
+    Nothing: int = 999999
 
 
 PriceGetterType = PriceGetterTypeT()
 
 
-class SLToBeZeroOrEntryTypeT(NamedTuple):
+class ZeroOrEntryTypeT(NamedTuple):
     ZeroLoss: int = 0
     AverageEntry: int = 1
-    Nothing: int = 9999999999
+    Nothing: int = 999999
 
 
-SLToBeZeroOrEntryType = SLToBeZeroOrEntryTypeT()
+ZeroOrEntryType = ZeroOrEntryTypeT()
 
 
 class StopLossStrategyTypeT(NamedTuple):
     SLBasedOnCandleBody: int = 0
-    Nothing: int = 9999999999
+    Nothing: int = 999999
 
 
 StopLossStrategyType = StopLossStrategyTypeT()
@@ -138,7 +142,7 @@ class TakeProfitStrategyTypeT(NamedTuple):
     TPPct: int = 2
     Provided: int = 3
     ProvidedandPct: int = 4
-    Nothing: int = 99999
+    Nothing: int = 999999
 
 
 TakeProfitStrategyType = TakeProfitStrategyTypeT()
@@ -186,45 +190,6 @@ class ExchangeSettings(NamedTuple):
     leverage_tick_step: int = None
 
 
-class OrderSettingsArrays(NamedTuple):
-    increase_position_type: np.array
-    leverage_type: np.array
-    max_equity_risk_pct: np.array
-    long_or_short: np.array
-    risk_account_pct_size: np.array
-    risk_reward: np.array
-    sl_based_on_add_pct: np.array
-    sl_based_on_lookback: np.array
-    sl_bcb_type: np.array
-    sl_to_be_cb_type: np.array
-    sl_to_be_when_pct: np.array
-    sl_to_be_ze_type: np.array
-    static_leverage: np.array
-    stop_loss_type: np.array
-    take_profit_type: np.array
-    tp_fee_type: np.array
-    trail_sl_bcb_type: np.array
-    trail_sl_by_pct: np.array
-    trail_sl_when_pct: np.array
-    num_candles: np.array
-    entry_size_asset: np.array
-    max_trades: np.array
-
-
-class StaticOrderSettings(NamedTuple):
-    increase_position_type: int
-    leverage_type: int
-    long_or_short: int
-    pg_min_max_sl_bcb: int
-    sl_to_be: bool
-    sl_to_be_ze_type: int
-    stop_loss_type: int
-    take_profit_type: int
-    tp_fee_type: int
-    tp_fee: int
-    trail_sl: bool
-
-
 class DynamicOrderSettingsArrays(NamedTuple):
     entry_size_asset: np.array
     max_equity_risk_pct: np.array
@@ -258,10 +223,16 @@ class DynamicOrderSettings(NamedTuple):
     sl_to_be_when_pct: float
     sl_to_be_ze_type: int
     static_leverage: float
-    tp_fee_type: int
     trail_sl_bcb_type: int
     trail_sl_by_pct: float
     trail_sl_when_pct: float
+
+
+class LoggerSettings(NamedTuple):
+    log_debug: bool
+    create_trades_logger: bool
+    custom_path: str = DIR_PATH
+    formatter: str = FORMATTER
 
 
 class OrderResult(NamedTuple):
@@ -295,6 +266,20 @@ class OrderResult(NamedTuple):
     total_trades: int = 0
     tp_pct: float = np.nan
     tp_price: float = np.nan
+
+
+class StaticOrderSettings(NamedTuple):
+    increase_position_type: int
+    leverage_strategy_type: int
+    long_or_short: int
+    logger_bool: bool
+    pg_min_max_sl_bcb: int
+    sl_strategy_type: int
+    sl_to_be_bool: bool
+    z_or_e_type: int
+    tp_strategy_type: int
+    tp_fee_type: int
+    trail_sl_bool: bool
 
 
 class RejectedOrder(Exception):

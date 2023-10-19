@@ -5,7 +5,7 @@ import talib
 
 from typing import NamedTuple
 
-from nb_quantfreedom.nb_enums import CandleProcessingType
+from nb_quantfreedom.nb_enums import CandleBodyType, CandleProcessingType
 import logging
 
 from quantfreedom.strategies.strategy import DIR_PATH, FORMATTER, Strategy
@@ -61,13 +61,13 @@ class StrategyExample(Strategy):
 
         if candle_processing_mode == CandleProcessingType.Backtest:
             self.create_indicator = self.__set_bar_index
-            self.current_exit_signals = np.full_like(candles["close"], np.nan)
+            self.current_exit_signals = np.full_like(candles[:, CandleBodyType.Close], np.nan)
             self.set_indicator_settings = self.__set_ids_and_indicator
 
         elif candle_processing_mode == CandleProcessingType.RealBacktest:
             self.bar_index = -1
             self.create_indicator = self.__set_indicator_real_backtest
-            self.current_exit_signals = np.full_like(candles["close"], np.nan)
+            self.current_exit_signals = np.full_like(candles[:, CandleBodyType.Close], np.nan)
             self.set_indicator_settings = self.__set_ind_set
 
         elif candle_processing_mode == CandleProcessingType.LiveTrading:
@@ -91,7 +91,7 @@ class StrategyExample(Strategy):
         self.rsi_is_below = self.indicator_cart_product.rsi_is_below[indicator_settings_index]
         info_logger.info(f"Indicator Settings: rsi_length={self.rsi_length} rsi_is_below={self.rsi_is_below}")
         try:
-            self.rsi = np.around(talib.RSI(self.candles["close"], self.rsi_length), 2)
+            self.rsi = np.around(talib.RSI(self.candles[:, CandleBodyType.Close], self.rsi_length), 2)
             info_logger.debug("Created rsi entry")
         except Exception as e:
             raise Exception(f"Exception creating rsi -> {e}")
@@ -107,7 +107,9 @@ class StrategyExample(Strategy):
     def __set_indicator_real_backtest(self, bar_index, starting_bar):
         start = max(bar_index - starting_bar, 0)
         try:
-            self.rsi = np.around(talib.RSI(self.candles["close"][start : bar_index + 1], self.rsi_length), 2)
+            self.rsi = np.around(
+                talib.RSI(self.candles[start : bar_index + 1, CandleBodyType.Close], self.rsi_length), 2
+            )
             info_logger.debug("Created rsi entry")
         except Exception as e:
             raise Exception(f"Exception creating rsi -> {e}")
