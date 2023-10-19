@@ -123,7 +123,10 @@ class nb_Long_SetStaticLeverage(nb_Leverage):
 
 
 @jitclass()
-class nb_Long_CalcDynamicLeverage(nb_Leverage):
+class nb_Long_DLev(nb_Leverage):
+    """
+    Calculate dynamic leverage
+    """
     def leverage_calculator(
         self,
         available_balance: float,

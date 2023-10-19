@@ -33,7 +33,7 @@ class nb_TakeProfit:
 
 
 @jitclass
-class nb_Long_TPRiskReward(nb_TakeProfit):
+class nb_Long_RR(nb_TakeProfit):
     def calculate_take_profit(
         self,
         average_entry: float,

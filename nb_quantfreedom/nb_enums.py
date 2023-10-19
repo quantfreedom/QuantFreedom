@@ -212,19 +212,19 @@ class OrderSettingsArrays(NamedTuple):
 
 
 class TestStaticOrderSettings(NamedTuple):
-    increase_position_type: IncreasePositionType
-    leverage_type: LeverageStrategyType
-    long_or_short: LongOrShortType
-    pg_min_max_sl_bcb: PriceGetterType
-    pg_min_max_sl_be: PriceGetterType
-    pg_min_max_tsl: PriceGetterType
-    stop_loss_type: StopLossStrategyType
-    take_profit_type: TakeProfitStrategyType
-    tp_fee: TakeProfitFeeType
+    increase_position_type: int
+    leverage_type: int
+    long_or_short: int
+    pg_min_max_sl_bcb: int
+    pg_min_max_sl_be: int
+    pg_min_max_tsl: int
+    stop_loss_type: int
+    take_profit_type: int
+    tp_fee: int
     sl_to_break_even: bool
     trail_sl: bool
-    tp_fee_type: TakeProfitFeeType
-    sl_to_be_zero_or_entry_type: SLToBeZeroOrEntryType
+    tp_fee_type: int
+    sl_to_be_zero_or_entry_type: int
 
 
 class TestDynamicOrderSettingsArrays(NamedTuple):

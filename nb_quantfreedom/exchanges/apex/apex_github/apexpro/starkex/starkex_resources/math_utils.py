@@ -44,7 +44,7 @@ def sqrt_mod(n: int, p: int) -> int:
     """
     Finds the minimum positive integer m such that (m*m) % p == n
     """
-    return min(sympy.sqrt_mod(n, p, all_roots=True))
+    return min(sympy.sqrt_mod(n, p, all_roots=True)
 
 
 def div_mod(n: int, m: int, p: int) -> int:

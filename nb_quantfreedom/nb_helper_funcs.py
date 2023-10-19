@@ -2,13 +2,13 @@ import plotly.graph_objects as go
 import numpy as np
 import logging
 import pandas as pd
-from quantfreedom.nb_enums import OrderSettings, OrderSettingsArrays
+from nb_quantfreedom.nb_enums import TestStaticOrderSettings, TestDynamicOrderSettingsArrays
 from numba import njit
 
 info_logger = logging.getLogger("info")
 
 
-@njit(cache=True))
+@njit(cache=True)
 def get_to_the_upside_nb(
     gains_pct: float,
     wins_and_losses_array_no_be: np.array,
@@ -45,8 +45,8 @@ def get_to_the_upside_nb(
     return round(to_the_upside, 4)
 
 
-@njit(cache=True))
-def create_os_cart_product_nb(order_settings_arrays: OrderSettingsArrays):
+@njit(cache=True)
+def create_os_cart_product_nb(order_settings_arrays: TestDynamicOrderSettingsArrays):
     # cart array loop
     n = 1
     for x in order_settings_arrays:
@@ -65,7 +65,7 @@ def create_os_cart_product_nb(order_settings_arrays: OrderSettingsArrays):
         for j in range(1, order_settings_arrays[k].size):
             out[j * m : (j + 1) * m, k + 1 :] = out[0:m, k + 1 :]
 
-    return OrderSettingsArrays(
+    return TestDynamicOrderSettingsArrays(
         increase_position_type=out.T[0].astype(np.int_),
         leverage_type=out.T[1].astype(np.int_),
         max_equity_risk_pct=out.T[2],
@@ -91,9 +91,9 @@ def create_os_cart_product_nb(order_settings_arrays: OrderSettingsArrays):
     )
 
 
-@njit(cache=True))
-def get_order_setting(os_cart_arrays: OrderSettingsArrays, order_settings_index: int):
-    return OrderSettings(
+@njit(cache=True)
+def get_order_setting(os_cart_arrays: TestDynamicOrderSettingsArrays, order_settings_index: int):
+    return TestDynamicOrderSettingsArrays(
         increase_position_type=os_cart_arrays.increase_position_type[order_settings_index],
         leverage_type=os_cart_arrays.leverage_type[order_settings_index],
         max_equity_risk_pct=os_cart_arrays.max_equity_risk_pct[order_settings_index] / 100,
@@ -121,7 +121,7 @@ def get_order_setting(os_cart_arrays: OrderSettingsArrays, order_settings_index:
     )
 
 
-@njit
+@njit(cache=True)
 def nb_round_size_by_tick_step(user_num: float, exchange_num: float) -> float:
     return round(user_num, exchange_num)
 

@@ -5,7 +5,7 @@ import talib
 
 from typing import NamedTuple
 
-from quantfreedom.nb_enums import CandleProcessingType
+from nb_quantfreedom.nb_enums import CandleProcessingType
 import logging
 
 from quantfreedom.strategies.strategy import DIR_PATH, FORMATTER, Strategy

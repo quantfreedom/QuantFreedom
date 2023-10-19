@@ -2,7 +2,7 @@ import numpy as np
 from numba.experimental import jitclass
 
 from nb_quantfreedom.nb_helper_funcs import nb_round_size_by_tick_step
-from nb_quantfreedom.nb_order_handler.nb_price_getter import nb_GetMinPrice, nb_GetPrice, nb_PriceGetter
+from nb_quantfreedom.nb_order_handler.nb_price_getter import nb_GetPrice, nb_PriceGetter
 from nb_quantfreedom.nb_enums import CandleBodyType, DecreasePosition, MoveStopLoss, OrderStatus
 
 
@@ -22,7 +22,7 @@ class nb_StopLoss:
         self,
         bar_index: int,
         based_on_lookback: int,
-        candle_body: int,
+        candle_body_type: int,
         candles: np.array,
         price_getter: nb_PriceGetter,
         price_tick_step: float,
@@ -181,12 +181,15 @@ class nb_Long_SLToEntry(nb_StopLoss):
 
 
 @jitclass()
-class nb_Long_SLCandleBody(nb_StopLoss):
+class nb_Long_SLBCB(nb_StopLoss):
+    """
+    Stop loss based on candle body
+    """
     def nb_sl_calculator(
         self,
         bar_index: int,
         based_on_lookback: int,
-        candle_body: int,
+        candle_body_type: int,
         candles: np.array,
         price_getter: nb_PriceGetter,
         price_tick_step: float,
@@ -194,8 +197,8 @@ class nb_Long_SLCandleBody(nb_StopLoss):
     ) -> float:
         # lb will be bar index if sl isn't based on lookback because look back will be 0
         lookback = max(bar_index - based_on_lookback, 0)
-        candle_body = price_getter.nb_price_getter(
-            candle_body=candle_body,
+        candle_body = price_getter.nb_min_max_price_getter(
+            candle_body_type=candle_body_type,
             lookback=lookback,
             bar_index=bar_index,
             candles=candles,
