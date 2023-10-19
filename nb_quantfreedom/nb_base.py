@@ -25,7 +25,6 @@ from nb_quantfreedom.nb_enums import (
     TakeProfitStrategyType,
     StaticOrderSettings,
     strat_df_array_dt,
-    strat_records_dt,
 )
 from nb_quantfreedom.nb_order_handler.nb_decrease_position import nb_DecreasePosition, nb_Long_DP
 from nb_quantfreedom.nb_order_handler.nb_increase_position import (
@@ -57,7 +56,7 @@ from nb_quantfreedom.nb_order_handler.nb_stop_loss import (
     nb_StopLoss,
 )
 from nb_quantfreedom.nb_order_handler.nb_take_profit import (
-    nb_Long_TPHitProvided,
+    nb_Long_RR,
     nb_Long_TPHitReg,
     nb_TakeProfit,
 )
@@ -65,13 +64,13 @@ from nb_quantfreedom.strategies.strategy import Strategy
 
 
 def backtest_df_only(
-    starting_equity: float,
-    static_os: StaticOrderSettings,
     backtest_settings: BacktestSettings,
-    exchange_settings: ExchangeSettings,
-    strategy: Strategy,
     candles: np.array,
     dos_cart_arrays: DynamicOrderSettingsArrays,
+    exchange_settings: ExchangeSettings,
+    starting_equity: float,
+    static_os: StaticOrderSettings,
+    strategy: Strategy,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     if static_os.long_or_short == LongOrShortType.Long:
         # Decrease Position
@@ -102,7 +101,7 @@ def backtest_df_only(
             sl_bcb_price_getter = nb_StopLoss()
 
         # setting up stop loss break even checker
-        if static_os.sl_to_break_even:
+        if static_os.sl_to_be:
             checker_sl_to_be = nb_Long_StopLoss()
             # setting up stop loss be zero or entry
             if static_os.sl_to_be_ze_type == SLToBeZeroOrEntryType.ZeroLoss:
@@ -111,7 +110,6 @@ def backtest_df_only(
                 set_z_e = nb_Long_SLToEntry()
         else:
             checker_sl_to_be = nb_StopLoss()
-            sl_to_be_price_getter = nb_StopLoss()
             set_z_e = nb_ZeroOrEntry()
 
         # setting up stop loss break even checker
@@ -157,9 +155,9 @@ def backtest_df_only(
         """
 
         if static_os.leverage_type == LeverageStrategyType.Dynamic:
-            calc_leverage = nb_Long_DLev()
+            lev_calculator = nb_Long_DLev()
         else:
-            calc_leverage = nb_Long_SLev()
+            lev_calculator = nb_Long_SLev()
 
         checker_liq_hit = nb_Long_Leverage()
         """
@@ -175,11 +173,10 @@ def backtest_df_only(
         """
 
         if static_os.take_profit_type == TakeProfitStrategyType.RiskReward:
-            tp_calculator = nb_Long_TPRiskReward()
+            tp_calculator = nb_Long_RR()
             checker_tp_hit = nb_Long_TPHitReg()
         elif static_os.take_profit_type == TakeProfitStrategyType.Provided:
-            tp_calculator = nb_TakeProfit()
-            checker_tp_hit = nb_Long_TPHitProvided()
+            pass
     """
     #########################################
     #########################################
@@ -200,7 +197,17 @@ def backtest_df_only(
         exit_fee_pct = exchange_settings.market_fee_pct
     else:
         exit_fee_pct = exchange_settings.limit_fee_pct
-
+    """
+    #########################################
+    #########################################
+    #########################################
+                End User Setup
+                End User Setup
+                End User Setup
+    #########################################
+    #########################################
+    #########################################
+    """
     # Creating Settings Vars
     total_order_settings = dos_cart_arrays[0].size
 
@@ -216,37 +223,73 @@ def backtest_df_only(
     print(f"\nTotal candles: {total_bars:,}")
     print(f"Total candles to test: {total_indicator_settings * total_order_settings * total_bars:,}")
 
+    strategy_result_records = nb_run_backtest(
+        backtest_settings=backtest_settings,
+        calc_starting_bar=calc_starting_bar,
+        candles=candles,
+        checker_liq_hit=checker_liq_hit,
+        checker_sl_hit=checker_sl_hit,
+        checker_sl_to_be=checker_sl_to_be,
+        checker_tp_hit=checker_tp_hit,
+        checker_tsl=checker_tsl,
+        dec_pos_calculator=dec_pos_calculator,
+        dos_cart_arrays=dos_cart_arrays,
+        exchange_settings=exchange_settings,
+        exit_fee_pct=exit_fee_pct,
+        inc_pos_calculator=inc_pos_calculator,
+        lev_calculator=lev_calculator,
+        set_z_e=set_z_e,
+        sl_bcb_price_getter=sl_bcb_price_getter,
+        sl_calculator=sl_calculator,
+        sl_mover=sl_mover,
+        starting_equity=starting_equity,
+        strategy=strategy,
+        total_bars=total_bars,
+        total_indicator_settings=total_indicator_settings,
+        total_order_settings=total_order_settings,
+        tp_calculator=tp_calculator,
+    )
+    return pd.DataFrame(strategy_result_records).sort_values(
+        by=["to_the_upside", "gains_pct"],
+        ascending=False,
+        ignore_index=True,
+    )
+
 
 @njit(cache=True)
 def nb_run_backtest(
     backtest_settings: BacktestSettings,
     calc_starting_bar: nb_IncreasePosition,
     candles: np.array,
-    exchange_settings: ExchangeSettings,
-    exit_fee_pct: float,
     checker_liq_hit: nb_Leverage,
     checker_sl_hit: nb_StopLoss,
+    checker_sl_to_be: nb_StopLoss,
+    checker_tp_hit: nb_TakeProfit,
+    checker_tsl: nb_StopLoss,
+    dec_pos_calculator: nb_DecreasePosition,
+    dos_cart_arrays: DynamicOrderSettingsArrays,
+    exchange_settings: ExchangeSettings,
+    exit_fee_pct: float,
+    inc_pos_calculator: nb_IncreasePosition,
+    lev_calculator: nb_Leverage,
+    set_z_e: nb_ZeroOrEntry,
+    sl_bcb_price_getter: nb_PriceGetter,
+    sl_calculator: nb_StopLoss,
+    sl_mover: nb_StopLoss,
     starting_equity: float,
     strategy: Strategy,
     total_bars: int,
     total_indicator_settings: int,
     total_order_settings: int,
-    checker_tp_hit: nb_TakeProfit,
-    checker_sl_to_be: nb_StopLoss,
-    dos_cart_arrays: DynamicOrderSettingsArrays,
-    set_z_e: nb_ZeroOrEntry,
-    checker_tsl: nb_StopLoss,
-    sl_mover: nb_StopLoss,
-    dec_pos_calculator: nb_DecreasePosition,
-    sl_calculator: nb_StopLoss,
-    sl_bcb_price_getter: nb_PriceGetter,
-    inc_pos_calculator: nb_IncreasePosition,
+    tp_calculator: nb_TakeProfit,
 ):
     market_fee_pct = exchange_settings.market_fee_pct
     price_tick_step = exchange_settings.price_tick_step
     asset_tick_step = exchange_settings.asset_tick_step
     min_asset_size = exchange_settings.min_asset_size
     max_asset_size = exchange_settings.max_asset_size
+    max_leverage = exchange_settings.max_leverage
+    mmr_pct = exchange_settings.mmr_pct
 
     array_size = int(total_indicator_settings * total_order_settings / backtest_settings.divide_records_array_size_by)
 
@@ -254,10 +297,7 @@ def nb_run_backtest(
         array_size,
         dtype=strat_df_array_dt,
     )
-
     result_records_filled = 0
-
-    strat_records = np.empty(int(total_bars / 2), dtype=strat_records_dt)
 
     for indicator_settings_index in range(total_indicator_settings):
         print(f"Indicator settings index = {indicator_settings_index:,}")
@@ -303,6 +343,11 @@ def nb_run_backtest(
                 tp_pct=0.0,
                 tp_price=0.0,
             )
+
+            pnl_array = np.full(shape=array_size, fill_value=np.nan)
+            filled_pnl_counter = 0
+
+            total_fees_paid = 0
 
             # entries loop
             for bar_index in range(starting_bar, total_bars):
@@ -353,21 +398,6 @@ def nb_run_backtest(
                     except RejectedOrder as e:
                         print(f"RejectedOrder -> {e.msg}")
                         pass
-                    except DecreasePosition as e:
-                        order_result = dec_pos_calculator.decrease_position(
-                            average_entry=order_result.average_entry,
-                            bar_index=bar_index,
-                            dos_index=dos_index,
-                            equity=order_result.equity,
-                            exit_fee_pct=e.exit_fee_pct,
-                            exit_price=e.exit_price,
-                            indicator_settings_index=indicator_settings_index,
-                            market_fee_pct=market_fee_pct,
-                            order_result=order_result,
-                            order_status=e.order_status,
-                            position_size_asset=order_result.position_size_asset,
-                            timestamp=candles["timestamp"][bar_index],
-                        )
                     except MoveStopLoss as e:
                         order_result = sl_mover.move_stop_loss(
                             bar_index=bar_index,
@@ -378,6 +408,51 @@ def nb_run_backtest(
                             order_status=e.order_status,
                             sl_price=e.sl_price,
                             timestamp=candles[bar_index : CandleBodyType.Timestamp],
+                        )
+                    except DecreasePosition as e:
+                        equity, fees_paid, realized_pnl = dec_pos_calculator.decrease_position(
+                            average_entry=order_result.average_entry,
+                            equity=order_result.equity,
+                            exit_fee_pct=e.exit_fee_pct,
+                            exit_price=e.exit_price,
+                            market_fee_pct=market_fee_pct,
+                            order_status=e.order_status,
+                            position_size_asset=order_result.position_size_asset,
+                        )
+                        # Fill pnl array
+                        pnl_array[filled_pnl_counter] = realized_pnl
+                        filled_pnl_counter += 1
+                        total_fees_paid += fees_paid
+
+                        # reset the order result
+                        order_result = OrderResult(
+                            indicator_settings_index=-1,
+                            dos_index=-1,
+                            bar_index=-1,
+                            timestamp=-1,
+                            equity=equity,
+                            available_balance=equity,
+                            cash_borrowed=0.0,
+                            cash_used=0.0,
+                            average_entry=0.0,
+                            can_move_sl_to_be=False,
+                            fees_paid=0.0,
+                            leverage=0.0,
+                            liq_price=0.0,
+                            order_status=OrderStatus.Nothing,
+                            possible_loss=0.0,
+                            entry_size_asset=0.0,
+                            entry_size_usd=0.0,
+                            entry_price=0.0,
+                            exit_price=0.0,
+                            position_size_asset=0.0,
+                            position_size_usd=0.0,
+                            realized_pnl=0.0,
+                            sl_pct=0.0,
+                            sl_price=0.0,
+                            total_trades=0,
+                            tp_pct=0.0,
+                            tp_price=0.0,
                         )
                     except Exception as e:
                         print(f"Exception placing order -> {e}")
@@ -424,8 +499,38 @@ def nb_run_backtest(
                             total_trades=order_result.total_trades,
                         )
 
-                        order.calculate_leverage()
-                        order.calculate_take_profit()
+                        (
+                            available_balance,
+                            can_move_sl_to_be,
+                            cash_borrowed,
+                            cash_used,
+                            leverage,
+                            liq_price,
+                        ) = lev_calculator.calculate_leverage(
+                            available_balance=order_result.available_balance,
+                            average_entry=average_entry,
+                            cash_borrowed=order_result.cash_borrowed,
+                            cash_used=order_result.cash_used,
+                            entry_size_usd=entry_size_usd,
+                            max_leverage=max_leverage,
+                            mmr_pct=mmr_pct,
+                            sl_price=sl_price,
+                            static_leverage=dynamic_order_settings.static_leverage,
+                        )
+
+                        (
+                            can_move_sl_to_be,
+                            tp_price,
+                            tp_pct,
+                        ) = tp_calculator.calculate_take_profit(
+                            average_entry=average_entry,
+                            market_fee_pct=market_fee_pct,
+                            position_size_usd=position_size_usd,
+                            possible_loss=possible_loss,
+                            price_tick_step=price_tick_step,
+                            risk_reward=dynamic_order_settings.risk_reward,
+                            tp_fee_pct=exit_fee_pct,
+                        )
                         order_result = OrderResult(
                             # where we are at
                             indicator_settings_index=indicator_settings_index,
@@ -434,24 +539,24 @@ def nb_run_backtest(
                             timestamp=candles[bar_index + 1, CandleBodyType.Timestamp],
                             # account info
                             equity=order_result.equity,
-                            available_balance=order_result.available_balance,
-                            cash_borrowed=order_result.cash_borrowed,
-                            cash_used=order_result.cash_used,
+                            available_balance=available_balance,
+                            cash_borrowed=cash_borrowed,
+                            cash_used=cash_used,
                             # order info
                             average_entry=average_entry,
                             can_move_sl_to_be=can_move_sl_to_be,
-                            fees_paid=fees_paid,
+                            fees_paid=0.0,
                             leverage=leverage,
                             liq_price=liq_price,
-                            order_status=order_status,
+                            order_status=OrderStatus.EntryFilled,
                             possible_loss=possible_loss,
                             entry_size_asset=entry_size_asset,
                             entry_size_usd=entry_size_usd,
                             entry_price=entry_price,
-                            exit_price=exit_price,
+                            exit_price=0.0,
                             position_size_asset=position_size_asset,
                             position_size_usd=position_size_usd,
-                            realized_pnl=realized_pnl,
+                            realized_pnl=0.0,
                             sl_pct=sl_pct,
                             sl_price=sl_price,
                             total_trades=total_trades,
@@ -465,12 +570,10 @@ def nb_run_backtest(
                         print(f"Exception placing order -> {e}")
                         raise Exception(f"Exception placing order -> {e}")
             # Checking if gains
-            gains_pct = round(((order.equity - starting_equity) / starting_equity) * 100, 2)
-            print(f"Starting eq={starting_equity} Ending eq={order.equity} gains pct={gains_pct}")
+            gains_pct = round(((order_result.equity - starting_equity) / starting_equity) * 100, 2)
+            print(f"Starting eq={starting_equity} Ending eq={order_result.equity} gains pct={gains_pct}")
             if gains_pct > backtest_settings.gains_pct_filter:
-                temp_strat_records = order.strat_records[: order.strat_records_filled]
-                pnl_array = temp_strat_records["real_pnl"]
-                wins_and_losses_array = pnl_array[~np.isnan(temp_strat_records["real_pnl"])]
+                wins_and_losses_array = pnl_array[~np.isnan(pnl_array["real_pnl"])]
 
                 # Checking total trade filter
                 if wins_and_losses_array.size > backtest_settings.total_trade_filter:
@@ -488,22 +591,19 @@ def nb_run_backtest(
 
                         # strat array
                         strategy_result_records[result_records_filled]["ind_set_idx"] = indicator_settings_index
-                        strategy_result_records[result_records_filled]["or_set_idx"] = order_settings_index
+                        strategy_result_records[result_records_filled]["dos_index"] = dos_index
                         strategy_result_records[result_records_filled]["total_trades"] = wins_and_losses_array.size
                         strategy_result_records[result_records_filled]["gains_pct"] = gains_pct
                         strategy_result_records[result_records_filled]["win_rate"] = win_rate
                         strategy_result_records[result_records_filled]["to_the_upside"] = to_the_upside
+                        strategy_result_records[result_records_filled]["fees_paid"] = total_fees_paid
                         strategy_result_records[result_records_filled]["total_pnl"] = total_pnl
-                        strategy_result_records[result_records_filled]["ending_eq"] = order.equity
+                        strategy_result_records[result_records_filled]["starting_eq"] = starting_equity
+                        strategy_result_records[result_records_filled]["ending_eq"] = order_result.equity
 
                         result_records_filled += 1
         print(f"Starting New Loop\n\n")
-
-    return pd.DataFrame(strategy_result_records[:result_records_filled]).sort_values(
-        by=["to_the_upside", "gains_pct"],
-        ascending=False,
-        ignore_index=True,
-    )
+    return strategy_result_records[:result_records_filled]
 
 
 def order_records_bt(

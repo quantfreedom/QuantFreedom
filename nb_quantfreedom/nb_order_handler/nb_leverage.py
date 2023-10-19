@@ -10,7 +10,7 @@ class nb_Leverage:
     def __init__(self) -> None:
         pass
 
-    def leverage_calculator(
+    def calculate_leverage(
         self,
         available_balance: float,
         average_entry: float,
@@ -49,7 +49,7 @@ class nb_Leverage:
 
 @jitclass()
 class nb_Long_SLev(nb_Leverage):
-    def leverage_calculator(
+    def calculate_leverage(
         self,
         available_balance: float,
         average_entry: float,
@@ -96,7 +96,7 @@ class nb_Long_DLev(nb_Leverage):
     Calculate dynamic leverage
     """
 
-    def leverage_calculator(
+    def calculate_leverage(
         self,
         available_balance: float,
         average_entry: float,

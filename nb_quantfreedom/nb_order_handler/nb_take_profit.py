@@ -12,13 +12,13 @@ class nb_TakeProfit:
 
     def calculate_take_profit(
         self,
-        possible_loss: float,
-        position_size_usd: float,
         average_entry: float,
-        risk_reward: float,
         market_fee_pct: float,
-        tp_fee_pct: float,
+        position_size_usd: float,
+        possible_loss: float,
         price_tick_step: float,
+        risk_reward: float,
+        tp_fee_pct: float,
     ):
         pass
 
@@ -63,7 +63,6 @@ class nb_Long_RR(nb_TakeProfit):
             can_move_sl_to_be,
             tp_price,
             tp_pct,
-            OrderStatus.EntryFilled,
         )
 
 

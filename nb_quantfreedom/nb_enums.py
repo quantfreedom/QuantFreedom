@@ -216,10 +216,8 @@ class StaticOrderSettings(NamedTuple):
     leverage_type: int
     long_or_short: int
     pg_min_max_sl_bcb: int
-    pg_min_max_sl_be: int
-    pg_min_max_tsl: int
+    sl_to_be: bool
     sl_to_be_ze_type: int
-    sl_to_break_even: bool
     stop_loss_type: int
     take_profit_type: int
     tp_fee_type: int
@@ -402,24 +400,14 @@ or_dt = np.dtype(
 strat_df_array_dt = np.dtype(
     [
         ("ind_set_idx", np.int_),
-        ("or_set_idx", np.int_),
+        ("dos_index", np.int_),
         ("total_trades", np.float_),
         ("gains_pct", np.float_),
         ("win_rate", np.float_),
         ("to_the_upside", np.float_),
         ("total_pnl", np.float_),
+        ("starting_eq", np.float_),
         ("ending_eq", np.float_),
-    ],
-    align=True,
-)
-
-strat_records_dt = np.dtype(
-    [
-        ("equity", np.float_),
-        ("bar_idx", np.int_),
-        ("or_set_idx", np.int_),
-        ("ind_set_idx", np.int_),
-        ("real_pnl", np.float_),
     ],
     align=True,
 )
