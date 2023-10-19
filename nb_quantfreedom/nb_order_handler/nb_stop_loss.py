@@ -3,7 +3,7 @@ from numba.experimental import jitclass
 
 from nb_quantfreedom.nb_helper_funcs import nb_round_size_by_tick_step
 from nb_quantfreedom.nb_order_handler.nb_price_getter import nb_GetMinPrice, nb_GetPrice, nb_PriceGetter
-from nb_quantfreedom.np_enums import CandleBodyType, DecreasePosition, MoveStopLoss, OrderStatus
+from nb_quantfreedom.nb_enums import CandleBodyType, DecreasePosition, MoveStopLoss, OrderStatus
 
 
 class nb_StopLoss:

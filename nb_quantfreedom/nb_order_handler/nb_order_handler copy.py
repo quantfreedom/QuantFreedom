@@ -1,4 +1,4 @@
-from nb_quantfreedom.enums import (
+from nb_quantfreedom.nb_enums import (
     CandleBodyType,
     IncreasePositionType,
     LeverageStrategyType,
@@ -156,6 +156,4 @@ def set_classes(
         else:
             exit_fee_pct = 0.0009
 
-    nb_simulate_backtest(
-        candles=candle
-    )
+    nb_simulate_backtest(candles=candle)

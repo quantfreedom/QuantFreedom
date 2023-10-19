@@ -1,7 +1,7 @@
 import os
 import numpy as np
 
-from quantfreedom.enums import CandleProcessingType
+from quantfreedom.nb_enums import CandleProcessingType
 from quantfreedom.custom_logger import CustomLogger
 
 

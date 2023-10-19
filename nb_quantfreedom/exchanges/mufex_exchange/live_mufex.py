@@ -1,7 +1,7 @@
 from time import sleep
 from uuid import uuid4
 import numpy as np
-from quantfreedom.enums import LeverageModeType, LongOrShortType, PositionModeType
+from quantfreedom.nb_enums import LeverageModeType, LongOrShortType, PositionModeType
 from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES
 from quantfreedom.exchanges.live_exchange import LiveExchange
 from quantfreedom.exchanges.mufex_exchange.mufex import MUFEX_TIMEFRAMES, Mufex

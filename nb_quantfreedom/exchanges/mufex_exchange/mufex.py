@@ -8,7 +8,7 @@ from quantfreedom.utils import pretty_qf
 from requests import get, post
 from time import sleep, time
 
-from quantfreedom.enums import (
+from quantfreedom.nb_enums import (
     ExchangeSettings,
     LeverageModeType,
     PositionModeType,

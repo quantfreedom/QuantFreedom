@@ -1,6 +1,6 @@
 import numpy as np
 import logging
-from quantfreedom.enums import *
+from quantfreedom.nb_enums import *
 from quantfreedom.helper_funcs import get_order_setting, get_to_the_upside_nb
 from quantfreedom.order_handler.order_handler import Order
 from quantfreedom.strategies.strategy import Strategy

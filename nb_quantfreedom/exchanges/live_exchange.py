@@ -3,7 +3,7 @@ import logging
 import pandas as pd
 import numpy as np
 
-from quantfreedom.enums import LeverageModeType, LongOrShortType, PositionModeType
+from quantfreedom.nb_enums import LeverageModeType, LongOrShortType, PositionModeType
 from quantfreedom.exchanges.exchange import Exchange
 
 DATETIME_PATTERN = "%m/%d/%Y %H:%M:%S"

@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from nb_quantfreedom.nb_helper_funcs import get_order_setting, get_to_the_upside_nb
-from nb_quantfreedom.np_enums import (
+from nb_quantfreedom.nb_enums import (
     BacktestSettings,
     CandleBodyType,
     CandleProcessingType,

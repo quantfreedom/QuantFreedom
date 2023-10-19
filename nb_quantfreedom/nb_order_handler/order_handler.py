@@ -1,7 +1,7 @@
 from typing import Optional
 import numpy as np
 from quantfreedom.custom_logger import CustomLogger
-from quantfreedom.enums import (
+from quantfreedom.nb_enums import (
     OrderStatus,
     LongOrShortType,
     OrderSettings,

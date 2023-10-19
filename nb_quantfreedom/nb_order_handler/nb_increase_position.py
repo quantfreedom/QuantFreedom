@@ -1,7 +1,7 @@
 from nb_quantfreedom.nb_helper_funcs import nb_round_size_by_tick_step
 from numba.experimental import jitclass
 
-from nb_quantfreedom.np_enums import OrderStatus, RejectedOrder
+from nb_quantfreedom.nb_enums import OrderStatus, RejectedOrder
 
 
 class nb_IncreasePosition:

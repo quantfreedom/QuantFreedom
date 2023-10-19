@@ -2,7 +2,7 @@ import logging
 import os
 from time import sleep
 from quantfreedom.email_sender import EmailSender
-from quantfreedom.enums import (
+from quantfreedom.nb_enums import (
     LongOrShortType,
     MoveStopLoss,
     OrderPlacementType,

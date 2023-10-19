@@ -2,10 +2,11 @@ import plotly.graph_objects as go
 import numpy as np
 import logging
 import pandas as pd
-from quantfreedom.enums import OrderSettings, OrderSettingsArrays
+from quantfreedom.nb_enums import OrderSettings, OrderSettingsArrays
 from numba import njit
 
 info_logger = logging.getLogger("info")
+
 
 @njit()
 def get_to_the_upside_nb(
@@ -42,6 +43,7 @@ def get_to_the_upside_nb(
     if gains_pct <= 0:
         to_the_upside = -to_the_upside
     return round(to_the_upside, 4)
+
 
 @njit()
 def create_os_cart_product_nb(order_settings_arrays: OrderSettingsArrays):
@@ -87,6 +89,7 @@ def create_os_cart_product_nb(order_settings_arrays: OrderSettingsArrays):
         entry_size_asset=out.T[20].astype(np.int_),
         max_trades=out.T[21].astype(np.int_),
     )
+
 
 @njit()
 def get_order_setting(os_cart_arrays: OrderSettingsArrays, order_settings_index: int):
