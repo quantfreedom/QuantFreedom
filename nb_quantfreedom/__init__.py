@@ -46,11 +46,11 @@
 #             tsl_price_getter = nb_StopLoss()
 
 #         # setting up stop loss be zero or entry
-#         if static_os.sl_to_be_zero_or_entry_type == SLToBeZeroOrEntryType.Nothing:
+#         if static_os.sl_to_be_ze_type == SLToBeZeroOrEntryType.Nothing:
 #             set_sl_to_be_z_or_e = nb_StopLoss()
-#         elif static_os.sl_to_be_zero_or_entry_type == SLToBeZeroOrEntryType.ZeroLoss:
+#         elif static_os.sl_to_be_ze_type == SLToBeZeroOrEntryType.ZeroLoss:
 #             set_sl_to_be_z_or_e = nb_Long_SLToZero()
-#         elif static_os.sl_to_be_zero_or_entry_type == SLToBeZeroOrEntryType.AverageEntry:
+#         elif static_os.sl_to_be_ze_type == SLToBeZeroOrEntryType.AverageEntry:
 #             set_sl_to_be_z_or_e = nb_Long_SLToEntry()
 
 #         """

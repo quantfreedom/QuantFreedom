@@ -67,8 +67,8 @@ class OrderStatusT(NamedTuple):
     StopLossFilled: int = 2
     TakeProfitFilled: int = 3
     LiquidationFilled: int = 4
-    MovedStopLossToBE: int = 5
-    MovedTrailingStopLoss: int = 6
+    MovedSLToBE: int = 5
+    MovedTSL: int = 6
     MaxEquityRisk: int = 7
     RiskToBig: int = 8
     CashUsedExceed: int = 9
@@ -195,39 +195,39 @@ class OrderSettingsArrays(NamedTuple):
     risk_reward: np.array
     sl_based_on_add_pct: np.array
     sl_based_on_lookback: np.array
-    sl_candle_body_type: np.array
-    sl_to_be_based_on_candle_body_type: np.array
-    sl_to_be_when_pct_from_candle_body: np.array
-    sl_to_be_zero_or_entry_type: np.array
+    sl_bcb_type: np.array
+    sl_to_be_cb_type: np.array
+    sl_to_be_when_pct: np.array
+    sl_to_be_ze_type: np.array
     static_leverage: np.array
     stop_loss_type: np.array
     take_profit_type: np.array
     tp_fee_type: np.array
-    trail_sl_based_on_candle_body_type: np.array
+    trail_sl_bcb_type: np.array
     trail_sl_by_pct: np.array
-    trail_sl_when_pct_from_candle_body: np.array
+    trail_sl_when_pct: np.array
     num_candles: np.array
     entry_size_asset: np.array
     max_trades: np.array
 
 
-class TestStaticOrderSettings(NamedTuple):
+class StaticOrderSettings(NamedTuple):
     increase_position_type: int
     leverage_type: int
     long_or_short: int
     pg_min_max_sl_bcb: int
     pg_min_max_sl_be: int
     pg_min_max_tsl: int
+    sl_to_be_ze_type: int
+    sl_to_break_even: bool
     stop_loss_type: int
     take_profit_type: int
-    tp_fee: int
-    sl_to_break_even: bool
-    trail_sl: bool
     tp_fee_type: int
-    sl_to_be_zero_or_entry_type: int
+    tp_fee: int
+    trail_sl: bool
 
 
-class TestDynamicOrderSettingsArrays(NamedTuple):
+class DynamicOrderSettingsArrays(NamedTuple):
     entry_size_asset: np.array
     max_equity_risk_pct: np.array
     max_trades: np.array
@@ -236,14 +236,14 @@ class TestDynamicOrderSettingsArrays(NamedTuple):
     risk_reward: np.array
     sl_based_on_add_pct: np.array
     sl_based_on_lookback: np.array
-    sl_candle_body_type: np.array
-    sl_to_be_based_on_candle_body_type: np.array
-    sl_to_be_when_pct_from_candle_body: np.array
-    sl_to_be_zero_or_entry_type: np.array
+    sl_bcb_type: np.array
+    sl_to_be_cb_type: np.array
+    sl_to_be_when_pct: np.array
+    sl_to_be_ze_type: np.array
     static_leverage: np.array
-    trail_sl_based_on_candle_body_type: np.array
+    trail_sl_bcb_type: np.array
     trail_sl_by_pct: np.array
-    trail_sl_when_pct_from_candle_body: np.array
+    trail_sl_when_pct: np.array
 
 
 class DynamicOrderSettings(NamedTuple):
@@ -255,27 +255,31 @@ class DynamicOrderSettings(NamedTuple):
     risk_reward: float
     sl_based_on_add_pct: float
     sl_based_on_lookback: int
-    sl_candle_body_type: int
-    sl_to_be_based_on_candle_body_type: int
-    sl_to_be_when_pct_from_candle_body: float
-    sl_to_be_zero_or_entry_type: int
+    sl_bcb_type: int
+    sl_to_be_cb_type: int
+    sl_to_be_when_pct: float
+    sl_to_be_ze_type: int
     static_leverage: float
     tp_fee_type: int
-    trail_sl_based_on_candle_body_type: int
+    trail_sl_bcb_type: int
     trail_sl_by_pct: float
-    trail_sl_when_pct_from_candle_body: float
+    trail_sl_when_pct: float
 
 
 class OrderResult(NamedTuple):
+    # where we are at
     indicator_settings_index: int
-    order_settings_index: int
+    dos_index: int
     bar_index: int
     timestamp: int
+    # account info
     equity: float = np.nan
     available_balance: float = np.nan
     cash_borrowed: float = np.nan
     cash_used: float = np.nan
+    # order info
     average_entry: float = np.nan
+    can_move_sl_to_be: bool = False
     fees_paid: float = np.nan
     leverage: float = np.nan
     liq_price: float = np.nan
@@ -344,17 +348,17 @@ order_settings_array_dt = np.dtype(
         ("risk_reward", np.float_),
         ("sl_based_on_add_pct", np.float_),
         ("sl_based_on_lookback", np.int_),
-        ("sl_candle_body_type", np.int_),
-        ("sl_to_be_based_on_candle_body_type", np.int_),
-        ("sl_to_be_when_pct_from_candle_body", np.float_),
-        ("sl_to_be_zero_or_entry_type", np.int_),
+        ("sl_bcb_type", np.int_),
+        ("sl_to_be_cb_type", np.int_),
+        ("sl_to_be_when_pct", np.float_),
+        ("sl_to_be_ze_type", np.int_),
         ("static_leverage", np.float_),
         ("stop_loss_type", np.int_),
         ("take_profit_type", np.int_),
         ("tp_fee_type", np.int_),
-        ("trail_sl_based_on_candle_body_type", np.int_),
+        ("trail_sl_bcb_type", np.int_),
         ("trail_sl_by_pct", np.float_),
-        ("trail_sl_when_pct_from_candle_body", np.float_),
+        ("trail_sl_when_pct", np.float_),
         ("num_candles", np.int_),
         ("entry_size_asset", np.float_),
         ("max_trades", np.int_),

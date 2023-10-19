@@ -2,7 +2,7 @@ import numpy as np
 from nb_quantfreedom.nb_helper_funcs import nb_round_size_by_tick_step
 from numba.experimental import jitclass
 
-from nb_quantfreedom.nb_order_handler.nb_price_getter import nb_GetPrice
+from nb_quantfreedom.nb_order_handler.nb_class_helpers import nb_GetPrice
 from nb_quantfreedom.nb_enums import CandleBodyType, DecreasePosition, OrderStatus
 
 
@@ -58,8 +58,13 @@ class nb_Long_RR(nb_TakeProfit):
         # https://www.symbolab.com/solver/simplify-calculator/solve%20for%20t%2C%20%5Cleft(%5Cleft(%5Cfrac%7Bs%7D%7Be%7D%5Cright)%20%5Ccdot%5Cleft(t-e%5Cright)%5Cright)%20-%20%5Cleft(%5Cleft(%5Cfrac%7Bs%7D%7Be%7D%5Cright)%5Ccdot%20e%20%5Ccdot%20m%5Cright)%20-%20%5Cleft(%5Cleft(%5Cfrac%7Bs%7D%7Be%7D%5Cright)%5Ccdot%20t%20%5Ccdot%20%20l%5Cright)%20%3D%20p
 
         tp_pct = round((tp_price - average_entry) / average_entry, 4)
-
-        return tp_price, tp_pct, OrderStatus.EntryFilled
+        can_move_sl_to_be = True
+        return (
+            can_move_sl_to_be,
+            tp_price,
+            tp_pct,
+            OrderStatus.EntryFilled,
+        )
 
 
 @jitclass

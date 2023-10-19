@@ -8,7 +8,7 @@ class nb_IncreasePosition:
     def __init__(self) -> None:
         pass
 
-    def calc_increase_position(
+    def calculate_increase_posotion(
         self,
         account_state_equity: float,
         asset_tick_step: float,
@@ -141,12 +141,79 @@ class nb_IncreasePosition:
 
 
 @jitclass()
+class nb_Helpers(nb_IncreasePosition):
+    def check_size_too_big_or_small(
+        self,
+        entry_size_asset: float,
+        min_asset_size: float,
+        max_asset_size: float,
+    ):
+        if entry_size_asset < min_asset_size:
+            raise RejectedOrder(
+                msg=f"Entry Size too small {entry_size_asset} min_asset_size={min_asset_size}",
+                order_status=OrderStatus.EntrySizeTooSmall,
+            )
+
+        elif entry_size_asset > max_asset_size:
+            raise RejectedOrder(
+                msg=f"Entry Size too big {entry_size_asset} max asset size={max_asset_size}",
+                order_status=OrderStatus.EntrySizeTooBig,
+            )
+
+        print(f"Entry size is fine")
+
+    def pl_risk_account_pct_size(
+        self,
+        account_state_equity: float,
+        possible_loss: float,
+        total_trades: int,
+        risk_account_pct_size: float,
+        max_equity_risk_pct: float,
+    ):
+        possible_loss = round(possible_loss + account_state_equity * risk_account_pct_size)
+        max_equity_risk = round(account_state_equity * max_equity_risk_pct)
+        if possible_loss > max_equity_risk:
+            raise RejectedOrder(
+                msg=f"PL too big {possible_loss} max risk={max_equity_risk}",
+                order_status=OrderStatus.PossibleLossTooBig,
+            )
+        total_trades += 1
+        print(f"Possible Loss is fine")
+        return possible_loss, total_trades
+
+    def tt_amount_based(
+        self,
+        average_entry: float,
+        possible_loss: float,
+        position_size_asset: float,
+        sl_price: float,
+        total_trades: int,
+        market_fee_pct: float,
+        max_trades: int,
+    ):
+        pnl = position_size_asset * (sl_price - average_entry)  # math checked
+        fee_open = position_size_asset * average_entry * market_fee_pct  # math checked
+        fee_close = position_size_asset * sl_price * market_fee_pct  # math checked
+        fees_paid = fee_open + fee_close  # math checked
+        possible_loss = round(-(pnl - fees_paid), 4)
+
+        total_trades += 1
+        if total_trades > max_trades:
+            raise RejectedOrder(
+                msg=f"Max Trades to big {total_trades} mt={max_trades}",
+                order_status=OrderStatus.HitMaxTrades,
+            )
+        print(f"total trades is fine")
+        return possible_loss, total_trades
+
+
+@jitclass()
 class nb_Long_RPAandSLB(nb_IncreasePosition):
     """
     Risking percent of your account while also having your stop loss based open high low or close of a candle
     """
 
-    def calc_increase_position(
+    def calculate_increase_posotion(
         self,
         account_state_equity: float,
         asset_tick_step: float,
@@ -342,7 +409,7 @@ class nb_Long_SEP(nb_IncreasePosition):
 
     """
 
-    def calc_increase_position(
+    def calculate_increase_posotion(
         self,
         account_state_equity: float,
         asset_tick_step: float,
@@ -361,6 +428,7 @@ class nb_Long_SEP(nb_IncreasePosition):
         risk_account_pct_size: float,
         sl_price: float,
         total_trades: int,
+
     ):
         if in_position:
             return self.calc_in_pos(

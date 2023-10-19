@@ -11,7 +11,7 @@ from nb_quantfreedom.nb_enums import (
 )
 from nb_quantfreedom.nb_order_handler.nb_increase_position import nb_Long_RPAandSLB, nb_Long_SEP
 from nb_quantfreedom.nb_order_handler.nb_leverage import nb_CalcDynamicLeverage, nb_SetStaticLeverage
-from nb_quantfreedom.nb_order_handler.nb_price_getter import nb_GetMaxPrice, nb_GetMinPrice
+from nb_quantfreedom.nb_order_handler.nb_class_helpers import nb_GetMaxPrice, nb_GetMinPrice
 from nb_quantfreedom.nb_order_handler.nb_stop_loss import (
     nb_Long_SLCandleBody,
     nb_Long_SLToEntry,
@@ -35,7 +35,7 @@ def set_classes(
     pg_min_or_max_sl_be: PriceGetterType,
     pg_min_or_max_tsl: PriceGetterType,
     sl_to_break_even: bool,
-    sl_to_be_zero_or_entry_type: SLToBeZeroOrEntryType,
+    sl_to_be_ze_type: SLToBeZeroOrEntryType,
     stop_loss_type: StopLossStrategyType,
     take_profit_type: TakeProfitStrategyType,
     trail_sl: bool,
@@ -89,11 +89,11 @@ def set_classes(
             tsl_price_getter = nb_StopLoss()
 
         # setting up stop loss be zero or entry
-        if sl_to_be_zero_or_entry_type == SLToBeZeroOrEntryType.Nothing:
+        if sl_to_be_ze_type == SLToBeZeroOrEntryType.Nothing:
             set_sl_to_be_z_or_e = nb_StopLoss()
-        elif sl_to_be_zero_or_entry_type == SLToBeZeroOrEntryType.ZeroLoss:
+        elif sl_to_be_ze_type == SLToBeZeroOrEntryType.ZeroLoss:
             set_sl_to_be_z_or_e = nb_Long_SLToZero()
-        elif sl_to_be_zero_or_entry_type == SLToBeZeroOrEntryType.AverageEntry:
+        elif sl_to_be_ze_type == SLToBeZeroOrEntryType.AverageEntry:
             set_sl_to_be_z_or_e = nb_Long_SLToEntry()
 
         """
