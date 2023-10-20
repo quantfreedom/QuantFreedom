@@ -41,8 +41,8 @@ class nb_GetMinPrice(nb_PriceGetter):
         lookback: int,
     ) -> float:
         price = candles[lookback : bar_index + 1 :, candle_body_type].min()
-        logger.debug(
-            f"nb_class_helpers.py - nb_GetMinPrice - nb_min_max_price_getter() - candle_body_type={CandleBodyType._fields[candle_body_type]} price min={price}"
+        logger.log_debug(
+            "nb_class_helpers.py - nb_GetMinPrice - nb_min_max_price_getter() - candle_body_type={CandleBodyType._fields[candle_body_type]} price min={price}"
         )
         return price
 
@@ -58,7 +58,7 @@ class nb_GetMaxPrice(nb_PriceGetter):
         lookback: int,
     ):
         price = candles[lookback : bar_index + 1 :, candle_body_type].max()
-        logger.debug(
+        logger.log_debug(
             f"nb_class_helpers.py - nb_GetMaxPrice - nb_min_max_price_getter() - candle_body_type={CandleBodyType._fields[candle_body_type]} price max={price}"
         )
         return price
@@ -73,7 +73,7 @@ class nb_GetPrice(nb_PriceGetter):
         current_candle: np.array,
     ):
         price = current_candle[candle_body_type]
-        logger.debug(
+        logger.log_debug(
             "nb_class_helpers.py - nb_GetPrice - nb_price_getter() - candle_body_type={cbt} price min={price}".format(
                 cbt=CandleBodyType._fields[candle_body_type], price=price
             )
@@ -109,7 +109,7 @@ class nb_Long_SLToZero(nb_ZeroOrEntry):
             user_num=sl_price,
             exchange_num=price_tick_step,
         )
-        logger.debug(f"New sl_price={sl_price}")
+        logger.log_debug("New sl_price={sl_price}")
         return sl_price
 
 
@@ -123,5 +123,5 @@ class nb_Long_SLToEntry(nb_ZeroOrEntry):
         price_tick_step,
     ):
         sl_price = average_entry
-        logger.debug(f"New sl_price={sl_price}")
+        logger.log_debug("New sl_price={sl_price}")
         return sl_price

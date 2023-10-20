@@ -123,10 +123,10 @@ class nb_Long_DLev(nb_Leverage):
             exchange_num=leverage_tick_step,
         )
         if leverage > max_leverage:
-            # logger.debug(f"Setting leverage from {leverage} to max leverage {max_leverage}")
+            # logger.log_debug("Setting leverage from {leverage} to max leverage {max_leverage}")
             leverage = max_leverage
         elif leverage < 1:
-            # logger.debug(f"Setting leverage from {leverage} to {1}")
+            # logger.log_debug("Setting leverage from {leverage} to {1}")
             leverage = 1
 
         (
@@ -171,7 +171,7 @@ class nb_Long_Leverage(nb_Leverage):
             current_candle=current_candle,
         )
         if liq_price > candle_low:
-            logger.debug(f"Stop loss hit")
+            logger.log_debug("Stop loss hit")
             return 0
             raise DecreasePosition(
                 msg="Stop Loss hit",
@@ -180,7 +180,7 @@ class nb_Long_Leverage(nb_Leverage):
                 exit_fee_pct=exit_fee_pct,
             )
         else:
-            logger.debug(f"SL not hit")
+            logger.log_debug("SL not hit")
 
     def calc_liq_price(
         self,

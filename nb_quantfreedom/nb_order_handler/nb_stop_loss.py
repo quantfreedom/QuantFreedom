@@ -87,14 +87,14 @@ class nb_Long_StopLoss(nb_StopLoss):
         exit_fee_pct: float,
         sl_price: float,
     ):
-        logger.debug(f"nb_stop_loss.py - nb_Long_StopLoss - check_stop_loss_hit() - Starting")
+        logger.log_debug("nb_stop_loss.py - nb_Long_StopLoss - check_stop_loss_hit() - Starting")
         candle_low = nb_GetPrice().nb_price_getter(
             logger=logger,
             candle_body_type=CandleBodyType.Low,
             current_candle=current_candle,
         )
         if sl_price > candle_low:
-            logger.debug(f"nb_stop_loss.py - nb_Long_StopLoss - check_stop_loss_hit() - Stop loss hit")
+            logger.log_debug("nb_stop_loss.py - nb_Long_StopLoss - check_stop_loss_hit() - Stop loss hit")
             raise DecreasePosition(
                 msg="Stop Loss hit",
                 exit_price=sl_price,
@@ -102,7 +102,7 @@ class nb_Long_StopLoss(nb_StopLoss):
                 exit_fee_pct=exit_fee_pct,
             )
         else:
-            logger.debug(f"nb_stop_loss.py - nb_Long_StopLoss - check_stop_loss_hit() - SL not hit")
+            logger.log_debug("nb_stop_loss.py - nb_Long_StopLoss - check_stop_loss_hit() - SL not hit")
 
     def check_move_stop_loss_to_be(
         self,
@@ -118,7 +118,7 @@ class nb_Long_StopLoss(nb_StopLoss):
         price_tick_step: float,
     ):
         if can_move_sl_to_be:
-            logger.debug(
+            logger.log_debug(
                 f"nb_stop_loss.py - nb_Long_StopLoss - check_move_stop_loss_to_be() - Might move sotp to break even"
             )
             # Stop Loss to break even
@@ -136,7 +136,7 @@ class nb_Long_StopLoss(nb_StopLoss):
                     market_fee_pct=market_fee_pct,
                     price_tick_step=price_tick_step,
                 )
-                logger.debug(
+                logger.log_debug(
                     f"nb_stop_loss.py - nb_Long_StopLoss - check_move_stop_loss_to_be() - pct_from_ae={round(pct_from_ae*100,4)} > sl_to_be_move_when_pct={round(sl_to_be_move_when_pct*100,4)} old sl={old_sl} new sl={sl_price}"
                 )
                 raise MoveStopLoss(
@@ -145,9 +145,11 @@ class nb_Long_StopLoss(nb_StopLoss):
                     can_move_sl_to_be=can_move_sl_to_be,
                 )
             else:
-                logger.debug(f"nb_stop_loss.py - nb_Long_StopLoss - check_move_stop_loss_to_be() - not moving sl to be")
+                logger.log_debug(
+                    f"nb_stop_loss.py - nb_Long_StopLoss - check_move_stop_loss_to_be() - not moving sl to be"
+                )
         else:
-            logger.debug(f"nb_stop_loss.py - nb_Long_StopLoss - check_move_stop_loss_to_be() - not moving sl to be")
+            logger.log_debug("nb_stop_loss.py - nb_Long_StopLoss - check_move_stop_loss_to_be() - not moving sl to be")
 
     def check_move_trailing_stop_loss(
         self,
@@ -169,7 +171,7 @@ class nb_Long_StopLoss(nb_StopLoss):
         pct_from_ae = (candle_low - average_entry) / average_entry
         possible_move_tsl = pct_from_ae > trail_sl_when_pct
         if possible_move_tsl:
-            logger.debug(
+            logger.log_debug(
                 f"nb_stop_loss.py - nb_Long_StopLoss - check_move_trailing_stop_loss() - Maybe Move pct_from_ae={round(pct_from_ae*100,4)} > trail_sl_when_pct={round(trail_sl_when_pct * 100,4)}"
             )
             temp_sl_price = candle_low - candle_low * trail_sl_by_pct
@@ -178,7 +180,7 @@ class nb_Long_StopLoss(nb_StopLoss):
                 exchange_num=price_tick_step,
             )
             if temp_sl_price > sl_price:
-                logger.debug(
+                logger.log_debug(
                     f"nb_stop_loss.py - nb_Long_StopLoss - check_move_trailing_stop_loss() - Will move trailing stop temp sl={temp_sl_price} > sl price={sl_price}"
                 )
                 sl_price = temp_sl_price
@@ -188,11 +190,11 @@ class nb_Long_StopLoss(nb_StopLoss):
                     can_move_sl_to_be=can_move_sl_to_be,
                 )
             else:
-                logger.debug(
+                logger.log_debug(
                     f"nb_stop_loss.py - nb_Long_StopLoss - check_move_trailing_stop_loss() - Wont move tsl"
                 )
         else:
-            logger.debug(f"nb_stop_loss.py - nb_Long_StopLoss - check_move_trailing_stop_loss() - Not moving tsl")
+            logger.log_debug("nb_stop_loss.py - nb_Long_StopLoss - check_move_trailing_stop_loss() - Not moving tsl")
 
 
 @jitclass()
@@ -226,7 +228,7 @@ class nb_Long_SLBCB(nb_StopLoss):
             user_num=sl_price,
             exchange_num=price_tick_step,
         )
-        logger.debug(f"nb_stop_loss.py - nb_Long_SLBCB - calculate_stop_loss() - sl_price={sl_price}")
+        logger.log_debug("nb_stop_loss.py - nb_Long_SLBCB - calculate_stop_loss() - sl_price={sl_price}")
         return sl_price
 
 

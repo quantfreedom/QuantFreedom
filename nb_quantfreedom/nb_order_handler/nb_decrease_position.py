@@ -47,7 +47,7 @@ class nb_Long_DP(nb_DecreasePosition):
 
         # Setting new equity
         equity = round(realized_pnl + equity, 4)
-        logger.debug(
+        logger.log_debug(
             f"\n\
 realized_pnl={realized_pnl}\n\
 order_status= {OrderStatus._fields[order_status]}\n\

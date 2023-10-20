@@ -85,14 +85,14 @@ class nb_Long_TPHitReg(nb_TakeProfit):
             current_candle=current_candle,
         )
         if tp_price < candle_high:
-            logger.debug(f"Take Profit Hit")
+            logger.log_debug("Take Profit Hit")
             raise DecreasePosition(
                 exit_price=tp_price,
                 order_status=OrderStatus.TakeProfitFilled,
                 exit_fee_pct=exit_fee_pct,
             )
         else:
-            logger.debug(f"No tp hit")
+            logger.log_debug("No tp hit")
 
 
 @jitclass
@@ -106,12 +106,12 @@ class nb_Long_TPHitProvided(nb_TakeProfit):
         tp_price: float,
     ):
         if not np.isnan(tp_price):
-            logger.debug(f"Take Profit Hit")
+            logger.log_debug("Take Profit Hit")
             raise DecreasePosition(
                 exit_price=tp_price,  # sending the close of the current candle for now as exit price
                 order_status=OrderStatus.TakeProfitFilled,
                 exit_fee_pct=exit_fee_pct,
             )
         else:
-            logger.debug(f"tp not hit")
+            logger.log_debug("tp not hit")
         pass

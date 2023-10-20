@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from numba import njit
 import logging
-from nb_quantfreedom.nb_custom_logger import nb_CustomLogger, nb_WontLog
+from nb_quantfreedom.nb_custom_logger import nb_CustomLogger, nb_NoLogs, nb_PrintLogs, nb_RegularLogs
 
 from nb_quantfreedom.nb_helper_funcs import get_to_the_upside_nb, nb_get_dos
 from nb_quantfreedom.nb_enums import (
@@ -91,7 +91,7 @@ def backtest_df_only(
     #########################################
     """
     if logger_settings:
-        logger = nb_CustomLogger()
+        logger = nb_RegularLogs()
         logger.set_loggers(
             log_debug=logger_settings.log_debug,
             create_trades_logger=logger_settings.create_trades_logger,
@@ -99,7 +99,7 @@ def backtest_df_only(
             formatter=logger_settings.formatter,
         )
     else:
-        logger = nb_WontLog()
+        logger = nb_PrintLogs()
 
     strategy = nb_Strategy()
     if candle_processing_mode == CandleProcessingType.Backtest:
@@ -258,12 +258,12 @@ def backtest_df_only(
     total_bars = candles.shape[0]
 
     # logger.infoing out total numbers of things
-    logger.info("Starting the backtest now ... and also here are some stats for your backtest.\n")
-    logger.info(f"Total indicator settings to test: {total_indicator_settings:,}")
-    logger.info(f"Total order settings to test: {total_order_settings:,}")
-    logger.info(f"Total combinations of settings to test: {total_indicator_settings * total_order_settings:,}")
-    logger.info(f"\nTotal candles: {total_bars:,}")
-    logger.info(f"Total candles to test: {total_indicator_settings * total_order_settings * total_bars:,}")
+    logger.log_info("Starting the backtest now ... and also here are some stats for your backtest.\n")
+    logger.log_info("Total indicator settings to test: {total_indicator_settings:,}")
+    logger.log_info("Total order settings to test: {total_order_settings:,}")
+    logger.log_info("Total combinations of settings to test: {total_indicator_settings * total_order_settings:,}")
+    logger.log_info("\nTotal candles: {total_bars:,}")
+    logger.log_info("Total candles to test: {total_indicator_settings * total_order_settings * total_bars:,}")
 
     strategy_result_records = nb_run_backtest(
         backtest_settings=backtest_settings,
@@ -301,7 +301,7 @@ def create_classes(
     candles: np.array,
     dos_cart_arrays: DynamicOrderSettingsArrays,
     exchange_settings: ExchangeSettings,
-    logger_settings: LoggerSettings,
+    logger_settings: [LoggerSettings, int],
     starting_equity: float,
     static_os: StaticOrderSettings,
 ):
@@ -317,15 +317,18 @@ def create_classes(
     #########################################
     """
     if logger_settings:
-        logger = nb_CustomLogger()
-        logger.set_loggers(
-            log_debug=logger_settings.log_debug,
-            create_trades_logger=logger_settings.create_trades_logger,
-            custom_path=logger_settings.custom_path,
-            formatter=logger_settings.formatter,
-        )
+        if logger_settings == "p":
+            logger = nb_PrintLogs()
+        elif type(logger_settings) == LoggerSettings:
+            logger = nb_RegularLogs()
+            logger.set_loggers(
+                log_debug=logger_settings.log_debug,
+                create_trades_logger=logger_settings.create_trades_logger,
+                custom_path=logger_settings.custom_path,
+                formatter=logger_settings.formatter,
+            )
     else:
-        logger = nb_WontLog()
+        logger = nb_NoLogs()
 
     strategy = nb_Strategy()
     if candle_processing_mode == CandleProcessingType.Backtest:
@@ -528,7 +531,7 @@ def nb_run_backtest(
     tp_calculator: nb_TakeProfit,
 ):
     print("testing the print")
-    logger.debug("hey there testing")
+    logger.log_debug("hey there testing")
     market_fee_pct = exchange_settings.market_fee_pct
     leverage_tick_step = exchange_settings.leverage_tick_step
     price_tick_step = exchange_settings.price_tick_step
@@ -547,20 +550,20 @@ def nb_run_backtest(
     result_records_filled = 0
 
     for ind_set_index in range(total_indicator_settings):
-        logger.info("Indicator settings index = {ind_set_index:,}".format(ind_set_index=ind_set_index))
+        logger.log_info("Indicator settings index = {ind_set_index:,}".format(ind_set_index=ind_set_index))
         indicator_settings = strategy.nb_get_current_ind_settings(
             ind_set_index=ind_set_index,
             logger=logger,
         )
 
         for dos_index in range(total_order_settings):
-            logger.info("Order settings index = {dos_index:,}".format(dos_index=dos_index))
+            logger.log_info("Order settings index = {dos_index:,}".format(dos_index=dos_index))
             dynamic_order_settings = nb_get_dos(
                 dos_cart_arrays=dos_cart_arrays,
                 dos_index=dos_index,
             )
 
-            logger.info("Created Order class".format())
+            logger.log_info("Created Order class".format())
 
             starting_bar = dynamic_order_settings.num_candles - 1
 
@@ -601,7 +604,7 @@ def nb_run_backtest(
             at_max_entries = False
             # entries loop
             for bar_index in range(starting_bar, total_bars):
-                logger.info(
+                logger.log_info(
                     "ind_idx={ind_set_index:,} dos_idx={dos_index:,} bar_idx={bar_index:,} timestamp={timestamp}".format(
                         ind_set_index=ind_set_index,
                         dos_index=dos_index,
@@ -611,14 +614,14 @@ def nb_run_backtest(
                 )
                 if order_result.position_size_usd > 0:
                     try:
-                        logger.debug("nb_base.py - nb_run_backtest() - will check_stop_loss_hit".format())
+                        logger.log_debug("nb_base.py - nb_run_backtest() - will check_stop_loss_hit".format())
                         checker_sl_hit.check_stop_loss_hit(
                             current_candle=candles[bar_index, :],
                             exit_fee_pct=market_fee_pct,
                             sl_price=order_result.sl_price,
                             logger=logger,
                         )
-                        logger.debug("nb_base.py - nb_run_backtest() - will check_liq_hit".format())
+                        logger.log_debug("nb_base.py - nb_run_backtest() - will check_liq_hit".format())
                         checker_liq_hit.check_liq_hit(
                             current_candle=candles[bar_index, :],
                             exit_fee_pct=market_fee_pct,
@@ -626,14 +629,14 @@ def nb_run_backtest(
                             logger=logger,
                         )
 
-                        logger.debug("nb_base.py - nb_run_backtest() - will check_tp_hit".format())
+                        logger.log_debug("nb_base.py - nb_run_backtest() - will check_tp_hit".format())
                         checker_tp_hit.check_tp_hit(
                             current_candle=candles[bar_index, :],
                             exit_fee_pct=exit_fee_pct,
                             tp_price=order_result.tp_price,
                             logger=logger,
                         )
-                        logger.debug("nb_base.py - nb_run_backtest() - will check_move_stop_loss_to_be".format())
+                        logger.log_debug("nb_base.py - nb_run_backtest() - will check_move_stop_loss_to_be".format())
                         checker_sl_to_be.check_move_stop_loss_to_be(
                             average_entry=order_result.average_entry,
                             can_move_sl_to_be=order_result.can_move_sl_to_be,
@@ -647,7 +650,7 @@ def nb_run_backtest(
                             logger=logger,
                         )
 
-                        logger.debug("nb_base.py - nb_run_backtest() - will check_move_trailing_stop_loss".format())
+                        logger.log_debug("nb_base.py - nb_run_backtest() - will check_move_trailing_stop_loss".format())
                         checker_tsl.check_move_trailing_stop_loss(
                             average_entry=order_result.average_entry,
                             can_move_sl_to_be=order_result.can_move_sl_to_be,
@@ -660,10 +663,10 @@ def nb_run_backtest(
                             logger=logger,
                         )
                     except RejectedOrder:
-                        # logger.info("RejectedOrder -> {msg}".format(msg=RejectedOrder().msg))
+                        # logger.log_info("RejectedOrder -> {msg}".format(msg=RejectedOrder().msg))
                         pass
                     except MoveStopLoss:
-                        # logger.debug("nb_base.py - nb_run_backtest() - will move_stop_loss".format())
+                        # logger.log_debug("nb_base.py - nb_run_backtest() - will move_stop_loss".format())
                         # order_result = sl_mover.move_stop_loss(
                         #     bar_index=bar_index,
                         #     can_move_sl_to_be=MoveStopLoss().can_move_sl_to_be,
@@ -677,7 +680,7 @@ def nb_run_backtest(
                         # )
                         pass
                     except DecreasePosition:
-                        # logger.debug("nb_base.py - nb_run_backtest() - will decrease_position".format())
+                        # logger.log_debug("nb_base.py - nb_run_backtest() - will decrease_position".format())
                         # equity, fees_paid, realized_pnl = dec_pos_calculator.decrease_position(
                         #     average_entry=order_result.average_entry,
                         #     equity=order_result.equity,
@@ -727,13 +730,13 @@ def nb_run_backtest(
                         pass
 
                     except Exception:
-                        # logger.info("Exception moving or decreasing order -> {e}".format(e=Exception))
+                        # logger.log_info("Exception moving or decreasing order -> {e}".format(e=Exception))
                         # raise Exception("Exception moving or decreasing order -> {e}".format(e=Exception))
                         pass
                 # TODO: this
 
-                logger.debug("\n\n".format())
-                logger.debug("nb_base.py - nb_run_backtest() - will strategy.evaluate".format())
+                logger.log_debug("\n\n".format())
+                logger.log_debug("nb_base.py - nb_run_backtest() - will strategy.evaluate".format())
                 if not at_max_entries and strategy.evaluate(
                     bar_index=bar_index,
                     starting_bar=starting_bar,
@@ -743,7 +746,7 @@ def nb_run_backtest(
                     logger=logger,
                 ):  # TODO: this and add in that we are also not at max entry amount
                     try:
-                        logger.debug("nb_base.py - nb_run_backtest() - will calculate_stop_loss".format())
+                        logger.log_debug("nb_base.py - nb_run_backtest() - will calculate_stop_loss".format())
                         sl_price = sl_calculator.calculate_stop_loss(
                             bar_index=bar_index,
                             candles=candles,
@@ -754,7 +757,7 @@ def nb_run_backtest(
                             sl_bcb_type=dynamic_order_settings.sl_bcb_type,
                             logger=logger,
                         )
-                        logger.debug("nb_base.py - nb_run_backtest() - will calculate_increase_posotion".format())
+                        logger.log_debug("nb_base.py - nb_run_backtest() - will calculate_increase_posotion".format())
                         (
                             average_entry,
                             entry_price,
@@ -785,7 +788,7 @@ def nb_run_backtest(
                             total_trades=order_result.total_trades,
                             logger=logger,
                         )
-                        logger.debug("nb_base.py - nb_run_backtest() - will calculate_leverage".format())
+                        logger.log_debug("nb_base.py - nb_run_backtest() - will calculate_leverage".format())
                         (
                             available_balance,
                             can_move_sl_to_be,
@@ -808,7 +811,7 @@ def nb_run_backtest(
                             logger=logger,
                         )
 
-                        logger.debug("nb_base.py - nb_run_backtest() - will calculate_take_profit".format())
+                        logger.log_debug("nb_base.py - nb_run_backtest() - will calculate_take_profit".format())
                         (
                             can_move_sl_to_be,
                             tp_price,
@@ -823,7 +826,7 @@ def nb_run_backtest(
                             tp_fee_pct=exit_fee_pct,
                             logger=logger,
                         )
-                        logger.debug("nb_base.py - nb_run_backtest() - will OrderResult".format())
+                        logger.log_debug("nb_base.py - nb_run_backtest() - will OrderResult".format())
                         order_result = OrderResult(
                             # where we are at
                             ind_set_index=ind_set_index,
@@ -858,16 +861,16 @@ def nb_run_backtest(
                         )
 
                     except RejectedOrder:
-                        # logger.info("RejectedOrder -> {msg}".format(msg=RejectedOrder().msg))
+                        # logger.log_info("RejectedOrder -> {msg}".format(msg=RejectedOrder().msg))
                         # at_max_entries = RejectedOrder().at_max_entries
                         pass
                     except Exception:
-                        # logger.info("Exception placing order -> {e}".format(e=Exception))
+                        # logger.log_info("Exception placing order -> {e}".format(e=Exception))
                         # raise Exception("Exception placing order -> {e}".format(e=Exception))
                         pass
             # Checking if gains
             gains_pct = round(((order_result.equity - starting_equity) / starting_equity) * 100, 2)
-            logger.info(
+            logger.log_info(
                 "Starting eq={starting_equity} Ending eq={equity} gains pct={gains_pct}".format(
                     starting_equity=starting_equity, equity=order_result.equity, gains_pct=gains_pct
                 )
@@ -903,7 +906,7 @@ def nb_run_backtest(
                         strategy_result_records[result_records_filled]["ending_eq"] = order_result.equity
 
                         result_records_filled += 1
-        logger.info("Starting New Loop\n\n".format())
+        logger.log_info("Starting New Loop\n\n".format())
     return strategy_result_records[:result_records_filled]
 
 
@@ -944,12 +947,12 @@ def nb_run_backtest(
 #         total_order_records_filled=total_order_records_filled,
 #     )
 
-#     logger.info(f"Created Order class")
+#     logger.log_info("Created Order class")
 
 #     starting_bar = calc_starting_bar(order_settings.num_candles)
 
 #     for bar_index in range(starting_bar, total_bars):
-#         logger.info(
+#         logger.log_info(
 #             f"ind_idx={ind_set_index:,} os_idx={or_set_index:,} b_idx={bar_index} timestamp={pd.to_datetime(candles['timestamp'][bar_index], unit='ms')}"
 #         )
 #         if order.position_size_usd > 0:
@@ -963,7 +966,7 @@ def nb_run_backtest(
 #                 order.check_move_stop_loss_to_be(bar_index=bar_index, candles=candles)
 #                 order.check_move_trailing_stop_loss(bar_index=bar_index, candles=candles)
 #             except RejectedOrder as e:
-#                 logger.info(f"RejectedOrder -> {e.msg}")
+#                 logger.log_info("RejectedOrder -> {e.msg}")
 #                 pass
 #             except DecreasePosition as e:
 #                 order.decrease_position(
@@ -985,7 +988,7 @@ def nb_run_backtest(
 #                     order_settings_index=or_set_index,
 #                 )
 #             except Exception as e:
-#                 logger.info(f"Exception placing order -> {e}")
+#                 logger.log_info("Exception placing order -> {e}")
 #                 raise Exception(f"Exception placing order -> {e}")
 #         strategy.create_indicator(bar_index=bar_index, starting_bar=starting_bar)
 #         if strategy.evaluate():  # add in that we are also not at max entry amount
@@ -1018,10 +1021,10 @@ def nb_run_backtest(
 #                     )
 #                 )
 #             except RejectedOrder as e:
-#                 logger.info(f"RejectedOrder -> {e.msg}")
+#                 logger.log_info("RejectedOrder -> {e.msg}")
 #                 pass
 #             except Exception as e:
-#                 logger.info(f"Exception placing order -> {e}")
+#                 logger.log_info("Exception placing order -> {e}")
 #                 raise Exception(f"Exception placing order -> {e}")
 
 #     order_records = order.order_records

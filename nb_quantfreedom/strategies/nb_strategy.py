@@ -99,7 +99,7 @@ class nb_BacktestInd(nb_CreateInd):
                 ),
                 2,
             )
-            logger.debug("Created rsi")
+            logger.log_debug("Created rsi")
             return rsi
         except Exception as e:
             raise Exception(f"Exception creating rsi -> {e}")
@@ -123,7 +123,7 @@ class nb_TradingInd(nb_CreateInd):
                 ),
                 2,
             )
-            logger.debug("Created rsi")
+            logger.log_debug("Created rsi")
             return rsi
         except Exception as e:
             raise Exception(f"Exception creating rsi -> {e}")
@@ -148,7 +148,7 @@ class nb_Strategy(nb_Empty):
             rsi_is_below=ind_set_arrays.rsi_is_below[ind_set_index],
             rsi_length=ind_set_arrays.rsi_length[ind_set_index],
         )
-        logger.info("Created indicator settings")
+        logger.log_info("Created indicator settings")
         return indicator_settings
 
     def evaluate(
@@ -172,11 +172,11 @@ class nb_Strategy(nb_Empty):
             rsi_is_below = indicator_settings.rsi_is_below
 
             if current_rsi < rsi_is_below:
-                logger.info(f"\n\n")
-                logger.info(f"Entry time!!! rsi {current_rsi} is below {rsi_is_below}")
+                logger.log_info("\n\n")
+                logger.log_info("Entry time!!! rsi {current_rsi} is below {rsi_is_below}")
                 return True
             else:
-                logger.info(f"No entry rsi {current_rsi}")
+                logger.log_info("No entry rsi {current_rsi}")
                 return False
         except Exception as e:
             raise Exception(f"Evaluate strat error -> {e}")
