@@ -30,9 +30,9 @@ def backtest_df_only_classes(
 
     strat_records = np.empty(int(total_bars / 2), dtype=strat_records_dt)
 
-    for indicator_settings_index in range(total_indicator_settings):
-        info_logger.debug(f"Indicator settings index = {indicator_settings_index}")
-        strategy.set_indicator_settings(indicator_settings_index=indicator_settings_index)
+    for ind_set_index in range(total_indicator_settings):
+        info_logger.debug(f"Indicator settings index = {ind_set_index}")
+        strategy.set_indicator_settings(ind_set_index=ind_set_index)
 
         for order_settings_index in range(total_order_settings):
             info_logger.debug(f"Order settings index = {order_settings_index}")
@@ -72,7 +72,7 @@ def backtest_df_only_classes(
                             exit_price=e.exit_price,
                             exit_fee_pct=e.exit_fee_pct,
                             bar_index=bar_index,
-                            indicator_settings_index=indicator_settings_index,
+                            ind_set_index=ind_set_index,
                             order_settings_index=order_settings_index,
                         )
                     except MoveStopLoss as e:
@@ -81,7 +81,7 @@ def backtest_df_only_classes(
                             order_status=e.order_status,
                             bar_index=bar_index,
                             order_settings_index=order_settings_index,
-                            indicator_settings_index=indicator_settings_index,
+                            ind_set_index=ind_set_index,
                         )
                     except Exception as e:
                         info_logger.error(f"Exception placing order -> {e}")
@@ -89,7 +89,7 @@ def backtest_df_only_classes(
                 strategy.create_indicator(bar_index=bar_index, strat_num_candles=strat_num_candles)
                 if strategy.evaluate():  # add in that we are also not at max entry amount
                     info_logger.debug(
-                        f"ind_idx={indicator_settings_index} os_idx={order_settings_index} b_idx={bar_index} timestamp={strategy.candles.index[bar_index]}"
+                        f"ind_idx={ind_set_index} os_idx={order_settings_index} b_idx={bar_index} timestamp={strategy.candles.index[bar_index]}"
                     )
                     try:
                         order.calculate_stop_loss(
@@ -129,7 +129,7 @@ def backtest_df_only_classes(
                         total_pnl = pnl_array.sum()
 
                         # strat array
-                        strategy_result_records[result_records_filled]["ind_set_idx"] = indicator_settings_index
+                        strategy_result_records[result_records_filled]["ind_set_idx"] = ind_set_index
                         strategy_result_records[result_records_filled]["or_set_idx"] = order_settings_index
                         strategy_result_records[result_records_filled]["total_trades"] = wins_and_losses_array.size
                         strategy_result_records[result_records_filled]["gains_pct"] = gains_pct
@@ -158,10 +158,10 @@ def sim_6_nb(
     total_order_records_filled = 0
 
     for i in range(strat_indexes_len):
-        indicator_settings_index = indicator_indexes[i]
+        ind_set_index = indicator_indexes[i]
         order_settings_index = or_settings_indexes[i]
-        current_indicator_entries = entries[:, indicator_settings_index]
-        current_exit_signals = exit_signals[:, indicator_settings_index]
+        current_indicator_entries = entries[:, ind_set_index]
+        current_exit_signals = exit_signals[:, ind_set_index]
         order_settings = get_order_settings(order_settings_index, os_cart_arrays)
 
         order = Order.instantiate(
@@ -191,7 +191,7 @@ def sim_6_nb(
                         exit_price=e.exit_price,
                         exit_fee_pct=e.exit_fee_pct,
                         bar_index=bar_index,
-                        indicator_settings_index=indicator_settings_index,
+                        ind_set_index=ind_set_index,
                         order_settings_index=order_settings_index,
                     )
                 except MoveStopLoss as e:
@@ -200,7 +200,7 @@ def sim_6_nb(
                         order_status=e.order_status,
                         bar_index=bar_index,
                         order_settings_index=order_settings_index,
-                        indicator_settings_index=indicator_settings_index,
+                        ind_set_index=ind_set_index,
                     )
             if current_indicator_entries[bar_index]:  # add in that we are also not at max entry amount
                 try:
@@ -214,7 +214,7 @@ def sim_6_nb(
                     order.calculate_take_profit()
                     order.or_filler(
                         order_result=OrderResult(
-                            indicator_settings_index=indicator_settings_index,
+                            ind_set_index=ind_set_index,
                             order_settings_index=order_settings_index,
                             bar_index=bar_index,
                             available_balance=order.available_balance,

@@ -195,7 +195,7 @@ class Mufex(Exchange):
         until_date_ms: int = None,
         candles_to_dl: int = None,
         category: str = "linear",
-        limit: int = 200,
+        limit: int = 1500,
     ):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
@@ -208,17 +208,17 @@ class Mufex(Exchange):
         """
         mufex_timeframe = self.__get_mufex_timeframe(timeframe=timeframe)
         timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
-        candles_to_dl_ms = self.get_candles_to_dl_in_ms(candles_to_dl, timeframe_in_ms=timeframe_in_ms, limit=200)
+        candles_to_dl_ms = self.get_candles_to_dl_in_ms(candles_to_dl, timeframe_in_ms=timeframe_in_ms, limit=limit)
 
         if until_date_ms is None:
             if since_date_ms is None:
                 until_date_ms = self.get_current_time_ms() - timeframe_in_ms
                 since_date_ms = until_date_ms - candles_to_dl_ms
             else:
-                until_date_ms = since_date_ms + candles_to_dl_ms - 5000
+                until_date_ms = since_date_ms + candles_to_dl_ms - 5000 # 5000 is to add 5 seconds
         else:
             if since_date_ms is None:
-                since_date_ms = until_date_ms - candles_to_dl_ms - 5000
+                since_date_ms = until_date_ms - candles_to_dl_ms - 5000 # 5000 is to sub 5 seconds
 
         info_logger.debug(
             f"since_date_ms={self.get_ms_time_to_pd_datetime(since_date_ms)} until_date_ms={self.get_ms_time_to_pd_datetime(until_date_ms)}, candles to dl={candles_to_dl_ms}"

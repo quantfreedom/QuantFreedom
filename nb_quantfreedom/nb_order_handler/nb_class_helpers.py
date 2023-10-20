@@ -1,6 +1,7 @@
 import numpy as np
 from numba.experimental import jitclass
 from nb_quantfreedom.nb_custom_logger import nb_CustomLogger
+from nb_quantfreedom.nb_enums import CandleBodyType
 from nb_quantfreedom.nb_helper_funcs import nb_round_size_by_tick_step
 import logging
 
@@ -40,7 +41,9 @@ class nb_GetMinPrice(nb_PriceGetter):
         lookback: int,
     ) -> float:
         price = candles[lookback : bar_index + 1 :, candle_body_type].min()
-        logger.debug(f"{candle_body_type} price min = {price}")
+        logger.debug(
+            f"nb_class_helpers.py - nb_GetMinPrice - nb_min_max_price_getter() - candle_body_type={CandleBodyType._fields[candle_body_type]} price min={price}"
+        )
         return price
 
 
@@ -55,7 +58,9 @@ class nb_GetMaxPrice(nb_PriceGetter):
         lookback: int,
     ):
         price = candles[lookback : bar_index + 1 :, candle_body_type].max()
-        logger.debug(f"{candle_body_type} price min = {price}")
+        logger.debug(
+            f"nb_class_helpers.py - nb_GetMaxPrice - nb_min_max_price_getter() - candle_body_type={CandleBodyType._fields[candle_body_type]} price max={price}"
+        )
         return price
 
 
@@ -67,8 +72,12 @@ class nb_GetPrice(nb_PriceGetter):
         candle_body_type: int,
         current_candle: np.array,
     ):
-        price = current_candle[:, candle_body_type]
-        logger.debug(f"{candle_body_type} price min = {price}")
+        price = current_candle[candle_body_type]
+        logger.debug(
+            "nb_class_helpers.py - nb_GetPrice - nb_price_getter() - candle_body_type={cbt} price min={price}".format(
+                cbt=CandleBodyType._fields[candle_body_type], price=price
+            )
+        )
         return price
 
 

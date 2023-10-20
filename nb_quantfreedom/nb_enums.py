@@ -3,13 +3,12 @@ import numpy as np
 import os
 
 DIR_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-FORMATTER = "%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s() - %(message)s"
+FORMATTER = "%(asctime)s - %(levelname)s - %(message)s"
 
 
 class CandleProcessingTypeT(NamedTuple):
     Backtest: int = 0
-    RealBacktest: int = 1
-    LiveTrading: int = 2
+    LiveTrading: int = 1
 
 
 CandleProcessingType = CandleProcessingTypeT()
@@ -237,7 +236,7 @@ class LoggerSettings(NamedTuple):
 
 class OrderResult(NamedTuple):
     # where we are at
-    indicator_settings_index: int
+    ind_set_index: int
     dos_index: int
     bar_index: int
     timestamp: int
@@ -287,9 +286,11 @@ class RejectedOrder(Exception):
         self,
         order_status: OrderStatus = None,
         msg: str = None,
+        at_max_entries: bool = False,
     ):
         self.order_status = order_status
         self.msg = msg
+        self.at_max_entries = at_max_entries
 
 
 class DecreasePosition(Exception):
@@ -390,8 +391,8 @@ strat_df_array_dt = np.dtype(
         ("gains_pct", np.float_),
         ("win_rate", np.float_),
         ("to_the_upside", np.float_),
+        ("fees_paid", np.float_),
         ("total_pnl", np.float_),
-        ("starting_eq", np.float_),
         ("ending_eq", np.float_),
     ],
     align=True,

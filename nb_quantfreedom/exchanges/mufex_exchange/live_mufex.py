@@ -61,7 +61,7 @@ class LiveMufex(LiveExchange, Mufex):
         self.candles_to_dl_ms = self.get_candles_to_dl_in_ms(
             candles_to_dl=candles_to_dl,
             timeframe_in_ms=self.timeframe_in_ms,
-            limit=200,
+            limit=1500,
         )
 
         self.set_exchange_settings(

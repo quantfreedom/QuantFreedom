@@ -13,7 +13,7 @@ class nb_Leverage:
 
     def calculate_leverage(
         self,
-logger: nb_CustomLogger,
+        logger: nb_CustomLogger,
         available_balance: float,
         average_entry: float,
         cash_borrowed: float,
@@ -28,7 +28,7 @@ logger: nb_CustomLogger,
 
     def check_liq_hit(
         self,
-logger: nb_CustomLogger,
+        logger: nb_CustomLogger,
         bar_index: int,
         current_candle: np.array,
         exit_fee_pct: float,
@@ -38,7 +38,7 @@ logger: nb_CustomLogger,
 
     def calc_liq_price(
         self,
-logger: nb_CustomLogger,
+        logger: nb_CustomLogger,
         average_entry: float,
         entry_size_usd: float,
         leverage: float,
@@ -55,7 +55,7 @@ logger: nb_CustomLogger,
 class nb_Long_SLev(nb_Leverage):
     def calculate_leverage(
         self,
-logger: nb_CustomLogger,
+        logger: nb_CustomLogger,
         available_balance: float,
         average_entry: float,
         cash_borrowed: float,
@@ -75,6 +75,7 @@ logger: nb_CustomLogger,
             cash_used,
             liq_price,
         ) = nb_Long_Leverage().calc_liq_price(
+            logger=logger,
             leverage=static_leverage,
             entry_size_usd=entry_size_usd,
             average_entry=average_entry,
@@ -103,7 +104,7 @@ class nb_Long_DLev(nb_Leverage):
 
     def calculate_leverage(
         self,
-logger: nb_CustomLogger,
+        logger: nb_CustomLogger,
         available_balance: float,
         average_entry: float,
         cash_borrowed: float,
@@ -122,10 +123,10 @@ logger: nb_CustomLogger,
             exchange_num=leverage_tick_step,
         )
         if leverage > max_leverage:
-            # print(f"Setting leverage from {leverage} to max leverage {max_leverage}")
+            # logger.debug(f"Setting leverage from {leverage} to max leverage {max_leverage}")
             leverage = max_leverage
         elif leverage < 1:
-            # print(f"Setting leverage from {leverage} to {1}")
+            # logger.debug(f"Setting leverage from {leverage} to {1}")
             leverage = 1
 
         (
@@ -135,6 +136,7 @@ logger: nb_CustomLogger,
             cash_used,
             liq_price,
         ) = nb_Long_Leverage().calc_liq_price(
+            logger=logger,
             leverage=leverage,
             entry_size_usd=entry_size_usd,
             average_entry=average_entry,
@@ -158,17 +160,19 @@ logger: nb_CustomLogger,
 class nb_Long_Leverage(nb_Leverage):
     def check_liq_hit(
         self,
-logger: nb_CustomLogger,
+        logger: nb_CustomLogger,
         current_candle: np.array,
         exit_fee_pct: float,
         liq_price: float,
     ):
         candle_low = nb_GetPrice().nb_price_getter(
+            logger=logger,
             candle_body_type=CandleBodyType.Low,
             current_candle=current_candle,
         )
         if liq_price > candle_low:
-            print(f"Stop loss hit")
+            logger.debug(f"Stop loss hit")
+            return 0
             raise DecreasePosition(
                 msg="Stop Loss hit",
                 exit_price=liq_price,
@@ -176,11 +180,11 @@ logger: nb_CustomLogger,
                 exit_fee_pct=exit_fee_pct,
             )
         else:
-            print(f"SL not hit")
+            logger.debug(f"SL not hit")
 
     def calc_liq_price(
         self,
-logger: nb_CustomLogger,
+        logger: nb_CustomLogger,
         average_entry: float,
         entry_size_usd: float,
         leverage: float,

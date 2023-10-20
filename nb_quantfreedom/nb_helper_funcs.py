@@ -22,12 +22,12 @@ def get_to_the_upside_nb(
     y_ym = y - ym
     if y_ym.all() == 0:
         y_ym = np.array([1])
-    y_ym_s = y_ym**2
+    y_ym_s = np.power(y_ym, 2)
 
     x_xm = x - xm
     if x_xm.all() == 0:
         x_xm = np.array([1])
-    x_xm_s = x_xm**2
+    x_xm_s = np.power(x_xm, 2)
 
     b1 = (x_xm * y_ym).sum() / x_xm_s.sum()
     b0 = ym - b1 * xm
@@ -36,7 +36,7 @@ def get_to_the_upside_nb(
 
     yp_ym = y_pred - ym
 
-    yp_ym_s = yp_ym**2
+    yp_ym_s = np.power(yp_ym, 2)
 
     to_the_upside = yp_ym_s.sum() / y_ym_s.sum()
 
@@ -45,7 +45,7 @@ def get_to_the_upside_nb(
     return round(to_the_upside, 4)
 
 
-@njit(cache=True)
+# @njit(cache=True)
 def nb_dos_cart_product(dos_arrays: DynamicOrderSettingsArrays):
     # cart array loop
     n = 1
@@ -86,7 +86,10 @@ def nb_dos_cart_product(dos_arrays: DynamicOrderSettingsArrays):
 
 
 @njit(cache=True)
-def nb_get_dos(dos_cart_arrays: DynamicOrderSettingsArrays, dos_index: int):
+def nb_get_dos(
+    dos_cart_arrays: DynamicOrderSettingsArrays,
+    dos_index: int,
+):
     return DynamicOrderSettings(
         entry_size_asset=dos_cart_arrays.entry_size_asset[dos_index],
         max_equity_risk_pct=dos_cart_arrays.max_equity_risk_pct[dos_index],

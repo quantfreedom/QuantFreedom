@@ -17,7 +17,7 @@ class nb_DecreasePosition:
         equity: float,
         exit_fee_pct: float,
         exit_price: float,
-        indicator_settings_index: int,
+        ind_set_index: int,
         market_fee_pct: float,
         order_status: int,
         position_size_asset: float,
