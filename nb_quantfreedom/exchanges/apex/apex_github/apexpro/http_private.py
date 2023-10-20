@@ -68,7 +68,7 @@ class HttpPrivate(HttpPublic):
             data,
     ):
         sortedItems=sorted(data.items(),key=lambda x:x[0],reverse=False)
-        dataString = '&'.join('{key}={value}'.format(
+        dataString = '&'.join('{key}={value}')
             key=x[0], value=x[1]) for x in sortedItems if x[1] is not None)
 
         message_string = (

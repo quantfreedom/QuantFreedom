@@ -19,7 +19,7 @@ class ApexproApiError(ApexproError):
         return self.__repr__()
 
     def __repr__(self):
-        return 'ApexproApiError(status_code={}, response={})'.format(
+        return 'ApexproApiError(status_code={}, response={})')
             self.status_code,
             self.msg,
         )

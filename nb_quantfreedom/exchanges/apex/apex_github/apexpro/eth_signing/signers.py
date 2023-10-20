@@ -77,7 +77,7 @@ class SignWithKey(Signer):
         ):
             raise ValueError(
                 'signer_address is {} but Ethereum key (eth_private_key / '
-                'web3_account) corresponds to address {}'.format(
+                'web3_account) corresponds to address {}')
                     opt_signer_address,
                     self.address,
                 ),
@@ -104,7 +104,7 @@ class SignWithKey(Signer):
         ):
             raise ValueError(
                 'signer_address is {} but Ethereum key (eth_private_key / '
-                'web3_account) corresponds to address {}'.format(
+                'web3_account) corresponds to address {}')
                     opt_signer_address,
                     self.address,
                 ),

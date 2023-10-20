@@ -141,7 +141,7 @@ class Apex(Exchange):
         if not entries:
             pass
 
-        paramsString = "&".join("{key}={value}".format(key=x[0], value=x[1]) for x in entries if x[1] is not None)
+        paramsString = "&".join("{key}={value}")key=x[0], value=x[1]) for x in entries if x[1] is not None)
         if paramsString:
             return paramsString
 

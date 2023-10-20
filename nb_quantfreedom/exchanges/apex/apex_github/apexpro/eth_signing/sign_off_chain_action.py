@@ -50,7 +50,7 @@ class SignOffChainAction(object):
         eip712_message = self.get_person_message(**message)
         #eip712_message = '{"name": "apex","version": "1.0","envId": 5,"action": "L2 Key","onlySignOn": "https://trade.apex.exchange"}'
         #msgStr = json_msg_stringify(eip712_message)
-        msgStr ='\n'.join('{key}: {value}'.format(
+        msgStr ='\n'.join('{key}: {value}')
             key=x[0], value=x[1]) for x in eip712_message.items())
 
         message_hash = util.hash_person(msgStr)

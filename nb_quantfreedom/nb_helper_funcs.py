@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 import numpy as np
 import logging
 import pandas as pd
-from nb_quantfreedom.nb_enums import DynamicOrderSettings, StaticOrderSettings, DynamicOrderSettingsArrays
+from nb_quantfreedom.nb_enums import DynamicOrderSettings, DynamicOrderSettingsArrays
 from numba import njit
 
 info_logger = logging.getLogger("info")

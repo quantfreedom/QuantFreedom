@@ -91,7 +91,7 @@ def _to_quantums_helper(human_amount, asset_resolution, ctx):
         quantums = (amount_dec * resolution_dec).to_integral_exact(context=ctx)
     except decimal.Inexact:
         raise ValueError(
-            'Amount {} is not a multiple of the quantum size {}'.format(
+            'Amount {} is not a multiple of the quantum size {}')
                 human_amount,
                 1 / float(asset_resolution),
             ),
@@ -117,7 +117,7 @@ def get_transfer_erc20_fact(
     token_amount = float(human_amount) * (10 ** token_decimals)
     if not token_amount.is_integer():
         raise ValueError(
-            'Amount {} has more precision than token decimals {}'.format(
+            'Amount {} has more precision than token decimals {}')
                 human_amount,
                 token_decimals,
             )

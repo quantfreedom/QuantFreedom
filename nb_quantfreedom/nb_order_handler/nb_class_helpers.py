@@ -1,18 +1,17 @@
 import numpy as np
 from numba.experimental import jitclass
-from nb_quantfreedom.nb_custom_logger import nb_CustomLogger
-from nb_quantfreedom.nb_enums import CandleBodyType
+
+from nb_quantfreedom.nb_custom_logger import CustomLoggerNB
 from nb_quantfreedom.nb_helper_funcs import nb_round_size_by_tick_step
-import logging
 
 
-class nb_PriceGetter:
+class PriceGetterClass:
     def __init__(self) -> None:
         pass
 
     def nb_min_max_price_getter(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
         bar_index: int,
         candle_body_type: int,
         candles: np.array,
@@ -22,7 +21,7 @@ class nb_PriceGetter:
 
     def nb_price_getter(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
         bar_index: int,
         candle_body_type: int,
         current_candle: np.array,
@@ -31,10 +30,32 @@ class nb_PriceGetter:
 
 
 @jitclass()
-class nb_GetMinPrice(nb_PriceGetter):
+class PriceGetterNB(PriceGetterClass):
     def nb_min_max_price_getter(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
+        bar_index: int,
+        candle_body_type: int,
+        candles: np.array,
+        lookback: int,
+    ) -> float:
+        pass
+
+    def nb_price_getter(
+        self,
+        logger: CustomLoggerNB,
+        bar_index: int,
+        candle_body_type: int,
+        current_candle: np.array,
+    ) -> float:
+        pass
+
+
+@jitclass()
+class nb_GetMinPrice(PriceGetterNB):
+    def nb_min_max_price_getter(
+        self,
+        logger: CustomLoggerNB,
         bar_index: int,
         candles: np.array,
         candle_body_type: int,
@@ -42,16 +63,16 @@ class nb_GetMinPrice(nb_PriceGetter):
     ) -> float:
         price = candles[lookback : bar_index + 1 :, candle_body_type].min()
         logger.log_debug(
-            "nb_class_helpers.py - nb_GetMinPrice - nb_min_max_price_getter() - candle_body_type={CandleBodyType._fields[candle_body_type]} price min={price}"
+            "nb_class_helpers.py - nb_GetMinPrice - nb_min_max_price_getter() - candle_body_type=CandleBodyType._fields[candle_body_type]} price min=price}"
         )
         return price
 
 
 @jitclass()
-class nb_GetMaxPrice(nb_PriceGetter):
+class nb_GetMaxPrice(PriceGetterNB):
     def nb_min_max_price_getter(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
         bar_index: int,
         candles: np.array,
         candle_body_type: int,
@@ -59,35 +80,48 @@ class nb_GetMaxPrice(nb_PriceGetter):
     ):
         price = candles[lookback : bar_index + 1 :, candle_body_type].max()
         logger.log_debug(
-            f"nb_class_helpers.py - nb_GetMaxPrice - nb_min_max_price_getter() - candle_body_type={CandleBodyType._fields[candle_body_type]} price max={price}"
+            "nb_class_helpers.py - nb_GetMaxPrice - nb_min_max_price_getter() - candle_body_type=CandleBodyType._fields[candle_body_type]} price max=price}"
         )
         return price
 
 
 @jitclass()
-class nb_GetPrice(nb_PriceGetter):
+class nb_GetPrice(PriceGetterNB):
     def nb_price_getter(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
         candle_body_type: int,
         current_candle: np.array,
     ):
         price = current_candle[candle_body_type]
         logger.log_debug(
-            "nb_class_helpers.py - nb_GetPrice - nb_price_getter() - candle_body_type={cbt} price min={price}".format(
-                cbt=CandleBodyType._fields[candle_body_type], price=price
-            )
+            "nb_class_helpers.py - nb_GetPrice - nb_price_getter() - candle_body_type=cbt} price min={price"
         )
         return price
 
 
-class nb_ZeroOrEntry:
-    def __init__(self) -> None:
+class ZeroOrEntryClass:
+    def __init__(self):
         pass
 
     def nb_set_sl_to_z_or_e(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
+        average_entry,
+        market_fee_pct,
+        price_tick_step,
+    ):
+        pass
+
+
+@jitclass
+class ZeroOrEntryNB(ZeroOrEntryClass):
+    def __init__(self):
+        pass
+
+    def nb_set_sl_to_z_or_e(
+        self,
+        logger: CustomLoggerNB,
         average_entry,
         market_fee_pct,
         price_tick_step,
@@ -96,10 +130,10 @@ class nb_ZeroOrEntry:
 
 
 @jitclass()
-class nb_Long_SLToZero(nb_ZeroOrEntry):
+class nb_Long_SLToZero(ZeroOrEntryNB):
     def nb_set_sl_to_z_or_e(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
         average_entry,
         market_fee_pct,
         price_tick_step,
@@ -114,10 +148,10 @@ class nb_Long_SLToZero(nb_ZeroOrEntry):
 
 
 @jitclass()
-class nb_Long_SLToEntry(nb_ZeroOrEntry):
+class nb_Long_SLToEntry(ZeroOrEntryNB):
     def nb_set_sl_to_z_or_e(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
         average_entry,
         market_fee_pct,
         price_tick_step,

@@ -1,5 +1,5 @@
 import numpy as np
-from nb_quantfreedom.nb_custom_logger import nb_CustomLogger
+from nb_quantfreedom.nb_custom_logger import CustomLoggerNB
 from nb_quantfreedom.nb_helper_funcs import nb_round_size_by_tick_step
 from numba.experimental import jitclass
 
@@ -7,13 +7,13 @@ from nb_quantfreedom.nb_order_handler.nb_class_helpers import nb_GetPrice
 from nb_quantfreedom.nb_enums import CandleBodyType, DecreasePosition, OrderStatus
 
 
-class nb_TakeProfit:
+class TakeProfitClass:
     def __init__(self):
         pass
 
     def calculate_take_profit(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
         average_entry: float,
         market_fee_pct: float,
         position_size_usd: float,
@@ -26,7 +26,33 @@ class nb_TakeProfit:
 
     def check_tp_hit(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
+        current_candle: np.array,
+        exit_fee_pct: float,
+        tp_price: float,
+        exit_price: float,
+    ):
+        pass
+
+
+@jitclass()
+class TakeProfitNB(TakeProfitClass):
+    def calculate_take_profit(
+        self,
+        logger: CustomLoggerNB,
+        average_entry: float,
+        market_fee_pct: float,
+        position_size_usd: float,
+        possible_loss: float,
+        price_tick_step: float,
+        risk_reward: float,
+        tp_fee_pct: float,
+    ):
+        pass
+
+    def check_tp_hit(
+        self,
+        logger: CustomLoggerNB,
         current_candle: np.array,
         exit_fee_pct: float,
         tp_price: float,
@@ -36,10 +62,10 @@ class nb_TakeProfit:
 
 
 @jitclass
-class nb_Long_RR(nb_TakeProfit):
+class nb_Long_RR(TakeProfitNB):
     def calculate_take_profit(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
         average_entry: float,
         market_fee_pct: float,
         position_size_usd: float,
@@ -71,10 +97,10 @@ class nb_Long_RR(nb_TakeProfit):
 
 
 @jitclass
-class nb_Long_TPHitReg(nb_TakeProfit):
+class nb_Long_TPHitReg(TakeProfitNB):
     def check_tp_hit(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
         current_candle: np.array,
         exit_fee_pct: float,
         tp_price: float,
@@ -96,10 +122,10 @@ class nb_Long_TPHitReg(nb_TakeProfit):
 
 
 @jitclass
-class nb_Long_TPHitProvided(nb_TakeProfit):
+class nb_Long_TPHitProvided(TakeProfitNB):
     def check_tp_hit(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
         bar_index: int,
         current_candle: np.array,
         exit_fee_pct: float,

@@ -1,19 +1,19 @@
 from numba.experimental import jitclass
 import numpy as np
-from nb_quantfreedom.nb_custom_logger import nb_CustomLogger
-
-from nb_quantfreedom.nb_helper_funcs import nb_round_size_by_tick_step
-from nb_quantfreedom.nb_order_handler.nb_class_helpers import nb_GetMinPrice, nb_GetPrice
+from nb_quantfreedom.nb_custom_logger import CustomLoggerNB
 from nb_quantfreedom.nb_enums import CandleBodyType, DecreasePosition, OrderStatus
 
+from nb_quantfreedom.nb_helper_funcs import nb_round_size_by_tick_step
+from nb_quantfreedom.nb_order_handler.nb_class_helpers import nb_GetPrice
 
-class nb_Leverage:
+
+class LeverageClass:
     def __init__(self) -> None:
         pass
 
     def calculate_leverage(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
         available_balance: float,
         average_entry: float,
         cash_borrowed: float,
@@ -28,7 +28,7 @@ class nb_Leverage:
 
     def check_liq_hit(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
         bar_index: int,
         current_candle: np.array,
         exit_fee_pct: float,
@@ -38,7 +38,7 @@ class nb_Leverage:
 
     def calc_liq_price(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
         average_entry: float,
         entry_size_usd: float,
         leverage: float,
@@ -52,10 +52,55 @@ class nb_Leverage:
 
 
 @jitclass()
-class nb_Long_SLev(nb_Leverage):
+class LeverageNB(LeverageClass):
+    def __init__(self) -> None:
+        pass
+
     def calculate_leverage(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
+        available_balance: float,
+        average_entry: float,
+        cash_borrowed: float,
+        cash_used: float,
+        entry_size_usd: float,
+        max_leverage: float,
+        mmr_pct: float,
+        sl_price: float,
+        static_leverage: float,
+    ):
+        pass
+
+    def check_liq_hit(
+        self,
+        logger: CustomLoggerNB,
+        bar_index: int,
+        current_candle: np.array,
+        exit_fee_pct: float,
+        sl_price: float,
+    ):
+        pass
+
+    def calc_liq_price(
+        self,
+        logger: CustomLoggerNB,
+        average_entry: float,
+        entry_size_usd: float,
+        leverage: float,
+        mmr_pct: float,
+        og_available_balance: float,
+        og_cash_borrowed: float,
+        og_cash_used: float,
+        price_tick_step: float,
+    ):
+        pass
+
+
+@jitclass()
+class nb_Long_SLev(LeverageNB):
+    def calculate_leverage(
+        self,
+        logger: CustomLoggerNB,
         available_balance: float,
         average_entry: float,
         cash_borrowed: float,
@@ -97,14 +142,14 @@ class nb_Long_SLev(nb_Leverage):
 
 
 @jitclass()
-class nb_Long_DLev(nb_Leverage):
+class nb_Long_DLev(LeverageNB):
     """
     Calculate dynamic leverage
     """
 
     def calculate_leverage(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
         available_balance: float,
         average_entry: float,
         cash_borrowed: float,
@@ -157,10 +202,10 @@ class nb_Long_DLev(nb_Leverage):
 
 
 @jitclass
-class nb_Long_Leverage(nb_Leverage):
+class nb_Long_Leverage(LeverageNB):
     def check_liq_hit(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
         current_candle: np.array,
         exit_fee_pct: float,
         liq_price: float,
@@ -172,7 +217,7 @@ class nb_Long_Leverage(nb_Leverage):
         )
         if liq_price > candle_low:
             logger.log_debug("Stop loss hit")
-            return 0
+            # return 0
             raise DecreasePosition(
                 msg="Stop Loss hit",
                 exit_price=liq_price,
@@ -184,7 +229,7 @@ class nb_Long_Leverage(nb_Leverage):
 
     def calc_liq_price(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
         average_entry: float,
         entry_size_usd: float,
         leverage: float,
@@ -203,7 +248,7 @@ class nb_Long_Leverage(nb_Leverage):
 
         if cash_used > og_available_balance:
             raise Exception(
-                msg=f"Cash used={cash_used} > available_balance={og_available_balance}",
+                msg="Cash used=cash_used} > available_balance=og_available_balance}",
                 order_status=1,
             )
         else:

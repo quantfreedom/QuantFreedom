@@ -4,11 +4,11 @@ import time
 from numba.experimental import jitclass
 
 
-class nb_CustomLogger:
+class CustomLoggerClass:
     def __init__(self) -> None:
         pass
 
-    def log_debug(self, message: int):
+    def log_debug(self, message: str):
         pass
 
     def log_info(self, message: str):
@@ -22,36 +22,36 @@ class nb_CustomLogger:
 
 
 @jitclass()
-class nb_PrintLogs(nb_CustomLogger):
-    def log_debug(self, message: int):
-        print(message)
+class CustomLoggerNB(CustomLoggerClass):
+    def log_debug(self, message: str):
+        pass
 
     def log_info(self, message: str):
-        print(message)
+        pass
 
     def log_warning(self, message: str):
-        print(message)
+        pass
 
     def log_error(self, message: str):
-        print(message)
+        pass
 
 
 @jitclass()
-class nb_NoLogs(nb_CustomLogger):
-    def log_debug(self, message: int):
-        pass
+class nb_PrintLogs(CustomLoggerNB):
+    def log_debug(self, message: str):
+        print(message)
 
     def log_info(self, message: str):
-        pass
+        print(message)
 
     def log_warning(self, message: str):
-        pass
+        print(message)
 
     def log_error(self, message: str):
-        pass
+        print(message)
 
 
-class nb_RegularLogs(nb_CustomLogger):
+class nb_RegularLogs(CustomLoggerNB):
     def set_loggers(
         self,
         log_debug: bool,
@@ -105,7 +105,7 @@ class nb_RegularLogs(nb_CustomLogger):
 
         return handler
 
-    def log_debug(self, message: int):
+    def log_debug(self, message: tuple):
         logging.getLogger("info").debug(message)
 
     def log_info(self, message: str):

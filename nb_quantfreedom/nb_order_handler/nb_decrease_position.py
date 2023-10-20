@@ -1,16 +1,14 @@
 from numba.experimental import jitclass
-from nb_quantfreedom.nb_custom_logger import nb_CustomLogger
-
-from nb_quantfreedom.nb_enums import OrderResult, OrderStatus
+from nb_quantfreedom.nb_custom_logger import CustomLoggerNB
 
 
-class nb_DecreasePosition:
+class DecreasePositionClass:
     def __init__(self) -> None:
         pass
 
     def decrease_position(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
         average_entry: float,
         bar_index: int,
         dos_index: int,
@@ -27,10 +25,30 @@ class nb_DecreasePosition:
 
 
 @jitclass()
-class nb_Long_DP(nb_DecreasePosition):
+class DecreasePositionNB(DecreasePositionClass):
     def decrease_position(
         self,
-        logger: nb_CustomLogger,
+        logger: CustomLoggerNB,
+        average_entry: float,
+        bar_index: int,
+        dos_index: int,
+        equity: float,
+        exit_fee_pct: float,
+        exit_price: float,
+        ind_set_index: int,
+        market_fee_pct: float,
+        order_status: int,
+        position_size_asset: float,
+        timestamp: int,
+    ):
+        pass
+
+
+@jitclass()
+class nb_Long_DP(DecreasePositionNB):
+    def decrease_position(
+        self,
+        logger: CustomLoggerNB,
         average_entry: float,
         equity: float,
         exit_fee_pct: float,
@@ -48,10 +66,10 @@ class nb_Long_DP(nb_DecreasePosition):
         # Setting new equity
         equity = round(realized_pnl + equity, 4)
         logger.log_debug(
-            f"\n\
-realized_pnl={realized_pnl}\n\
-order_status= {OrderStatus._fields[order_status]}\n\
-available_balance={equity}\n\
-equity={equity}"
+            "\n\
+realized_pnl=realized_pnl}\n\
+order_status= OrderStatus._fields[order_status]}\n\
+available_balance=equity}\n\
+equity=equity}"
         )
         return equity, fees_paid, realized_pnl
