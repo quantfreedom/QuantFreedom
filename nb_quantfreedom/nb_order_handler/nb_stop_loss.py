@@ -3,7 +3,14 @@ from numba.experimental import jitclass
 from nb_quantfreedom.nb_custom_logger import CustomLoggerNB
 
 from nb_quantfreedom.nb_helper_funcs import nb_round_size_by_tick_step
-from nb_quantfreedom.nb_enums import CandleBodyType, DecreasePosition, MoveStopLoss, OrderResults, OrderStatus
+from nb_quantfreedom.nb_enums import (
+    AccountState,
+    CandleBodyType,
+    DecreasePosition,
+    MoveStopLoss,
+    OrderResult,
+    OrderStatus,
+)
 from nb_quantfreedom.nb_order_handler.nb_class_helpers import PriceGetterNB, ZeroOrEntryNB, nb_GetPrice
 
 
@@ -16,9 +23,10 @@ class StopLossClass:
         logger: CustomLoggerNB,
         bar_index: int,
         can_move_sl_to_be: bool,
+        account_state: AccountState,
         dos_index: int,
         ind_set_index: int,
-        order_results: OrderResults,
+        order_result: OrderResult,
         order_status: int,
         sl_price: float,
         timestamp: int,
@@ -43,7 +51,6 @@ class StopLossClass:
         logger: CustomLoggerNB,
         bar_index: int,
         current_candle: np.array,
-        exit_fee_pct: float,
         sl_price: float,
     ):
         pass
@@ -84,10 +91,10 @@ class StopLossNB(StopLossClass):
         self,
         logger: CustomLoggerNB,
         bar_index: int,
-        can_move_sl_to_be: bool,
         dos_index: int,
         ind_set_index: int,
-        order_results: OrderResults,
+        account_state: AccountState,
+        order_result: OrderResult,
         order_status: int,
         sl_price: float,
         timestamp: int,
@@ -112,7 +119,6 @@ class StopLossNB(StopLossClass):
         logger: CustomLoggerNB,
         bar_index: int,
         current_candle: np.array,
-        exit_fee_pct: float,
         sl_price: float,
     ):
         pass
@@ -153,7 +159,6 @@ class nb_Long_StopLoss(StopLossClass):
         self,
         logger: CustomLoggerNB,
         current_candle: np.array,
-        exit_fee_pct: float,
         sl_price: float,
     ):
         logger.log_debug("nb_stop_loss.py - nb_Long_StopLoss - check_stop_loss_hit() - Starting")
@@ -164,14 +169,10 @@ class nb_Long_StopLoss(StopLossClass):
         )
         if sl_price > candle_low:
             logger.log_debug("nb_stop_loss.py - nb_Long_StopLoss - check_stop_loss_hit() - Stop loss hit")
-            raise DecreasePosition(
-                msg="Stop Loss hit",
-                exit_price=sl_price,
-                order_status=OrderStatus.StopLossFilled,
-                exit_fee_pct=exit_fee_pct,
-            )
+            return True
         else:
             logger.log_debug("nb_stop_loss.py - nb_Long_StopLoss - check_stop_loss_hit() - SL not hit")
+            return False
 
     def check_move_stop_loss_to_be(
         self,
@@ -208,17 +209,15 @@ class nb_Long_StopLoss(StopLossClass):
                 logger.log_debug(
                     "nb_stop_loss.py - nb_Long_StopLoss - check_move_stop_loss_to_be() - pct_from_ae={round(pct_from_ae*100,4)} > sl_to_be_move_when_pct={round(sl_to_be_move_when_pct*100,4)} old sl={old_sl} new sl={sl_price}"
                 )
-                raise MoveStopLoss(
-                    sl_price=sl_price,
-                    order_status=OrderStatus.MovedSLToBE,
-                    can_move_sl_to_be=can_move_sl_to_be,
-                )
+                return sl_price
             else:
                 logger.log_debug(
                     "nb_stop_loss.py - nb_Long_StopLoss - check_move_stop_loss_to_be() - not moving sl to be"
                 )
+                return None
         else:
             logger.log_debug("nb_stop_loss.py - nb_Long_StopLoss - check_move_stop_loss_to_be() - not moving sl to be")
+            return None
 
     def check_move_trailing_stop_loss(
         self,
@@ -305,43 +304,50 @@ class nb_MoveSL(StopLossClass):
         self,
         logger: CustomLoggerNB,
         bar_index: int,
-        can_move_sl_to_be: bool,
         dos_index: int,
+        can_move_sl_to_be: bool,
         ind_set_index: int,
-        order_results: OrderResults,
+        order_result: OrderResult,
+        account_state: AccountState,
         order_status: int,
         sl_price: float,
         timestamp: int,
-    ) -> OrderResults:
-        return OrderResults(
+    ) -> OrderResult:
+        logger.log_debug("Inside move stop loss")
+        account_state = AccountState(
             # where we are at
             ind_set_index=ind_set_index,
             dos_index=dos_index,
             bar_index=bar_index,
             timestamp=timestamp,
             # account info
-            equity=order_results.equity,
-            available_balance=order_results.available_balance,
-            cash_borrowed=order_results.cash_borrowed,
-            cash_used=order_results.cash_used,
-            # order info
-            average_entry=order_results.average_entry,
-            can_move_sl_to_be=can_move_sl_to_be,
-            fees_paid=order_results.fees_paid,
-            leverage=order_results.leverage,
-            liq_price=order_results.liq_price,
-            order_status=order_status,
-            possible_loss=order_results.possible_loss,
-            entry_size_asset=order_results.entry_size_asset,
-            entry_size_usd=order_results.entry_size_usd,
-            entry_price=order_results.entry_price,
-            exit_price=order_results.exit_price,
-            position_size_asset=order_results.position_size_asset,
-            position_size_usd=order_results.position_size_usd,
-            realized_pnl=order_results.realized_pnl,
-            sl_pct=abs(round((order_results.average_entry - sl_price) / order_results.average_entry, 4)),
-            sl_price=sl_price,
-            total_trades=order_results.total_trades,
-            tp_pct=order_results.tp_pct,
-            tp_price=order_results.tp_price,
+            available_balance=account_state.available_balance,
+            cash_borrowed=account_state.cash_borrowed,
+            cash_used=account_state.cash_used,
+            equity=account_state.equity,
+            fees_paid=account_state.fees_paid,
+            possible_loss=account_state.possible_loss,
+            realized_pnl=account_state.realized_pnl,
+            total_trades=account_state.total_trades,
         )
+        logger.log_debug("created account state")
+        order_result = OrderResult(
+            average_entry=order_result.average_entry,
+            can_move_sl_to_be=can_move_sl_to_be,
+            entry_price=order_result.entry_price,
+            entry_size_asset=order_result.entry_size_asset,
+            entry_size_usd=order_result.entry_size_usd,
+            exit_price=order_result.exit_price,
+            leverage=order_result.leverage,
+            liq_price=order_result.liq_price,
+            order_status=order_status,
+            position_size_asset=order_result.position_size_asset,
+            position_size_usd=order_result.position_size_usd,
+            sl_pct=abs(round((order_result.average_entry - sl_price) / order_result.average_entry, 4)),
+            sl_price=sl_price,
+            tp_pct=order_result.tp_pct,
+            tp_price=order_result.tp_price,
+        )
+        logger.log_debug("created order result")
+
+        return account_state, order_result

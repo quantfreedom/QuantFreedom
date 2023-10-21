@@ -31,7 +31,6 @@ class LeverageClass:
         logger: CustomLoggerNB,
         bar_index: int,
         current_candle: np.array,
-        exit_fee_pct: float,
         sl_price: float,
     ):
         pass
@@ -76,7 +75,6 @@ class LeverageNB(LeverageClass):
         logger: CustomLoggerNB,
         bar_index: int,
         current_candle: np.array,
-        exit_fee_pct: float,
         sl_price: float,
     ):
         pass
@@ -207,7 +205,6 @@ class nb_Long_Leverage(LeverageClass):
         self,
         logger: CustomLoggerNB,
         current_candle: np.array,
-        exit_fee_pct: float,
         liq_price: float,
     ):
         candle_low = nb_GetPrice().nb_price_getter(
@@ -216,16 +213,11 @@ class nb_Long_Leverage(LeverageClass):
             current_candle=current_candle,
         )
         if liq_price > candle_low:
-            logger.log_debug("Stop loss hit")
-            # return 0
-            raise DecreasePosition(
-                msg="Stop Loss hit",
-                exit_price=liq_price,
-                order_status=OrderStatus.StopLossFilled,
-                exit_fee_pct=exit_fee_pct,
-            )
+            logger.log_debug("Liq loss hit")
+            return True
         else:
-            logger.log_debug("SL not hit")
+            logger.log_debug("Liq not hit")
+            return False
 
     def calc_liq_price(
         self,

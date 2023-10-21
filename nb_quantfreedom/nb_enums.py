@@ -1,6 +1,7 @@
 from typing import NamedTuple
 import numpy as np
 import os
+from numba.experimental import jitclass
 
 DIR_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 FORMATTER = "%(asctime)s - %(levelname)s - %(message)s"
@@ -251,7 +252,7 @@ class AccountState(NamedTuple):
     total_trades: int = 0
 
 
-class OrderResults(NamedTuple):
+class OrderResult(NamedTuple):
     average_entry: float = np.nan
     can_move_sl_to_be: bool = False
     entry_price: float = np.nan
@@ -284,15 +285,8 @@ class StaticOrderSettings(NamedTuple):
 
 
 class RejectedOrder(Exception):
-    def __init__(
-        self,
-        order_status: OrderStatus = None,
-        msg: str = None,
-        at_max_entries: bool = False,
-    ):
-        self.order_status = order_status
-        self.msg = msg
-        self.at_max_entries = at_max_entries
+    def message(self, message: str = "Hey there inside rejected order"):
+        return message
 
 
 class DecreasePosition(Exception):
@@ -314,12 +308,10 @@ class MoveStopLoss(Exception):
         self,
         order_status: OrderStatus = None,
         sl_price: float = None,
-        can_move_sl_to_be: bool = None,
         msg: str = None,
     ):
         self.order_status = order_status
         self.sl_price = sl_price
-        self.can_move_sl_to_be = can_move_sl_to_be
         self.msg = msg
 
 

@@ -93,7 +93,7 @@ def nb_run_backtest(
                 realized_pnl=0.0,
                 total_trades=0,
             )
-            order_results = OrderResults(
+            order_result = OrderResult(
                 average_entry=0.0,
                 can_move_sl_to_be=False,
                 entry_price=0.0,
@@ -115,150 +115,167 @@ def nb_run_backtest(
             filled_pnl_counter = 0
 
             total_fees_paid = 0
-            at_max_entries = False
             # entries loop
             for bar_index in range(starting_bar, total_bars):
                 logger.log_info(
                     "ind_idx={ind_set_index:,} dos_idx={dos_index:,} bar_idx={bar_index:,} timestamp={timestamp"
                 )
 
-                if order_results.position_size_usd > 0:
+                if order_result.position_size_usd > 0:
                     try:
-                        logger.log_debug("nb_base.py - nb_run_backtest() - will check_stop_loss_hit")
-                        checker_sl_hit.check_stop_loss_hit(
+                        # checking if sl hit
+                        logger.log_debug("nb_base.py - nb_run_backtest() - check_stop_loss_hit")
+                        if checker_sl_hit.check_stop_loss_hit(
                             current_candle=candles[bar_index, :],
-                            exit_fee_pct=market_fee_pct,
-                            sl_price=order_results.sl_price,
+                            sl_price=order_result.sl_price,
                             logger=logger,
-                        )
-                        logger.log_debug("nb_base.py - nb_run_backtest() - will check_liq_hit")
-                        checker_liq_hit.check_liq_hit(
-                            current_candle=candles[bar_index, :],
-                            exit_fee_pct=market_fee_pct,
-                            liq_price=order_results.liq_price,
-                            logger=logger,
-                        )
+                        ):
+                            logger.log_debug("nb_base.py - nb_run_backtest() - will decrease_position")
+                            (
+                                account_state,
+                                fees_paid,
+                                order_result,
+                                realized_pnl,
+                            ) = dec_pos_calculator.decrease_position(
+                                average_entry=order_result.average_entry,
+                                equity=account_state.equity,
+                                exit_fee_pct=market_fee_pct,
+                                exit_price=order_result.sl_price,
+                                logger=logger,
+                                market_fee_pct=market_fee_pct,
+                                position_size_asset=order_result.position_size_asset,
+                            )
+                            pnl_array[filled_pnl_counter] = realized_pnl
+                            filled_pnl_counter += 1
+                            total_fees_paid += fees_paid
+                            raise DecreasePosition
 
-                        logger.log_debug("nb_base.py - nb_run_backtest() - will check_tp_hit")
-                        checker_tp_hit.check_tp_hit(
+                        # checking if liq hit
+                        logger.log_debug("nb_base.py - nb_run_backtest() - check_liq_hit")
+                        if checker_liq_hit.check_liq_hit(
                             current_candle=candles[bar_index, :],
-                            exit_fee_pct=exit_fee_pct,
-                            tp_price=order_results.tp_price,
+                            liq_price=order_result.liq_price,
                             logger=logger,
-                        )
-                        logger.log_debug("nb_base.py - nb_run_backtest() - will check_move_stop_loss_to_be")
-                        checker_sl_to_be.check_move_stop_loss_to_be(
-                            average_entry=order_results.average_entry,
-                            can_move_sl_to_be=order_results.can_move_sl_to_be,
+                        ):
+                            logger.log_debug("nb_base.py - nb_run_backtest() - will decrease_position")
+                            (
+                                account_state,
+                                fees_paid,
+                                order_result,
+                                realized_pnl,
+                            ) = dec_pos_calculator.decrease_position(
+                                average_entry=order_result.average_entry,
+                                equity=account_state.equity,
+                                exit_fee_pct=market_fee_pct,
+                                exit_price=order_result.liq_price,
+                                logger=logger,
+                                market_fee_pct=market_fee_pct,
+                                position_size_asset=order_result.position_size_asset,
+                            )
+                            pnl_array[filled_pnl_counter] = realized_pnl
+                            filled_pnl_counter += 1
+                            total_fees_paid += fees_paid
+                            raise DecreasePosition
+
+                        # checking if tp hit
+                        logger.log_debug("nb_base.py - nb_run_backtest() - check_tp_hit")
+                        if checker_tp_hit.check_tp_hit(
+                            current_candle=candles[bar_index, :],
+                            tp_price=order_result.tp_price,
+                            logger=logger,
+                        ):
+                            logger.log_debug("nb_base.py - nb_run_backtest() - will decrease_position")
+                            (
+                                account_state,
+                                fees_paid,
+                                order_result,
+                                realized_pnl,
+                            ) = dec_pos_calculator.decrease_position(
+                                average_entry=order_result.average_entry,
+                                equity=account_state.equity,
+                                exit_fee_pct=exit_fee_pct,
+                                exit_price=order_result.tp_price,
+                                logger=logger,
+                                market_fee_pct=market_fee_pct,
+                                position_size_asset=order_result.position_size_asset,
+                            )
+                            pnl_array[filled_pnl_counter] = realized_pnl
+                            filled_pnl_counter += 1
+                            total_fees_paid += fees_paid
+                            raise DecreasePosition
+
+                        # checking to move stop loss
+
+                        logger.log_debug("nb_base.py - nb_run_backtest() - check_move_stop_loss_to_be")
+                        temp_sl = checker_sl_to_be.check_move_stop_loss_to_be(
+                            average_entry=order_result.average_entry,
+                            can_move_sl_to_be=order_result.can_move_sl_to_be,
                             candle_body_type=dynamic_order_settings.sl_to_be_cb_type,
                             current_candle=candles[bar_index, :],
                             set_z_e=set_z_e,
                             market_fee_pct=market_fee_pct,
-                            sl_price=order_results.sl_price,
+                            sl_price=order_result.sl_price,
                             sl_to_be_move_when_pct=dynamic_order_settings.sl_to_be_when_pct,
                             price_tick_step=price_tick_step,
                             logger=logger,
                         )
-
-                        logger.log_debug("nb_base.py - nb_run_backtest() - will check_move_trailing_stop_loss")
-                        checker_tsl.check_move_trailing_stop_loss(
-                            average_entry=order_results.average_entry,
-                            can_move_sl_to_be=order_results.can_move_sl_to_be,
+                        if temp_sl:
+                            logger.log_debug("nb_base.py - nb_run_backtest() - will move_stop_loss")
+                            account_state, order_result = sl_mover.move_stop_loss(
+                                account_state=account_state,
+                                bar_index=bar_index,
+                                can_move_sl_to_be=False,
+                                dos_index=dos_index,
+                                ind_set_index=ind_set_index,
+                                order_result=order_result,
+                                order_status=OrderStatus.MovedSLToBE,
+                                sl_price=temp_sl,
+                                timestamp=candles[bar_index : CandleBodyType.Timestamp],
+                                logger=logger,
+                            )
+                        
+                        # Checking to move trailing stop loss
+                        
+                        logger.log_debug("nb_base.py - nb_run_backtest() - check_move_trailing_stop_loss")
+                        temp_tsl = checker_tsl.check_move_trailing_stop_loss(
+                            average_entry=order_result.average_entry,
+                            can_move_sl_to_be=order_result.can_move_sl_to_be,
                             candle_body_type=dynamic_order_settings.trail_sl_bcb_type,
                             current_candle=candles[bar_index, :],
                             price_tick_step=price_tick_step,
-                            sl_price=order_results.sl_price,
+                            sl_price=order_result.sl_price,
                             trail_sl_by_pct=dynamic_order_settings.trail_sl_by_pct,
                             trail_sl_when_pct=dynamic_order_settings.trail_sl_when_pct,
                             logger=logger,
                         )
-                    except RejectedOrder:
-                        logger.log_info("RejectedOrder -> {msg}")
-                    except MoveStopLoss:
-                        logger.log_debug("nb_base.py - nb_run_backtest() - will move_stop_loss")
-                        order_results = sl_mover.move_stop_loss(
-                            bar_index=bar_index,
-                            can_move_sl_to_be=MoveStopLoss().can_move_sl_to_be,
-                            dos_index=dos_index,
-                            ind_set_index=ind_set_index,
-                            order_results=order_results,
-                            order_status=MoveStopLoss().order_status,
-                            sl_price=MoveStopLoss().sl_price,
-                            timestamp=candles[bar_index : CandleBodyType.Timestamp],
-                            logger=logger,
-                        )
-                    except DecreasePosition:
-                        logger.log_debug("nb_base.py - nb_run_backtest() - will decrease_position")
-                        equity, fees_paid, realized_pnl = dec_pos_calculator.decrease_position(
-                            average_entry=order_results.average_entry,
-                            equity=account_state.equity,
-                            exit_fee_pct=DecreasePosition().exit_fee_pct,
-                            exit_price=DecreasePosition().exit_price,
-                            market_fee_pct=market_fee_pct,
-                            order_status=DecreasePosition().order_status,
-                            position_size_asset=order_results.position_size_asset,
-                            logger=logger,
-                        )
-                        # Fill pnl array
-                        pnl_array[filled_pnl_counter] = realized_pnl
-                        filled_pnl_counter += 1
-                        total_fees_paid += fees_paid
-
-                        # reset the order result
-                        account_state = AccountState(
-                            # where we are at
-                            ind_set_index=-1,
-                            dos_index=-1,
-                            bar_index=-1,
-                            timestamp=-1,
-                            # account info
-                            available_balance=equity,
-                            cash_borrowed=0.0,
-                            cash_used=0.0,
-                            equity=equity,
-                            fees_paid=0.0,
-                            possible_loss=0.0,
-                            realized_pnl=0.0,
-                            total_trades=0,
-                        )
-                        order_results = OrderResults(
-                            average_entry=0.0,
-                            can_move_sl_to_be=False,
-                            entry_price=0.0,
-                            entry_size_asset=0.0,
-                            entry_size_usd=0.0,
-                            exit_price=0.0,
-                            leverage=1.0,
-                            liq_price=0.0,
-                            order_status=OrderStatus.Nothing,
-                            position_size_asset=0.0,
-                            position_size_usd=0.0,
-                            sl_pct=0.0,
-                            sl_price=0.0,
-                            tp_pct=0.0,
-                            tp_price=0.0,
-                        )
-                        at_max_entries = False
-                        pass
-
+                        if temp_tsl:
+                            logger.log_debug("nb_base.py - nb_run_backtest() - will move_stop_loss")
+                            account_state, order_result = sl_mover.move_stop_loss(
+                                account_state=account_state,
+                                bar_index=bar_index,
+                                can_move_sl_to_be=order_result.can_move_sl_to_be,
+                                dos_index=dos_index,
+                                ind_set_index=ind_set_index,
+                                order_result=order_result,
+                                order_status=OrderStatus.MovedTSL,
+                                sl_price=temp_tsl,
+                                timestamp=candles[bar_index : CandleBodyType.Timestamp],
+                                logger=logger,
+                            )
                     except Exception:
-                        logger.log_info("Exception moving or decreasing order -> {e}")
-                        # raise Exception("Exception moving or decreasing order -> {e}")
                         pass
-                # TODO: this
-
                 logger.log_debug("\n\n")
-                logger.log_debug("nb_base.py - nb_run_backtest() - will strategy.evaluate")
-                if not at_max_entries and strategy.evaluate(
+                logger.log_debug("nb_base.py - nb_run_backtest() - strategy.evaluate")
+                if strategy.evaluate(
                     bar_index=bar_index,
                     starting_bar=starting_bar,
                     candles=candles,
                     indicator_settings=indicator_settings,
                     ind_creator=ind_creator,
                     logger=logger,
-                ):  # TODO: this and add in that we are also not at max entry amount
+                ):
                     try:
-                        logger.log_debug("nb_base.py - nb_run_backtest() - will calculate_stop_loss")
+                        logger.log_debug("nb_base.py - nb_run_backtest() - calculate_stop_loss")
                         sl_price = sl_calculator.calculate_stop_loss(
                             bar_index=bar_index,
                             candles=candles,
@@ -269,7 +286,7 @@ def nb_run_backtest(
                             sl_bcb_type=dynamic_order_settings.sl_bcb_type,
                             logger=logger,
                         )
-                        logger.log_debug("nb_base.py - nb_run_backtest() - will calculate_increase_posotion")
+                        logger.log_debug("nb_base.py - nb_run_backtest() - calculate_increase_posotion")
                         (
                             average_entry,
                             entry_price,
@@ -293,18 +310,18 @@ def nb_run_backtest(
                                 total_trades=account_state.total_trades,
                             ),
                             order_info=OrderInfo(
-                                average_entry=order_results.average_entry,
+                                average_entry=order_result.average_entry,
                                 entry_price=candles[bar_index, CandleBodyType.Close],
-                                in_position=order_results.position_size_usd > 0,
+                                in_position=order_result.position_size_usd > 0,
                                 max_equity_risk_pct=dynamic_order_settings.max_equity_risk_pct,
                                 max_trades=dynamic_order_settings.max_trades,
-                                position_size_asset=order_results.position_size_asset,
-                                position_size_usd=order_results.position_size_usd,
+                                position_size_asset=order_result.position_size_asset,
+                                position_size_usd=order_result.position_size_usd,
                                 risk_account_pct_size=dynamic_order_settings.risk_account_pct_size,
                                 sl_price=sl_price,
                             ),
                         )
-                        logger.log_debug("nb_base.py - nb_run_backtest() - will calculate_leverage")
+                        logger.log_debug("nb_base.py - nb_run_backtest() - calculate_leverage")
                         (
                             available_balance,
                             can_move_sl_to_be,
@@ -314,10 +331,10 @@ def nb_run_backtest(
                             liq_price,
                         ) = lev_calculator.calculate_leverage(
                             available_balance=account_state.available_balance,
-                            average_entry=order_results.average_entry,
+                            average_entry=order_result.average_entry,
                             cash_borrowed=account_state.cash_borrowed,
                             cash_used=account_state.cash_used,
-                            entry_size_usd=order_results.entry_size_usd,
+                            entry_size_usd=order_result.entry_size_usd,
                             max_leverage=max_leverage,
                             mmr_pct=mmr_pct,
                             sl_price=sl_price,
@@ -327,22 +344,22 @@ def nb_run_backtest(
                             logger=logger,
                         )
 
-                        logger.log_debug("nb_base.py - nb_run_backtest() - will calculate_take_profit")
+                        logger.log_debug("nb_base.py - nb_run_backtest() - calculate_take_profit")
                         (
                             can_move_sl_to_be,
                             tp_price,
                             tp_pct,
                         ) = tp_calculator.calculate_take_profit(
-                            average_entry=order_results.average_entry,
+                            average_entry=order_result.average_entry,
                             market_fee_pct=market_fee_pct,
-                            position_size_usd=order_results.position_size_usd,
+                            position_size_usd=order_result.position_size_usd,
                             possible_loss=account_state.possible_loss,
                             price_tick_step=price_tick_step,
                             risk_reward=dynamic_order_settings.risk_reward,
                             tp_fee_pct=exit_fee_pct,
                             logger=logger,
                         )
-                        logger.log_debug("nb_base.py - nb_run_backtest() - will OrderResults")
+                        logger.log_debug("nb_base.py - nb_run_backtest() - OrderResult")
                         account_state = AccountState(
                             # where we are at
                             ind_set_index=ind_set_index,
@@ -359,7 +376,7 @@ def nb_run_backtest(
                             realized_pnl=0.0,
                             total_trades=total_trades,
                         )
-                        order_results = OrderResults(
+                        order_result = OrderResult(
                             average_entry=average_entry,
                             can_move_sl_to_be=can_move_sl_to_be,
                             entry_price=entry_price,
@@ -376,14 +393,8 @@ def nb_run_backtest(
                             tp_pct=tp_pct,
                             tp_price=tp_price,
                         )
-
-                    # except RejectedOrder:
-                    #     logger.log_info("RejectedOrder -> {msg}")
-                    #     at_max_entries = False
-                    #     pass
                     except Exception:
-                        logger.log_info("Exception placing order -> {e}")
-                        raise Exception("Exception placing order -> {e}")
+                        pass
             # Checking if gains
             gains_pct = round(((account_state.equity - starting_equity) / starting_equity) * 100, 2)
             logger.log_info("Starting eq={starting_equity Ending eq={equity gains pct={gains_pct")

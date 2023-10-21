@@ -15,7 +15,7 @@ from nb_quantfreedom.nb_order_handler.nb_increase_position import nb_Long_RPAand
 from nb_quantfreedom.nb_order_handler.nb_leverage import nb_Long_DLev, nb_Long_Leverage, nb_Long_SLev
 from nb_quantfreedom.nb_order_handler.nb_stop_loss import StopLossNB, nb_Long_SLBCB, nb_Long_StopLoss, nb_MoveSL
 from nb_quantfreedom.nb_order_handler.nb_take_profit import nb_Long_RR, nb_Long_TPHitReg
-from nb_quantfreedom.numb_sim import nb_run_backtest
+from nb_quantfreedom.nb_simulate import nb_run_backtest
 from nb_quantfreedom.strategies.nb_strategy import nb_BacktestInd, nb_Strategy, nb_TradingInd
 
 
@@ -543,7 +543,7 @@ def create_classes(
 #                 order.calculate_leverage()
 #                 order.calculate_take_profit()
 #                 order.or_filler(
-#                     order_results=OrderResults(
+#                     order_result=OrderResult(
 #                         ind_set_index=ind_set_index,
 #                         order_settings_index=or_set_index,
 #                         bar_index=bar_index + 1,

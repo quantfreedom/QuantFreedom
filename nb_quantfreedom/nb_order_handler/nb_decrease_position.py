@@ -1,5 +1,6 @@
 from numba.experimental import jitclass
 from nb_quantfreedom.nb_custom_logger import CustomLoggerNB
+from nb_quantfreedom.nb_enums import AccountState, OrderResult, OrderStatus
 
 
 class DecreasePositionClass:
@@ -48,13 +49,12 @@ class DecreasePositionNB(DecreasePositionClass):
 class nb_Long_DP(DecreasePositionClass):
     def decrease_position(
         self,
-        logger: CustomLoggerNB,
         average_entry: float,
         equity: float,
         exit_fee_pct: float,
         exit_price: float,
+        logger: CustomLoggerNB,
         market_fee_pct: float,
-        order_status: int,
         position_size_asset: float,
     ):
         pnl = position_size_asset * (exit_price - average_entry)  # math checked
@@ -72,4 +72,45 @@ order_status= OrderStatus._fields[order_status]}\n\
 available_balance=equity}\n\
 equity=equity}"
         )
-        return equity, fees_paid, realized_pnl
+
+        # reset the order result
+        account_state = AccountState(
+            # where we are at
+            ind_set_index=-1,
+            dos_index=-1,
+            bar_index=-1,
+            timestamp=-1,
+            # account info
+            available_balance=equity,
+            cash_borrowed=0.0,
+            cash_used=0.0,
+            equity=equity,
+            fees_paid=0.0,
+            possible_loss=0.0,
+            realized_pnl=0.0,
+            total_trades=0,
+        )
+        order_result = OrderResult(
+            average_entry=0.0,
+            can_move_sl_to_be=False,
+            entry_price=0.0,
+            entry_size_asset=0.0,
+            entry_size_usd=0.0,
+            exit_price=0.0,
+            leverage=1.0,
+            liq_price=0.0,
+            order_status=OrderStatus.Nothing,
+            position_size_asset=0.0,
+            position_size_usd=0.0,
+            sl_pct=0.0,
+            sl_price=0.0,
+            tp_pct=0.0,
+            tp_price=0.0,
+        )
+
+        return (
+            account_state,
+            fees_paid,
+            order_result,
+            realized_pnl,
+        )
