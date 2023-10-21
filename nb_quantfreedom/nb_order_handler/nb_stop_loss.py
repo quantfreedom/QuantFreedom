@@ -3,7 +3,7 @@ from numba.experimental import jitclass
 from nb_quantfreedom.nb_custom_logger import CustomLoggerNB
 
 from nb_quantfreedom.nb_helper_funcs import nb_round_size_by_tick_step
-from nb_quantfreedom.nb_enums import CandleBodyType, DecreasePosition, MoveStopLoss, OrderResult, OrderStatus
+from nb_quantfreedom.nb_enums import CandleBodyType, DecreasePosition, MoveStopLoss, OrderResults, OrderStatus
 from nb_quantfreedom.nb_order_handler.nb_class_helpers import PriceGetterNB, ZeroOrEntryNB, nb_GetPrice
 
 
@@ -18,7 +18,7 @@ class StopLossClass:
         can_move_sl_to_be: bool,
         dos_index: int,
         ind_set_index: int,
-        order_result: OrderResult,
+        order_results: OrderResults,
         order_status: int,
         sl_price: float,
         timestamp: int,
@@ -87,7 +87,7 @@ class StopLossNB(StopLossClass):
         can_move_sl_to_be: bool,
         dos_index: int,
         ind_set_index: int,
-        order_result: OrderResult,
+        order_results: OrderResults,
         order_status: int,
         sl_price: float,
         timestamp: int,
@@ -308,40 +308,40 @@ class nb_MoveSL(StopLossClass):
         can_move_sl_to_be: bool,
         dos_index: int,
         ind_set_index: int,
-        order_result: OrderResult,
+        order_results: OrderResults,
         order_status: int,
         sl_price: float,
         timestamp: int,
-    ) -> OrderResult:
-        return OrderResult(
+    ) -> OrderResults:
+        return OrderResults(
             # where we are at
             ind_set_index=ind_set_index,
             dos_index=dos_index,
             bar_index=bar_index,
             timestamp=timestamp,
             # account info
-            equity=order_result.equity,
-            available_balance=order_result.available_balance,
-            cash_borrowed=order_result.cash_borrowed,
-            cash_used=order_result.cash_used,
+            equity=order_results.equity,
+            available_balance=order_results.available_balance,
+            cash_borrowed=order_results.cash_borrowed,
+            cash_used=order_results.cash_used,
             # order info
-            average_entry=order_result.average_entry,
+            average_entry=order_results.average_entry,
             can_move_sl_to_be=can_move_sl_to_be,
-            fees_paid=order_result.fees_paid,
-            leverage=order_result.leverage,
-            liq_price=order_result.liq_price,
+            fees_paid=order_results.fees_paid,
+            leverage=order_results.leverage,
+            liq_price=order_results.liq_price,
             order_status=order_status,
-            possible_loss=order_result.possible_loss,
-            entry_size_asset=order_result.entry_size_asset,
-            entry_size_usd=order_result.entry_size_usd,
-            entry_price=order_result.entry_price,
-            exit_price=order_result.exit_price,
-            position_size_asset=order_result.position_size_asset,
-            position_size_usd=order_result.position_size_usd,
-            realized_pnl=order_result.realized_pnl,
-            sl_pct=abs(round((order_result.average_entry - sl_price) / order_result.average_entry, 4)),
+            possible_loss=order_results.possible_loss,
+            entry_size_asset=order_results.entry_size_asset,
+            entry_size_usd=order_results.entry_size_usd,
+            entry_price=order_results.entry_price,
+            exit_price=order_results.exit_price,
+            position_size_asset=order_results.position_size_asset,
+            position_size_usd=order_results.position_size_usd,
+            realized_pnl=order_results.realized_pnl,
+            sl_pct=abs(round((order_results.average_entry - sl_price) / order_results.average_entry, 4)),
             sl_price=sl_price,
-            total_trades=order_result.total_trades,
-            tp_pct=order_result.tp_pct,
-            tp_price=order_result.tp_price,
+            total_trades=order_results.total_trades,
+            tp_pct=order_results.tp_pct,
+            tp_price=order_results.tp_price,
         )

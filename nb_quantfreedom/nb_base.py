@@ -3,7 +3,13 @@ import pandas as pd
 from nb_quantfreedom.nb_custom_logger import CustomLoggerNB, nb_PrintLogs, nb_RegularLogs
 
 from nb_quantfreedom.nb_enums import *
-from nb_quantfreedom.nb_order_handler.nb_class_helpers import ZeroOrEntryNB, nb_GetMaxPrice, nb_GetMinPrice, nb_Long_SLToEntry, nb_Long_SLToZero
+from nb_quantfreedom.nb_order_handler.nb_class_helpers import (
+    ZeroOrEntryNB,
+    nb_GetMaxPrice,
+    nb_GetMinPrice,
+    nb_Long_SLToEntry,
+    nb_Long_SLToZero,
+)
 from nb_quantfreedom.nb_order_handler.nb_decrease_position import nb_Long_DP
 from nb_quantfreedom.nb_order_handler.nb_increase_position import nb_Long_RPAandSLB, nb_Long_SEP
 from nb_quantfreedom.nb_order_handler.nb_leverage import nb_Long_DLev, nb_Long_Leverage, nb_Long_SLev
@@ -537,7 +543,7 @@ def create_classes(
 #                 order.calculate_leverage()
 #                 order.calculate_take_profit()
 #                 order.or_filler(
-#                     order_result=OrderResult(
+#                     order_results=OrderResults(
 #                         ind_set_index=ind_set_index,
 #                         order_settings_index=or_set_index,
 #                         bar_index=bar_index + 1,

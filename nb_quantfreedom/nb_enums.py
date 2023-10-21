@@ -234,35 +234,37 @@ class LoggerSettings(NamedTuple):
     formatter: str = FORMATTER
 
 
-class OrderResult(NamedTuple):
+class AccountState(NamedTuple):
     # where we are at
     ind_set_index: int
     dos_index: int
     bar_index: int
     timestamp: int
     # account info
-    equity: float = np.nan
     available_balance: float = np.nan
     cash_borrowed: float = np.nan
     cash_used: float = np.nan
-    # order info
+    equity: float = np.nan
+    fees_paid: float = np.nan
+    possible_loss: float = np.nan
+    realized_pnl: float = np.nan
+    total_trades: int = 0
+
+
+class OrderResults(NamedTuple):
     average_entry: float = np.nan
     can_move_sl_to_be: bool = False
-    fees_paid: float = np.nan
+    entry_price: float = np.nan
+    entry_size_asset: float = np.nan
+    entry_size_usd: float = np.nan
+    exit_price: float = np.nan
     leverage: float = np.nan
     liq_price: float = np.nan
     order_status: int = np.nan
-    possible_loss: float = np.nan
-    entry_size_asset: float = np.nan
-    entry_size_usd: float = np.nan
-    entry_price: float = np.nan
-    exit_price: float = np.nan
     position_size_asset: float = np.nan
     position_size_usd: float = np.nan
-    realized_pnl: float = np.nan
     sl_pct: float = np.nan
     sl_price: float = np.nan
-    total_trades: int = 0
     tp_pct: float = np.nan
     tp_price: float = np.nan
 

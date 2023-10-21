@@ -1,4 +1,3 @@
-from typing import NamedTuple
 from nb_quantfreedom.nb_custom_logger import CustomLoggerNB
 from nb_quantfreedom.nb_helper_funcs import nb_round_size_by_tick_step
 from numba.experimental import jitclass
@@ -6,35 +5,31 @@ from numba.experimental import jitclass
 from nb_quantfreedom.nb_enums import OrderStatus, RejectedOrder
 
 
-class AccExOther(NamedTuple):
-    account_state_equity: float
-    asset_tick_step: float
-    logger: CustomLoggerNB
-    market_fee_pct: float
-    max_asset_size: float
-    min_asset_size: float
-    possible_loss: float
-    price_tick_step: float
-    total_trades: int
-
-
-class OrderInfo(NamedTuple):
-    average_entry: float
-    entry_price: float
-    in_position: float
-    max_equity_risk_pct: float
-    max_trades: int
-    position_size_asset: float
-    position_size_usd: float
-    risk_account_pct_size: float
-    sl_price: float
-
-
 class IncreasePositionClass:
     def __init__(self) -> None:
         pass
 
-    def calculate_increase_posotion(self, acc_ex_other: AccExOther, order_info: OrderInfo):
+    def calculate_increase_posotion(
+        self,
+        logger: CustomLoggerNB,
+        account_state_equity: float,
+        asset_tick_step: float,
+        average_entry: float,
+        entry_price: float,
+        in_position: float,
+        market_fee_pct: float,
+        max_asset_size: float,
+        max_equity_risk_pct: float,
+        max_trades: int,
+        min_asset_size: float,
+        position_size_asset: float,
+        position_size_usd: float,
+        possible_loss: float,
+        price_tick_step: float,
+        risk_account_pct_size: float,
+        sl_price: float,
+        total_trades: int,
+    ):
         pass
 
     def calc_in_pos(
@@ -117,7 +112,27 @@ class IncreasePositionClass:
 
 @jitclass()
 class IncreasePositionNB(IncreasePositionClass):
-    def calculate_increase_posotion(self, acc_ex_other: AccExOther, order_info: OrderInfo):
+    def calculate_increase_posotion(
+        self,
+        logger: CustomLoggerNB,
+        account_state_equity: float,
+        asset_tick_step: float,
+        average_entry: float,
+        entry_price: float,
+        in_position: float,
+        market_fee_pct: float,
+        max_asset_size: float,
+        max_equity_risk_pct: float,
+        max_trades: int,
+        min_asset_size: float,
+        position_size_asset: float,
+        position_size_usd: float,
+        possible_loss: float,
+        price_tick_step: float,
+        risk_account_pct_size: float,
+        sl_price: float,
+        total_trades: int,
+    ):
         pass
 
     def calc_in_pos(
@@ -276,9 +291,7 @@ class nb_Long_RPAandSLB(IncreasePositionClass):
     """
     Risking percent of your account while also having your stop loss based open high low or close of a candle
     """
-
     pass
-
 
 #     def calculate_increase_posotion(
 #         self,
@@ -558,9 +571,7 @@ class nb_Long_SEP(IncreasePositionClass):
     Setting your position size to the min amount the exchange will allow
 
     """
-
     pass
-
 
 #     def calculate_increase_posotion(
 #         self,

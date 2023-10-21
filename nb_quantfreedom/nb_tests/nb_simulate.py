@@ -71,7 +71,7 @@ def nb_tester(
 
             starting_bar = dynamic_order_settings.num_candles - 1
             logger.log_info("starting bar " + str(starting_bar))
-            order_result = OrderResult(
+            order_results = OrderResults(
                 ind_set_index=-1,
                 dos_index=-1,
                 bar_index=-1,
@@ -100,7 +100,7 @@ def nb_tester(
                 tp_pct=0.0,
                 tp_price=0.0,
             )
-            logger.log_debug(order_result)
+            logger.log_debug(order_results)
             pnl_array = np.full(shape=round(total_bars / 3), fill_value=np.nan)
             filled_pnl_counter = 0
 

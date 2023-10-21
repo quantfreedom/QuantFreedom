@@ -5,7 +5,7 @@ from nb_quantfreedom.nb_custom_logger import CustomLoggerNB
 from nb_quantfreedom.nb_helper_funcs import get_to_the_upside_nb, nb_get_dos
 from nb_quantfreedom.nb_order_handler.nb_class_helpers import PriceGetterNB, ZeroOrEntryNB
 from nb_quantfreedom.nb_order_handler.nb_decrease_position import DecreasePositionNB
-from nb_quantfreedom.nb_order_handler.nb_increase_position import IncreasePositionNB
+from nb_quantfreedom.nb_order_handler.nb_increase_position import AccExOther, IncreasePositionNB, OrderInfo
 from nb_quantfreedom.nb_order_handler.nb_leverage import LeverageClass, LeverageNB
 
 
@@ -77,32 +77,36 @@ def nb_run_backtest(
 
             starting_bar = dynamic_order_settings.num_candles - 1
 
-            order_result = OrderResult(
+            account_state = AccountState(
+                # where we are at
                 ind_set_index=-1,
                 dos_index=-1,
                 bar_index=-1,
                 timestamp=-1,
-                equity=starting_equity,
+                # account info
                 available_balance=starting_equity,
                 cash_borrowed=0.0,
                 cash_used=0.0,
+                equity=starting_equity,
+                fees_paid=0.0,
+                possible_loss=0.0,
+                realized_pnl=0.0,
+                total_trades=0,
+            )
+            order_results = OrderResults(
                 average_entry=0.0,
                 can_move_sl_to_be=False,
-                fees_paid=0.0,
-                leverage=0.0,
-                liq_price=0.0,
-                order_status=OrderStatus.Nothing,
-                possible_loss=0.0,
+                entry_price=0.0,
                 entry_size_asset=0.0,
                 entry_size_usd=0.0,
-                entry_price=0.0,
                 exit_price=0.0,
+                leverage=1.0,
+                liq_price=0.0,
+                order_status=OrderStatus.Nothing,
                 position_size_asset=0.0,
                 position_size_usd=0.0,
-                realized_pnl=0.0,
                 sl_pct=0.0,
                 sl_price=0.0,
-                total_trades=0,
                 tp_pct=0.0,
                 tp_price=0.0,
             )
@@ -118,20 +122,20 @@ def nb_run_backtest(
                     "ind_idx={ind_set_index:,} dos_idx={dos_index:,} bar_idx={bar_index:,} timestamp={timestamp"
                 )
 
-                if order_result.position_size_usd > 0:
+                if order_results.position_size_usd > 0:
                     try:
                         logger.log_debug("nb_base.py - nb_run_backtest() - will check_stop_loss_hit")
                         checker_sl_hit.check_stop_loss_hit(
                             current_candle=candles[bar_index, :],
                             exit_fee_pct=market_fee_pct,
-                            sl_price=order_result.sl_price,
+                            sl_price=order_results.sl_price,
                             logger=logger,
                         )
                         logger.log_debug("nb_base.py - nb_run_backtest() - will check_liq_hit")
                         checker_liq_hit.check_liq_hit(
                             current_candle=candles[bar_index, :],
                             exit_fee_pct=market_fee_pct,
-                            liq_price=order_result.liq_price,
+                            liq_price=order_results.liq_price,
                             logger=logger,
                         )
 
@@ -139,18 +143,18 @@ def nb_run_backtest(
                         checker_tp_hit.check_tp_hit(
                             current_candle=candles[bar_index, :],
                             exit_fee_pct=exit_fee_pct,
-                            tp_price=order_result.tp_price,
+                            tp_price=order_results.tp_price,
                             logger=logger,
                         )
                         logger.log_debug("nb_base.py - nb_run_backtest() - will check_move_stop_loss_to_be")
                         checker_sl_to_be.check_move_stop_loss_to_be(
-                            average_entry=order_result.average_entry,
-                            can_move_sl_to_be=order_result.can_move_sl_to_be,
+                            average_entry=order_results.average_entry,
+                            can_move_sl_to_be=order_results.can_move_sl_to_be,
                             candle_body_type=dynamic_order_settings.sl_to_be_cb_type,
                             current_candle=candles[bar_index, :],
                             set_z_e=set_z_e,
                             market_fee_pct=market_fee_pct,
-                            sl_price=order_result.sl_price,
+                            sl_price=order_results.sl_price,
                             sl_to_be_move_when_pct=dynamic_order_settings.sl_to_be_when_pct,
                             price_tick_step=price_tick_step,
                             logger=logger,
@@ -158,85 +162,84 @@ def nb_run_backtest(
 
                         logger.log_debug("nb_base.py - nb_run_backtest() - will check_move_trailing_stop_loss")
                         checker_tsl.check_move_trailing_stop_loss(
-                            average_entry=order_result.average_entry,
-                            can_move_sl_to_be=order_result.can_move_sl_to_be,
+                            average_entry=order_results.average_entry,
+                            can_move_sl_to_be=order_results.can_move_sl_to_be,
                             candle_body_type=dynamic_order_settings.trail_sl_bcb_type,
                             current_candle=candles[bar_index, :],
                             price_tick_step=price_tick_step,
-                            sl_price=order_result.sl_price,
+                            sl_price=order_results.sl_price,
                             trail_sl_by_pct=dynamic_order_settings.trail_sl_by_pct,
                             trail_sl_when_pct=dynamic_order_settings.trail_sl_when_pct,
                             logger=logger,
                         )
-                    # except Exception:
-                    #     logger.log_info("RejectedOrder -> {msg}")
-                    #     pass
-                    # except RejectedOrder:
-                    #     logger.log_info("RejectedOrder -> {msg}")
-                    #     pass
-                    # except MoveStopLoss:
-                    #     logger.log_debug("nb_base.py - nb_run_backtest() - will move_stop_loss")
-                    #     order_result = sl_mover.move_stop_loss(
-                    #         bar_index=bar_index,
-                    #         can_move_sl_to_be=MoveStopLoss().can_move_sl_to_be,
-                    #         dos_index=dos_index,
-                    #         ind_set_index=ind_set_index,
-                    #         order_result=order_result,
-                    #         order_status=MoveStopLoss().order_status,
-                    #         sl_price=MoveStopLoss().sl_price,
-                    #         timestamp=candles[bar_index : CandleBodyType.Timestamp],
-                    #         logger=logger,
-                    #     )
-                    #     pass
-                    # except DecreasePosition:
-                    #     logger.log_debug("nb_base.py - nb_run_backtest() - will decrease_position")
-                    #     equity, fees_paid, realized_pnl = dec_pos_calculator.decrease_position(
-                    #         average_entry=order_result.average_entry,
-                    #         equity=order_result.equity,
-                    #         exit_fee_pct=DecreasePosition().exit_fee_pct,
-                    #         exit_price=DecreasePosition().exit_price,
-                    #         market_fee_pct=market_fee_pct,
-                    #         order_status=DecreasePosition().order_status,
-                    #         position_size_asset=order_result.position_size_asset,
-                    #         logger=logger,
-                    #     )
-                    #     # Fill pnl array
-                    #     pnl_array[filled_pnl_counter] = realized_pnl
-                    #     filled_pnl_counter += 1
-                    #     total_fees_paid += fees_paid
+                    except RejectedOrder:
+                        logger.log_info("RejectedOrder -> {msg}")
+                    except MoveStopLoss:
+                        logger.log_debug("nb_base.py - nb_run_backtest() - will move_stop_loss")
+                        order_results = sl_mover.move_stop_loss(
+                            bar_index=bar_index,
+                            can_move_sl_to_be=MoveStopLoss().can_move_sl_to_be,
+                            dos_index=dos_index,
+                            ind_set_index=ind_set_index,
+                            order_results=order_results,
+                            order_status=MoveStopLoss().order_status,
+                            sl_price=MoveStopLoss().sl_price,
+                            timestamp=candles[bar_index : CandleBodyType.Timestamp],
+                            logger=logger,
+                        )
+                    except DecreasePosition:
+                        logger.log_debug("nb_base.py - nb_run_backtest() - will decrease_position")
+                        equity, fees_paid, realized_pnl = dec_pos_calculator.decrease_position(
+                            average_entry=order_results.average_entry,
+                            equity=account_state.equity,
+                            exit_fee_pct=DecreasePosition().exit_fee_pct,
+                            exit_price=DecreasePosition().exit_price,
+                            market_fee_pct=market_fee_pct,
+                            order_status=DecreasePosition().order_status,
+                            position_size_asset=order_results.position_size_asset,
+                            logger=logger,
+                        )
+                        # Fill pnl array
+                        pnl_array[filled_pnl_counter] = realized_pnl
+                        filled_pnl_counter += 1
+                        total_fees_paid += fees_paid
 
-                    #     # reset the order result
-                    #     order_result = OrderResult(
-                    #         ind_set_index=-1,
-                    #         dos_index=-1,
-                    #         bar_index=-1,
-                    #         timestamp=-1,
-                    #         equity=equity,
-                    #         available_balance=equity,
-                    #         cash_borrowed=0.0,
-                    #         cash_used=0.0,
-                    #         average_entry=0.0,
-                    #         can_move_sl_to_be=False,
-                    #         fees_paid=0.0,
-                    #         leverage=0.0,
-                    #         liq_price=0.0,
-                    #         order_status=OrderStatus.Nothing,
-                    #         possible_loss=0.0,
-                    #         entry_size_asset=0.0,
-                    #         entry_size_usd=0.0,
-                    #         entry_price=0.0,
-                    #         exit_price=0.0,
-                    #         position_size_asset=0.0,
-                    #         position_size_usd=0.0,
-                    #         realized_pnl=0.0,
-                    #         sl_pct=0.0,
-                    #         sl_price=0.0,
-                    #         total_trades=0,
-                    #         tp_pct=0.0,
-                    #         tp_price=0.0,
-                    #     )
-                    #     at_max_entries = False
-                    #     pass
+                        # reset the order result
+                        account_state = AccountState(
+                            # where we are at
+                            ind_set_index=-1,
+                            dos_index=-1,
+                            bar_index=-1,
+                            timestamp=-1,
+                            # account info
+                            available_balance=equity,
+                            cash_borrowed=0.0,
+                            cash_used=0.0,
+                            equity=equity,
+                            fees_paid=0.0,
+                            possible_loss=0.0,
+                            realized_pnl=0.0,
+                            total_trades=0,
+                        )
+                        order_results = OrderResults(
+                            average_entry=0.0,
+                            can_move_sl_to_be=False,
+                            entry_price=0.0,
+                            entry_size_asset=0.0,
+                            entry_size_usd=0.0,
+                            exit_price=0.0,
+                            leverage=1.0,
+                            liq_price=0.0,
+                            order_status=OrderStatus.Nothing,
+                            position_size_asset=0.0,
+                            position_size_usd=0.0,
+                            sl_pct=0.0,
+                            sl_price=0.0,
+                            tp_pct=0.0,
+                            tp_price=0.0,
+                        )
+                        at_max_entries = False
+                        pass
 
                     except Exception:
                         logger.log_info("Exception moving or decreasing order -> {e}")
@@ -254,132 +257,135 @@ def nb_run_backtest(
                     ind_creator=ind_creator,
                     logger=logger,
                 ):  # TODO: this and add in that we are also not at max entry amount
-                    pass
-                #     try:
-                #         logger.log_debug("nb_base.py - nb_run_backtest() - will calculate_stop_loss")
-                #         sl_price = sl_calculator.calculate_stop_loss(
-                #             bar_index=bar_index,
-                #             candles=candles,
-                #             price_tick_step=price_tick_step,
-                #             sl_based_on_add_pct=dynamic_order_settings.sl_based_on_add_pct,
-                #             sl_based_on_lookback=dynamic_order_settings.sl_based_on_lookback,
-                #             sl_bcb_price_getter=sl_bcb_price_getter,
-                #             sl_bcb_type=dynamic_order_settings.sl_bcb_type,
-                #             logger=logger,
-                #         )
-                #         logger.log_debug("nb_base.py - nb_run_backtest() - will calculate_increase_posotion")
-                #         (
-                #             average_entry,
-                #             entry_price,
-                #             entry_size_asset,
-                #             entry_size_usd,
-                #             position_size_asset,
-                #             position_size_usd,
-                #             possible_loss,
-                #             total_trades,
-                #             sl_pct,
-                #         ) = inc_pos_calculator.calculate_increase_posotion(
-                #             account_state_equity=order_result.equity,
-                #             asset_tick_step=asset_tick_step,
-                #             average_entry=order_result.average_entry,
-                #             entry_price=candles[bar_index, CandleBodyType.Close],
-                #             in_position=order_result.position_size_usd > 0,
-                #             market_fee_pct=market_fee_pct,
-                #             max_asset_size=max_asset_size,
-                #             max_equity_risk_pct=dynamic_order_settings.max_equity_risk_pct,
-                #             max_trades=dynamic_order_settings.max_trades,
-                #             min_asset_size=min_asset_size,
-                #             position_size_asset=order_result.position_size_asset,
-                #             position_size_usd=order_result.position_size_usd,
-                #             possible_loss=order_result.possible_loss,
-                #             price_tick_step=price_tick_step,
-                #             risk_account_pct_size=dynamic_order_settings.risk_account_pct_size,
-                #             sl_price=sl_price,
-                #             total_trades=order_result.total_trades,
-                #             logger=logger,
-                #         )
-                #         logger.log_debug("nb_base.py - nb_run_backtest() - will calculate_leverage")
-                #         (
-                #             available_balance,
-                #             can_move_sl_to_be,
-                #             cash_borrowed,
-                #             cash_used,
-                #             leverage,
-                #             liq_price,
-                #         ) = lev_calculator.calculate_leverage(
-                #             available_balance=order_result.available_balance,
-                #             average_entry=average_entry,
-                #             cash_borrowed=order_result.cash_borrowed,
-                #             cash_used=order_result.cash_used,
-                #             entry_size_usd=entry_size_usd,
-                #             max_leverage=max_leverage,
-                #             mmr_pct=mmr_pct,
-                #             sl_price=sl_price,
-                #             static_leverage=dynamic_order_settings.static_leverage,
-                #             leverage_tick_step=leverage_tick_step,
-                #             price_tick_step=price_tick_step,
-                #             logger=logger,
-                #         )
+                    try:
+                        logger.log_debug("nb_base.py - nb_run_backtest() - will calculate_stop_loss")
+                        sl_price = sl_calculator.calculate_stop_loss(
+                            bar_index=bar_index,
+                            candles=candles,
+                            price_tick_step=price_tick_step,
+                            sl_based_on_add_pct=dynamic_order_settings.sl_based_on_add_pct,
+                            sl_based_on_lookback=dynamic_order_settings.sl_based_on_lookback,
+                            sl_bcb_price_getter=sl_bcb_price_getter,
+                            sl_bcb_type=dynamic_order_settings.sl_bcb_type,
+                            logger=logger,
+                        )
+                        logger.log_debug("nb_base.py - nb_run_backtest() - will calculate_increase_posotion")
+                        (
+                            average_entry,
+                            entry_price,
+                            entry_size_asset,
+                            entry_size_usd,
+                            position_size_asset,
+                            position_size_usd,
+                            possible_loss,
+                            total_trades,
+                            sl_pct,
+                        ) = inc_pos_calculator.calculate_increase_posotion(
+                            acc_ex_other=AccExOther(
+                                account_state_equity=account_state.equity,
+                                asset_tick_step=asset_tick_step,
+                                logger=logger,
+                                market_fee_pct=market_fee_pct,
+                                max_asset_size=max_asset_size,
+                                min_asset_size=min_asset_size,
+                                possible_loss=account_state.possible_loss,
+                                price_tick_step=price_tick_step,
+                                total_trades=account_state.total_trades,
+                            ),
+                            order_info=OrderInfo(
+                                average_entry=order_results.average_entry,
+                                entry_price=candles[bar_index, CandleBodyType.Close],
+                                in_position=order_results.position_size_usd > 0,
+                                max_equity_risk_pct=dynamic_order_settings.max_equity_risk_pct,
+                                max_trades=dynamic_order_settings.max_trades,
+                                position_size_asset=order_results.position_size_asset,
+                                position_size_usd=order_results.position_size_usd,
+                                risk_account_pct_size=dynamic_order_settings.risk_account_pct_size,
+                                sl_price=sl_price,
+                            ),
+                        )
+                        logger.log_debug("nb_base.py - nb_run_backtest() - will calculate_leverage")
+                        (
+                            available_balance,
+                            can_move_sl_to_be,
+                            cash_borrowed,
+                            cash_used,
+                            leverage,
+                            liq_price,
+                        ) = lev_calculator.calculate_leverage(
+                            available_balance=account_state.available_balance,
+                            average_entry=order_results.average_entry,
+                            cash_borrowed=account_state.cash_borrowed,
+                            cash_used=account_state.cash_used,
+                            entry_size_usd=order_results.entry_size_usd,
+                            max_leverage=max_leverage,
+                            mmr_pct=mmr_pct,
+                            sl_price=sl_price,
+                            static_leverage=dynamic_order_settings.static_leverage,
+                            leverage_tick_step=leverage_tick_step,
+                            price_tick_step=price_tick_step,
+                            logger=logger,
+                        )
 
-                #         logger.log_debug("nb_base.py - nb_run_backtest() - will calculate_take_profit")
-                #         (
-                #             can_move_sl_to_be,
-                #             tp_price,
-                #             tp_pct,
-                #         ) = tp_calculator.calculate_take_profit(
-                #             average_entry=average_entry,
-                #             market_fee_pct=market_fee_pct,
-                #             position_size_usd=position_size_usd,
-                #             possible_loss=possible_loss,
-                #             price_tick_step=price_tick_step,
-                #             risk_reward=dynamic_order_settings.risk_reward,
-                #             tp_fee_pct=exit_fee_pct,
-                #             logger=logger,
-                #         )
-                #         logger.log_debug("nb_base.py - nb_run_backtest() - will OrderResult")
-                #         order_result = OrderResult(
-                #             # where we are at
-                #             ind_set_index=ind_set_index,
-                #             dos_index=dos_index,
-                #             bar_index=bar_index + 1,  # put plus 1 because we need to place entry on next bar
-                #             timestamp=candles[bar_index + 1, CandleBodyType.Timestamp],
-                #             # account info
-                #             equity=order_result.equity,
-                #             available_balance=available_balance,
-                #             cash_borrowed=cash_borrowed,
-                #             cash_used=cash_used,
-                #             # order info
-                #             average_entry=average_entry,
-                #             can_move_sl_to_be=can_move_sl_to_be,
-                #             fees_paid=0.0,
-                #             leverage=leverage,
-                #             liq_price=liq_price,
-                #             order_status=OrderStatus.EntryFilled,
-                #             possible_loss=possible_loss,
-                #             entry_size_asset=entry_size_asset,
-                #             entry_size_usd=entry_size_usd,
-                #             entry_price=entry_price,
-                #             exit_price=0.0,
-                #             position_size_asset=position_size_asset,
-                #             position_size_usd=position_size_usd,
-                #             realized_pnl=0.0,
-                #             sl_pct=sl_pct,
-                #             sl_price=sl_price,
-                #             total_trades=total_trades,
-                #             tp_pct=tp_pct,
-                #             tp_price=tp_price,
-                #         )
+                        logger.log_debug("nb_base.py - nb_run_backtest() - will calculate_take_profit")
+                        (
+                            can_move_sl_to_be,
+                            tp_price,
+                            tp_pct,
+                        ) = tp_calculator.calculate_take_profit(
+                            average_entry=order_results.average_entry,
+                            market_fee_pct=market_fee_pct,
+                            position_size_usd=order_results.position_size_usd,
+                            possible_loss=account_state.possible_loss,
+                            price_tick_step=price_tick_step,
+                            risk_reward=dynamic_order_settings.risk_reward,
+                            tp_fee_pct=exit_fee_pct,
+                            logger=logger,
+                        )
+                        logger.log_debug("nb_base.py - nb_run_backtest() - will OrderResults")
+                        account_state = AccountState(
+                            # where we are at
+                            ind_set_index=ind_set_index,
+                            dos_index=dos_index,
+                            bar_index=bar_index + 1,  # put plus 1 because we need to place entry on next bar
+                            timestamp=candles[bar_index + 1, CandleBodyType.Timestamp],
+                            # account info
+                            available_balance=available_balance,
+                            cash_borrowed=cash_borrowed,
+                            cash_used=cash_used,
+                            equity=account_state.equity,
+                            fees_paid=0.0,
+                            possible_loss=possible_loss,
+                            realized_pnl=0.0,
+                            total_trades=total_trades,
+                        )
+                        order_results = OrderResults(
+                            average_entry=average_entry,
+                            can_move_sl_to_be=can_move_sl_to_be,
+                            entry_price=entry_price,
+                            entry_size_asset=entry_size_asset,
+                            entry_size_usd=entry_size_usd,
+                            exit_price=0.0,
+                            leverage=leverage,
+                            liq_price=liq_price,
+                            order_status=OrderStatus.EntryFilled,
+                            position_size_asset=position_size_asset,
+                            position_size_usd=position_size_usd,
+                            sl_pct=sl_pct,
+                            sl_price=sl_price,
+                            tp_pct=tp_pct,
+                            tp_price=tp_price,
+                        )
 
-                #     except RejectedOrder:
-                #         logger.log_info("RejectedOrder -> {msg}")
-                #         at_max_entries = False
-                #         pass
-                #     except Exception:
-                #         logger.log_info("Exception placing order -> {e}")
-                #         raise Exception("Exception placing order -> {e}")
-                #         pass
+                    # except RejectedOrder:
+                    #     logger.log_info("RejectedOrder -> {msg}")
+                    #     at_max_entries = False
+                    #     pass
+                    except Exception:
+                        logger.log_info("Exception placing order -> {e}")
+                        raise Exception("Exception placing order -> {e}")
             # Checking if gains
-            gains_pct = round(((order_result.equity - starting_equity) / starting_equity) * 100, 2)
+            gains_pct = round(((account_state.equity - starting_equity) / starting_equity) * 100, 2)
             logger.log_info("Starting eq={starting_equity Ending eq={equity gains pct={gains_pct")
             if gains_pct > backtest_settings.gains_pct_filter:
                 wins_and_losses_array = pnl_array[~np.isnan(pnl_array)]
@@ -409,7 +415,7 @@ def nb_run_backtest(
                         strategy_result_records[result_records_filled]["to_the_upside"] = to_the_upside
                         strategy_result_records[result_records_filled]["fees_paid"] = round(total_fees_paid, 4)
                         strategy_result_records[result_records_filled]["total_pnl"] = total_pnl
-                        strategy_result_records[result_records_filled]["ending_eq"] = order_result.equity
+                        strategy_result_records[result_records_filled]["ending_eq"] = account_state.equity
 
                         result_records_filled += 1
         logger.log_info("Starting New Loop\n\n")

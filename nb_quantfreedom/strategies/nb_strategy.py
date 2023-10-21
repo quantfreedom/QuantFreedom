@@ -1,6 +1,7 @@
 import numpy as np
 import talib
 from numba.experimental import jitclass
+from nb_quantfreedom.indicators.indicators import IndicatorsNB
 
 from nb_quantfreedom.nb_custom_logger import CustomLoggerNB
 from typing import NamedTuple
@@ -78,13 +79,7 @@ class nb_BacktestInd(nb_CreateInd):
     ):
         start = max(bar_index - starting_bar, 0)
         try:
-            rsi = np.around(
-                talib.RSI(
-                    candles[start : bar_index + 1, CandleBodyType.Close],
-                    indicator_settings.rsi_length,
-                ),
-                2,
-            )
+            rsi = IndicatorsNB().calc_rsi(prices=candles[:, CandleBodyType.Close], period=indicator_settings.rsi_length)
             logger.log_debug("Created rsi")
             return rsi
         except Exception:
@@ -102,13 +97,7 @@ class nb_TradingInd(nb_CreateInd):
         logger: CustomLoggerNB,
     ):
         try:
-            rsi = np.around(
-                talib.RSI(
-                    candles[:, CandleBodyType.Close],
-                    indicator_settings.rsi_length,
-                ),
-                2,
-            )
+            rsi = IndicatorsNB().calc_rsi(prices=candles[:, CandleBodyType.Close], period=indicator_settings.rsi_length)
             logger.log_debug("Created rsi")
             return rsi
         except Exception:
@@ -146,6 +135,7 @@ class nb_Strategy(StrategyClass):
         ind_creator: nb_CreateInd,
         logger: CustomLoggerNB,
     ):
+        return True
         rsi = ind_creator.create_indicator(
             bar_index=bar_index,
             starting_bar=starting_bar,

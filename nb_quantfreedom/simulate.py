@@ -213,7 +213,7 @@ def sim_6_nb(
                     order.calculate_leverage()
                     order.calculate_take_profit()
                     order.or_filler(
-                        order_result=OrderResult(
+                        order_results=OrderResults(
                             ind_set_index=ind_set_index,
                             order_settings_index=order_settings_index,
                             bar_index=bar_index,
