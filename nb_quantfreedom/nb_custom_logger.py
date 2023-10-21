@@ -3,6 +3,8 @@ import os, logging
 import time
 from numba.experimental import jitclass
 
+from nb_quantfreedom.nb_helper_funcs import nb_float_to_str
+
 
 class CustomLoggerClass:
     def __init__(self) -> None:
@@ -35,6 +37,9 @@ class CustomLoggerNB(CustomLoggerClass):
     def log_error(self, message: str):
         pass
 
+    def float_to_str(self, x):
+        pass
+
 
 @jitclass()
 class nb_PrintLogs(CustomLoggerClass):
@@ -49,6 +54,11 @@ class nb_PrintLogs(CustomLoggerClass):
 
     def log_error(self, message: str):
         print(message)
+
+    def float_to_str(self, x):
+        return nb_float_to_str(x)
+    
+    def log_datetime(self)
 
 
 class nb_RegularLogs(CustomLoggerClass):
@@ -116,3 +126,6 @@ class nb_RegularLogs(CustomLoggerClass):
 
     def log_error(self, message: str):
         logging.getLogger("info").error(message)
+
+    def float_to_str(self, x):
+        return str(x)

@@ -40,9 +40,11 @@ def backtest_df_only(
     #########################################
     #########################################
     """
+
     if logger_settings:
         if logger_settings == "p":
             logger = nb_PrintLogs()
+
         elif type(logger_settings) == LoggerSettings:
             logger = nb_RegularLogs()
             logger.set_loggers(
@@ -212,11 +214,13 @@ def backtest_df_only(
 
     # logger.infoing out total numbers of things
     logger.log_info("Starting the backtest now ... and also here are some stats for your backtest.\n")
-    logger.log_info("Total indicator settings to test: {total_indicator_settings:,}")
-    logger.log_info("Total order settings to test: {total_order_settings:,}")
-    logger.log_info("Total combinations of settings to test: {total_indicator_settings * total_order_settings:,}")
-    logger.log_info("\nTotal candles: {total_bars:,}")
-    logger.log_info("Total candles to test: {total_indicator_settings * total_order_settings * total_bars:,}")
+    logger.log_info("Total indicator settings to test: " + str(total_indicator_settings))
+    logger.log_info("Total order settings to test: " + str(total_order_settings))
+    logger.log_info(
+        "Total combinations of settings to test: " + str(int(total_indicator_settings * total_order_settings))
+    )
+    logger.log_info("\nTotal candles: " + str(total_bars))
+    logger.log_info("Total candles to test: " + str(int(total_indicator_settings * total_order_settings * total_bars)))
 
     strategy_result_records = nb_run_backtest(
         backtest_settings=backtest_settings,
@@ -498,7 +502,7 @@ def create_classes(
 
 #     for bar_index in range(starting_bar, total_bars):
 #         logger.log_info(
-#             f"ind_idx={ind_set_index:,} os_idx={or_set_index:,} b_idx={bar_index} timestamp={pd.to_datetime(candles['timestamp'][bar_index], unit='ms')}"
+#             f"ind_idx={ind_set_index) os_idx={or_set_index) b_idx={bar_index} timestamp={pd.to_datetime(candles['timestamp'][bar_index], unit='ms')}"
 #         )
 #         if order.position_size_usd > 0:
 #             try:

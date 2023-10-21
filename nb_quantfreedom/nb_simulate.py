@@ -60,22 +60,21 @@ def nb_run_backtest(
     result_records_filled = 0
 
     for ind_set_index in range(total_indicator_settings):
-        logger.log_info("Indicator settings index = {ind_set_index:,")
+        logger.log_info("Indicator settings index=" + str(ind_set_index))
         indicator_settings = strategy.nb_get_current_ind_settings(
             ind_set_index=ind_set_index,
             logger=logger,
         )
 
         for dos_index in range(total_order_settings):
-            logger.log_info("Order settings index = {dos_index:,")
+            logger.log_info("Order settings index=" + str(dos_index))
             dynamic_order_settings = nb_get_dos(
                 dos_cart_arrays=dos_cart_arrays,
                 dos_index=dos_index,
             )
 
-            logger.log_info("Created Order class")
-
             starting_bar = dynamic_order_settings.num_candles - 1
+            logger.log_info("Starting Bar=" + str(starting_bar))
 
             account_state = AccountState(
                 # where we are at
@@ -115,10 +114,17 @@ def nb_run_backtest(
             filled_pnl_counter = 0
 
             total_fees_paid = 0
-            # entries loop
+            logger.log_info("nb_base.py - nb_run_backtest() - account state order results pnl array all set to default")
             for bar_index in range(starting_bar, total_bars):
                 logger.log_info(
-                    "ind_idx={ind_set_index:,} dos_idx={dos_index:,} bar_idx={bar_index:,} timestamp={timestamp"
+                    "nb_base.py - nb_run_backtest() - ind_idx="
+                    + str(ind_set_index)
+                    + " dos_idx="
+                    + str(dos_index)
+                    + " bar_idx="
+                    + str(bar_index)
+                    + " timestamp="
+                    + str(int(candles[bar_index, CandleBodyType.Timestamp]))
                 )
 
                 if order_result.position_size_usd > 0:
@@ -130,7 +136,7 @@ def nb_run_backtest(
                             sl_price=order_result.sl_price,
                             logger=logger,
                         ):
-                            logger.log_debug("nb_base.py - nb_run_backtest() - will decrease_position")
+                            logger.log_debug("nb_base.py - nb_run_backtest() - decrease_position")
                             (
                                 account_state,
                                 fees_paid,
@@ -157,7 +163,7 @@ def nb_run_backtest(
                             liq_price=order_result.liq_price,
                             logger=logger,
                         ):
-                            logger.log_debug("nb_base.py - nb_run_backtest() - will decrease_position")
+                            logger.log_debug("nb_base.py - nb_run_backtest() - decrease_position")
                             (
                                 account_state,
                                 fees_paid,
@@ -184,7 +190,7 @@ def nb_run_backtest(
                             tp_price=order_result.tp_price,
                             logger=logger,
                         ):
-                            logger.log_debug("nb_base.py - nb_run_backtest() - will decrease_position")
+                            logger.log_debug("nb_base.py - nb_run_backtest() - decrease_position")
                             (
                                 account_state,
                                 fees_paid,
@@ -220,7 +226,7 @@ def nb_run_backtest(
                             logger=logger,
                         )
                         if temp_sl:
-                            logger.log_debug("nb_base.py - nb_run_backtest() - will move_stop_loss")
+                            logger.log_debug("nb_base.py - nb_run_backtest() - move_stop_loss")
                             account_state, order_result = sl_mover.move_stop_loss(
                                 account_state=account_state,
                                 bar_index=bar_index,
@@ -233,9 +239,9 @@ def nb_run_backtest(
                                 timestamp=candles[bar_index : CandleBodyType.Timestamp],
                                 logger=logger,
                             )
-                        
+
                         # Checking to move trailing stop loss
-                        
+
                         logger.log_debug("nb_base.py - nb_run_backtest() - check_move_trailing_stop_loss")
                         temp_tsl = checker_tsl.check_move_trailing_stop_loss(
                             average_entry=order_result.average_entry,
@@ -249,7 +255,7 @@ def nb_run_backtest(
                             logger=logger,
                         )
                         if temp_tsl:
-                            logger.log_debug("nb_base.py - nb_run_backtest() - will move_stop_loss")
+                            logger.log_debug("nb_base.py - nb_run_backtest() - move_stop_loss")
                             account_state, order_result = sl_mover.move_stop_loss(
                                 account_state=account_state,
                                 bar_index=bar_index,
@@ -286,6 +292,7 @@ def nb_run_backtest(
                             sl_bcb_type=dynamic_order_settings.sl_bcb_type,
                             logger=logger,
                         )
+
                         logger.log_debug("nb_base.py - nb_run_backtest() - calculate_increase_posotion")
                         (
                             average_entry,
@@ -321,6 +328,7 @@ def nb_run_backtest(
                                 sl_price=sl_price,
                             ),
                         )
+
                         logger.log_debug("nb_base.py - nb_run_backtest() - calculate_leverage")
                         (
                             available_balance,
@@ -359,7 +367,7 @@ def nb_run_backtest(
                             tp_fee_pct=exit_fee_pct,
                             logger=logger,
                         )
-                        logger.log_debug("nb_base.py - nb_run_backtest() - OrderResult")
+                        logger.log_debug("nb_base.py - nb_run_backtest() - Account State OrderResult")
                         account_state = AccountState(
                             # where we are at
                             ind_set_index=ind_set_index,
@@ -393,11 +401,20 @@ def nb_run_backtest(
                             tp_pct=tp_pct,
                             tp_price=tp_price,
                         )
+                        logger.log_debug("nb_base.py - nb_run_backtest() - Filled as or")
                     except Exception:
+                        logger.log_debug("nb_base.py - nb_run_backtest() - Exception hit")
                         pass
             # Checking if gains
             gains_pct = round(((account_state.equity - starting_equity) / starting_equity) * 100, 2)
-            logger.log_info("Starting eq={starting_equity Ending eq={equity gains pct={gains_pct")
+            logger.log_info(
+                "nb_base.py - nb_run_backtest() - Starting eq="
+                + logger.float_to_str(starting_equity)
+                + " Ending eq="
+                + logger.float_to_str(account_state.equity)
+                + "gains pct="
+                + logger.float_to_str(gains_pct)
+            )
             if gains_pct > backtest_settings.gains_pct_filter:
                 wins_and_losses_array = pnl_array[~np.isnan(pnl_array)]
 
