@@ -45,7 +45,7 @@ class DecreasePositionNB(DecreasePositionClass):
 
 
 @jitclass()
-class nb_Long_DP(DecreasePositionNB):
+class nb_Long_DP(DecreasePositionClass):
     def decrease_position(
         self,
         logger: CustomLoggerNB,

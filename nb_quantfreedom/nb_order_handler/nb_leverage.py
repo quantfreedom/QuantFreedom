@@ -97,7 +97,7 @@ class LeverageNB(LeverageClass):
 
 
 @jitclass()
-class nb_Long_SLev(LeverageNB):
+class nb_Long_SLev(LeverageClass):
     def calculate_leverage(
         self,
         logger: CustomLoggerNB,
@@ -142,7 +142,7 @@ class nb_Long_SLev(LeverageNB):
 
 
 @jitclass()
-class nb_Long_DLev(LeverageNB):
+class nb_Long_DLev(LeverageClass):
     """
     Calculate dynamic leverage
     """
@@ -202,7 +202,7 @@ class nb_Long_DLev(LeverageNB):
 
 
 @jitclass
-class nb_Long_Leverage(LeverageNB):
+class nb_Long_Leverage(LeverageClass):
     def check_liq_hit(
         self,
         logger: CustomLoggerNB,

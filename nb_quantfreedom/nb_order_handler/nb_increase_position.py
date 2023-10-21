@@ -214,7 +214,7 @@ class IncreasePositionNB(IncreasePositionClass):
 
 
 @jitclass()
-class nb_IPHelpers(IncreasePositionNB):
+class nb_IPHelpers(IncreasePositionClass):
     def check_size_too_big_or_small(
         self,
         logger: CustomLoggerNB,
@@ -286,7 +286,7 @@ class nb_IPHelpers(IncreasePositionNB):
 
 
 @jitclass()
-class nb_Long_RPAandSLB(IncreasePositionNB):
+class nb_Long_RPAandSLB(IncreasePositionClass):
     """
     Risking percent of your account while also having your stop loss based open high low or close of a candle
     """
@@ -562,7 +562,7 @@ sl_pct= {round(sl_pct*100,2):,}"
 
 
 @jitclass()
-class nb_Long_SEP(IncreasePositionNB):
+class nb_Long_SEP(IncreasePositionClass):
     """
     Setting your position size to the min amount the exchange will allow
 

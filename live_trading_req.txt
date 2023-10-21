@@ -5,3 +5,4 @@ plotly==5.16.1
 kaleido==0.1.0
 dash-bootstrap-templates==1.0.8
 jupyter-dash==0.4.2
+numba==0.58.1

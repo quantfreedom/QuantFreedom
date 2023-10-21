@@ -62,7 +62,7 @@ class TakeProfitNB(TakeProfitClass):
 
 
 @jitclass
-class nb_Long_RR(TakeProfitNB):
+class nb_Long_RR(TakeProfitClass):
     def calculate_take_profit(
         self,
         logger: CustomLoggerNB,
@@ -97,7 +97,7 @@ class nb_Long_RR(TakeProfitNB):
 
 
 @jitclass
-class nb_Long_TPHitReg(TakeProfitNB):
+class nb_Long_TPHitReg(TakeProfitClass):
     def check_tp_hit(
         self,
         logger: CustomLoggerNB,
@@ -122,7 +122,7 @@ class nb_Long_TPHitReg(TakeProfitNB):
 
 
 @jitclass
-class nb_Long_TPHitProvided(TakeProfitNB):
+class nb_Long_TPHitProvided(TakeProfitClass):
     def check_tp_hit(
         self,
         logger: CustomLoggerNB,

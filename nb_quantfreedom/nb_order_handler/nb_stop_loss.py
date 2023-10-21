@@ -148,7 +148,7 @@ class StopLossNB(StopLossClass):
 
 
 @jitclass()
-class nb_Long_StopLoss(StopLossNB):
+class nb_Long_StopLoss(StopLossClass):
     def check_stop_loss_hit(
         self,
         logger: CustomLoggerNB,
@@ -265,7 +265,7 @@ class nb_Long_StopLoss(StopLossNB):
 
 
 @jitclass()
-class nb_Long_SLBCB(StopLossNB):
+class nb_Long_SLBCB(StopLossClass):
     """
     Stop loss based on candle body
     """
@@ -300,7 +300,7 @@ class nb_Long_SLBCB(StopLossNB):
 
 
 @jitclass()
-class nb_MoveSL(StopLossNB):
+class nb_MoveSL(StopLossClass):
     def move_stop_loss(
         self,
         logger: CustomLoggerNB,

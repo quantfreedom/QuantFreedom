@@ -21,12 +21,12 @@ def get_to_the_upside_nb(
 
     y_ym = y - ym
     if y_ym.all() == 0:
-        y_ym = np.array([1])
+        y_ym = np.array([1.0])
     y_ym_s = np.power(y_ym, 2)
 
     x_xm = x - xm
     if x_xm.all() == 0:
-        x_xm = np.array([1])
+        x_xm = np.array([1.0])
     x_xm_s = np.power(x_xm, 2)
 
     b1 = (x_xm * y_ym).sum() / x_xm_s.sum()

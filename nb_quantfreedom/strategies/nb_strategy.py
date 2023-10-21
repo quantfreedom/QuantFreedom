@@ -87,8 +87,8 @@ class nb_BacktestInd(nb_CreateInd):
             )
             logger.log_debug("Created rsi")
             return rsi
-        except Exception as e:
-            raise Exception(f"Exception creating rsi -> {e}")
+        except Exception:
+            raise Exception("Exception creating rsi -> {e}")
 
 
 @jitclass
@@ -111,8 +111,8 @@ class nb_TradingInd(nb_CreateInd):
             )
             logger.log_debug("Created rsi")
             return rsi
-        except Exception as e:
-            raise Exception(f"Exception creating rsi -> {e}")
+        except Exception:
+            raise Exception("Exception creating rsi -> {e}")
 
 
 class StrategyClass:
@@ -164,5 +164,5 @@ class nb_Strategy(StrategyClass):
             else:
                 logger.log_info("No entry rsi {current_rsi}")
                 return False
-        except Exception as e:
-            raise Exception(f"Evaluate strat error -> {e}")
+        except Exception:
+            raise Exception("Evaluate strat error -> {e}")

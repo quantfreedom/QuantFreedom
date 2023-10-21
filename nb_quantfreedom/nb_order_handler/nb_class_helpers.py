@@ -52,7 +52,7 @@ class PriceGetterNB(PriceGetterClass):
 
 
 @jitclass()
-class nb_GetMinPrice(PriceGetterNB):
+class nb_GetMinPrice(PriceGetterClass):
     def nb_min_max_price_getter(
         self,
         logger: CustomLoggerNB,
@@ -69,7 +69,7 @@ class nb_GetMinPrice(PriceGetterNB):
 
 
 @jitclass()
-class nb_GetMaxPrice(PriceGetterNB):
+class nb_GetMaxPrice(PriceGetterClass):
     def nb_min_max_price_getter(
         self,
         logger: CustomLoggerNB,
@@ -86,7 +86,7 @@ class nb_GetMaxPrice(PriceGetterNB):
 
 
 @jitclass()
-class nb_GetPrice(PriceGetterNB):
+class nb_GetPrice(PriceGetterClass):
     def nb_price_getter(
         self,
         logger: CustomLoggerNB,
@@ -116,9 +116,6 @@ class ZeroOrEntryClass:
 
 @jitclass
 class ZeroOrEntryNB(ZeroOrEntryClass):
-    def __init__(self):
-        pass
-
     def nb_set_sl_to_z_or_e(
         self,
         logger: CustomLoggerNB,
@@ -130,7 +127,7 @@ class ZeroOrEntryNB(ZeroOrEntryClass):
 
 
 @jitclass()
-class nb_Long_SLToZero(ZeroOrEntryNB):
+class nb_Long_SLToZero(ZeroOrEntryClass):
     def nb_set_sl_to_z_or_e(
         self,
         logger: CustomLoggerNB,
@@ -148,7 +145,7 @@ class nb_Long_SLToZero(ZeroOrEntryNB):
 
 
 @jitclass()
-class nb_Long_SLToEntry(ZeroOrEntryNB):
+class nb_Long_SLToEntry(ZeroOrEntryClass):
     def nb_set_sl_to_z_or_e(
         self,
         logger: CustomLoggerNB,

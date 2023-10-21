@@ -37,7 +37,7 @@ class CustomLoggerNB(CustomLoggerClass):
 
 
 @jitclass()
-class nb_PrintLogs(CustomLoggerNB):
+class nb_PrintLogs(CustomLoggerClass):
     def log_debug(self, message: str):
         print(message)
 
@@ -51,7 +51,7 @@ class nb_PrintLogs(CustomLoggerNB):
         print(message)
 
 
-class nb_RegularLogs(CustomLoggerNB):
+class nb_RegularLogs(CustomLoggerClass):
     def set_loggers(
         self,
         log_debug: bool,

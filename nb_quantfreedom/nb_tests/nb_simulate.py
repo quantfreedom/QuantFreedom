@@ -1,72 +1,10 @@
 import numpy as np
-import pandas as pd
 from numba import njit
-import logging
-from nb_quantfreedom.nb_custom_logger import CustomLogger, nb_NoLogs, nb_PrintLogs, nb_RegularLogs
+from nb_quantfreedom.nb_custom_logger import CustomLoggerNB
 
-from nb_quantfreedom.nb_helper_funcs import get_to_the_upside_nb, nb_get_dos
-from nb_quantfreedom.nb_enums import (
-    BacktestSettings,
-    CandleBodyType,
-    CandleProcessingType,
-    DecreasePosition,
-    DynamicOrderSettingsArrays,
-    ExchangeSettings,
-    IncreasePositionType,
-    LeverageStrategyType,
-    LoggerSettings,
-    LongOrShortType,
-    MoveStopLoss,
-    OrderResult,
-    OrderStatus,
-    PriceGetterType,
-    RejectedOrder,
-    ZeroOrEntryType,
-    StopLossStrategyType,
-    TakeProfitFeeType,
-    TakeProfitStrategyType,
-    StaticOrderSettings,
-    ZeroOrEntryType,
-    strat_df_array_dt,
-)
-from nb_quantfreedom.nb_order_handler.nb_decrease_position import nb_DecreasePosition, nb_Long_DP
-from nb_quantfreedom.nb_order_handler.nb_increase_position import (
-    nb_IncreasePosition,
-    nb_Long_RPAandSLB,
-    nb_Long_SEP,
-)
-from nb_quantfreedom.nb_order_handler.nb_leverage import (
-    nb_Leverage,
-    nb_Long_DLev,
-    nb_Long_Leverage,
-    nb_Long_SLev,
-)
-from nb_quantfreedom.nb_order_handler.nb_class_helpers import (
-    nb_GetMaxPrice,
-    nb_GetMinPrice,
-    nb_Long_SLToEntry,
-    nb_Long_SLToZero,
-    nb_PriceGetter,
-    nb_ZeroOrEntry,
-)
-
-from nb_quantfreedom.nb_order_handler.nb_stop_loss import (
-    nb_Long_SLBCB,
-    nb_Long_StopLoss,
-    nb_MoveSL,
-    nb_StopLoss,
-)
-from nb_quantfreedom.nb_order_handler.nb_take_profit import (
-    nb_Long_RR,
-    nb_Long_TPHitReg,
-    nb_TakeProfit,
-)
-from nb_quantfreedom.strategies.nb_strategy import (
-    nb_BacktestInd,
-    nb_CreateInd,
-    nb_Strategy,
-    nb_TradingInd,
-)
+from nb_quantfreedom.nb_enums import *
+from nb_quantfreedom.nb_helper_funcs import nb_get_dos
+from nb_quantfreedom.strategies.nb_strategy import nb_Strategy
 
 
 @njit(cache=True)
@@ -76,7 +14,7 @@ def nb_tester(
     dos_cart_arrays: DynamicOrderSettingsArrays,
     exchange_settings: ExchangeSettings,
     exit_fee_pct: float,
-    logger: CustomLogger,
+    logger: CustomLoggerNB,
     starting_equity: float,
     static_os: StaticOrderSettings,
     strategy: nb_Strategy,
