@@ -63,7 +63,11 @@ class nb_GetMinPrice(PriceGetterClass):
     ) -> float:
         price = candles[lookback : bar_index + 1 :, candle_body_type].min()
         logger.log_debug(
-            "nb_class_helpers.py - nb_GetMinPrice - nb_min_max_price_getter() - candle_body_type=CandleBodyType._fields[candle_body_type]} price min=price}"
+            "nb_class_helpers.py - nb_GetMinPrice - nb_min_max_price_getter() -"
+            + " candle_body_type= "
+            + logger.candle_body_str(candle_body_type)
+            + " price= "
+            + logger.float_to_str(price)
         )
         return price
 
@@ -80,7 +84,11 @@ class nb_GetMaxPrice(PriceGetterClass):
     ):
         price = candles[lookback : bar_index + 1 :, candle_body_type].max()
         logger.log_debug(
-            "nb_class_helpers.py - nb_GetMaxPrice - nb_min_max_price_getter() - candle_body_type=CandleBodyType._fields[candle_body_type]} price max=price}"
+            "nb_class_helpers.py - nb_GetMinPrice - nb_min_max_price_getter() -"
+            + " candle_body_type= "
+            + logger.candle_body_str(candle_body_type)
+            + " price= "
+            + logger.float_to_str(price)
         )
         return price
 
@@ -95,7 +103,11 @@ class nb_GetPrice(PriceGetterClass):
     ):
         price = current_candle[candle_body_type]
         logger.log_debug(
-            "nb_class_helpers.py - nb_GetPrice - nb_price_getter() - candle_body_type=cbt} price min={price"
+            "nb_class_helpers.py - nb_GetMinPrice - nb_min_max_price_getter() -"
+            + " candle_body_type= "
+            + logger.candle_body_str(candle_body_type)
+            + " price= "
+            + logger.float_to_str(price)
         )
         return price
 
@@ -140,7 +152,10 @@ class nb_Long_SLToZero(ZeroOrEntryClass):
             user_num=sl_price,
             exchange_num=price_tick_step,
         )
-        logger.log_debug("New sl_price={sl_price}")
+        logger.log_debug(
+            "nb_class_helpers.py - nb_Long_SLToZero - nb_set_sl_to_z_or_e() - New sl_price= "
+            + logger.float_to_str(sl_price)
+        )
         return sl_price
 
 
@@ -154,5 +169,8 @@ class nb_Long_SLToEntry(ZeroOrEntryClass):
         price_tick_step,
     ):
         sl_price = average_entry
-        logger.log_debug("New sl_price={sl_price}")
+        logger.log_debug(
+            "nb_class_helpers.py - nb_Long_SLToEntry - nb_set_sl_to_z_or_e() - New sl_price= "
+            + logger.float_to_str(sl_price)
+        )
         return sl_price

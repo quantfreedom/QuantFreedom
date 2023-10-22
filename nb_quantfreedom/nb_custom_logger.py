@@ -1,7 +1,10 @@
+from pandas import to_datetime
 from datetime import datetime
 import os, logging
+import numpy as np
 import time
 from numba.experimental import jitclass
+from nb_quantfreedom.nb_enums import CandleBodyType, OrderStatus, ZeroOrEntryType
 
 from nb_quantfreedom.nb_helper_funcs import nb_float_to_str
 
@@ -11,34 +14,61 @@ class CustomLoggerClass:
         pass
 
     def log_debug(self, message: str):
-        pass
+        return ""
 
     def log_info(self, message: str):
-        pass
+        return ""
 
     def log_warning(self, message: str):
-        pass
+        return ""
 
     def log_error(self, message: str):
-        pass
+        return ""
+
+    def float_to_str(self, x: float):
+        return ""
+
+    def log_datetime(self, timestamp: float):
+        return ""
+
+    def candle_body_str(self, number: int):
+        return ""
+
+    def z_or_e_str(self, number: int):
+        return ""
+
+    def or_to_str(self, number: int):
+        return ""
 
 
 @jitclass()
 class CustomLoggerNB(CustomLoggerClass):
     def log_debug(self, message: str):
-        pass
+        return ""
 
     def log_info(self, message: str):
-        pass
+        return ""
 
     def log_warning(self, message: str):
-        pass
+        return ""
 
     def log_error(self, message: str):
-        pass
+        return ""
 
-    def float_to_str(self, x):
-        pass
+    def float_to_str(self, x: float):
+        return ""
+
+    def log_datetime(self, timestamp: float):
+        return ""
+
+    def candle_body_str(self, number: int):
+        return ""
+
+    def z_or_e_str(self, number: int):
+        return ""
+
+    def or_to_str(self, number: int):
+        return ""
 
 
 @jitclass()
@@ -55,10 +85,51 @@ class nb_PrintLogs(CustomLoggerClass):
     def log_error(self, message: str):
         print(message)
 
-    def float_to_str(self, x):
+    def float_to_str(self, x: float):
         return nb_float_to_str(x)
-    
-    def log_datetime(self)
+
+    def log_datetime(self, timestamp: int):
+        return str(timestamp)
+
+    def candle_body_str(self, number: int):
+        if number == 0:
+            return "Timestamp"
+        if number == 1:
+            return "Open"
+        elif number == 2:
+            return "Close"
+        elif number == 3:
+            return "Low"
+        elif number == 4:
+            return "Close"
+        elif number == 4:
+            return "Volume"
+        elif number == 5:
+            return "Nothing"
+
+    def z_or_e_str(self, number: int):
+        if number == 0:
+            return "ZeroLoss"
+        if number == 1:
+            return "AverageEntry"
+        elif number == 2:
+            return "Nothing"
+
+    def or_to_str(self, number: int):
+        if number == 0:
+            return "HitMaxTrades"
+        if number == 1:
+            return "EntryFilled"
+        if number == 2:
+            return "StopLossFilled"
+        elif number == 3:
+            return "TakeProfitFilled"
+        elif number == 4:
+            return "LiquidationFilled"
+        elif number == 5:
+            return "MovedSLToBE"
+        elif number == 6:
+            return "MovedTSL"
 
 
 class nb_RegularLogs(CustomLoggerClass):
@@ -88,7 +159,7 @@ class nb_RegularLogs(CustomLoggerClass):
         else:
             self.logger.setLevel(logging.INFO)
         self.logger.addHandler(self.create_logging_handler(filename, formatter))
-        self.logger.info("Testing info log")
+        self.logger.info("nb_custom_logger.py - nb_RegularLogs - set_loggers() - Testing info log")
 
         # Trades Log
         if create_trades_logger:
@@ -100,7 +171,7 @@ class nb_RegularLogs(CustomLoggerClass):
             logger = logging.getLogger("trades")
             logger.setLevel(logging.INFO)
             logger.addHandler(self.create_logging_handler(filename, formatter))
-            logger.info("Testing trades log")
+            logger.info("nb_custom_logger.py - nb_RegularLogs - set_loggers() - Testing trades log")
 
     def create_logging_handler(self, filename: str, formatter: str):
         handler = None
@@ -129,3 +200,15 @@ class nb_RegularLogs(CustomLoggerClass):
 
     def float_to_str(self, x):
         return str(x)
+
+    def log_datetime(self, timestamp: int):
+        return str(to_datetime(timestamp, unit="ms"))
+
+    def candle_body_str(self, number: int):
+        return CandleBodyType._fields[number]
+
+    def z_or_e_str(self, number: int):
+        return ZeroOrEntryType._fields[number]
+
+    def or_to_str(self, number: int):
+        return OrderStatus._fields[number]

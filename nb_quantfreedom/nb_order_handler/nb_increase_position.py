@@ -132,13 +132,29 @@ class nb_IPHelpers(IncreasePositionClass):
         max_asset_size: float,
     ):
         if entry_size_asset < min_asset_size:
-            logger.log_warning("Size smaller than min asset size")
+            logger.log_warning(
+                "nb_increase_position.py - nb_IPHelpers - check_size_too_big_or_small() - entry size too small "
+                + "entry_size_asset= "
+                + logger.float_to_str(entry_size_asset)
+                + " < min_asset_size= "
+                + logger.float_to_str(min_asset_size)
+            )
             raise RejectedOrder
         elif entry_size_asset > max_asset_size:
-            logger.log_warning("entry_size_asset > max_asset_size")
+            logger.log_warning(
+                "nb_increase_position.py - nb_IPHelpers - check_size_too_big_or_small() - entry size too big"
+                + "entry_size_asset= "
+                + logger.float_to_str(entry_size_asset)
+                + " > max_asset_size= "
+                + logger.float_to_str(max_asset_size)
+            )
             raise RejectedOrder
 
-        logger.log_debug("Entry size is fine")
+        logger.log_debug(
+            "nb_increase_position.py - nb_IPHelpers - check_size_too_big_or_small() - Entry size is fine"
+            + "entry_size_asset= "
+            + logger.float_to_str(entry_size_asset)
+        )
 
     def pl_risk_account_pct_size(
         self,
@@ -149,13 +165,38 @@ class nb_IPHelpers(IncreasePositionClass):
         risk_account_pct_size: float,
         max_equity_risk_pct: float,
     ):
-        possible_loss = round(possible_loss + account_state_equity * risk_account_pct_size)
+        logger.log_debug("nb_increase_position.py - nb_IPHelpers - pl_risk_account_pct_size() - Inside")
+        possible_loss = round(possible_loss + account_state_equity * risk_account_pct_size, 0)
+        logger.log_debug(
+            "nb_increase_position.py - nb_IPHelpers - pl_risk_account_pct_size() -"
+            + " possible_loss= "
+            + str(int(possible_loss))
+        )
         max_equity_risk = round(account_state_equity * max_equity_risk_pct)
+        logger.log_debug(
+            "nb_increase_position.py - nb_IPHelpers - pl_risk_account_pct_size() -"
+            + " max_equity_risk= "
+            + str(int(max_equity_risk))
+        )
         if possible_loss > max_equity_risk:
-            logger.log_warning("PL too big pl= " + int(possible_loss) + " max risk= " + int(max_equity_risk))
+            logger.log_warning(
+                "nb_increase_position.py - nb_IPHelpers - pl_risk_account_pct_size() - Too big"
+                + " possible_loss= "
+                + str(int(possible_loss))
+                + " max risk= "
+                + str(int(max_equity_risk))
+            )
             raise RejectedOrder
         total_trades += 1
-        logger.log_debug("Possible Loss is fine")
+        logger.log_debug(
+            "nb_increase_position.py - nb_IPHelpers - pl_risk_account_pct_size() - PL is fine"
+            + " possible_loss= "
+            + str(int(possible_loss))
+            + " max risk= "
+            + str(int(max_equity_risk))
+            + " total trades= "
+            + str(int(total_trades))
+        )
         return possible_loss, total_trades
 
     def tt_amount_based(
@@ -173,13 +214,33 @@ class nb_IPHelpers(IncreasePositionClass):
         fee_open = position_size_asset * average_entry * market_fee_pct  # math checked
         fee_close = position_size_asset * sl_price * market_fee_pct  # math checked
         fees_paid = fee_open + fee_close  # math checked
-        possible_loss = round(-(pnl - fees_paid), 4)
-
+        possible_loss = round(-(pnl - fees_paid), 3)
+        logger.log_debug(
+            "nb_increase_position.py - nb_IPHelpers - tt_amount_based() -"
+            + " possible_loss= "
+            + str(int(possible_loss))
+        )
         total_trades += 1
         if total_trades > max_trades:
-            logger.log_warning("PL too big pl= " + int(possible_loss) + " max risk= " + int(max_equity_risk))
+            logger.log_warning(
+                "nb_increase_position.py - nb_IPHelpers - tt_amount_based() - Max trades reached"
+                + " total trades= "
+                + str(int(total_trades))
+                + " max trades= "
+                + str(int(max_trades))
+                + " possible_loss= "
+                + logger.float_to_str(possible_loss)
+            )
             raise RejectedOrder
-        logger.log_debug("total trades is fine")
+        logger.log_debug(
+            "nb_increase_position.py - nb_IPHelpers - tt_amount_based() - Max trades reached "
+            + "total trades= "
+            + str(int(total_trades))
+            + " max trades= "
+            + str(int(max_trades))
+            + " possible_loss= "
+            + logger.float_to_str(possible_loss)
+        )
         return possible_loss, total_trades
 
 
@@ -229,9 +290,6 @@ class nb_Long_RPAandSLB(IncreasePositionClass):
             risk_account_pct_size=risk_account_pct_size,
             max_equity_risk_pct=max_equity_risk_pct,
         )
-        logger.log_debug(
-            "nb_increase_position.py - nb_Long_RPAandSLB - calc_in_pos() - possible_loss, total_trades {possible_loss, total_trades}"
-        )
 
         entry_size_usd = round(
             -(
@@ -244,13 +302,40 @@ class nb_Long_RPAandSLB(IncreasePositionClass):
                 )
                 / (average_entry * (entry_price - sl_price + entry_price * market_fee_pct + sl_price * market_fee_pct))
             ),
-            4,
+            3,
         )
-        logger.log_debug("nb_increase_position.py - nb_Long_RPAandSLB - calc_in_pos() - entry_size_usd entry_size_usd}")
-
-        position_size_usd = round(entry_size_usd + position_size_usd, 4)
         logger.log_debug(
-            "nb_increase_position.py - nb_Long_RPAandSLB - calc_in_pos() - position_size_usd = osition_size_usd}"
+            "nb_increase_position.py - nb_Long_RPAandSLB - calc_in_pos() - "
+            + "entry_size_usd= "
+            + logger.float_to_str(entry_size_usd)
+        )
+
+        entry_size_asset = nb_round_size_by_tick_step(
+            user_num=entry_size_usd / entry_price,
+            exchange_num=asset_tick_step,
+        )
+        self.check_size_too_big_or_small(
+            logger=logger,
+            entry_size_asset=entry_size_asset,
+            min_asset_size=min_asset_size,
+            max_asset_size=max_asset_size,
+        )
+
+        position_size_asset = nb_round_size_by_tick_step(
+            user_num=position_size_asset + entry_size_asset,
+            exchange_num=asset_tick_step,
+        )
+        logger.log_debug(
+            "nb_increase_position.py - nb_Long_RPAandSLB - calc_in_pos() - "
+            + "position_size_asset= "
+            + logger.float_to_str(position_size_asset)
+        )
+
+        position_size_usd = round(entry_size_usd + position_size_usd, 3)
+        logger.log_debug(
+            "nb_increase_position.py - nb_Long_RPAandSLB - calc_in_pos() - "
+            + "position_size_usd= "
+            + logger.float_to_str(position_size_usd)
         )
 
         average_entry = (entry_size_usd + position_size_usd) / (
@@ -260,44 +345,39 @@ class nb_Long_RPAandSLB(IncreasePositionClass):
             user_num=average_entry,
             exchange_num=price_tick_step,
         )
-        logger.log_debug("nb_increase_position.py - nb_Long_RPAandSLB - calc_in_pos() - average_entry average_entry}")
-
-        sl_pct = round((average_entry - sl_price) / average_entry, 4)
-        logger.log_debug("nb_increase_position.py - nb_Long_RPAandSLB - calc_in_pos() - sl_pct={round(sl_pct*100,2))")
-
-        entry_size_asset = nb_round_size_by_tick_step(
-            user_num=entry_size_usd / entry_price,
-            exchange_num=asset_tick_step,
-        )
         logger.log_debug(
-            "nb_increase_position.py - nb_Long_RPAandSLB - calc_in_pos() - entry_size_asset entry_size_asset}"
+            "nb_increase_position.py - nb_Long_RPAandSLB - calc_in_pos() - "
+            + "average_entry= "
+            + logger.float_to_str(average_entry)
         )
 
-        position_size_asset = nb_round_size_by_tick_step(
-            user_num=position_size_asset + entry_size_asset,
-            exchange_num=asset_tick_step,
-        )
+        sl_pct = round((average_entry - sl_price) / average_entry, 3)
         logger.log_debug(
-            "nb_increase_position.py - nb_Long_RPAandSLB - calc_in_pos() - position_size_asset position_size_asset}"
+            "nb_increase_position.py - nb_Long_RPAandSLB - calc_in_pos() - "
+            + "sl_pct= "
+            + logger.float_to_str(round(sl_pct * 100, 3))
         )
 
-        self.check_size_too_big_or_small(
-            logger=logger,
-            entry_size_asset=entry_size_asset,
-            min_asset_size=min_asset_size,
-            max_asset_size=max_asset_size,
-        )
         logger.log_info(
-            "nb_increase_position.py - nb_Long_RPAandSLB - calc_in_pos() - \n\
-average_entry= average_entry)\n\
-entry_price= entry_price)\n\
-entry_size_asset= entry_size_asset)\n\
-entry_size_usd= entry_size_usd)\n\
-position_size_asset= position_size_asset)\n\
-position_size_usd= position_size_usd)\n\
-possible_loss= possible_loss)\n\
-total_trades= total_trades)\n\
-sl_pct= {round(sl_pct*100,2))"
+            "nb_increase_position.py - nb_Long_RPAandSLB - calc_in_pos() - "
+            + "\naverage_entry= "
+            + logger.float_to_str(average_entry)
+            + "\nentry_price= "
+            + logger.float_to_str(entry_price)
+            + "\nentry_size_asset= "
+            + logger.float_to_str(entry_size_asset)
+            + "\nentry_size_usd= "
+            + logger.float_to_str(entry_size_usd)
+            + "\nposition_size_asset= "
+            + logger.float_to_str(position_size_asset)
+            + "\nposition_size_usd= "
+            + logger.float_to_str(position_size_usd)
+            + "\npossible_loss= "
+            + logger.float_to_str(possible_loss)
+            + "\ntotal_trades= "
+            + logger.float_to_str(total_trades)
+            + "\nsl_pct= "
+            + logger.float_to_str(round(sl_pct * 100, 3))
         )
         return (
             average_entry,
@@ -338,53 +418,56 @@ sl_pct= {round(sl_pct*100,2))"
             risk_account_pct_size=risk_account_pct_size,
             max_equity_risk_pct=max_equity_risk_pct,
         )
-        logger.log_debug(
-            "nb_increase_position.py - nb_Long_RPAandSLB - calc_not_in_pos() - possible_loss, total_trades {possible_loss, total_trades}"
-        )
 
         entry_size_usd = position_size_usd = round(
             -possible_loss / (sl_price / entry_price - 1 - market_fee_pct - sl_price * market_fee_pct / entry_price),
-            4,
+            3,
         )
         logger.log_debug(
-            "nb_increase_position.py - nb_Long_RPAandSLB - calc_not_in_pos() - entry_size_usd position_size_usd {entry_size_usd, position_size_usd}"
+            "nb_increase_position.py - nb_Long_RPAandSLB - calc_not_in_pos() - "
+            + "entry_size_usd= "
+            + logger.float_to_str(entry_size_usd)
         )
-
-        average_entry = entry_price
-        logger.log_debug(
-            "nb_increase_position.py - nb_Long_RPAandSLB - calc_not_in_pos() - average_entry average_entry}"
-        )
-
-        sl_pct = round((average_entry - sl_price) / average_entry, 4)
-        logger.log_debug(
-            "nb_increase_position.py - nb_Long_RPAandSLB - calc_not_in_pos() - sl_pct={round(sl_pct*100,2))"
-        )
-
         entry_size_asset = position_size_asset = nb_round_size_by_tick_step(
             user_num=entry_size_usd / entry_price,
             exchange_num=asset_tick_step,
         )
-        logger.log_debug(
-            "nb_increase_position.py - nb_Long_RPAandSLB - calc_not_in_pos() - entry_size_asset position_size_asset{entry_size_asset, position_size_asset}"
-        )
-
         self.check_size_too_big_or_small(
             logger=logger,
             entry_size_asset=entry_size_asset,
             min_asset_size=min_asset_size,
             max_asset_size=max_asset_size,
         )
+
+        average_entry = entry_price
+
+        sl_pct = round((average_entry - sl_price) / average_entry, 3)
+        logger.log_debug(
+            "nb_increase_position.py - nb_Long_RPAandSLB - calc_in_pos() - "
+            + "sl_pct= "
+            + logger.float_to_str(round(sl_pct * 100, 3))
+        )
+
         logger.log_info(
-            "nb_increase_position.py - nb_Long_RPAandSLB - calc_not_in_pos() - \n\
-average_entry= average_entry)\n\
-entry_price= entry_price)\n\
-entry_size_asset= entry_size_asset)\n\
-entry_size_usd= entry_size_usd)\n\
-position_size_asset= position_size_asset)\n\
-position_size_usd= position_size_usd)\n\
-possible_loss= possible_loss)\n\
-total_trades=total_trades)\n\
-sl_pct= {round(sl_pct*100,2))"
+            "nb_increase_position.py - nb_Long_RPAandSLB - calc_not_in_pos() - "
+            + "\naverage_entry= "
+            + logger.float_to_str(average_entry)
+            + "\nentry_price= "
+            + logger.float_to_str(entry_price)
+            + "\nentry_size_asset= "
+            + logger.float_to_str(entry_size_asset)
+            + "\nentry_size_usd= "
+            + logger.float_to_str(entry_size_usd)
+            + "\nposition_size_asset= "
+            + logger.float_to_str(position_size_asset)
+            + "\nposition_size_usd= "
+            + logger.float_to_str(position_size_usd)
+            + "\npossible_loss= "
+            + logger.float_to_str(possible_loss)
+            + "\ntotal_trades= "
+            + logger.float_to_str(total_trades)
+            + "\nsl_pct= "
+            + logger.float_to_str(round(sl_pct * 100, 3))
         )
         return (
             average_entry,
@@ -446,7 +529,7 @@ class nb_Long_SEP(IncreasePositionClass):
         entry_size_asset = min_asset_size
         logger.log_debug("entry_size_asset position_size_asset{entry_size_asset, position_size_asset}")
 
-        entry_size_usd = round(min_asset_size * entry_price, 4)
+        entry_size_usd = round(min_asset_size * entry_price, 3)
         logger.log_debug("entry_size_usd entry_size_usd}")
 
         average_entry = (entry_size_usd + position_size_usd) / (
@@ -458,10 +541,10 @@ class nb_Long_SEP(IncreasePositionClass):
         )
         logger.log_debug("average_entry average_entry}")
 
-        sl_pct = round((average_entry - sl_price) / average_entry, 4)
+        sl_pct = round((average_entry - sl_price) / average_entry, 3)
         logger.log_debug("sl_pct={round(sl_pct*100,2))")
 
-        position_size_usd = round(entry_size_usd + position_size_usd, 4)
+        position_size_usd = round(entry_size_usd + position_size_usd, 3)
         logger.log_debug("position_size_usd position_size_usd}")
 
         possible_loss, total_trades = nb_IPHelpers().tt_amount_based(
@@ -524,12 +607,12 @@ sl_pct= {round(sl_pct*100,2))"
         entry_size_asset = position_size_asset = min_asset_size
         logger.log_debug("entry_size_asset position_size_asset{entry_size_asset, position_size_asset}")
 
-        entry_size_usd = position_size_usd = round(entry_size_asset * entry_price, 4)
+        entry_size_usd = position_size_usd = round(entry_size_asset * entry_price, 3)
         logger.log_debug("entry_size_usd position_size_usd {entry_size_usd, position_size_usd}")
 
         average_entry = entry_price
         logger.log_debug("average_entry average_entry}")
-        sl_pct = round((average_entry - sl_price) / average_entry, 4)
+        sl_pct = round((average_entry - sl_price) / average_entry, 3)
         logger.log_debug("sl_pct={round(sl_pct*100,2))")
 
         possible_loss, total_trades = nb_IPHelpers().tt_amount_based(

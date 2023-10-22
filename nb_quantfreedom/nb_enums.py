@@ -22,7 +22,7 @@ class CandleBodyTypeT(NamedTuple):
     Low: int = 3
     Close: int = 4
     Volume: int = 5
-    Nothing: int = 999999
+    Nothing: int = 6
 
 
 CandleBodyType = CandleBodyTypeT()
@@ -79,7 +79,7 @@ class OrderStatusT(NamedTuple):
     EntrySizeTooSmall: int = 10
     EntrySizeTooBig: int = 11
     PossibleLossTooBig: int = 12
-    Nothing: int = 999999
+    Nothing: int = 13
 
 
 OrderStatus = OrderStatusT()
@@ -104,24 +104,15 @@ PositionModeType = PositionModeTypeT()
 class PriceGetterTypeT(NamedTuple):
     Min: int = 0
     Max: int = 1
-    Nothing: int = 999999
+    Nothing: int = 2
 
 
 PriceGetterType = PriceGetterTypeT()
 
 
-class ZeroOrEntryTypeT(NamedTuple):
-    ZeroLoss: int = 0
-    AverageEntry: int = 1
-    Nothing: int = 999999
-
-
-ZeroOrEntryType = ZeroOrEntryTypeT()
-
-
 class StopLossStrategyTypeT(NamedTuple):
     SLBasedOnCandleBody: int = 0
-    Nothing: int = 999999
+    Nothing: int = 1
 
 
 StopLossStrategyType = StopLossStrategyTypeT()
@@ -142,7 +133,7 @@ class TakeProfitStrategyTypeT(NamedTuple):
     TPPct: int = 2
     Provided: int = 3
     ProvidedandPct: int = 4
-    Nothing: int = 999999
+    Nothing: int = 5
 
 
 TakeProfitStrategyType = TakeProfitStrategyTypeT()
@@ -154,6 +145,15 @@ class TriggerDirectionTypeT(NamedTuple):
 
 
 TriggerDirectionType = TriggerDirectionTypeT()
+
+
+class ZeroOrEntryTypeT(NamedTuple):
+    ZeroLoss: int = 0
+    AverageEntry: int = 1
+    Nothing: int = 2
+
+
+ZeroOrEntryType = ZeroOrEntryTypeT()
 
 
 ############################################################
@@ -253,21 +253,21 @@ class AccountState(NamedTuple):
 
 
 class OrderResult(NamedTuple):
-    average_entry: float = np.nan
-    can_move_sl_to_be: bool = False
-    entry_price: float = np.nan
-    entry_size_asset: float = np.nan
-    entry_size_usd: float = np.nan
-    exit_price: float = np.nan
-    leverage: float = np.nan
-    liq_price: float = np.nan
-    order_status: int = np.nan
-    position_size_asset: float = np.nan
-    position_size_usd: float = np.nan
-    sl_pct: float = np.nan
-    sl_price: float = np.nan
-    tp_pct: float = np.nan
-    tp_price: float = np.nan
+    average_entry: np.float_ = np.nan
+    can_move_sl_to_be: np.bool_ = False
+    entry_price: np.float_ = np.nan
+    entry_size_asset: np.float_ = np.nan
+    entry_size_usd: np.float_ = np.nan
+    exit_price: np.float_ = np.nan
+    leverage: np.float_ = np.nan
+    liq_price: np.float_ = np.nan
+    order_status: np.int_ = np.nan
+    position_size_asset: np.float_ = np.nan
+    position_size_usd: np.float_ = np.nan
+    sl_pct: np.float_ = np.nan
+    sl_price: np.float_ = np.nan
+    tp_pct: np.float_ = np.nan
+    tp_price: np.float_ = np.nan
 
 
 class StaticOrderSettings(NamedTuple):

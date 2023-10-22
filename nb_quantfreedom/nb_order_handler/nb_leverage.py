@@ -20,6 +20,7 @@ class LeverageClass:
         cash_used: float,
         entry_size_usd: float,
         max_leverage: float,
+        min_leverage: float,
         mmr_pct: float,
         sl_price: float,
         static_leverage: float,
@@ -64,6 +65,7 @@ class LeverageNB(LeverageClass):
         cash_used: float,
         entry_size_usd: float,
         max_leverage: float,
+        min_leverage: float,
         mmr_pct: float,
         sl_price: float,
         static_leverage: float,
@@ -129,6 +131,10 @@ class nb_Long_SLev(LeverageClass):
             price_tick_step=price_tick_step,
         )
         leverage = static_leverage
+        logger.log_debug(
+            "nb_leverage.py - nb_Long_SLev - calculate_leverage() - Lev set to static lev= "
+            + logger.float_to_str(leverage)
+        )
         return (
             available_balance,
             can_move_sl_to_be,
@@ -155,6 +161,7 @@ class nb_Long_DLev(LeverageClass):
         entry_size_usd: float,
         leverage_tick_step: float,
         max_leverage: float,
+        min_leverage: float,
         mmr_pct: float,
         sl_price: float,
         static_leverage: float,
@@ -166,15 +173,30 @@ class nb_Long_DLev(LeverageClass):
             exchange_num=leverage_tick_step,
         )
         if leverage > max_leverage:
-            # logger.log_debug("Setting leverage from {leverage} to max leverage {max_leverage}")
+            logger.log_debug(
+                "nb_leverage.py - nb_Long_DLev - calculate_leverage() - Lev too high"
+                + " Old Lev= "
+                + logger.float_to_str(leverage)
+                + " Max Lev= "
+                + logger.float_to_str(max_leverage)
+            )
             leverage = max_leverage
-        elif leverage < 1:
-            # logger.log_debug("Setting leverage from {leverage} to {1}")
+        elif leverage < min_leverage:
+            logger.log_debug(
+                "nb_leverage.py - nb_Long_DLev - calculate_leverage() - Lev too low"
+                + " Old Lev= "
+                + logger.float_to_str(leverage)
+                + " Min Lev= "
+                + logger.float_to_str(min_leverage)
+            )
             leverage = 1
+        else:
+            logger.log_debug(
+                "nb_leverage.py - nb_Long_DLev - calculate_leverage() -" + " Leverage= " + logger.float_to_str(leverage)
+            )
 
         (
             available_balance,
-            can_move_sl_to_be,
             cash_borrowed,
             cash_used,
             liq_price,
@@ -191,7 +213,6 @@ class nb_Long_DLev(LeverageClass):
         )
         return (
             available_balance,
-            can_move_sl_to_be,
             cash_borrowed,
             cash_used,
             leverage,
@@ -213,10 +234,10 @@ class nb_Long_Leverage(LeverageClass):
             current_candle=current_candle,
         )
         if liq_price > candle_low:
-            logger.log_debug("Liq loss hit")
+            logger.log_debug("nb_leverage.py - nb_Long_Leverage - check_liq_hit() - Liq Hit")
             return True
         else:
-            logger.log_debug("Liq not hit")
+            logger.log_debug("nb_leverage.py - nb_Long_Leverage - check_liq_hit() - No hit on liq price")
             return False
 
     def calc_liq_price(
@@ -237,29 +258,49 @@ class nb_Long_Leverage(LeverageClass):
         fee_to_open = entry_size_usd * 0.0009  # math checked
         possible_bankruptcy_fee = entry_size_usd * (leverage - 1) / leverage * mmr_pct
         cash_used = initial_margin + fee_to_open + possible_bankruptcy_fee  # math checked
+        logger.log_debug(
+            "nb_leverage.py - nb_Long_Leverage - calc_liq_price() -"
+            + "\ninitial_margin= "
+            + logger.float_to_str(round(initial_margin, 3))
+            + "\nfee_to_open= "
+            + logger.float_to_str(round(fee_to_open, 3))
+            + "\npossible_bankruptcy_fee= "
+            + logger.float_to_str(round(possible_bankruptcy_fee, 3))
+            + "\ncash_used= "
+            + logger.float_to_str(round(cash_used, 3))
+        )
 
         if cash_used > og_available_balance:
-            raise Exception(
-                msg="Cash used=cash_used} > available_balance=og_available_balance}",
-                order_status=1,
+            logger.log_warning(
+                "nb_leverage.py - nb_Long_Leverage - calc_liq_price() - Cash used bigger than available balance"
             )
+            raise Exception
         else:
             # liq formula
             # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001067&language=en_US
-            available_balance = round(og_available_balance - cash_used, 4)
-            cash_used = round(og_cash_used + cash_used, 4)
-            cash_borrowed = round(og_cash_borrowed + entry_size_usd - cash_used, 4)
+            available_balance = round(og_available_balance - cash_used, 3)
+            cash_used = round(og_cash_used + cash_used, 3)
+            cash_borrowed = round(og_cash_borrowed + entry_size_usd - cash_used, 3)
 
             liq_price = average_entry * (1 - (1 / leverage) + mmr_pct)  # math checked
             liq_price = nb_round_size_by_tick_step(
                 user_num=liq_price,
                 exchange_num=price_tick_step,
             )
-            can_move_sl_to_be = True
+            logger.log_debug(
+                "nb_leverage.py - nb_Long_Leverage - calc_liq_price() -"
+                + "\navailable_balance= "
+                + logger.float_to_str(available_balance)
+                + "\nnew cash_used= "
+                + logger.float_to_str(cash_used)
+                + "\ncash_borrowed= "
+                + logger.float_to_str(cash_borrowed)
+                + "\nliq_price= "
+                + logger.float_to_str(liq_price)
+            )
 
         return (
             available_balance,
-            can_move_sl_to_be,
             cash_borrowed,
             cash_used,
             liq_price,

@@ -11,17 +11,17 @@ from nb_quantfreedom.nb_enums import CandleBodyType
 
 class IndicatorSettingsArrays(NamedTuple):
     rsi_is_below: np.array
-    rsi_length: np.array
+    rsi_period: np.array
 
 
 class IndicatorSettings(NamedTuple):
     rsi_is_below: float
-    rsi_length: int
+    rsi_period: int
 
 
 ind_set_arrays = IndicatorSettingsArrays(
     rsi_is_below=np.array([50, 80]),
-    rsi_length=np.array([14, 30]),
+    rsi_period=np.array([14, 30]),
 )
 
 
@@ -45,7 +45,7 @@ def nb_create_ind_cart_product(ind_set_arrays: IndicatorSettingsArrays):
 
     return IndicatorSettingsArrays(
         rsi_is_below=out.T[0],
-        rsi_length=out.T[1].astype(np.int_),
+        rsi_period=out.T[1].astype(np.int_),
     )
 
 
@@ -79,11 +79,16 @@ class nb_BacktestInd(nb_CreateInd):
     ):
         start = max(bar_index - starting_bar, 0)
         try:
-            rsi = IndicatorsNB().calc_rsi(prices=candles[:, CandleBodyType.Close], period=indicator_settings.rsi_length)
-            logger.log_debug("Created rsi")
+            rsi = IndicatorsNB().calc_rsi(
+                prices=candles[start : bar_index + 1, CandleBodyType.Close],
+                period=indicator_settings.rsi_period,
+            )
+            rsi = np.around(rsi, 2)
+            logger.log_info("nb_strategy.py - nb_BacktestInd - create_indicator() - Created RSI")
             return rsi
         except Exception:
-            raise Exception("Exception creating rsi -> {e}")
+            logger.log_info("nb_strategy.py - nb_BacktestInd - create_indicator() - Exception creating RSI")
+            raise Exception
 
 
 @jitclass
@@ -97,11 +102,16 @@ class nb_TradingInd(nb_CreateInd):
         logger: CustomLoggerNB,
     ):
         try:
-            rsi = IndicatorsNB().calc_rsi(prices=candles[:, CandleBodyType.Close], period=indicator_settings.rsi_length)
-            logger.log_debug("Created rsi")
+            rsi = IndicatorsNB().calc_rsi(
+                prices=candles[:, CandleBodyType.Close],
+                period=indicator_settings.rsi_period,
+            )
+            rsi = np.around(rsi, 2)
+            logger.log_info("nb_strategy.py - nb_TradingInd - create_indicator() - Created RSI")
             return rsi
         except Exception:
-            raise Exception("Exception creating rsi -> {e}")
+            logger.log_info("nb_strategy.py - nb_TradingInd - create_indicator() - Exception creating rsi")
+            raise Exception
 
 
 class StrategyClass:
@@ -121,10 +131,24 @@ class nb_Strategy(StrategyClass):
     ):
         indicator_settings = IndicatorSettings(
             rsi_is_below=ind_set_arrays.rsi_is_below[ind_set_index],
-            rsi_length=ind_set_arrays.rsi_length[ind_set_index],
+            rsi_period=ind_set_arrays.rsi_period[ind_set_index],
         )
-        logger.log_info("Created indicator settings")
+        logger.log_info("nb_strategy.py - nb_Strategy - nb_get_current_ind_settings() - Created indicator settings")
         return indicator_settings
+
+    def nb_get_ind_set_str(
+        self,
+        indicator_settings: IndicatorSettings,
+        logger: CustomLoggerNB,
+    ):
+        msg = (
+            "RSI Period= "
+            # + str(indicator_settings.rsi_period)
+            + " yeahaye aenlakj lkjd f"
+            + "RSI is below= "
+            # + logger.float_to_str(indicator_settings.rsi_is_below)
+        )
+        return msg
 
     def evaluate(
         self,
@@ -135,7 +159,6 @@ class nb_Strategy(StrategyClass):
         ind_creator: nb_CreateInd,
         logger: CustomLoggerNB,
     ):
-        return True
         rsi = ind_creator.create_indicator(
             bar_index=bar_index,
             starting_bar=starting_bar,
@@ -149,10 +172,21 @@ class nb_Strategy(StrategyClass):
 
             if current_rsi < rsi_is_below:
                 logger.log_info("\n\n")
-                logger.log_info("Entry time!!! rsi {current_rsi} is below {rsi_is_below}")
+                logger.log_info(
+                    "nb_strategy.py - nb_Strategy - evaluate() - Entry time!!! "
+                    + "current rsi= "
+                    + logger.float_to_str(current_rsi)
+                    + " < rsi_is_below= "
+                    + logger.float_to_str(rsi_is_below)
+                )
+
                 return True
             else:
-                logger.log_info("No entry rsi {current_rsi}")
+                logger.log_info(
+                    "nb_strategy.py - nb_Strategy - evaluate() - No entry "
+                    + "current rsi= "
+                    + logger.float_to_str(current_rsi)
+                )
                 return False
         except Exception:
-            raise Exception("Evaluate strat error -> {e}")
+            raise Exception("nb_strategy.py - nb_Strategy - evaluate() - Exception evalutating strat")

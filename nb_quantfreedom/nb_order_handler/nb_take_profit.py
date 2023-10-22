@@ -71,6 +71,9 @@ class nb_Long_RR(TakeProfitClass):
         tp_fee_pct: float,
     ):
         profit = possible_loss * risk_reward
+        logger.log_debug(
+            "nb_take_profit.py - nb_Long_RR - calculate_take_profit() - profit= " + logger.float_to_str(profit)
+        )
         tp_price = (
             (profit * average_entry)
             + (average_entry * position_size_usd)
@@ -81,10 +84,18 @@ class nb_Long_RR(TakeProfitClass):
             user_num=tp_price,
             exchange_num=price_tick_step,
         )
+        logger.log_debug(
+            "nb_take_profit.py - nb_Long_RR - calculate_take_profit() - tp_price= " + logger.float_to_str(tp_price)
+        )
         # https://www.symbolab.com/solver/simplify-calculator/solve%20for%20t%2C%20%5Cleft(%5Cleft(%5Cfrac%7Bs%7D%7Be%7D%5Cright)%20%5Ccdot%5Cleft(t-e%5Cright)%5Cright)%20-%20%5Cleft(%5Cleft(%5Cfrac%7Bs%7D%7Be%7D%5Cright)%5Ccdot%20e%20%5Ccdot%20m%5Cright)%20-%20%5Cleft(%5Cleft(%5Cfrac%7Bs%7D%7Be%7D%5Cright)%5Ccdot%20t%20%5Ccdot%20%20l%5Cright)%20%3D%20p
 
-        tp_pct = round((tp_price - average_entry) / average_entry, 4)
+        tp_pct = round((tp_price - average_entry) / average_entry, 3)
+        logger.log_debug(
+            "nb_take_profit.py - nb_Long_RR - calculate_take_profit() - tp_pct= "
+            + logger.float_to_str(round(tp_pct * 100, 3))
+        )
         can_move_sl_to_be = True
+        logger.log_debug("nb_take_profit.py - nb_Long_RR - calculate_take_profit() - can_move_sl_to_be= True")
         return (
             can_move_sl_to_be,
             tp_price,
@@ -105,11 +116,14 @@ class nb_Long_TPHitReg(TakeProfitClass):
             candle_body_type=CandleBodyType.High,
             current_candle=current_candle,
         )
+        logger.log_debug(
+            "nb_take_profit.py - nb_Long_TPHitReg - check_tp_hit() - candle_high= " + logger.float_to_str(candle_high)
+        )
         if tp_price < candle_high:
-            logger.log_debug("TP was hit")
+            logger.log_debug("nb_take_profit.py - nb_Long_TPHitReg - check_tp_hit() - TP Hit")
             return True
         else:
-            logger.log_debug("No tp hit")
+            logger.log_debug("nb_take_profit.py - nb_Long_TPHitReg - check_tp_hit() - No Tp Hit")
             return False
 
 
@@ -122,8 +136,11 @@ class nb_Long_TPHitProvided(TakeProfitClass):
         tp_price: float,
     ):
         if not np.isnan(tp_price):
-            logger.log_debug("Take Profit Hit")
+            logger.log_debug(
+                "nb_take_profit.py - nb_Long_TPHitReg - check_tp_hit() - Tp Hit Exit Price= "
+                + logger.float_to_str(tp_price)
+            )
             return True
         else:
-            logger.log_debug("tp not hit")
+            logger.log_debug("nb_take_profit.py - nb_Long_TPHitReg - check_tp_hit() - No Tp Hit")
             return False

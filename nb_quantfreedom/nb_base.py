@@ -16,18 +16,19 @@ from nb_quantfreedom.nb_order_handler.nb_leverage import nb_Long_DLev, nb_Long_L
 from nb_quantfreedom.nb_order_handler.nb_stop_loss import StopLossNB, nb_Long_SLBCB, nb_Long_StopLoss, nb_MoveSL
 from nb_quantfreedom.nb_order_handler.nb_take_profit import nb_Long_RR, nb_Long_TPHitReg
 from nb_quantfreedom.nb_simulate import nb_run_backtest
-from nb_quantfreedom.strategies.nb_strategy import nb_BacktestInd, nb_Strategy, nb_TradingInd
+from nb_quantfreedom.strategies.nb_strategy import nb_BacktestInd, nb_Strategy
 
 
 def backtest_df_only(
     backtest_settings: BacktestSettings,
-    candle_processing_mode: CandleProcessingType,
     candles: np.array,
     dos_cart_arrays: DynamicOrderSettingsArrays,
     exchange_settings: ExchangeSettings,
     logger_settings: LoggerSettings,
     starting_equity: float,
     static_os: StaticOrderSettings,
+    strategy: nb_Strategy,
+    ind_creator: nb_BacktestInd,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     #########################################
@@ -55,12 +56,6 @@ def backtest_df_only(
             )
     else:
         logger = CustomLoggerNB()
-
-    strategy = nb_Strategy()
-    if candle_processing_mode == CandleProcessingType.Backtest:
-        ind_creator = nb_BacktestInd()
-    else:
-        ind_creator = nb_TradingInd()
 
     """
     #########################################
@@ -213,14 +208,12 @@ def backtest_df_only(
     total_bars = candles.shape[0]
 
     # logger.infoing out total numbers of things
-    logger.log_info("Starting the backtest now ... and also here are some stats for your backtest.\n")
-    logger.log_info("Total indicator settings to test: " + str(total_indicator_settings))
-    logger.log_info("Total order settings to test: " + str(total_order_settings))
-    logger.log_info(
-        "Total combinations of settings to test: " + str(int(total_indicator_settings * total_order_settings))
-    )
-    logger.log_info("\nTotal candles: " + str(total_bars))
-    logger.log_info("Total candles to test: " + str(int(total_indicator_settings * total_order_settings * total_bars)))
+    print("Starting the backtest now ... and also here are some stats for your backtest.\n")
+    print("Total indicator settings to test: " + str(total_indicator_settings))
+    print("Total order settings to test: " + str(total_order_settings))
+    print("Total combinations of settings to test: " + str(int(total_indicator_settings * total_order_settings)))
+    print("Total candles: " + str(total_bars))
+    print("Total candles to test: " + str(int(total_indicator_settings * total_order_settings * total_bars)))
 
     strategy_result_records = nb_run_backtest(
         backtest_settings=backtest_settings,
@@ -250,213 +243,6 @@ def backtest_df_only(
         tp_calculator=tp_calculator,
     )
     return pd.DataFrame(strategy_result_records)
-
-
-def create_classes(
-    backtest_settings: BacktestSettings,
-    candle_processing_mode: CandleProcessingType,
-    candles: np.array,
-    dos_cart_arrays: DynamicOrderSettingsArrays,
-    exchange_settings: ExchangeSettings,
-    logger_settings: [LoggerSettings, int],
-    starting_equity: float,
-    static_os: StaticOrderSettings,
-):
-    """
-    #########################################
-    #########################################
-    #########################################
-                    Logger
-                    Logger
-                    Logger
-    #########################################
-    #########################################
-    #########################################
-    """
-    if logger_settings:
-        if logger_settings == "p":
-            logger = nb_PrintLogs()
-        elif type(logger_settings) == LoggerSettings:
-            logger = nb_RegularLogs()
-            logger.set_loggers(
-                log_debug=logger_settings.log_debug,
-                create_trades_logger=logger_settings.create_trades_logger,
-                custom_path=logger_settings.custom_path,
-                formatter=logger_settings.formatter,
-            )
-    else:
-        logger = CustomLoggerNB()
-
-    strategy = nb_Strategy()
-    if candle_processing_mode == CandleProcessingType.Backtest:
-        ind_creator = nb_BacktestInd()
-    else:
-        ind_creator = nb_TradingInd()
-
-    """
-    #########################################
-    #########################################
-    #########################################
-                    Trading
-                    Trading
-                    Trading
-    #########################################
-    #########################################
-    #########################################
-    """
-    if static_os.long_or_short == LongOrShortType.Long:
-        # Decrease Position
-        dec_pos_calculator = nb_Long_DP()
-
-        """
-        #########################################
-        #########################################
-        #########################################
-                        Stop Loss
-                        Stop Loss
-                        Stop Loss
-        #########################################
-        #########################################
-        #########################################
-        """
-
-        # setting up stop loss calulator
-        if static_os.sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
-            sl_calculator = nb_Long_SLBCB()
-            checker_sl_hit = nb_Long_StopLoss()
-            if static_os.pg_min_max_sl_bcb == PriceGetterType.Min:
-                sl_bcb_price_getter = nb_GetMinPrice()
-            elif static_os.pg_min_max_sl_bcb == PriceGetterType.Max:
-                sl_bcb_price_getter = nb_GetMaxPrice()
-        elif static_os.sl_strategy_type == StopLossStrategyType.Nothing:
-            sl_calculator = StopLossNB()
-            sl_bcb_price_getter = StopLossNB()
-
-        # setting up stop loss break even checker
-        if static_os.sl_to_be_bool:
-            checker_sl_to_be = nb_Long_StopLoss()
-            # setting up stop loss be zero or entry
-            if static_os.z_or_e_type == ZeroOrEntryType.ZeroLoss:
-                set_z_e = nb_Long_SLToZero()
-            elif static_os.z_or_e_type == ZeroOrEntryType.AverageEntry:
-                set_z_e = nb_Long_SLToEntry()
-        else:
-            checker_sl_to_be = StopLossNB()
-            set_z_e = ZeroOrEntryNB()
-
-        # setting up stop loss break even checker
-        if static_os.trail_sl_bool:
-            checker_tsl = nb_Long_StopLoss()
-        else:
-            checker_tsl = StopLossNB()
-
-        if static_os.trail_sl_bool or static_os.sl_to_be_bool:
-            sl_mover = nb_MoveSL()
-        else:
-            sl_mover = StopLossNB()
-
-        """
-        #########################################
-        #########################################
-        #########################################
-                    Increase position
-                    Increase position
-                    Increase position
-        #########################################
-        #########################################
-        #########################################
-        """
-
-        if static_os.sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
-            if static_os.increase_position_type == IncreasePositionType.RiskPctAccountEntrySize:
-                inc_pos_calculator = nb_Long_RPAandSLB()
-
-            elif static_os.increase_position_type == IncreasePositionType.SmalletEntrySizeAsset:
-                inc_pos_calculator = nb_Long_SEP()
-
-        """
-        #########################################
-        #########################################
-        #########################################
-                        Leverage
-                        Leverage
-                        Leverage
-        #########################################
-        #########################################
-        #########################################
-        """
-
-        if static_os.leverage_strategy_type == LeverageStrategyType.Dynamic:
-            lev_calculator = nb_Long_DLev()
-        else:
-            lev_calculator = nb_Long_SLev()
-
-        checker_liq_hit = nb_Long_Leverage()
-        """
-        #########################################
-        #########################################
-        #########################################
-                        Take Profit
-                        Take Profit
-                        Take Profit
-        #########################################
-        #########################################
-        #########################################
-        """
-
-        if static_os.tp_strategy_type == TakeProfitStrategyType.RiskReward:
-            tp_calculator = nb_Long_RR()
-            checker_tp_hit = nb_Long_TPHitReg()
-        elif static_os.tp_strategy_type == TakeProfitStrategyType.Provided:
-            pass
-    """
-    #########################################
-    #########################################
-    #########################################
-                Other Settings
-                Other Settings
-                Other Settings
-    #########################################
-    #########################################
-    #########################################
-    """
-
-    if static_os.tp_fee_type == TakeProfitFeeType.Market:
-        exit_fee_pct = exchange_settings.market_fee_pct
-    else:
-        exit_fee_pct = exchange_settings.limit_fee_pct
-    """
-    #########################################
-    #########################################
-    #########################################
-                End User Setup
-                End User Setup
-                End User Setup
-    #########################################
-    #########################################
-    #########################################
-    """
-
-    return (
-        checker_liq_hit,
-        checker_sl_hit,
-        checker_sl_to_be,
-        checker_tp_hit,
-        checker_tsl,
-        dec_pos_calculator,
-        dos_cart_arrays,
-        exit_fee_pct,
-        inc_pos_calculator,
-        ind_creator,
-        lev_calculator,
-        logger,
-        set_z_e,
-        sl_bcb_price_getter,
-        sl_calculator,
-        sl_mover,
-        strategy,
-        tp_calculator,
-    )
 
 
 # def order_records_bt(

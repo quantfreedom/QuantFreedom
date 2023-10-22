@@ -53,7 +53,7 @@ def get_to_the_upside_nb(
 
     if gains_pct <= 0:
         to_the_upside = -to_the_upside
-    return round(to_the_upside, 4)
+    return round(to_the_upside, 3)
 
 
 # @njit(cache=True)
@@ -144,7 +144,7 @@ def get_n_digits(x):
 
 
 @njit(cache=True)
-def nb_float_to_str(x):
+def nb_float_to_str(x: float):
     if x == np.inf:
         return "inf"
     elif x == -np.inf:

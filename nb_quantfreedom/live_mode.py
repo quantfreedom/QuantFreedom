@@ -353,7 +353,7 @@ class LiveTrading:
         fee_open = coin_size * self.ex_average_entry * self.exchange.exchange_settings.market_fee_pct  # math checked
         fee_close = coin_size * self.ex_sl_price * self.exchange.exchange_settings.market_fee_pct  # math checked
         self.fees_paid = fee_open + fee_close  # math checked
-        self.ex_possible_loss = round(abs(pnl - self.fees_paid), 4)
+        self.ex_possible_loss = round(abs(pnl - self.fees_paid), 3)
 
     def __set_ex_possible_profit(self):
         coin_size = self.ex_position_size_asset
@@ -361,7 +361,7 @@ class LiveTrading:
         fee_open = coin_size * self.ex_average_entry * self.exchange.exchange_settings.market_fee_pct  # math checked
         fee_close = coin_size * self.ex_tp_price * self.exchange.exchange_settings.limit_fee_pct  # math checked
         self.fees_paid = fee_open + fee_close  # math checked
-        self.ex_possible_profit = round(abs(pnl - self.fees_paid), 4)
+        self.ex_possible_profit = round(abs(pnl - self.fees_paid), 3)
 
     def __set_exchange_variables(self, entry_order_id, sl_order_id, tp_order_id):
         info_logger.debug(f"setting all exchange vars")
@@ -390,7 +390,7 @@ class LiveTrading:
         fee_open = coin_size * self.ex_average_entry * self.exchange.exchange_settings.market_fee_pct  # math checked
         fee_close = coin_size * self.ex_sl_price * self.exchange.exchange_settings.market_fee_pct  # math checked
         self.fees_paid = fee_open + fee_close  # math checked
-        self.ex_possible_loss = round(-(pnl - self.fees_paid), 4)
+        self.ex_possible_loss = round(-(pnl - self.fees_paid), 3)
 
     def __get_pct_difference(self, starting_num, diff_num):
         info_logger.debug(f"getting pct difference")
