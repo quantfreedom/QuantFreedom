@@ -143,9 +143,8 @@ class nb_Strategy(StrategyClass):
     ):
         msg = (
             "RSI Period= "
-            # + str(indicator_settings.rsi_period)
-            + " yeahaye aenlakj lkjd f"
-            + "RSI is below= "
+            + str(indicator_settings.rsi_period)
+            + " RSI is below= "
             # + logger.float_to_str(indicator_settings.rsi_is_below)
         )
         return msg

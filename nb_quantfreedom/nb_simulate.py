@@ -83,43 +83,44 @@ def nb_run_backtest(
             logger.log_info(
                 "nb_simulate.py - No Class - nb_run_backtest() - Dynamic Order settings index=" + str(dos_index)
             )
-            logger.log_info(
-                (
-                    "nb_simulate.py - No Class - nb_run_backtest() - Created Dynamic Order Settings"
-                    + "\nentry_size_asset= "
-                    + logger.float_to_str(dynamic_order_settings.entry_size_asset)
-                    + "\nmax_equity_risk_pct= "
-                    + logger.float_to_str(round(dynamic_order_settings.max_equity_risk_pct * 100, 3))
-                    + "\nmax_trades= "
-                    + str(dynamic_order_settings.max_trades)
-                    + "\nnum_candles= "
-                    + str(dynamic_order_settings.num_candles)
-                    + "\nrisk_account_pct_size= "
-                    + logger.float_to_str(round(dynamic_order_settings.risk_account_pct_size * 100, 3))
-                    + "\nrisk_reward= "
-                    + logger.float_to_str(dynamic_order_settings.risk_reward)
-                    + "\nsl_based_on_add_pct= "
-                    + logger.float_to_str(round(dynamic_order_settings.sl_based_on_add_pct * 100, 3))
-                    + "\nsl_based_on_lookback= "
-                    + str(dynamic_order_settings.sl_based_on_lookback)
-                    + "\nsl_bcb_type= "
-                    + logger.candle_body_str(dynamic_order_settings.sl_bcb_type)
-                    + "\nsl_to_be_cb_type= "
-                    + logger.candle_body_str(dynamic_order_settings.sl_to_be_cb_type)
-                    + "\nsl_to_be_when_pct= "
-                    + logger.float_to_str(round(dynamic_order_settings.sl_to_be_when_pct * 100, 3))
-                    + "\nsl_to_be_ze_type= "
-                    + logger.z_or_e_str(dynamic_order_settings.sl_to_be_ze_type)
-                    + "\nstatic_leverage= "
-                    + logger.float_to_str(dynamic_order_settings.static_leverage)
-                    + "\ntrail_sl_bcb_type= "
-                    + logger.candle_body_str(dynamic_order_settings.trail_sl_bcb_type)
-                    + "\ntrail_sl_by_pct= "
-                    + logger.float_to_str(round(dynamic_order_settings.trail_sl_by_pct * 100, 3))
-                    + "\ntrail_sl_when_pct= "
-                    + logger.float_to_str(round(dynamic_order_settings.trail_sl_when_pct * 100, 3))
-                )
-            )
+            # logger.log_info(
+            #     "nb_simulate.py - No Class - nb_run_backtest() - Created Dynamic Order Settings part 1"
+            #     + "\nentry_size_asset= "
+            #     + logger.float_to_str(dynamic_order_settings.entry_size_asset)
+            #     + "\nmax_equity_risk_pct= "
+            #     + logger.float_to_str(round(dynamic_order_settings.max_equity_risk_pct * 100, 3))
+            #     + "\nmax_trades= "
+            #     + str(dynamic_order_settings.max_trades)
+            #     + "\nnum_candles= "
+            #     + str(dynamic_order_settings.num_candles)
+            #     + "\nrisk_account_pct_size= "
+            #     + logger.float_to_str(round(dynamic_order_settings.risk_account_pct_size * 100, 3))
+            #     + "\nrisk_reward= "
+            #     + logger.float_to_str(dynamic_order_settings.risk_reward)
+            #     + "\nsl_based_on_add_pct= "
+            #     + logger.float_to_str(round(dynamic_order_settings.sl_based_on_add_pct * 100, 3))
+            #     + "\nsl_based_on_lookback= "
+            #     + str(dynamic_order_settings.sl_based_on_lookback)
+            # )
+            # logger.log_info(
+            #     "nb_simulate.py - No Class - nb_run_backtest() - Created Dynamic Order Settings part 2"
+            #     + "\nsl_bcb_type= "
+            #     + logger.candle_body_str(dynamic_order_settings.sl_bcb_type)
+            #     + "\nsl_to_be_cb_type= "
+            #     + logger.candle_body_str(dynamic_order_settings.sl_to_be_cb_type)
+            #     + "\nsl_to_be_when_pct= "
+            #     + logger.float_to_str(round(dynamic_order_settings.sl_to_be_when_pct * 100, 3))
+            #     + "\nsl_to_be_ze_type= "
+            #     + logger.z_or_e_str(dynamic_order_settings.sl_to_be_ze_type)
+            #     + "\nstatic_leverage= "
+            #     + logger.float_to_str(dynamic_order_settings.static_leverage)
+            #     + "\ntrail_sl_bcb_type= "
+            #     + logger.candle_body_str(dynamic_order_settings.trail_sl_bcb_type)
+            #     + "\ntrail_sl_by_pct= "
+            #     + logger.float_to_str(round(dynamic_order_settings.trail_sl_by_pct * 100, 3))
+            #     + "\ntrail_sl_when_pct= "
+            #     + logger.float_to_str(round(dynamic_order_settings.trail_sl_when_pct * 100, 3))
+            # )
 
             starting_bar = dynamic_order_settings.num_candles - 1
             logger.log_info("nb_simulate.py - No Class - nb_run_backtest() - Starting Bar=" + str(starting_bar))
@@ -327,6 +328,8 @@ def nb_run_backtest(
                                 timestamp=int(candles[bar_index, CandleBodyType.Timestamp]),
                             )
                     except Exception:
+                        # raise Exception
+                        logger.log_debug("nb_simulate.py - No Class - nb_run_backtest() - Exception hit in eval strat")
                         pass
                 else:
                     logger.log_debug(
@@ -466,8 +469,9 @@ def nb_run_backtest(
                         )
                         logger.log_debug("nb_simulate.py - No Class - nb_run_backtest() - Account State OrderResult")
                     except Exception:
-                        logger.log_debug("nb_simulate.py - No Class - nb_run_backtest() - Exception hit")
+                        logger.log_debug("nb_simulate.py - No Class - nb_run_backtest() - Exception hit in eval strat")
                         pass
+                        # raise Exception
             # Checking if gains
             gains_pct = round(((account_state.equity - starting_equity) / starting_equity) * 100, 2)
             wins_and_losses_array = pnl_array[~np.isnan(pnl_array)]
@@ -488,7 +492,7 @@ def nb_run_backtest(
                 + str(total_trades_closed)
                 + "\n"
             )
-            if gains_pct > backtest_settings.gains_pct_filter:
+            if total_trades_closed > 0 and gains_pct > backtest_settings.gains_pct_filter:
                 if wins_and_losses_array.size > backtest_settings.total_trade_filter:
                     wins_and_losses_array_no_be = wins_and_losses_array[
                         (wins_and_losses_array < -0.009) | (wins_and_losses_array > 0.009)
@@ -502,6 +506,7 @@ def nb_run_backtest(
                     if to_the_upside > backtest_settings.upside_filter:
                         win_loss = np.where(wins_and_losses_array_no_be < 0, 0, 1)
                         win_rate = round(np.count_nonzero(win_loss) / win_loss.size * 100, 2)
+
                         total_pnl = wins_and_losses_array.sum()
 
                         # strat array

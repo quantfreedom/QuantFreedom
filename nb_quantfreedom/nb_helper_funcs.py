@@ -149,6 +149,8 @@ def nb_float_to_str(x: float):
         return "inf"
     elif x == -np.inf:
         return "-inf"
+    elif x == 0:
+        return "0.0"
 
     isneg = int(x < 0.0)
     x = np.abs(x)
@@ -178,7 +180,7 @@ def nb_float_to_str(x: float):
     else:
         offset_x = x
         l1, l2 = get_n_digits(x)
-        l2 = max(1, 12)  # Will have at least .0
+        l2 = max(1, 3)  # Will have at least .0
 
     use_dec = l2 > 0
 

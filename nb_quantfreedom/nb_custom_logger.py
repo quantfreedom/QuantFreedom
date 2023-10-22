@@ -86,12 +86,14 @@ class nb_PrintLogs(CustomLoggerClass):
         print(message)
 
     def float_to_str(self, x: float):
+        print("inside float to str")
         return nb_float_to_str(x)
 
     def log_datetime(self, timestamp: int):
         return str(timestamp)
 
     def candle_body_str(self, number: int):
+        print("candle body str")
         if number == 0:
             return "Timestamp"
         if number == 1:
@@ -108,6 +110,7 @@ class nb_PrintLogs(CustomLoggerClass):
             return "Nothing"
 
     def z_or_e_str(self, number: int):
+        print("candle body str")
         if number == 0:
             return "ZeroLoss"
         if number == 1:
@@ -116,6 +119,7 @@ class nb_PrintLogs(CustomLoggerClass):
             return "Nothing"
 
     def or_to_str(self, number: int):
+        print("candle body str")
         if number == 0:
             return "HitMaxTrades"
         if number == 1:
