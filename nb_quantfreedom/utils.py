@@ -5,8 +5,7 @@ import pandas as pd
 
 from pathlib import Path
 import plotly.graph_objects as go
-
-dir_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+from IPython.paths import get_ipython_cache_dir
 
 
 def delete_dir(
@@ -32,7 +31,9 @@ def clear_cache():
     """
     clears the python cache and numba cache
     """
-    for p in Path(dir_path).parent.parent.rglob("numba_cache"):
+    for p in Path(get_ipython_cache_dir()+"\\numba_cache").rglob("*.nb*"):
+        p.unlink()
+    for p in Path(__file__).parent.parent.rglob("numba_cache"):
         delete_dir(p)
     for p in Path(__file__).parent.parent.rglob("__pycache__"):
         delete_dir(p)

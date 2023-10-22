@@ -190,7 +190,7 @@ class nb_RegularLogs(CustomLoggerClass):
 
         return handler
 
-    def log_debug(self, message: tuple):
+    def log_debug(self, message: str):
         logging.getLogger("info").debug(message)
 
     def log_info(self, message: str):
