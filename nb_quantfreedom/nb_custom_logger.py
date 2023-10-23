@@ -9,6 +9,9 @@ from nb_quantfreedom.nb_enums import CandleBodyType, OrderStatus, ZeroOrEntryTyp
 
 from nb_quantfreedom.nb_helper_funcs import nb_float_to_str
 
+DIR_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+FORMATTER = "%(asctime)s - %(levelname)s - %(message)s"
+
 
 class CustomLoggerClass:
     def __init__(self) -> None:
@@ -43,54 +46,43 @@ class CustomLoggerClass:
 
 
 class FileLogs(CustomLoggerClass):
-    def set_loggers(
-        self,
-        log_debug: bool,
-        create_trades_logger: bool,
-        custom_path: str,
-        formatter: str,
-    ):
+    def set_loggers(self):
         logging.Formatter.converter = time.gmtime
         # creating images folder
-        complete_path = os.path.join(custom_path, "logs", "images")
+        complete_path = os.path.join(DIR_PATH, "logs", "images")
         isExist = os.path.exists(complete_path)
         if not isExist:
             os.makedirs(complete_path)
 
         # Info logs
-        complete_path = os.path.join(custom_path, "logs")
+        complete_path = os.path.join(DIR_PATH, "logs")
         isExist = os.path.exists(complete_path)
         if not isExist:
             os.makedirs(complete_path)
         filename = os.path.join(complete_path, f'info_{datetime.utcnow().strftime("%m-%d-%Y_%H-%M-%S")}.log')
         self.logger = logging.getLogger("info")
-        if log_debug:
-            self.logger.setLevel(logging.DEBUG)
-        else:
-            self.logger.setLevel(logging.INFO)
-        self.logger.addHandler(self.create_logging_handler(filename, formatter))
+        self.logger.setLevel(logging.DEBUG)
+        self.logger.addHandler(self.create_logging_handler(filename, FORMATTER))
         self.logger.info("nb_custom_logger.py - nb_RegularLogs - set_loggers() - Testing info log")
 
-        # Trades Log
-        if create_trades_logger:
-            complete_path = os.path.join(custom_path, "logs", "trades")
-            isExist = os.path.exists(complete_path)
-            if not isExist:
-                os.makedirs(complete_path)
-            filename = os.path.join(complete_path, f'trades_{datetime.utcnow().strftime("%m-%d-%Y_%H-%M-%S")}.log')
-            logger = logging.getLogger("trades")
-            logger.setLevel(logging.INFO)
-            logger.addHandler(self.create_logging_handler(filename, formatter))
-            logger.info("nb_custom_logger.py - nb_RegularLogs - set_loggers() - Testing trades log")
+        complete_path = os.path.join(DIR_PATH, "logs", "trades")
+        isExist = os.path.exists(complete_path)
+        if not isExist:
+            os.makedirs(complete_path)
+        filename = os.path.join(complete_path, f'trades_{datetime.utcnow().strftime("%m-%d-%Y_%H-%M-%S")}.log')
+        logger = logging.getLogger("trades")
+        logger.setLevel(logging.INFO)
+        logger.addHandler(self.create_logging_handler(filename, FORMATTER))
+        logger.info("nb_custom_logger.py - nb_RegularLogs - set_loggers() - Testing trades log")
 
-    def create_logging_handler(self, filename: str, formatter: str):
+    def create_logging_handler(self, filename: str, FORMATTER: str):
         handler = None
         try:
             handler = logging.FileHandler(
                 filename=filename,
                 mode="w",
             )
-            handler.setFormatter(logging.Formatter(fmt=formatter))
+            handler.setFormatter(logging.Formatter(fmt=FORMATTER))
         except Exception as e:
             print(f"Couldnt init logging system with file [{filename}]. Desc=[{e}]")
 

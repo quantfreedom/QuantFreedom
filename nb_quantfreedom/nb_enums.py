@@ -3,9 +3,6 @@ import numpy as np
 import os
 from numba.experimental import jitclass
 
-DIR_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-FORMATTER = "%(asctime)s - %(levelname)s - %(message)s"
-
 
 class CandleProcessingTypeT(NamedTuple):
     Backtest: int = 0
@@ -226,13 +223,6 @@ class DynamicOrderSettings(NamedTuple):
     trail_sl_bcb_type: int
     trail_sl_by_pct: float
     trail_sl_when_pct: float
-
-
-class LoggerSettings(NamedTuple):
-    log_debug: bool
-    create_trades_logger: bool
-    custom_path: str = DIR_PATH
-    formatter: str = FORMATTER
 
 
 class AccountState(NamedTuple):

@@ -1,7 +1,7 @@
 import numpy as np
 from numba import njit
 from nb_quantfreedom.nb_enums import *
-from nb_quantfreedom.nb_custom_logger import CustomLoggerNB
+from nb_quantfreedom.nb_custom_logger import CustomLoggerClass
 from nb_quantfreedom.nb_helper_funcs import get_to_the_upside_nb, nb_get_dos
 from nb_quantfreedom.nb_order_handler.nb_class_helpers import PriceGetterNB, ZeroOrEntryNB
 from nb_quantfreedom.nb_order_handler.nb_decrease_position import DecreasePositionNB
@@ -9,31 +9,31 @@ from nb_quantfreedom.nb_order_handler.nb_increase_position import AccExOther, In
 from nb_quantfreedom.nb_order_handler.nb_leverage import LeverageClass, LeverageNB
 
 
-from nb_quantfreedom.nb_order_handler.nb_stop_loss import StopLossNB
+from nb_quantfreedom.nb_order_handler.nb_stop_loss import StopLossClass
 from nb_quantfreedom.nb_order_handler.nb_take_profit import TakeProfitNB
 from nb_quantfreedom.strategies.nb_strategy import nb_CreateInd, nb_Strategy
 
 
 @njit(cache=True)
 def nb_run_backtest(
-    sl_calculator: StopLossNB,
+    sl_calculator: StopLossClass,
     backtest_settings: BacktestSettings,
     candles: np.array,
     checker_liq_hit: LeverageClass,
-    checker_sl_hit: StopLossNB,
+    checker_sl_hit: StopLossClass,
     checker_tp_hit: TakeProfitNB,
-    checker_tsl: StopLossNB,
+    checker_tsl: StopLossClass,
     dec_pos_calculator: DecreasePositionNB,
     dos_cart_arrays: DynamicOrderSettingsArrays,
     exchange_settings: ExchangeSettings,
     exit_fee_pct: float,
     inc_pos_calculator: IncreasePositionNB,
-    logger: CustomLoggerNB,
+    logger: CustomLoggerClass,
     lev_calculator: LeverageNB,
-    checker_sl_to_be: StopLossNB,
+    checker_sl_to_be: StopLossClass,
     set_z_e: ZeroOrEntryNB,
     sl_bcb_price_getter: PriceGetterNB,
-    sl_mover: StopLossNB,
+    sl_mover: StopLossClass,
     starting_equity: float,
     strategy: nb_Strategy,
     ind_creator: nb_CreateInd,
@@ -348,6 +348,7 @@ def nb_run_backtest(
                             bar_index=bar_index,
                             candles=candles,
                             logger=logger,
+                            price_tick_step=price_tick_step,
                             sl_based_on_add_pct=dynamic_order_settings.sl_based_on_add_pct,
                             sl_based_on_lookback=dynamic_order_settings.sl_based_on_lookback,
                             sl_bcb_price_getter=sl_bcb_price_getter,

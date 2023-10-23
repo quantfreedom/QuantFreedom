@@ -3,7 +3,7 @@ import talib
 from numba.experimental import jitclass
 from nb_quantfreedom.indicators.indicators import IndicatorsNB
 
-from nb_quantfreedom.nb_custom_logger import CustomLoggerNB
+from nb_quantfreedom.nb_custom_logger import CustomLoggerClass
 from typing import NamedTuple
 
 from nb_quantfreedom.nb_enums import CandleBodyType
@@ -62,7 +62,7 @@ class nb_CreateInd:
         starting_bar,
         candles,
         indicator_settings: IndicatorSettings,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
     ):
         pass
 
@@ -75,7 +75,7 @@ class nb_BacktestInd(nb_CreateInd):
         starting_bar,
         candles,
         indicator_settings: IndicatorSettings,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
     ):
         start = max(bar_index - starting_bar, 0)
         try:
@@ -99,7 +99,7 @@ class nb_TradingInd(nb_CreateInd):
         starting_bar,
         candles,
         indicator_settings: IndicatorSettings,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
     ):
         try:
             rsi = IndicatorsNB().calc_rsi(
@@ -127,7 +127,7 @@ class nb_Strategy(StrategyClass):
     def nb_get_current_ind_settings(
         self,
         ind_set_index: int,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
     ):
         indicator_settings = IndicatorSettings(
             rsi_is_below=ind_set_arrays.rsi_is_below[ind_set_index],
@@ -139,7 +139,7 @@ class nb_Strategy(StrategyClass):
     def nb_get_ind_set_str(
         self,
         indicator_settings: IndicatorSettings,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
     ):
         msg = (
             "RSI Period= "
@@ -156,7 +156,7 @@ class nb_Strategy(StrategyClass):
         candles,
         indicator_settings: IndicatorSettings,
         ind_creator: nb_CreateInd,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
     ):
         rsi = ind_creator.create_indicator(
             bar_index=bar_index,

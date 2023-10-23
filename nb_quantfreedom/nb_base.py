@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from nb_quantfreedom.nb_custom_logger import CustomLoggerNB, nb_PrintLogs, nb_RegularLogs
+from nb_quantfreedom.nb_custom_logger import FileLogs, PassLogs, PrintLogs
 
 from nb_quantfreedom.nb_enums import *
 from nb_quantfreedom.nb_order_handler.nb_class_helpers import (
@@ -13,7 +13,7 @@ from nb_quantfreedom.nb_order_handler.nb_class_helpers import (
 from nb_quantfreedom.nb_order_handler.nb_decrease_position import nb_Long_DP
 from nb_quantfreedom.nb_order_handler.nb_increase_position import nb_Long_RPAandSLB, nb_Long_SEP
 from nb_quantfreedom.nb_order_handler.nb_leverage import nb_Long_DLev, nb_Long_Leverage, nb_Long_SLev
-from nb_quantfreedom.nb_order_handler.nb_stop_loss import StopLossNB, nb_Long_SLBCB, nb_Long_StopLoss, nb_MoveSL
+from nb_quantfreedom.nb_order_handler.nb_stop_loss import Long_SLBCB, Long_StopLoss, MoveSL, StopLossClass
 from nb_quantfreedom.nb_order_handler.nb_take_profit import nb_Long_RR, nb_Long_TPHitReg
 from nb_quantfreedom.nb_simulate import nb_run_backtest
 from nb_quantfreedom.strategies.nb_strategy import nb_BacktestInd, nb_Strategy
@@ -45,18 +45,12 @@ def backtest_df_only(
 
     if logger_settings:
         if logger_settings == "p":
-            logger = nb_PrintLogs()
+            logger = PrintLogs()
 
         elif type(logger_settings) == LoggerSettings:
-            logger = nb_RegularLogs()
-            logger.set_loggers(
-                log_debug=logger_settings.log_debug,
-                create_trades_logger=logger_settings.create_trades_logger,
-                custom_path=logger_settings.custom_path,
-                formatter=logger_settings.formatter,
-            )
+            logger = FileLogs()
     else:
-        logger = CustomLoggerNB()
+        logger = PassLogs()
 
     """
     #########################################
@@ -87,38 +81,38 @@ def backtest_df_only(
 
         # setting up stop loss calulator
         if static_os.sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
-            sl_calculator = nb_Long_SLBCB()
-            checker_sl_hit = nb_Long_StopLoss()
+            sl_calculator = Long_SLBCB()
+            checker_sl_hit = Long_StopLoss()
             if static_os.pg_min_max_sl_bcb == PriceGetterType.Min:
                 sl_bcb_price_getter = nb_GetMinPrice()
             elif static_os.pg_min_max_sl_bcb == PriceGetterType.Max:
                 sl_bcb_price_getter = nb_GetMaxPrice()
         elif static_os.sl_strategy_type == StopLossStrategyType.Nothing:
-            sl_calculator = StopLossNB()
-            sl_bcb_price_getter = StopLossNB()
+            sl_calculator = StopLossClass()
+            sl_bcb_price_getter = StopLossClass()
 
         # setting up stop loss break even checker
         if static_os.sl_to_be_bool:
-            checker_sl_to_be = nb_Long_StopLoss()
+            checker_sl_to_be = Long_StopLoss()
             # setting up stop loss be zero or entry
             if static_os.z_or_e_type == ZeroOrEntryType.ZeroLoss:
                 set_z_e = nb_Long_SLToZero()
             elif static_os.z_or_e_type == ZeroOrEntryType.AverageEntry:
                 set_z_e = nb_Long_SLToEntry()
         else:
-            checker_sl_to_be = StopLossNB()
+            checker_sl_to_be = StopLossClass()
             set_z_e = ZeroOrEntryNB()
 
         # setting up stop loss break even checker
         if static_os.trail_sl_bool:
-            checker_tsl = nb_Long_StopLoss()
+            checker_tsl = Long_StopLoss()
         else:
-            checker_tsl = StopLossNB()
+            checker_tsl = StopLossClass()
 
         if static_os.trail_sl_bool or static_os.sl_to_be_bool:
-            sl_mover = nb_MoveSL()
+            sl_mover = MoveSL()
         else:
-            sl_mover = StopLossNB()
+            sl_mover = StopLossClass()
 
         """
         #########################################
@@ -246,7 +240,7 @@ def backtest_df_only(
     return strategy_result_records
 
 
-def get_classes_yes(
+def get_classes(
     backtest_settings: BacktestSettings,
     candles: np.array,
     dos_cart_arrays: DynamicOrderSettingsArrays,
@@ -271,18 +265,12 @@ def get_classes_yes(
 
     if logger_settings:
         if logger_settings == "p":
-            logger = nb_PrintLogs()
+            logger = PrintLogs()
 
         elif type(logger_settings) == LoggerSettings:
-            logger = nb_RegularLogs()
-            logger.set_loggers(
-                log_debug=logger_settings.log_debug,
-                create_trades_logger=logger_settings.create_trades_logger,
-                custom_path=logger_settings.custom_path,
-                formatter=logger_settings.formatter,
-            )
+            logger = FileLogs()
     else:
-        logger = CustomLoggerNB()
+        logger = PassLogs()
 
     """
     #########################################
@@ -313,38 +301,38 @@ def get_classes_yes(
 
         # setting up stop loss calulator
         if static_os.sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
-            sl_calculator = nb_Long_SLBCB()
-            checker_sl_hit = nb_Long_StopLoss()
+            sl_calculator = Long_SLBCB()
+            checker_sl_hit = Long_StopLoss()
             if static_os.pg_min_max_sl_bcb == PriceGetterType.Min:
                 sl_bcb_price_getter = nb_GetMinPrice()
             elif static_os.pg_min_max_sl_bcb == PriceGetterType.Max:
                 sl_bcb_price_getter = nb_GetMaxPrice()
         elif static_os.sl_strategy_type == StopLossStrategyType.Nothing:
-            sl_calculator = StopLossNB()
-            sl_bcb_price_getter = StopLossNB()
+            sl_calculator = StopLossClass()
+            sl_bcb_price_getter = StopLossClass()
 
         # setting up stop loss break even checker
         if static_os.sl_to_be_bool:
-            checker_sl_to_be = nb_Long_StopLoss()
+            checker_sl_to_be = Long_StopLoss()
             # setting up stop loss be zero or entry
             if static_os.z_or_e_type == ZeroOrEntryType.ZeroLoss:
                 set_z_e = nb_Long_SLToZero()
             elif static_os.z_or_e_type == ZeroOrEntryType.AverageEntry:
                 set_z_e = nb_Long_SLToEntry()
         else:
-            checker_sl_to_be = StopLossNB()
+            checker_sl_to_be = StopLossClass()
             set_z_e = ZeroOrEntryNB()
 
         # setting up stop loss break even checker
         if static_os.trail_sl_bool:
-            checker_tsl = nb_Long_StopLoss()
+            checker_tsl = Long_StopLoss()
         else:
-            checker_tsl = StopLossNB()
+            checker_tsl = StopLossClass()
 
         if static_os.trail_sl_bool or static_os.sl_to_be_bool:
-            sl_mover = nb_MoveSL()
+            sl_mover = MoveSL()
         else:
-            sl_mover = StopLossNB()
+            sl_mover = StopLossClass()
 
         """
         #########################################
@@ -427,11 +415,21 @@ def get_classes_yes(
     #########################################
     #########################################
     """
+    # Creating Settings Vars
     total_order_settings = dos_cart_arrays[0].size
 
     total_indicator_settings = strategy.get_total_ind_settings()
 
     total_bars = candles.shape[0]
+
+    # logger.infoing out total numbers of things
+    print("Starting the backtest now ... and also here are some stats for your backtest.\n")
+    print("Total indicator settings to test: " + str(total_indicator_settings))
+    print("Total order settings to test: " + str(total_order_settings))
+    print("Total combinations of settings to test: " + str(int(total_indicator_settings * total_order_settings)))
+    print("Total candles: " + str(total_bars))
+    print("Total candles to test: " + str(int(total_indicator_settings * total_order_settings * total_bars)))
+    
     return (
         backtest_settings,
         candles,

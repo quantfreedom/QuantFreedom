@@ -14,13 +14,8 @@ from nb_quantfreedom.nb_enums import (
 )
 from nb_quantfreedom.nb_order_handler.nb_class_helpers import PriceGetterNB, ZeroOrEntryNB, nb_GetPrice
 
-sl_spec = {"price_tick_step": types.float_}
-
 
 class StopLossClass:
-    def __init__(self, price_tick_step):
-        self.price_tick_step = price_tick_step
-
     def move_stop_loss(
         self,
         account_state: AccountState,
@@ -34,19 +29,20 @@ class StopLossClass:
         sl_price: float,
         timestamp: np.int64,
     ):
-        return 0.0
+        pass
 
     def calculate_stop_loss(
         self,
         bar_index: int,
         candles: np.array,
         logger: CustomLoggerClass,
+        price_tick_step: float,
         sl_based_on_add_pct: float,
         sl_based_on_lookback: int,
         sl_bcb_price_getter: PriceGetterNB,
         sl_bcb_type: int,
     ):
-        return 0.0
+        pass
 
     def check_stop_loss_hit(
         self,
@@ -55,7 +51,7 @@ class StopLossClass:
         current_candle: np.array,
         sl_price: float,
     ):
-        return False
+        pass
 
     def check_move_stop_loss_to_be(
         self,
@@ -68,7 +64,7 @@ class StopLossClass:
         sl_price: float,
         sl_to_be_move_when_pct: float,
     ):
-        return 0.0
+        pass
 
     def check_move_trailing_stop_loss(
         self,
@@ -81,7 +77,7 @@ class StopLossClass:
         trail_sl_by_pct: float,
         trail_sl_when_pct: float,
     ):
-        return 0.0
+        pass
 
 
 @jitclass
@@ -99,19 +95,20 @@ class SLPass(StopLossClass):
         sl_price: float,
         timestamp: np.int64,
     ):
-        return 0.0
+        pass
 
     def calculate_stop_loss(
         self,
         bar_index: int,
         candles: np.array,
         logger: CustomLoggerClass,
+        price_tick_step: float,
         sl_based_on_add_pct: float,
         sl_based_on_lookback: int,
         sl_bcb_price_getter: PriceGetterNB,
         sl_bcb_type: int,
     ):
-        return 0.0
+        pass
 
     def check_stop_loss_hit(
         self,
@@ -120,7 +117,7 @@ class SLPass(StopLossClass):
         current_candle: np.array,
         sl_price: float,
     ):
-        return False
+        pass
 
     def check_move_stop_loss_to_be(
         self,
@@ -133,7 +130,7 @@ class SLPass(StopLossClass):
         sl_price: float,
         sl_to_be_move_when_pct: float,
     ):
-        return 0.0
+        pass
 
     def check_move_trailing_stop_loss(
         self,
@@ -146,14 +143,11 @@ class SLPass(StopLossClass):
         trail_sl_by_pct: float,
         trail_sl_when_pct: float,
     ):
-        return 0.0
+        pass
 
 
-@jitclass(sl_spec)
-class nb_Long_StopLoss(StopLossClass):
-    def __init__(self, price_tick_step):
-        self.price_tick_step = price_tick_step
-
+@jitclass
+class Long_StopLoss(StopLossClass):
     def check_stop_loss_hit(
         self,
         logger: CustomLoggerClass,
@@ -248,7 +242,7 @@ class nb_Long_StopLoss(StopLossClass):
             temp_sl_price = candle_low - candle_low * trail_sl_by_pct
             temp_sl_price = nb_round_size_by_tick_step(
                 user_num=temp_sl_price,
-                exchange_num=self.price_tick_step,
+                exchange_num=price_tick_step,
             )
             logger.log_debug(
                 "nb_stop_loss.py - nb_Long_StopLoss - check_move_trailing_stop_loss() - temp sl= "
@@ -270,18 +264,18 @@ class nb_Long_StopLoss(StopLossClass):
             return -1
 
 
-@jitclass(sl_spec)
-class nb_Long_SLBCB(StopLossClass):
+@jitclass
+class Long_SLBCB(StopLossClass):
     """
     Stop loss based on candle body
     """
-    def __init__(self, price_tick_step):
-        self.price_tick_step = price_tick_step
+
     def calculate_stop_loss(
         self,
         bar_index: int,
         candles: np.array,
         logger: CustomLoggerClass,
+        price_tick_step: float,
         sl_based_on_add_pct: float,
         sl_based_on_lookback: int,
         sl_bcb_price_getter: PriceGetterNB,
@@ -314,7 +308,7 @@ class nb_Long_SLBCB(StopLossClass):
 
 
 @jitclass()
-class nb_MoveSL(StopLossClass):
+class MoveSL(StopLossClass):
     def move_stop_loss(
         self,
         account_state: AccountState,
