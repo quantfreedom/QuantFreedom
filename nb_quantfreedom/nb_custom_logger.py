@@ -11,7 +11,6 @@ from nb_quantfreedom.nb_helper_funcs import nb_float_to_str
 
 @jitclass()
 class nb_PrintLogs(object):
-    
     def debug(self, message: str):
         print(message)
 
@@ -74,8 +73,7 @@ class nb_PrintLogs(object):
             return "MovedTSL"
 
 
-class nb_RegularLogs(logging):
-    
+class nb_RegularLogs(object):
     def set_loggers(
         self,
         log_debug: bool,
