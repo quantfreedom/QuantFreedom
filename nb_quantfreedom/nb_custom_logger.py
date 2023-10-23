@@ -9,84 +9,22 @@ from nb_quantfreedom.nb_enums import CandleBodyType, OrderStatus, ZeroOrEntryTyp
 from nb_quantfreedom.nb_helper_funcs import nb_float_to_str
 
 
-class CustomLoggerClass:
-    def __init__(self) -> None:
-        pass
-
-    def log_debug(self, message: str):
-        return ""
-
-    def log_info(self, message: str):
-        return ""
-
-    def log_warning(self, message: str):
-        return ""
-
-    def log_error(self, message: str):
-        return ""
-
-    def float_to_str(self, x: float):
-        return ""
-
-    def log_datetime(self, timestamp: float):
-        return ""
-
-    def candle_body_str(self, number: int):
-        return ""
-
-    def z_or_e_str(self, number: int):
-        return ""
-
-    def or_to_str(self, number: int):
-        return ""
-
-
 @jitclass()
-class CustomLoggerNB(CustomLoggerClass):
-    def log_debug(self, message: str):
-        return ""
-
-    def log_info(self, message: str):
-        return ""
-
-    def log_warning(self, message: str):
-        return ""
-
-    def log_error(self, message: str):
-        return ""
-
-    def float_to_str(self, x: float):
-        return ""
-
-    def log_datetime(self, timestamp: float):
-        return ""
-
-    def candle_body_str(self, number: int):
-        return ""
-
-    def z_or_e_str(self, number: int):
-        return ""
-
-    def or_to_str(self, number: int):
-        return ""
-
-
-@jitclass()
-class nb_PrintLogs(CustomLoggerClass):
-    def log_debug(self, message: str):
+class nb_PrintLogs(object):
+    
+    def debug(self, message: str):
         print(message)
 
-    def log_info(self, message: str):
+    def info(self, message: str):
         print(message)
 
-    def log_warning(self, message: str):
+    def warning(self, message: str):
         print(message)
 
-    def log_error(self, message: str):
+    def error(self, message: str):
         print(message)
 
     def float_to_str(self, x: float):
-        print("inside float to str")
         return nb_float_to_str(x)
 
     def log_datetime(self, timestamp: int):
@@ -136,7 +74,8 @@ class nb_PrintLogs(CustomLoggerClass):
             return "MovedTSL"
 
 
-class nb_RegularLogs(CustomLoggerClass):
+class nb_RegularLogs(logging):
+    
     def set_loggers(
         self,
         log_debug: bool,
