@@ -245,10 +245,13 @@ class nb_IPHelpers(IncreasePositionClass):
 
 
 @jitclass()
-class nb_Long_RPAandSLB(IncreasePositionClass):
+class nb_Long_RPAandSLB:
     """
     Risking percent of your account while also having your stop loss based open high low or close of a candle
     """
+
+    def __init__(self) -> None:
+        pass
 
     def calculate_increase_posotion(self, acc_ex_other: AccExOther, order_info: OrderInfo):
         if order_info.in_position:
@@ -483,11 +486,14 @@ class nb_Long_RPAandSLB(IncreasePositionClass):
 
 
 @jitclass()
-class nb_Long_SEP(IncreasePositionClass):
+class nb_Long_SEP:
     """
     Setting your position size to the min amount the exchange will allow
 
     """
+
+    def __init__(self) -> None:
+        pass
 
     def calculate_increase_posotion(self, acc_ex_other: AccExOther, order_info: OrderInfo):
         if order_info.in_position:

@@ -3,7 +3,6 @@ import talib
 from numba.experimental import jitclass
 from nb_quantfreedom.indicators.indicators import IndicatorsNB
 
-from nb_quantfreedom.nb_custom_logger import CustomLoggerClass
 from typing import NamedTuple
 
 from nb_quantfreedom.nb_enums import CandleBodyType
@@ -52,7 +51,8 @@ def nb_create_ind_cart_product(ind_set_arrays: IndicatorSettingsArrays):
 ind_set_arrays = nb_create_ind_cart_product(ind_set_arrays=ind_set_arrays)
 
 
-class nb_CreateInd:
+@jitclass
+class nb_BacktestInd:
     def __init__(self) -> None:
         pass
 
@@ -62,20 +62,7 @@ class nb_CreateInd:
         starting_bar,
         candles,
         indicator_settings: IndicatorSettings,
-        logger: CustomLoggerClass,
-    ):
-        pass
-
-
-@jitclass
-class nb_BacktestInd(nb_CreateInd):
-    def create_indicator(
-        self,
-        bar_index,
-        starting_bar,
-        candles,
-        indicator_settings: IndicatorSettings,
-        logger: CustomLoggerClass,
+        logger,
     ):
         start = max(bar_index - starting_bar, 0)
         try:
@@ -92,14 +79,17 @@ class nb_BacktestInd(nb_CreateInd):
 
 
 @jitclass
-class nb_TradingInd(nb_CreateInd):
+class nb_TradingInd:
+    def __init__(self) -> None:
+        pass
+
     def create_indicator(
         self,
         bar_index,
         starting_bar,
         candles,
         indicator_settings: IndicatorSettings,
-        logger: CustomLoggerClass,
+        logger,
     ):
         try:
             rsi = IndicatorsNB().calc_rsi(
@@ -114,20 +104,18 @@ class nb_TradingInd(nb_CreateInd):
             raise Exception
 
 
-class StrategyClass:
+@jitclass
+class nb_Strategy:
     def __init__(self) -> None:
         pass
 
-
-@jitclass
-class nb_Strategy(StrategyClass):
     def get_total_ind_settings(self):
         return ind_set_arrays[0].size
 
     def nb_get_current_ind_settings(
         self,
         ind_set_index: int,
-        logger: CustomLoggerClass,
+        logger,
     ):
         indicator_settings = IndicatorSettings(
             rsi_is_below=ind_set_arrays.rsi_is_below[ind_set_index],
@@ -139,7 +127,7 @@ class nb_Strategy(StrategyClass):
     def nb_get_ind_set_str(
         self,
         indicator_settings: IndicatorSettings,
-        logger: CustomLoggerClass,
+        logger,
     ):
         msg = (
             "RSI Period= "
@@ -155,8 +143,8 @@ class nb_Strategy(StrategyClass):
         starting_bar,
         candles,
         indicator_settings: IndicatorSettings,
-        ind_creator: nb_CreateInd,
-        logger: CustomLoggerClass,
+        ind_creator,
+        logger,
     ):
         rsi = ind_creator.create_indicator(
             bar_index=bar_index,

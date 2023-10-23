@@ -3,7 +3,7 @@ from numba import njit
 from nb_quantfreedom.nb_enums import *
 from nb_quantfreedom.nb_custom_logger import CustomLoggerClass
 from nb_quantfreedom.nb_helper_funcs import get_to_the_upside_nb, nb_get_dos
-from nb_quantfreedom.nb_order_handler.nb_class_helpers import PriceGetterNB, ZeroOrEntryNB
+from nb_quantfreedom.nb_order_handler.nb_class_helpers import PGPass, ZeroOrEntryNB
 from nb_quantfreedom.nb_order_handler.nb_decrease_position import DecreasePositionNB
 from nb_quantfreedom.nb_order_handler.nb_increase_position import AccExOther, IncreasePositionNB, OrderInfo
 from nb_quantfreedom.nb_order_handler.nb_leverage import LeverageClass, LeverageNB
@@ -32,7 +32,7 @@ def nb_run_backtest(
     lev_calculator: LeverageNB,
     checker_sl_to_be: StopLossClass,
     set_z_e: ZeroOrEntryNB,
-    sl_bcb_price_getter: PriceGetterNB,
+    sl_bcb_price_getter: PGPass,
     sl_mover: StopLossClass,
     starting_equity: float,
     strategy: nb_Strategy,
@@ -177,7 +177,7 @@ def nb_run_backtest(
                         + " bar_idx="
                         + str(bar_index)
                         + " timestamp="
-                        + logger.log_datetime(int(candles[bar_index, CandleBodyType.Timestamp]))
+                        + logger.log_datetime(candles[bar_index])
                     )
                 )
 

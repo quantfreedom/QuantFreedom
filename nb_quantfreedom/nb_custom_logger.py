@@ -17,35 +17,11 @@ class CustomLoggerClass:
     def __init__(self) -> None:
         pass
 
-    def log_debug(self, message: str):
+
+class FileLogs:
+    def __init__(self) -> None:
         pass
 
-    def log_info(self, message: str):
-        pass
-
-    def log_warning(self, message: str):
-        pass
-
-    def log_error(self, message: str):
-        pass
-
-    def float_to_str(self, x: float):
-        pass
-
-    def log_datetime(self, timestamp: int):
-        pass
-
-    def candle_body_str(self, number: int):
-        pass
-
-    def z_or_e_str(self, number: int):
-        pass
-
-    def or_to_str(self, number: int):
-        pass
-
-
-class FileLogs(CustomLoggerClass):
     def set_loggers(self):
         logging.Formatter.converter = time.gmtime
         # creating images folder
@@ -117,7 +93,10 @@ class FileLogs(CustomLoggerClass):
 
 
 @jitclass
-class PassLogs(CustomLoggerClass):
+class PassLogs:
+    def __init__(self) -> None:
+        pass
+
     def log_debug(self, message: str):
         pass
 
@@ -147,7 +126,10 @@ class PassLogs(CustomLoggerClass):
 
 
 @jitclass
-class PrintLogs(CustomLoggerClass):
+class PrintLogs:
+    def __init__(self) -> None:
+        pass
+
     def log_debug(self, message: str):
         print(message)
 

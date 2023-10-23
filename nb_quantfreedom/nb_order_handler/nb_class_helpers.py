@@ -30,7 +30,10 @@ class PriceGetterClass:
 
 
 @jitclass()
-class PriceGetterNB(PriceGetterClass):
+class PGPass(PriceGetterClass):
+    def __init__(self) -> None:
+        pass
+
     def nb_min_max_price_getter(
         self,
         logger: CustomLoggerClass,

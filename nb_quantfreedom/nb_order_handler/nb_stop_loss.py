@@ -12,10 +12,13 @@ from nb_quantfreedom.nb_enums import (
     OrderResult,
     OrderStatus,
 )
-from nb_quantfreedom.nb_order_handler.nb_class_helpers import PriceGetterNB, ZeroOrEntryNB, nb_GetPrice
+from nb_quantfreedom.nb_order_handler.nb_class_helpers import PGPass, ZeroOrEntryNB, nb_GetPrice
 
 
 class StopLossClass:
+    def __init__(self) -> None:
+        pass
+
     def move_stop_loss(
         self,
         account_state: AccountState,
@@ -39,7 +42,7 @@ class StopLossClass:
         price_tick_step: float,
         sl_based_on_add_pct: float,
         sl_based_on_lookback: int,
-        sl_bcb_price_getter: PriceGetterNB,
+        sl_bcb_price_getter: PGPass,
         sl_bcb_type: int,
     ):
         pass
@@ -105,7 +108,7 @@ class SLPass(StopLossClass):
         price_tick_step: float,
         sl_based_on_add_pct: float,
         sl_based_on_lookback: int,
-        sl_bcb_price_getter: PriceGetterNB,
+        sl_bcb_price_getter: PGPass,
         sl_bcb_type: int,
     ):
         pass
@@ -278,7 +281,7 @@ class Long_SLBCB(StopLossClass):
         price_tick_step: float,
         sl_based_on_add_pct: float,
         sl_based_on_lookback: int,
-        sl_bcb_price_getter: PriceGetterNB,
+        sl_bcb_price_getter: PGPass,
         sl_bcb_type: int,
     ) -> float:
         # lb will be bar index if sl isn't based on lookback because look back will be 0

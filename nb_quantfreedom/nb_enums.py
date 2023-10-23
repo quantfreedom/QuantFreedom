@@ -82,6 +82,14 @@ class OrderStatusT(NamedTuple):
 OrderStatus = OrderStatusT()
 
 
+class LoggerTypeT(NamedTuple):
+    Disable: int = 0
+    Print: int = 1
+    File: int = 2
+
+
+LoggerType = LoggerTypeT()
+
 class LongOrShortTypeT(NamedTuple):
     Long: int = 0
     Short: int = 1
@@ -381,3 +389,4 @@ strat_df_array_dt = np.dtype(
     ],
     align=True,
 )
+
