@@ -51,8 +51,7 @@ def nb_create_ind_cart_product(ind_set_arrays: IndicatorSettingsArrays):
 ind_set_arrays = nb_create_ind_cart_product(ind_set_arrays=ind_set_arrays)
 
 
-@jitclass
-class nb_BacktestInd:
+class nb_CreateInd:
     def __init__(self) -> None:
         pass
 
@@ -79,7 +78,34 @@ class nb_BacktestInd:
 
 
 @jitclass
-class nb_TradingInd:
+class nb_BacktestInd(nb_CreateInd):
+    def __init__(self) -> None:
+        pass
+
+    def create_indicator(
+        self,
+        bar_index,
+        starting_bar,
+        candles,
+        indicator_settings: IndicatorSettings,
+        logger,
+    ):
+        start = max(bar_index - starting_bar, 0)
+        try:
+            rsi = IndicatorsNB().calc_rsi(
+                prices=candles[start : bar_index + 1, CandleBodyType.Close],
+                period=indicator_settings.rsi_period,
+            )
+            rsi = np.around(rsi, 2)
+            logger.log_info("nb_strategy.py - nb_BacktestInd - create_indicator() - Created RSI")
+            return rsi
+        except Exception:
+            logger.log_info("nb_strategy.py - nb_BacktestInd - create_indicator() - Exception creating RSI")
+            raise Exception
+
+
+@jitclass
+class nb_TradingInd(nb_CreateInd):
     def __init__(self) -> None:
         pass
 

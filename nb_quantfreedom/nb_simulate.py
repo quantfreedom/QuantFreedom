@@ -9,20 +9,20 @@ from nb_quantfreedom.nb_order_handler.nb_increase_position import AccExOther, In
 from nb_quantfreedom.nb_order_handler.nb_leverage import LeverageClass, LeverageNB
 
 
-from nb_quantfreedom.nb_order_handler.nb_stop_loss import StopLossClass
+from nb_quantfreedom.nb_order_handler.nb_stop_loss import PGPass
 from nb_quantfreedom.nb_order_handler.nb_take_profit import TakeProfitNB
 from nb_quantfreedom.strategies.nb_strategy import nb_CreateInd, nb_Strategy
 
 
 @njit(cache=True)
 def nb_run_backtest(
-    sl_calculator: StopLossClass,
+    sl_calculator: PGPass,
     backtest_settings: BacktestSettings,
     candles: np.array,
     checker_liq_hit: LeverageClass,
-    checker_sl_hit: StopLossClass,
+    checker_sl_hit: PGPass,
     checker_tp_hit: TakeProfitNB,
-    checker_tsl: StopLossClass,
+    checker_tsl: PGPass,
     dec_pos_calculator: DecreasePositionNB,
     dos_cart_arrays: DynamicOrderSettingsArrays,
     exchange_settings: ExchangeSettings,
@@ -30,10 +30,10 @@ def nb_run_backtest(
     inc_pos_calculator: IncreasePositionNB,
     logger: CustomLoggerClass,
     lev_calculator: LeverageNB,
-    checker_sl_to_be: StopLossClass,
+    checker_sl_to_be: PGPass,
     set_z_e: ZeroOrEntryNB,
     sl_bcb_price_getter: PGPass,
-    sl_mover: StopLossClass,
+    sl_mover: PGPass,
     starting_equity: float,
     strategy: nb_Strategy,
     ind_creator: nb_CreateInd,
