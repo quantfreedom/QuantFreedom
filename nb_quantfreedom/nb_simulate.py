@@ -276,10 +276,8 @@ def nb_run_backtest(
                             candle_body_type=dynamic_order_settings.sl_to_be_cb_type,
                             current_candle=candles[bar_index, :],
                             set_z_e=set_z_e,
-                            market_fee_pct=market_fee_pct,
                             sl_price=order_result.sl_price,
                             sl_to_be_move_when_pct=dynamic_order_settings.sl_to_be_when_pct,
-                            price_tick_step=price_tick_step,
                             logger=logger,
                         )
                         if temp_sl > 0:
@@ -307,7 +305,6 @@ def nb_run_backtest(
                             can_move_sl_to_be=order_result.can_move_sl_to_be,
                             candle_body_type=dynamic_order_settings.trail_sl_bcb_type,
                             current_candle=candles[bar_index, :],
-                            price_tick_step=price_tick_step,
                             sl_price=order_result.sl_price,
                             trail_sl_by_pct=dynamic_order_settings.trail_sl_by_pct,
                             trail_sl_when_pct=dynamic_order_settings.trail_sl_when_pct,
@@ -351,7 +348,6 @@ def nb_run_backtest(
                             bar_index=bar_index,
                             candles=candles,
                             logger=logger,
-                            price_tick_step=price_tick_step,
                             sl_based_on_add_pct=dynamic_order_settings.sl_based_on_add_pct,
                             sl_based_on_lookback=dynamic_order_settings.sl_based_on_lookback,
                             sl_bcb_price_getter=sl_bcb_price_getter,

@@ -1,6 +1,6 @@
 from numba.experimental import jitclass
 import numpy as np
-from nb_quantfreedom.nb_custom_logger import CustomLoggerNB
+from nb_quantfreedom.nb_custom_logger import CustomLoggerClass
 from nb_quantfreedom.nb_enums import CandleBodyType, DecreasePosition, OrderStatus
 
 from nb_quantfreedom.nb_helper_funcs import nb_round_size_by_tick_step
@@ -13,7 +13,7 @@ class LeverageClass:
 
     def calculate_leverage(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         available_balance: float,
         average_entry: float,
         cash_borrowed: float,
@@ -29,7 +29,7 @@ class LeverageClass:
 
     def check_liq_hit(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         bar_index: int,
         current_candle: np.array,
         sl_price: float,
@@ -38,7 +38,7 @@ class LeverageClass:
 
     def calc_liq_price(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         average_entry: float,
         entry_size_usd: float,
         leverage: float,
@@ -58,7 +58,7 @@ class LeverageNB(LeverageClass):
 
     def calculate_leverage(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         available_balance: float,
         average_entry: float,
         cash_borrowed: float,
@@ -74,7 +74,7 @@ class LeverageNB(LeverageClass):
 
     def check_liq_hit(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         bar_index: int,
         current_candle: np.array,
         sl_price: float,
@@ -83,7 +83,7 @@ class LeverageNB(LeverageClass):
 
     def calc_liq_price(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         average_entry: float,
         entry_size_usd: float,
         leverage: float,
@@ -100,7 +100,7 @@ class LeverageNB(LeverageClass):
 class nb_Long_SLev(LeverageClass):
     def calculate_leverage(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         available_balance: float,
         average_entry: float,
         cash_borrowed: float,
@@ -153,7 +153,7 @@ class nb_Long_DLev(LeverageClass):
 
     def calculate_leverage(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         available_balance: float,
         average_entry: float,
         cash_borrowed: float,
@@ -224,7 +224,7 @@ class nb_Long_DLev(LeverageClass):
 class nb_Long_Leverage(LeverageClass):
     def check_liq_hit(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         current_candle: np.array,
         liq_price: float,
     ):
@@ -242,7 +242,7 @@ class nb_Long_Leverage(LeverageClass):
 
     def calc_liq_price(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         average_entry: float,
         entry_size_usd: float,
         leverage: float,

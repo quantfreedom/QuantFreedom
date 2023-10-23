@@ -1,5 +1,5 @@
 import numpy as np
-from nb_quantfreedom.nb_custom_logger import CustomLoggerNB
+from nb_quantfreedom.nb_custom_logger import CustomLoggerClass
 from nb_quantfreedom.nb_helper_funcs import nb_round_size_by_tick_step
 from numba.experimental import jitclass
 
@@ -13,7 +13,7 @@ class TakeProfitClass:
 
     def calculate_take_profit(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         average_entry: float,
         market_fee_pct: float,
         position_size_usd: float,
@@ -26,7 +26,7 @@ class TakeProfitClass:
 
     def check_tp_hit(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         current_candle: np.array,
         tp_price: float,
     ):
@@ -37,7 +37,7 @@ class TakeProfitClass:
 class TakeProfitNB(TakeProfitClass):
     def calculate_take_profit(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         average_entry: float,
         market_fee_pct: float,
         position_size_usd: float,
@@ -50,7 +50,7 @@ class TakeProfitNB(TakeProfitClass):
 
     def check_tp_hit(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         current_candle: np.array,
         tp_price: float,
     ):
@@ -61,7 +61,7 @@ class TakeProfitNB(TakeProfitClass):
 class nb_Long_RR(TakeProfitClass):
     def calculate_take_profit(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         average_entry: float,
         market_fee_pct: float,
         position_size_usd: float,
@@ -107,7 +107,7 @@ class nb_Long_RR(TakeProfitClass):
 class nb_Long_TPHitReg(TakeProfitClass):
     def check_tp_hit(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         current_candle: np.array,
         tp_price: float,
     ):
@@ -131,7 +131,7 @@ class nb_Long_TPHitReg(TakeProfitClass):
 class nb_Long_TPHitProvided(TakeProfitClass):
     def check_tp_hit(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         current_candle: np.array,
         tp_price: float,
     ):

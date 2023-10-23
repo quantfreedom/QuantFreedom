@@ -1,6 +1,7 @@
 import numpy as np
+from numba import types
 from numba.experimental import jitclass
-from nb_quantfreedom.nb_custom_logger import CustomLoggerNB
+from nb_quantfreedom.nb_custom_logger import CustomLoggerClass
 
 from nb_quantfreedom.nb_helper_funcs import nb_round_size_by_tick_step
 from nb_quantfreedom.nb_enums import (
@@ -13,10 +14,12 @@ from nb_quantfreedom.nb_enums import (
 )
 from nb_quantfreedom.nb_order_handler.nb_class_helpers import PriceGetterNB, ZeroOrEntryNB, nb_GetPrice
 
+sl_spec = {"price_tick_step": types.float_}
+
 
 class StopLossClass:
-    def __init__(self):
-        pass
+    def __init__(self, price_tick_step):
+        self.price_tick_step = price_tick_step
 
     def move_stop_loss(
         self,
@@ -25,7 +28,7 @@ class StopLossClass:
         can_move_sl_to_be: bool,
         dos_index: int,
         ind_set_index: int,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         order_result: OrderResult,
         order_status: int,
         sl_price: float,
@@ -37,8 +40,7 @@ class StopLossClass:
         self,
         bar_index: int,
         candles: np.array,
-        logger: CustomLoggerNB,
-        price_tick_step: float,
+        logger: CustomLoggerClass,
         sl_based_on_add_pct: float,
         sl_based_on_lookback: int,
         sl_bcb_price_getter: PriceGetterNB,
@@ -48,7 +50,7 @@ class StopLossClass:
 
     def check_stop_loss_hit(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         bar_index: int,
         current_candle: np.array,
         sl_price: float,
@@ -57,7 +59,7 @@ class StopLossClass:
 
     def check_move_stop_loss_to_be(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         average_entry: float,
         can_move_sl_to_be: bool,
         candle_body_type: int,
@@ -65,19 +67,16 @@ class StopLossClass:
         set_z_e: ZeroOrEntryNB,
         sl_price: float,
         sl_to_be_move_when_pct: float,
-        market_fee_pct: float,
-        price_tick_step: float,
     ):
         return 0.0
 
     def check_move_trailing_stop_loss(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         average_entry: float,
         candle_body_type: int,
         can_move_sl_to_be: bool,
         current_candle: np.array,
-        price_tick_step: float,
         sl_price: float,
         trail_sl_by_pct: float,
         trail_sl_when_pct: float,
@@ -85,8 +84,8 @@ class StopLossClass:
         return 0.0
 
 
-@jitclass()
-class StopLossNB(StopLossClass):
+@jitclass
+class SLPass(StopLossClass):
     def move_stop_loss(
         self,
         account_state: AccountState,
@@ -94,7 +93,7 @@ class StopLossNB(StopLossClass):
         can_move_sl_to_be: bool,
         dos_index: int,
         ind_set_index: int,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         order_result: OrderResult,
         order_status: int,
         sl_price: float,
@@ -106,8 +105,7 @@ class StopLossNB(StopLossClass):
         self,
         bar_index: int,
         candles: np.array,
-        logger: CustomLoggerNB,
-        price_tick_step: float,
+        logger: CustomLoggerClass,
         sl_based_on_add_pct: float,
         sl_based_on_lookback: int,
         sl_bcb_price_getter: PriceGetterNB,
@@ -117,7 +115,7 @@ class StopLossNB(StopLossClass):
 
     def check_stop_loss_hit(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         bar_index: int,
         current_candle: np.array,
         sl_price: float,
@@ -126,7 +124,7 @@ class StopLossNB(StopLossClass):
 
     def check_move_stop_loss_to_be(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         average_entry: float,
         can_move_sl_to_be: bool,
         candle_body_type: int,
@@ -134,19 +132,16 @@ class StopLossNB(StopLossClass):
         set_z_e: ZeroOrEntryNB,
         sl_price: float,
         sl_to_be_move_when_pct: float,
-        market_fee_pct: float,
-        price_tick_step: float,
     ):
         return 0.0
 
     def check_move_trailing_stop_loss(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         average_entry: float,
         candle_body_type: int,
         can_move_sl_to_be: bool,
         current_candle: np.array,
-        price_tick_step: float,
         sl_price: float,
         trail_sl_by_pct: float,
         trail_sl_when_pct: float,
@@ -154,11 +149,14 @@ class StopLossNB(StopLossClass):
         return 0.0
 
 
-@jitclass()
+@jitclass(sl_spec)
 class nb_Long_StopLoss(StopLossClass):
+    def __init__(self, price_tick_step):
+        self.price_tick_step = price_tick_step
+
     def check_stop_loss_hit(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         current_candle: np.array,
         sl_price: float,
     ):
@@ -177,7 +175,7 @@ class nb_Long_StopLoss(StopLossClass):
 
     def check_move_stop_loss_to_be(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         average_entry: float,
         can_move_sl_to_be: bool,
         candle_body_type: int,
@@ -185,8 +183,6 @@ class nb_Long_StopLoss(StopLossClass):
         set_z_e: ZeroOrEntryNB,
         sl_price: float,
         sl_to_be_move_when_pct: float,
-        market_fee_pct: float,
-        price_tick_step: float,
     ):
         if can_move_sl_to_be:
             logger.log_debug(
@@ -208,8 +204,6 @@ class nb_Long_StopLoss(StopLossClass):
                 old_sl = sl_price
                 sl_price = set_z_e.nb_set_sl_to_z_or_e(
                     average_entry=average_entry,
-                    market_fee_pct=market_fee_pct,
-                    price_tick_step=price_tick_step,
                 )
                 logger.log_debug(
                     "nb_stop_loss.py - nb_Long_StopLoss - check_move_stop_loss_to_be() - moving sl old_sl= "
@@ -229,12 +223,11 @@ class nb_Long_StopLoss(StopLossClass):
 
     def check_move_trailing_stop_loss(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         average_entry: float,
         can_move_sl_to_be: bool,
         candle_body_type: CandleBodyType,
         current_candle: np.array,
-        price_tick_step: float,
         sl_price: float,
         trail_sl_by_pct: float,
         trail_sl_when_pct: float,
@@ -255,7 +248,7 @@ class nb_Long_StopLoss(StopLossClass):
             temp_sl_price = candle_low - candle_low * trail_sl_by_pct
             temp_sl_price = nb_round_size_by_tick_step(
                 user_num=temp_sl_price,
-                exchange_num=price_tick_step,
+                exchange_num=self.price_tick_step,
             )
             logger.log_debug(
                 "nb_stop_loss.py - nb_Long_StopLoss - check_move_trailing_stop_loss() - temp sl= "
@@ -277,18 +270,18 @@ class nb_Long_StopLoss(StopLossClass):
             return -1
 
 
-@jitclass()
+@jitclass(sl_spec)
 class nb_Long_SLBCB(StopLossClass):
     """
     Stop loss based on candle body
     """
-
+    def __init__(self, price_tick_step):
+        self.price_tick_step = price_tick_step
     def calculate_stop_loss(
         self,
         bar_index: int,
         candles: np.array,
-        logger: CustomLoggerNB,
-        price_tick_step: float,
+        logger: CustomLoggerClass,
         sl_based_on_add_pct: float,
         sl_based_on_lookback: int,
         sl_bcb_price_getter: PriceGetterNB,
@@ -329,7 +322,7 @@ class nb_MoveSL(StopLossClass):
         can_move_sl_to_be: bool,
         dos_index: int,
         ind_set_index: int,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         order_result: OrderResult,
         order_status: int,
         sl_price: float,

@@ -1,5 +1,5 @@
 from typing import NamedTuple
-from nb_quantfreedom.nb_custom_logger import CustomLoggerNB
+from nb_quantfreedom.nb_custom_logger import CustomLoggerClass
 from nb_quantfreedom.nb_helper_funcs import nb_round_size_by_tick_step
 from numba.experimental import jitclass
 
@@ -9,7 +9,7 @@ from nb_quantfreedom.nb_enums import OrderStatus, RejectedOrder
 class AccExOther(NamedTuple):
     account_state_equity: float
     asset_tick_step: float
-    logger: CustomLoggerNB
+    logger: CustomLoggerClass
     market_fee_pct: float
     max_asset_size: float
     min_asset_size: float
@@ -45,7 +45,7 @@ class IncreasePositionClass:
 
     def check_size_too_big_or_small(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         entry_size_asset: float,
         min_asset_size: float,
         max_asset_size: float,
@@ -54,7 +54,7 @@ class IncreasePositionClass:
 
     def pl_risk_account_pct_size(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         account_state_equity: float,
         possible_loss: float,
         total_trades: int,
@@ -65,7 +65,7 @@ class IncreasePositionClass:
 
     def tt_amount_based(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         average_entry: float,
         possible_loss: float,
         position_size_asset: float,
@@ -90,7 +90,7 @@ class IncreasePositionNB(IncreasePositionClass):
 
     def check_size_too_big_or_small(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         entry_size_asset: float,
         min_asset_size: float,
         max_asset_size: float,
@@ -99,7 +99,7 @@ class IncreasePositionNB(IncreasePositionClass):
 
     def pl_risk_account_pct_size(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         account_state_equity: float,
         possible_loss: float,
         total_trades: int,
@@ -110,7 +110,7 @@ class IncreasePositionNB(IncreasePositionClass):
 
     def tt_amount_based(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         average_entry: float,
         possible_loss: float,
         position_size_asset: float,
@@ -126,7 +126,7 @@ class IncreasePositionNB(IncreasePositionClass):
 class nb_IPHelpers(IncreasePositionClass):
     def check_size_too_big_or_small(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         entry_size_asset: float,
         min_asset_size: float,
         max_asset_size: float,
@@ -158,7 +158,7 @@ class nb_IPHelpers(IncreasePositionClass):
 
     def pl_risk_account_pct_size(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         account_state_equity: float,
         possible_loss: float,
         total_trades: int,
@@ -201,7 +201,7 @@ class nb_IPHelpers(IncreasePositionClass):
 
     def tt_amount_based(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         average_entry: float,
         possible_loss: float,
         position_size_asset: float,

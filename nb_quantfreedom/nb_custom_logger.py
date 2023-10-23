@@ -3,77 +3,46 @@ from datetime import datetime
 import os, logging
 import numpy as np
 import time
+from numba import types
 from numba.experimental import jitclass
 from nb_quantfreedom.nb_enums import CandleBodyType, OrderStatus, ZeroOrEntryType
 
 from nb_quantfreedom.nb_helper_funcs import nb_float_to_str
 
 
-@jitclass()
-class nb_PrintLogs(object):
-    def debug(self, message: str):
-        print(message)
+class CustomLoggerClass:
+    def __init__(self) -> None:
+        pass
 
-    def info(self, message: str):
-        print(message)
+    def log_debug(self, message: str):
+        pass
 
-    def warning(self, message: str):
-        print(message)
+    def log_info(self, message: str):
+        pass
 
-    def error(self, message: str):
-        print(message)
+    def log_warning(self, message: str):
+        pass
+
+    def log_error(self, message: str):
+        pass
 
     def float_to_str(self, x: float):
-        return nb_float_to_str(x)
+        pass
 
     def log_datetime(self, timestamp: int):
-        return str(timestamp)
+        pass
 
     def candle_body_str(self, number: int):
-        print("candle body str")
-        if number == 0:
-            return "Timestamp"
-        if number == 1:
-            return "Open"
-        elif number == 2:
-            return "Close"
-        elif number == 3:
-            return "Low"
-        elif number == 4:
-            return "Close"
-        elif number == 4:
-            return "Volume"
-        elif number == 5:
-            return "Nothing"
+        pass
 
     def z_or_e_str(self, number: int):
-        print("candle body str")
-        if number == 0:
-            return "ZeroLoss"
-        if number == 1:
-            return "AverageEntry"
-        elif number == 2:
-            return "Nothing"
+        pass
 
     def or_to_str(self, number: int):
-        print("candle body str")
-        if number == 0:
-            return "HitMaxTrades"
-        if number == 1:
-            return "EntryFilled"
-        if number == 2:
-            return "StopLossFilled"
-        elif number == 3:
-            return "TakeProfitFilled"
-        elif number == 4:
-            return "LiquidationFilled"
-        elif number == 5:
-            return "MovedSLToBE"
-        elif number == 6:
-            return "MovedTSL"
+        pass
 
 
-class nb_RegularLogs(object):
+class FileLogs(CustomLoggerClass):
     def set_loggers(
         self,
         log_debug: bool,
@@ -128,22 +97,22 @@ class nb_RegularLogs(object):
         return handler
 
     def log_debug(self, message: str):
-        logging.getLogger("info").debug(message)
+        self.logger.debug(message)
 
     def log_info(self, message: str):
-        logging.getLogger("info").info(message)
+        self.logger.info(message)
 
     def log_warning(self, message: str):
-        logging.getLogger("info").warning(message)
+        self.logger.warning(message)
 
     def log_error(self, message: str):
-        logging.getLogger("info").error(message)
+        self.logger.error(message)
 
     def float_to_str(self, x):
         return str(x)
 
-    def log_datetime(self, timestamp: int):
-        return str(to_datetime(timestamp, unit="ms"))
+    def log_datetime(self, candles: int):
+        return str(candles[CandleBodyType.Timestamp].astype("datetime64[ms]")).replace("T", " ")
 
     def candle_body_str(self, number: int):
         return CandleBodyType._fields[number]
@@ -153,3 +122,97 @@ class nb_RegularLogs(object):
 
     def or_to_str(self, number: int):
         return OrderStatus._fields[number]
+
+
+@jitclass
+class PassLogs(CustomLoggerClass):
+    def log_debug(self, message: str):
+        pass
+
+    def log_info(self, message: str):
+        pass
+
+    def log_warning(self, message: str):
+        pass
+
+    def log_error(self, message: str):
+        pass
+
+    def float_to_str(self, x: float):
+        pass
+
+    def log_datetime(self, timestamp: int):
+        pass
+
+    def candle_body_str(self, number: int):
+        pass
+
+    def z_or_e_str(self, number: int):
+        pass
+
+    def or_to_str(self, number: int):
+        pass
+
+
+@jitclass
+class PrintLogs(CustomLoggerClass):
+    def log_debug(self, message: str):
+        print(message)
+
+    def log_info(self, message: str):
+        print(message)
+
+    def log_warning(self, message: str):
+        print(message)
+
+    def log_error(self, message: str):
+        print(message)
+
+    def float_to_str(self, x: float):
+        return nb_float_to_str(x)
+
+    def log_datetime(self, timestamp: int):
+        return str(timestamp)
+
+    def candle_body_str(self, number: int):
+        print("candle body str")
+        if number == 0:
+            return "Timestamp"
+        if number == 1:
+            return "Open"
+        elif number == 2:
+            return "Close"
+        elif number == 3:
+            return "Low"
+        elif number == 4:
+            return "Close"
+        elif number == 4:
+            return "Volume"
+        elif number == 5:
+            return "Nothing"
+
+    def z_or_e_str(self, number: int):
+        print("candle body str")
+        if number == 0:
+            return "ZeroLoss"
+        if number == 1:
+            return "AverageEntry"
+        elif number == 2:
+            return "Nothing"
+
+    def or_to_str(self, number: int):
+        print("candle body str")
+        if number == 0:
+            return "HitMaxTrades"
+        if number == 1:
+            return "EntryFilled"
+        if number == 2:
+            return "StopLossFilled"
+        elif number == 3:
+            return "TakeProfitFilled"
+        elif number == 4:
+            return "LiquidationFilled"
+        elif number == 5:
+            return "MovedSLToBE"
+        elif number == 6:
+            return "MovedTSL"

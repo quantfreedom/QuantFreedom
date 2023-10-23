@@ -1,5 +1,5 @@
 from numba.experimental import jitclass
-from nb_quantfreedom.nb_custom_logger import CustomLoggerNB
+from nb_quantfreedom.nb_custom_logger import CustomLoggerClass
 from nb_quantfreedom.nb_enums import AccountState, OrderResult, OrderStatus
 
 
@@ -9,7 +9,7 @@ class DecreasePositionClass:
 
     def decrease_position(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         average_entry: float,
         bar_index: int,
         dos_index: int,
@@ -29,7 +29,7 @@ class DecreasePositionClass:
 class DecreasePositionNB(DecreasePositionClass):
     def decrease_position(
         self,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         average_entry: float,
         bar_index: int,
         dos_index: int,
@@ -53,7 +53,7 @@ class nb_Long_DP(DecreasePositionClass):
         equity: float,
         exit_fee_pct: float,
         exit_price: float,
-        logger: CustomLoggerNB,
+        logger: CustomLoggerClass,
         market_fee_pct: float,
         position_size_asset: float,
     ):
