@@ -11,7 +11,6 @@ class PriceGetterClass:
 
     def nb_min_max_price_getter(
         self,
-        logger: CustomLoggerNB,
         bar_index: int,
         candle_body_type: int,
         candles: np.array,
@@ -21,7 +20,6 @@ class PriceGetterClass:
 
     def nb_price_getter(
         self,
-        logger: CustomLoggerNB,
         bar_index: int,
         candle_body_type: int,
         current_candle: np.array,
@@ -33,7 +31,6 @@ class PriceGetterClass:
 class PriceGetterNB(PriceGetterClass):
     def nb_min_max_price_getter(
         self,
-        logger: CustomLoggerNB,
         bar_index: int,
         candle_body_type: int,
         candles: np.array,
@@ -43,7 +40,6 @@ class PriceGetterNB(PriceGetterClass):
 
     def nb_price_getter(
         self,
-        logger: CustomLoggerNB,
         bar_index: int,
         candle_body_type: int,
         current_candle: np.array,
@@ -55,7 +51,6 @@ class PriceGetterNB(PriceGetterClass):
 class nb_GetMinPrice(PriceGetterClass):
     def nb_min_max_price_getter(
         self,
-        logger: CustomLoggerNB,
         bar_index: int,
         candles: np.array,
         candle_body_type: int,
@@ -76,7 +71,6 @@ class nb_GetMinPrice(PriceGetterClass):
 class nb_GetMaxPrice(PriceGetterClass):
     def nb_min_max_price_getter(
         self,
-        logger: CustomLoggerNB,
         bar_index: int,
         candles: np.array,
         candle_body_type: int,
@@ -97,7 +91,6 @@ class nb_GetMaxPrice(PriceGetterClass):
 class nb_GetPrice(PriceGetterClass):
     def nb_price_getter(
         self,
-        logger: CustomLoggerNB,
         candle_body_type: int,
         current_candle: np.array,
     ):
@@ -118,7 +111,6 @@ class ZeroOrEntryClass:
 
     def nb_set_sl_to_z_or_e(
         self,
-        logger: CustomLoggerNB,
         average_entry,
         market_fee_pct,
         price_tick_step,
@@ -130,7 +122,6 @@ class ZeroOrEntryClass:
 class ZeroOrEntryNB(ZeroOrEntryClass):
     def nb_set_sl_to_z_or_e(
         self,
-        logger: CustomLoggerNB,
         average_entry,
         market_fee_pct,
         price_tick_step,
@@ -142,7 +133,6 @@ class ZeroOrEntryNB(ZeroOrEntryClass):
 class nb_Long_SLToZero(ZeroOrEntryClass):
     def nb_set_sl_to_z_or_e(
         self,
-        logger: CustomLoggerNB,
         average_entry,
         market_fee_pct,
         price_tick_step,
@@ -163,7 +153,6 @@ class nb_Long_SLToZero(ZeroOrEntryClass):
 class nb_Long_SLToEntry(ZeroOrEntryClass):
     def nb_set_sl_to_z_or_e(
         self,
-        logger: CustomLoggerNB,
         average_entry,
         market_fee_pct,
         price_tick_step,
