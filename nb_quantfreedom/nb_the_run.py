@@ -98,12 +98,12 @@ def run_the_whole_thing(
             checker_sl_to_be = Long_StopLoss()
             # setting up stop loss be zero or entry
             if static_os.z_or_e_type == ZeroOrEntryType.ZeroLoss:
-                set_z_e = nb_Long_SLToZero()
+                zero_or_entry_calc = nb_Long_SLToZero()
             elif static_os.z_or_e_type == ZeroOrEntryType.AverageEntry:
-                set_z_e = nb_Long_SLToEntry()
+                zero_or_entry_calc = nb_Long_SLToEntry()
         else:
             checker_sl_to_be = SLPass()
-            set_z_e = ZeroOrEntryNB()
+            zero_or_entry_calc = ZeroOrEntryNB()
 
         # setting up stop loss break even checker
         if static_os.trail_sl_bool:
@@ -447,7 +447,7 @@ def run_the_whole_thing(
     #                         can_move_sl_to_be=order_result.can_move_sl_to_be,
     #                         candle_body_type=dynamic_order_settings.sl_to_be_cb_type,
     #                         current_candle=candles[bar_index, :],
-    #                         set_z_e=set_z_e,
+    #                         zero_or_entry_calc=zero_or_entry_calc,
     #                         sl_price=order_result.sl_price,
     #                         sl_to_be_move_when_pct=dynamic_order_settings.sl_to_be_when_pct,
     #                         logger=logger,

@@ -57,7 +57,7 @@ def get_to_the_upside_nb(
 
 
 @njit(cache=True)
-def nb_get_dos(
+def get_dos(
     dos_cart_arrays: DynamicOrderSettingsArrays,
     dos_index: int,
 ):
@@ -188,16 +188,6 @@ def float_to_str(x: float):
             i -= 1
 
     return s
-
-
-@njit(cache=True)
-def price_getter(
-    candle_body_type: int,
-    current_candle: np.array,
-):
-    price = current_candle[candle_body_type]
-    return price
-
 
 @njit(cache=True)
 def min_price_getter(

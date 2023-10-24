@@ -63,7 +63,7 @@
 #         can_move_sl_to_be: bool,
 #         candle_body_type: int,
 #         current_candle: np.array,
-#         set_z_e: ZeroOrEntryNB,
+#         zero_or_entry_calc: ZeroOrEntryNB,
 #         sl_price: float,
 #         sl_to_be_move_when_pct: float,
 #     ):
@@ -129,7 +129,7 @@
 #         can_move_sl_to_be: bool,
 #         candle_body_type: int,
 #         current_candle: np.array,
-#         set_z_e: ZeroOrEntryNB,
+#         zero_or_entry_calc: ZeroOrEntryNB,
 #         sl_price: float,
 #         sl_to_be_move_when_pct: float,
 #     ):
@@ -177,7 +177,7 @@
 #         can_move_sl_to_be: bool,
 #         candle_body_type: int,
 #         current_candle: np.array,
-#         set_z_e: ZeroOrEntryNB,
+#         zero_or_entry_calc: ZeroOrEntryNB,
 #         sl_price: float,
 #         sl_to_be_move_when_pct: float,
 #     ):
@@ -199,7 +199,7 @@
 #             move_sl = pct_from_ae > sl_to_be_move_when_pct
 #             if move_sl:
 #                 old_sl = sl_price
-#                 sl_price = set_z_e.nb_set_sl_to_z_or_e(
+#                 sl_price = zero_or_entry_calc.nb_set_sl_to_z_or_e(
 #                     average_entry=average_entry,
 #                 )
 #                 logger.log_debug(

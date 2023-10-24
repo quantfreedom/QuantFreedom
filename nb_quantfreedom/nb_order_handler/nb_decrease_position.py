@@ -18,12 +18,12 @@ def decrease_position(
     fee_open = position_size_asset * average_entry * market_fee_pct  # math checked
     fee_close = position_size_asset * exit_price * exit_fee_pct  # math checked
     fees_paid = fee_open + fee_close  # math checked
-    realized_pnl = round(pnl - fees_paid, 3)  # math checked
+    realized_pnl = round(pnl - fees_paid, 4)  # math checked
 
     # Setting new equity
-    equity = round(realized_pnl + equity, 3)
+    equity = round(realized_pnl + equity, 4)
     logger[LoggerFuncType.Debug](
-        "nb_decrease_position.py - nb_Long_DP - decrease_position() -"
+        "nb_decrease_position.py - decrease_position() -"
         + "\nrealized_pnl= "
         + stringer[StringerFuncType.float_to_str](realized_pnl)
         + "\nequity= "

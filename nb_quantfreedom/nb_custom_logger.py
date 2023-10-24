@@ -108,64 +108,6 @@ def file_or_to_str(number: float):
 #################################################
 #################################################
 #################################################
-                Passing Logs
-                Passing Logs
-                Passing Logs
-#################################################
-#################################################
-#################################################
-"""
-
-
-@njit(cache=True)
-def pass_log_debug(message: str):
-    pass
-
-
-@njit(cache=True)
-def pass_log_info(message: str):
-    pass
-
-
-@njit(cache=True)
-def pass_log_warning(message: str):
-    pass
-
-
-@njit(cache=True)
-def pass_log_error(message: str):
-    pass
-
-
-@njit(cache=True)
-def pass_float_to_str(number: float):
-    return ""
-
-
-@njit(cache=True)
-def pass_log_datetime(number: float):
-    return ""
-
-
-@njit(cache=True)
-def pass_candle_body_str(number: float):
-    return ""
-
-
-@njit(cache=True)
-def pass_z_or_e_str(number: float):
-    return ""
-
-
-@njit(cache=True)
-def pass_or_to_str(number: float):
-    return ""
-
-
-"""
-#################################################
-#################################################
-#################################################
                 Printing Logs
                 Printing Logs
                 Printing Logs
@@ -255,3 +197,26 @@ def print_or_to_str(number: float):
     elif number == 6:
         answer = "MovedTSL"
     return answer
+
+
+"""
+#################################################
+#################################################
+#################################################
+                Passing Logs
+                Passing Logs
+                Passing Logs
+#################################################
+#################################################
+#################################################
+"""
+
+
+@njit(cache=True)
+def logger_pass(message: str):
+    pass
+
+
+@njit(cache=True)
+def stringer_pass(number: float):
+    return str()

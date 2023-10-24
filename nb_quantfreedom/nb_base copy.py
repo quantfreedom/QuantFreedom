@@ -96,12 +96,12 @@
 #             checker_sl_to_be = Long_StopLoss()
 #             # setting up stop loss be zero or entry
 #             if static_os.z_or_e_type == ZeroOrEntryType.ZeroLoss:
-#                 set_z_e = nb_Long_SLToZero()
+#                 zero_or_entry_calc = nb_Long_SLToZero()
 #             elif static_os.z_or_e_type == ZeroOrEntryType.AverageEntry:
-#                 set_z_e = nb_Long_SLToEntry()
+#                 zero_or_entry_calc = nb_Long_SLToEntry()
 #         else:
 #             checker_sl_to_be = PGPass()
-#             set_z_e = ZeroOrEntryNB()
+#             zero_or_entry_calc = ZeroOrEntryNB()
 
 #         # setting up stop loss break even checker
 #         if static_os.trail_sl_bool:
@@ -225,7 +225,7 @@
 #         inc_pos_calculator=inc_pos_calculator,
 #         lev_calculator=lev_calculator,
 #         logger=logger,
-#         set_z_e=set_z_e,
+#         zero_or_entry_calc=zero_or_entry_calc,
 #         sl_bcb_price_getter=sl_bcb_price_getter,
 #         sl_calculator=sl_calculator,
 #         sl_mover=sl_mover,
@@ -317,12 +317,12 @@
 #             checker_sl_to_be = Long_StopLoss()
 #             # setting up stop loss be zero or entry
 #             if static_os.z_or_e_type == ZeroOrEntryType.ZeroLoss:
-#                 set_z_e = nb_Long_SLToZero()
+#                 zero_or_entry_calc = nb_Long_SLToZero()
 #             elif static_os.z_or_e_type == ZeroOrEntryType.AverageEntry:
-#                 set_z_e = nb_Long_SLToEntry()
+#                 zero_or_entry_calc = nb_Long_SLToEntry()
 #         else:
 #             checker_sl_to_be = SLPass()
-#             set_z_e = ZeroOrEntryNB()
+#             zero_or_entry_calc = ZeroOrEntryNB()
 
 #         # setting up stop loss break even checker
 #         if static_os.trail_sl_bool:
