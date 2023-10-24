@@ -280,7 +280,7 @@ def nb_run_backtest(
                             sl_to_be_move_when_pct=dynamic_order_settings.sl_to_be_when_pct,
                             logger=logger,
                         )
-                        if temp_sl > 0:
+                        if temp_sl:
                             logger.log_debug("nb_simulate.py - No Class - nb_run_backtest() - move_stop_loss")
                             account_state, order_result = sl_mover.move_stop_loss(
                                 account_state=account_state,
@@ -302,7 +302,6 @@ def nb_run_backtest(
                         )
                         temp_tsl = checker_tsl.check_move_trailing_stop_loss(
                             average_entry=order_result.average_entry,
-                            can_move_sl_to_be=order_result.can_move_sl_to_be,
                             candle_body_type=dynamic_order_settings.trail_sl_bcb_type,
                             current_candle=candles[bar_index, :],
                             sl_price=order_result.sl_price,
@@ -310,7 +309,7 @@ def nb_run_backtest(
                             trail_sl_when_pct=dynamic_order_settings.trail_sl_when_pct,
                             logger=logger,
                         )
-                        if temp_tsl > 0:
+                        if temp_tsl:
                             logger.log_debug("nb_simulate.py - No Class - nb_run_backtest() - move_stop_loss")
                             account_state, order_result = sl_mover.move_stop_loss(
                                 account_state=account_state,

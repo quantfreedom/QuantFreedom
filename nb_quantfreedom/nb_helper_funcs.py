@@ -2,9 +2,7 @@ import plotly.graph_objects as go
 import numpy as np
 import logging
 import pandas as pd
-
-# from nb_quantfreedom.nb_custom_logger import CustomLoggerNB
-from nb_quantfreedom.nb_enums import DynamicOrderSettings, DynamicOrderSettingsArrays
+from nb_quantfreedom.nb_enums import DynamicOrderSettings, DynamicOrderSettingsArrays, LoggerFuncType, StringerFuncType
 from numba import njit
 
 import numpy as np
@@ -19,26 +17,6 @@ DASH = 45
 DOT = 46
 PLUS = 43
 E_CHAR = 101
-
-
-@njit()
-def nb_min_max_price_getter(
-    self,
-    logger_debug: numba.types.FunctionType,
-    bar_index: int,
-    candles: np.array,
-    candle_body_type: int,
-    lookback: int,
-) -> float:
-    price = candles[lookback : bar_index + 1 :, candle_body_type].min()
-    logger_debug(
-        "nb_class_helpers.py - nb_GetMinPrice - nb_min_max_price_getter() -"
-        + " candle_body_type= "
-        + logger.candle_body_str(candle_body_type)
-        + " price= "
-        + logger.float_to_str(price)
-    )
-    return price
 
 
 @njit(cache=True)
@@ -143,7 +121,10 @@ def nb_get_dos(
 
 
 @njit(cache=True)
-def nb_round_size_by_tick_step(user_num: float, exchange_num: float) -> float:
+def round_size_by_tick_step(
+    user_num: float,
+    exchange_num: float,
+) -> float:
     return round(user_num, exchange_num)
 
 
@@ -165,7 +146,7 @@ def get_n_digits(x):
 
 
 @njit(cache=True)
-def nb_float_to_str(x: float):
+def float_to_str(x: float):
     if x == np.inf:
         return "inf"
     elif x == -np.inf:
@@ -246,3 +227,67 @@ def nb_float_to_str(x: float):
             i -= 1
 
     return s
+
+
+@njit(cache=True)
+def price_getter(
+    candle_body_type: int,
+    current_candle: np.array,
+):
+    price = current_candle[candle_body_type]
+    return price
+
+
+@njit(cache=True)
+def min_price_getter(
+    bar_index: int,
+    candles: np.array,
+    candle_body_type: int,
+    lookback: int,
+) -> float:
+    price = candles[lookback : bar_index + 1 :, candle_body_type].min()
+    return price
+
+
+@njit(cache=True)
+def max_price_getter(
+    bar_index: int,
+    candles: np.array,
+    candle_body_type: int,
+    lookback: int,
+) -> float:
+    price = candles[lookback : bar_index + 1 :, candle_body_type].max()
+    return price
+
+
+@njit(cache=True)
+def sl_to_zero(
+    average_entry,
+    market_fee_pct,
+    price_tick_step,
+):
+    sl_price = (market_fee_pct * average_entry + average_entry) / (1 - market_fee_pct)
+    sl_price = round_size_by_tick_step(
+        user_num=sl_price,
+        exchange_num=price_tick_step,
+    )
+    return sl_price
+
+
+@njit(cache=True)
+def sl_to_entry(
+    average_entry,
+    market_fee_pct,
+    price_tick_step,
+):
+    sl_price = average_entry
+    return sl_price
+
+
+@njit(cache=True)
+def sl_to_z_e_pass(
+    average_entry,
+    market_fee_pct,
+    price_tick_step,
+):
+    pass

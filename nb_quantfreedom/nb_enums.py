@@ -83,12 +83,23 @@ OrderStatus = OrderStatusT()
 
 
 class LoggerTypeT(NamedTuple):
-    Disable: int = 0
+    Pass: int = 0
     Print: int = 1
     File: int = 2
 
 
 LoggerType = LoggerTypeT()
+
+
+class LoggerFuncTypeT(NamedTuple):
+    Debug: int = 0
+    Info: int = 1
+    Warning: int = 2
+    Error: int = 4
+
+
+LoggerFuncType = LoggerFuncTypeT()
+
 
 class LongOrShortTypeT(NamedTuple):
     Long: int = 0
@@ -113,6 +124,17 @@ class PriceGetterTypeT(NamedTuple):
 
 
 PriceGetterType = PriceGetterTypeT()
+
+
+class StringerFuncTypeT(NamedTuple):
+    float_to_str: int = 0
+    log_datetime: int = 1
+    candle_body_str: int = 2
+    z_or_e_str: int = 3
+    or_to_str: int = 4
+
+
+StringerFuncType = StringerFuncTypeT()
 
 
 class StopLossStrategyTypeT(NamedTuple):
@@ -389,4 +411,3 @@ strat_df_array_dt = np.dtype(
     ],
     align=True,
 )
-
