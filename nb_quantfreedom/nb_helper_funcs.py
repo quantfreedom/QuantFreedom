@@ -56,45 +56,6 @@ def get_to_the_upside_nb(
     return round(to_the_upside, 3)
 
 
-def nb_dos_cart_product(dos_arrays: DynamicOrderSettingsArrays):
-    # cart array loop
-    n = 1
-    for x in dos_arrays:
-        n *= x.size
-    out = np.empty((n, len(dos_arrays)))
-
-    for i in range(len(dos_arrays)):
-        m = int(n / dos_arrays[i].size)
-        out[:n, i] = np.repeat(dos_arrays[i], m)
-        n //= dos_arrays[i].size
-
-    n = dos_arrays[-1].size
-    for k in range(len(dos_arrays) - 2, -1, -1):
-        n *= dos_arrays[k].size
-        m = int(n / dos_arrays[k].size)
-        for j in range(1, dos_arrays[k].size):
-            out[j * m : (j + 1) * m, k + 1 :] = out[0:m, k + 1 :]
-
-    return DynamicOrderSettingsArrays(
-        entry_size_asset=out.T[0],
-        max_equity_risk_pct=out.T[1] / 100,
-        max_trades=out.T[2].astype(np.int_),
-        num_candles=out.T[3].astype(np.int_),
-        risk_account_pct_size=out.T[4] / 100,
-        risk_reward=out.T[5],
-        sl_based_on_add_pct=out.T[6] / 100,
-        sl_based_on_lookback=out.T[7].astype(np.int_),
-        sl_bcb_type=out.T[8].astype(np.int_),
-        sl_to_be_cb_type=out.T[9].astype(np.int_),
-        sl_to_be_when_pct=out.T[10] / 100,
-        sl_to_be_ze_type=out.T[11].astype(np.int_),
-        static_leverage=out.T[12],
-        trail_sl_bcb_type=out.T[13].astype(np.int_),
-        trail_sl_by_pct=out.T[14] / 100,
-        trail_sl_when_pct=out.T[15] / 100,
-    )
-
-
 @njit(cache=True)
 def nb_get_dos(
     dos_cart_arrays: DynamicOrderSettingsArrays,
@@ -291,3 +252,42 @@ def sl_to_z_e_pass(
     price_tick_step,
 ):
     pass
+
+
+def dos_cart_product(dos_arrays: DynamicOrderSettingsArrays):
+    # cart array loop
+    n = 1
+    for x in dos_arrays:
+        n *= x.size
+    out = np.empty((n, len(dos_arrays)))
+
+    for i in range(len(dos_arrays)):
+        m = int(n / dos_arrays[i].size)
+        out[:n, i] = np.repeat(dos_arrays[i], m)
+        n //= dos_arrays[i].size
+
+    n = dos_arrays[-1].size
+    for k in range(len(dos_arrays) - 2, -1, -1):
+        n *= dos_arrays[k].size
+        m = int(n / dos_arrays[k].size)
+        for j in range(1, dos_arrays[k].size):
+            out[j * m : (j + 1) * m, k + 1 :] = out[0:m, k + 1 :]
+
+    return DynamicOrderSettingsArrays(
+        entry_size_asset=out.T[0],
+        max_equity_risk_pct=out.T[1] / 100,
+        max_trades=out.T[2].astype(np.int_),
+        num_candles=out.T[3].astype(np.int_),
+        risk_account_pct_size=out.T[4] / 100,
+        risk_reward=out.T[5],
+        sl_based_on_add_pct=out.T[6] / 100,
+        sl_based_on_lookback=out.T[7].astype(np.int_),
+        sl_bcb_type=out.T[8].astype(np.int_),
+        sl_to_be_cb_type=out.T[9].astype(np.int_),
+        sl_to_be_when_pct=out.T[10] / 100,
+        sl_to_be_ze_type=out.T[11].astype(np.int_),
+        static_leverage=out.T[12],
+        trail_sl_bcb_type=out.T[13].astype(np.int_),
+        trail_sl_by_pct=out.T[14] / 100,
+        trail_sl_when_pct=out.T[15] / 100,
+    )
