@@ -10,24 +10,6 @@ from nb_quantfreedom.nb_helper_funcs import float_to_str
 DIR_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 FORMATTER = "%(asctime)s - %(levelname)s - %(message)s"
 
-LOG_FUNC_TYPE = types.void(types.unicode_type)
-LOG_FUNC_LIST = typed.List.empty_list(LOG_FUNC_TYPE.as_type())
-
-STR_FUNC_TYPE = types.unicode_type(types.float64)
-STR_FUNC_LIST = typed.List.empty_list(STR_FUNC_TYPE.as_type())
-
-sig = {
-    "log": types.ListType(LOG_FUNC_TYPE.as_type()),
-    "stringer": types.ListType(STR_FUNC_TYPE.as_type()),
-}
-
-
-@jitclass(sig)
-class LoggerClass:
-    def __init__(self, log_list, str_list):
-        self.log = log_list
-        self.stringer = str_list
-
 
 """
 #################################################

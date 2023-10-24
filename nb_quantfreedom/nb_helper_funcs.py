@@ -261,7 +261,7 @@ def max_price_getter(
 
 
 @njit(cache=True)
-def sl_to_zero(
+def long_sl_to_zero(
     average_entry,
     market_fee_pct,
     price_tick_step,

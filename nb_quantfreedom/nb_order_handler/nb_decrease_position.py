@@ -1,5 +1,5 @@
 from numba import njit
-from nb_quantfreedom.nb_custom_logger import LoggerClass
+
 from nb_quantfreedom.nb_enums import AccountState, LoggerFuncType, OrderResult, OrderStatus, StringerFuncType
 
 

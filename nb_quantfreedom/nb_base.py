@@ -3,7 +3,7 @@ from numba import njit, typed
 
 from nb_quantfreedom.nb_enums import *
 from nb_quantfreedom.nb_custom_logger import *
-from nb_quantfreedom.nb_helper_funcs import max_price_getter, min_price_getter, sl_to_entry, sl_to_z_e_pass, sl_to_zero
+from nb_quantfreedom.nb_helper_funcs import max_price_getter, min_price_getter, sl_to_entry, sl_to_z_e_pass, long_sl_to_zero
 
 from nb_quantfreedom.nb_order_handler.nb_decrease_position import decrease_position
 from nb_quantfreedom.nb_order_handler.nb_stop_loss import *
@@ -20,6 +20,11 @@ def final_bt_df_only(
     # strategy,
     # ind_creator,
 ):
+    log_func_type = types.void(types.unicode_type)
+    log_func_list = typed.List.empty_list(log_func_type.as_type())
+
+    str_func_type = types.unicode_type(types.float64)
+    str_func_list = typed.List.empty_list(str_func_type.as_type())
     """
     #########################################
     #########################################
@@ -33,41 +38,41 @@ def final_bt_df_only(
     """
 
     if logger_type == LoggerType.Print:
-        LOG_FUNC_LIST.append(print_log_debug)
-        LOG_FUNC_LIST.append(print_log_info)
-        LOG_FUNC_LIST.append(print_log_warning)
-        LOG_FUNC_LIST.append(print_log_error)
+        log_func_list.append(print_log_debug)
+        log_func_list.append(print_log_info)
+        log_func_list.append(print_log_warning)
+        log_func_list.append(print_log_error)
 
-        STR_FUNC_LIST.append(print_float_to_str)
-        STR_FUNC_LIST.append(print_log_datetime)
-        STR_FUNC_LIST.append(print_candle_body_str)
-        STR_FUNC_LIST.append(print_z_or_e_str)
-        STR_FUNC_LIST.append(print_or_to_str)
+        str_func_list.append(print_float_to_str)
+        str_func_list.append(print_log_datetime)
+        str_func_list.append(print_candle_body_str)
+        str_func_list.append(print_z_or_e_str)
+        str_func_list.append(print_or_to_str)
 
     elif logger_type == LoggerType.File:
         set_loggers()
-        LOG_FUNC_LIST.append(file_log_debug)
-        LOG_FUNC_LIST.append(file_log_info)
-        LOG_FUNC_LIST.append(file_log_warning)
-        LOG_FUNC_LIST.append(file_log_error)
+        log_func_list.append(file_log_debug)
+        log_func_list.append(file_log_info)
+        log_func_list.append(file_log_warning)
+        log_func_list.append(file_log_error)
 
-        STR_FUNC_LIST.append(file_float_to_str)
-        STR_FUNC_LIST.append(file_log_datetime)
-        STR_FUNC_LIST.append(file_candle_body_str)
-        STR_FUNC_LIST.append(file_z_or_e_str)
-        STR_FUNC_LIST.append(file_or_to_str)
+        str_func_list.append(file_float_to_str)
+        str_func_list.append(file_log_datetime)
+        str_func_list.append(file_candle_body_str)
+        str_func_list.append(file_z_or_e_str)
+        str_func_list.append(file_or_to_str)
 
     elif logger_type == LoggerType.Pass:
-        LOG_FUNC_LIST.append(pass_log_debug)
-        LOG_FUNC_LIST.append(pass_log_info)
-        LOG_FUNC_LIST.append(pass_log_warning)
-        LOG_FUNC_LIST.append(pass_log_error)
+        log_func_list.append(pass_log_debug)
+        log_func_list.append(pass_log_info)
+        log_func_list.append(pass_log_warning)
+        log_func_list.append(pass_log_error)
 
-        STR_FUNC_LIST.append(pass_float_to_str)
-        STR_FUNC_LIST.append(pass_log_datetime)
-        STR_FUNC_LIST.append(pass_candle_body_str)
-        STR_FUNC_LIST.append(pass_z_or_e_str)
-        STR_FUNC_LIST.append(pass_or_to_str)
+        str_func_list.append(pass_float_to_str)
+        str_func_list.append(pass_log_datetime)
+        str_func_list.append(pass_candle_body_str)
+        str_func_list.append(pass_z_or_e_str)
+        str_func_list.append(pass_or_to_str)
 
     else:
         raise Exception("You need to select the correct logger type")
@@ -112,7 +117,7 @@ def final_bt_df_only(
             checker_sl_to_be = long_cm_sl_to_be
             # setting up stop loss be zero or entry
             if static_os.z_or_e_type == ZeroOrEntryType.ZeroLoss:
-                zero_or_entry_calc = sl_to_zero
+                zero_or_entry_calc = long_sl_to_zero
             elif static_os.z_or_e_type == ZeroOrEntryType.AverageEntry:
                 zero_or_entry_calc = sl_to_entry
         else:
@@ -216,8 +221,8 @@ def final_bt_df_only(
         checker_sl_to_be,
         checker_tsl,
         dec_pos_calculator,
-        LOG_FUNC_LIST,
-        STR_FUNC_LIST,
+        log_func_list,
+        str_func_list,
         sl_bcb_price_getter,
         sl_calculator,
         sl_mover,
