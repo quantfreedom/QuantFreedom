@@ -18,8 +18,8 @@ class IndicatorSettings(NamedTuple):
 
 
 ind_set_arrays = IndicatorSettingsArrays(
-    rsi_is_below=np.array([700, 20]),
-    rsi_period=np.array([14, 30]),
+    rsi_is_below=np.array([70, 50, 30]),
+    rsi_period=np.array([14, 20]),
 )
 
 

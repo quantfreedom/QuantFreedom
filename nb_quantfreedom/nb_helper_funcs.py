@@ -2,7 +2,14 @@ import plotly.graph_objects as go
 import numpy as np
 import logging
 import pandas as pd
-from nb_quantfreedom.nb_enums import DynamicOrderSettings, DynamicOrderSettingsArrays, LoggerFuncType, StringerFuncType
+from nb_quantfreedom.nb_enums import (
+    AccountState,
+    DynamicOrderSettings,
+    DynamicOrderSettingsArrays,
+    LoggerFuncType,
+    OrderResult,
+    StringerFuncType,
+)
 from numba import njit
 
 import numpy as np
@@ -52,7 +59,7 @@ def get_to_the_upside_nb(
     to_the_upside = yp_ym_s.sum() / y_ym_s.sum()
 
     if gains_pct <= 0:
-        to_the_upside = -to_the_upside
+        to_the_upside = 0
     return round(to_the_upside, 3)
 
 
@@ -189,6 +196,7 @@ def float_to_str(x: float):
 
     return s
 
+
 @njit(cache=True)
 def min_price_getter(
     bar_index: int,
@@ -242,6 +250,44 @@ def sl_to_z_e_pass(
     price_tick_step,
 ):
     pass
+
+
+@njit(cache=True)
+def fill_order_records(
+    account_state: AccountState,
+    or_index: int,
+    order_records: np.array,
+    order_result: OrderResult,
+):
+    order_records["ind_set_idx"] = account_state.ind_set_index
+    order_records["or_set_idx"] = account_state.dos_index
+    order_records["bar_idx"] = account_state.bar_index
+    order_records["timestamp"] = account_state.timestamp
+
+    order_records["equity"] = account_state.equity
+    order_records["available_balance"] = account_state.available_balance
+    order_records["cash_borrowed"] = account_state.cash_borrowed
+    order_records["cash_used"] = account_state.cash_used
+
+    order_records["average_entry"] = order_result.average_entry
+    order_records["fees_paid"] = account_state.fees_paid
+    order_records["leverage"] = order_result.leverage
+    order_records["liq_price"] = order_result.liq_price
+    order_records["order_status"] = order_result.order_status
+    order_records["possible_loss"] = account_state.possible_loss
+    order_records["total_trades"] = account_state.total_trades
+    order_records["entry_size_asset"] = order_result.entry_size_asset
+    order_records["entry_size_usd"] = order_result.entry_size_usd
+    order_records["entry_price"] = order_result.entry_price
+    order_records["exit_price"] = order_result.exit_price
+    order_records["position_size_asset"] = order_result.position_size_asset
+    order_records["position_size_usd"] = order_result.position_size_usd
+    order_records["realized_pnl"] = account_state.realized_pnl
+    order_records["sl_pct"] = round(order_result.sl_pct * 100, 4)
+    order_records["sl_price"] = order_result.sl_price
+    order_records["tp_pct"] = round(order_result.tp_pct * 100, 4)
+    order_records["tp_price"] = order_result.tp_price
+    return or_index + 1
 
 
 def dos_cart_product(dos_arrays: DynamicOrderSettingsArrays):
