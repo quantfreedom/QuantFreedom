@@ -63,40 +63,28 @@ dl.load((data) => {
 
 // TA + chart update loop
 // setTimeout(update, 0);
-// var count = 0
-// for (count = 0; count < 1000; count++) {
-//   setTimeout(function() {
-//     let data = chart.hub.mainOv.data;
-//     let tick = ticks[count];
-//     let trade = {
-//       price: tick[1],
-//       volume: tick[1] * tick[2],
-//       timestamp: tick[0],
-//     };
-//     if (sampler(data, trade)) {
-//       chart.update("data"); // New candle
-//       chart.scroll(); // Scroll forward
-//     }
-//   }, 1000);
-// }
-
-async function test() {
-  for (let count = 0; count < 1000; count++) {
-    let data = chart.hub.mainOv.data;
-    let tick = ticks[count];
-    let trade = {
-      price: tick[1],
-      volume: tick[1] * tick[2],
-      timestamp: tick[0],
-    };
-    if (sampler(data, trade)) {
-      chart.update("data"); // New candle
-      chart.scroll(); // Scroll forward
-    }
-    await delay(10000);
-    console.log("hi");
+let count = 0;
+function updatebyticks() {
+  let data = chart.hub.mainOv.data;
+  let tick = ticks[count];
+  let trade = {
+    price: tick[1],
+    volume: tick[1] * tick[2],
+    timestamp: tick[0],
+  };
+  if (sampler(data, trade)) {
+    chart.scroll(); // Scroll forward
   }
+  chart.update("data"); // New candle
+  count++;
 }
 
-test();
+const intervalID = setInterval(function () {
+  updatebyticks();
+  if (count == ticks.length) {
+    clearInterval(intervalID);
+    console.log("Interval was cleared");
+  }
+}, 20);
+
 window.chart = chart;
