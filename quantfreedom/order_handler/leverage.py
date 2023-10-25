@@ -1,8 +1,8 @@
 import numpy as np
 from numba import njit
 
-from nb_quantfreedom.nb_enums import CandleBodyType, LoggerFuncType, StringerFuncType
-from nb_quantfreedom.nb_helper_funcs import round_size_by_tick_step
+from quantfreedom.enums import CandleBodyType, LoggerFuncType, StringerFuncType
+from quantfreedom.helper_funcs import round_size_by_tick_step
 
 
 @njit(cache=True)
@@ -25,7 +25,7 @@ def long_calc_liq_price(
     possible_bankruptcy_fee = entry_size_usd * (leverage - 1) / leverage * mmr_pct
     cash_used = initial_margin + fee_to_open + possible_bankruptcy_fee  # math checked
     logger[LoggerFuncType.Debug](
-        "nb_leverage.py - nb_Long_Leverage - calc_liq_price() -"
+        ".leverage.py - .Long_Leverage - calc_liq_price() -"
         + "\ninitial_margin= "
         + stringer[StringerFuncType.float_to_str](round(initial_margin, 3))
         + "\nfee_to_open= "
@@ -38,7 +38,7 @@ def long_calc_liq_price(
 
     if cash_used > og_available_balance:
         logger[LoggerFuncType.Warning](
-            "nb_leverage.py - nb_Long_Leverage - calc_liq_price() - Cash used bigger than available balance"
+            ".leverage.py - .Long_Leverage - calc_liq_price() - Cash used bigger than available balance"
         )
         raise Exception
     else:
@@ -54,7 +54,7 @@ def long_calc_liq_price(
             exchange_num=price_tick_step,
         )
         logger[LoggerFuncType.Debug](
-            "nb_leverage.py - nb_Long_Leverage - calc_liq_price() -"
+            ".leverage.py - .Long_Leverage - calc_liq_price() -"
             + "\navailable_balance= "
             + stringer[StringerFuncType.float_to_str](available_balance)
             + "\nnew cash_used= "
@@ -109,7 +109,7 @@ def long_static_lev(
     )
     leverage = static_leverage
     logger[LoggerFuncType.Debug](
-        "nb_leverage.py - nb_Long_SLev - calculate_leverage() - Lev set to static lev= "
+        ".leverage.py - .Long_SLev - calculate_leverage() - Lev set to static lev= "
         + stringer[StringerFuncType.float_to_str](leverage)
     )
     return (
@@ -146,7 +146,7 @@ def long_dynamic_lev(
     )
     if leverage > max_leverage:
         logger[LoggerFuncType.Debug](
-            "nb_leverage.py - nb_Long_DLev - calculate_leverage() - Lev too high"
+            ".leverage.py - .Long_DLev - calculate_leverage() - Lev too high"
             + " Old Lev= "
             + stringer[StringerFuncType.float_to_str](leverage)
             + " Max Lev= "
@@ -155,7 +155,7 @@ def long_dynamic_lev(
         leverage = max_leverage
     elif leverage < min_leverage:
         logger[LoggerFuncType.Debug](
-            "nb_leverage.py - nb_Long_DLev - calculate_leverage() - Lev too low"
+            ".leverage.py - .Long_DLev - calculate_leverage() - Lev too low"
             + " Old Lev= "
             + stringer[StringerFuncType.float_to_str](leverage)
             + " Min Lev= "
@@ -164,7 +164,7 @@ def long_dynamic_lev(
         leverage = 1
     else:
         logger[LoggerFuncType.Debug](
-            "nb_leverage.py - nb_Long_DLev - calculate_leverage() -"
+            ".leverage.py - .Long_DLev - calculate_leverage() -"
             + " Leverage= "
             + stringer[StringerFuncType.float_to_str](leverage)
         )
@@ -204,11 +204,11 @@ def long_check_liq_hit(
 ):
     candle_low = current_candle[CandleBodyType.Low]
     logger[LoggerFuncType.Debug](
-        "nb_leverage.py - long_check_liq_hit() - candle_low= " + stringer[StringerFuncType.float_to_str](candle_low)
+        ".leverage.py - long_check_liq_hit() - candle_low= " + stringer[StringerFuncType.float_to_str](candle_low)
     )
     if liq_price > candle_low:
-        logger[LoggerFuncType.Debug]("nb_leverage.py - nb_Long_Leverage - check_liq_hit() - Liq Hit")
+        logger[LoggerFuncType.Debug](".leverage.py - .Long_Leverage - check_liq_hit() - Liq Hit")
         return True
     else:
-        logger[LoggerFuncType.Debug]("nb_leverage.py - nb_Long_Leverage - check_liq_hit() - No hit on liq price")
+        logger[LoggerFuncType.Debug](".leverage.py - .Long_Leverage - check_liq_hit() - No hit on liq price")
         return False

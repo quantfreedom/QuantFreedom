@@ -2,14 +2,14 @@ import numpy as np
 from numba import njit, typed
 import pandas as pd
 
-from nb_quantfreedom.nb_enums import *
-from nb_quantfreedom.nb_custom_logger import *
+from quantfreedom.enums import *
+from quantfreedom.custom_logger import *
 
-from nb_quantfreedom.nb_order_handler.nb_decrease_position import decrease_position
-from nb_quantfreedom.nb_order_handler.nb_increase_position import AccExOther, OrderInfo, long_min_amount, long_rpa_slbcb
-from nb_quantfreedom.nb_order_handler.nb_take_profit import long_c_tp_hit_regular, long_tp_rr
-from nb_quantfreedom.nb_order_handler.nb_leverage import long_check_liq_hit, long_dynamic_lev, long_static_lev
-from nb_quantfreedom.nb_helper_funcs import (
+from quantfreedom.order_handler.decrease_position import decrease_position
+from quantfreedom.order_handler.increase_position import AccExOther, OrderInfo, long_min_amount, long_rpa_slbcb
+from quantfreedom.order_handler.take_profit import long_c_tp_hit_regular, long_tp_rr
+from quantfreedom.order_handler.leverage import long_check_liq_hit, long_dynamic_lev, long_static_lev
+from quantfreedom.helper_funcs import (
     fill_order_records,
     get_dos,
     max_price_getter,
@@ -18,7 +18,7 @@ from nb_quantfreedom.nb_helper_funcs import (
     sl_to_z_e_pass,
     long_sl_to_zero,
 )
-from nb_quantfreedom.nb_order_handler.nb_stop_loss import (
+from quantfreedom.order_handler.stop_loss import (
     long_c_sl_hit,
     long_cm_sl_to_be,
     long_cm_sl_to_be_pass,
@@ -392,7 +392,7 @@ def run_sim_or(
         logger=logger,
     )
 
-    logger[LoggerFuncType.Info]("nb_simulate.py - nb_run_backtest() - Indicator settings index=" + str(ind_set_index))
+    logger[LoggerFuncType.Info](".simulate.py - .run_backtest() - Indicator settings index=" + str(ind_set_index))
 
     logger[LoggerFuncType.Info](get_ind_set_str(indicator_settings=indicator_settings, stringer=stringer))
 
@@ -400,9 +400,9 @@ def run_sim_or(
         dos_cart_arrays=dos_cart_arrays,
         dos_index=dos_index,
     )
-    logger[LoggerFuncType.Info]("nb_simulate.py - nb_run_backtest() - Dynamic Order settings index=" + str(dos_index))
+    logger[LoggerFuncType.Info](".simulate.py - .run_backtest() - Dynamic Order settings index=" + str(dos_index))
     # logger[LoggerFuncType.Info](
-    #     "nb_simulate.py - nb_run_backtest() - Created Dynamic Order Settings part 1"
+    #     ".simulate.py - .run_backtest() - Created Dynamic Order Settings part 1"
     #     + "\nentry_size_asset= "
     #     + stringer[StringerFuncType.float_to_str](dynamic_order_settings.entry_size_asset)
     #     + "\nmax_equity_risk_pct= "
@@ -421,7 +421,7 @@ def run_sim_or(
     #     + str(dynamic_order_settings.sl_based_on_lookback)
     # )
     # logger[LoggerFuncType.Info](
-    #     "nb_simulate.py - nb_run_backtest() - Created Dynamic Order Settings part 2"
+    #     ".simulate.py - .run_backtest() - Created Dynamic Order Settings part 2"
     #     + "\nsl_bcb_type= "
     #     + logger.candle_body_str(dynamic_order_settings.sl_bcb_type)
     #     + "\nsl_to_be_cb_type= "
@@ -441,7 +441,7 @@ def run_sim_or(
     # )
 
     starting_bar = dynamic_order_settings.num_candles - 1
-    logger[LoggerFuncType.Info]("nb_simulate.py - nb_run_backtest() - Starting Bar=" + str(starting_bar))
+    logger[LoggerFuncType.Info](".simulate.py - .run_backtest() - Starting Bar=" + str(starting_bar))
 
     account_state = AccountState(
         # where we are at
@@ -478,7 +478,7 @@ def run_sim_or(
     )
 
     logger[LoggerFuncType.Info](
-        "nb_simulate.py - nb_run_backtest() - account state order results pnl array all set to default"
+        ".simulate.py - .run_backtest() - account state order results pnl array all set to default"
     )
     total_bars = candles.shape[0]
     order_records = np.empty(total_bars, dtype=or_dt)
@@ -487,7 +487,7 @@ def run_sim_or(
         logger[LoggerFuncType.Info]("\n\n")
         logger[LoggerFuncType.Info](
             (
-                "nb_simulate.py - nb_run_backtest() - ind_idx="
+                ".simulate.py - .run_backtest() - ind_idx="
                 + str(ind_set_index)
                 + " dos_idx="
                 + str(dos_index)
@@ -501,7 +501,7 @@ def run_sim_or(
         if order_result.position_size_usd > 0:
             try:
                 # checking if sl hit
-                logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - check_stop_loss_hit")
+                logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - check_stop_loss_hit")
                 sl_hit_bool = checker_sl_hit(
                     current_candle=candles[bar_index, :],
                     sl_price=order_result.sl_price,
@@ -509,7 +509,7 @@ def run_sim_or(
                     stringer=stringer,
                 )
                 if sl_hit_bool:
-                    logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - decrease_position")
+                    logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - decrease_position")
                     (
                         account_state,
                         order_result,
@@ -537,7 +537,7 @@ def run_sim_or(
                     raise DecreasePosition
 
                 # checking if liq hit
-                logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - check_liq_hit")
+                logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - check_liq_hit")
                 liq_hit_bool = checker_liq_hit(
                     current_candle=candles[bar_index, :],
                     liq_price=order_result.liq_price,
@@ -545,7 +545,7 @@ def run_sim_or(
                     stringer=stringer,
                 )
                 if liq_hit_bool:
-                    logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - decrease_position")
+                    logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - decrease_position")
                     (
                         account_state,
                         order_result,
@@ -573,7 +573,7 @@ def run_sim_or(
                     raise DecreasePosition
 
                 # checking if tp hit
-                logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - check_tp_hit")
+                logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - check_tp_hit")
                 tp_hit_bool = checker_tp_hit(
                     current_candle=candles[bar_index, :],
                     tp_price=order_result.tp_price,
@@ -581,7 +581,7 @@ def run_sim_or(
                     stringer=stringer,
                 )
                 if tp_hit_bool:
-                    logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - decrease_position")
+                    logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - decrease_position")
                     (
                         account_state,
                         order_result,
@@ -610,7 +610,7 @@ def run_sim_or(
 
                 # checking to move stop loss
 
-                logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - check_move_stop_loss_to_be")
+                logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - check_move_stop_loss_to_be")
                 temp_sl = checker_sl_to_be(
                     average_entry=order_result.average_entry,
                     can_move_sl_to_be=order_result.can_move_sl_to_be,
@@ -625,7 +625,7 @@ def run_sim_or(
                     zero_or_entry_calc=zero_or_entry_calc,
                 )
                 if temp_sl:
-                    logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - move_stop_loss")
+                    logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - move_stop_loss")
                     account_state, order_result = sl_mover(
                         account_state=account_state,
                         bar_index=bar_index,
@@ -648,7 +648,7 @@ def run_sim_or(
                     raise MoveStopLoss
                 # Checking to move trailing stop loss
 
-                logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - check_move_trailing_stop_loss")
+                logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - check_move_trailing_stop_loss")
                 temp_tsl = checker_tsl(
                     average_entry=order_result.average_entry,
                     candle_body_type=dynamic_order_settings.trail_sl_bcb_type,
@@ -661,7 +661,7 @@ def run_sim_or(
                     trail_sl_when_pct=dynamic_order_settings.trail_sl_when_pct,
                 )
                 if temp_tsl:
-                    logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - move_stop_loss")
+                    logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - move_stop_loss")
                     account_state, order_result = sl_mover(
                         account_state=account_state,
                         bar_index=bar_index,
@@ -684,16 +684,14 @@ def run_sim_or(
                     raise MoveStopLoss
 
             # except Exception as e:
-            #     logger[LoggerFuncType.Debug](f"nb_simulate.py - nb_run_backtest() - Checking hit Exception -> {e}")
+            #     logger[LoggerFuncType.Debug](f".simulate.py - .run_backtest() - Checking hit Exception -> {e}")
             #     pass
             except Exception:
-                logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - Checking hit Exception")
+                logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - Checking hit Exception")
                 pass
         else:
-            logger[LoggerFuncType.Debug](
-                "nb_simulate.py - nb_run_backtest() - Not in a pos so not checking SL Liq or TP"
-            )
-        logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - strategy evaluate")
+            logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - Not in a pos so not checking SL Liq or TP")
+        logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - strategy evaluate")
         eval_bool = evaluate(
             bar_index=bar_index,
             starting_bar=starting_bar,
@@ -705,7 +703,7 @@ def run_sim_or(
         )
         if eval_bool:
             try:
-                logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - calculate_stop_loss")
+                logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - calculate_stop_loss")
                 sl_price = sl_calculator(
                     bar_index=bar_index,
                     candles=candles,
@@ -718,7 +716,7 @@ def run_sim_or(
                     sl_bcb_type=dynamic_order_settings.sl_bcb_type,
                 )
 
-                logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - calculate_increase_posotion")
+                logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - calculate_increase_posotion")
                 (
                     average_entry,
                     entry_price,
@@ -755,7 +753,7 @@ def run_sim_or(
                     stringer=stringer,
                 )
 
-                logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - calculate_leverage")
+                logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - calculate_leverage")
                 (
                     available_balance,
                     cash_borrowed,
@@ -779,7 +777,7 @@ def run_sim_or(
                     logger=logger,
                 )
 
-                logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - calculate_take_profit")
+                logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - calculate_take_profit")
                 (
                     can_move_sl_to_be,
                     tp_price,
@@ -796,7 +794,7 @@ def run_sim_or(
                     logger=logger,
                 )
 
-                logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - Recorded Trade")
+                logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - Recorded Trade")
                 account_state = AccountState(
                     # where we are at
                     ind_set_index=ind_set_index,
@@ -836,12 +834,12 @@ def run_sim_or(
                     order_result=order_result,
                     order_records=order_records[or_index],
                 )
-                logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - Account State OrderResult")
+                logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - Account State OrderResult")
             # except Exception as e:
-            #     logger[LoggerFuncType.Debug](f"nb_simulate.py - nb_run_backtest() - Exception hit in eval strat -> {e}")
+            #     logger[LoggerFuncType.Debug](f".simulate.py - .run_backtest() - Exception hit in eval strat -> {e}")
             #     pass
             except Exception:
-                logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - Exception hit in eval strat")
+                logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - Exception hit in eval strat")
                 pass
 
     return order_records[:or_index]

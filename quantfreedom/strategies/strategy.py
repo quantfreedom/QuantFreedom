@@ -1,10 +1,10 @@
 import numpy as np
 from numba import njit
-from nb_quantfreedom.indicators.indicators import qf_calc_rsi
+from quantfreedom.indicators.indicators import qf_calc_rsi
 
 from typing import NamedTuple
 
-from nb_quantfreedom.nb_enums import CandleBodyType, LoggerFuncType, StringerFuncType
+from quantfreedom.enums import CandleBodyType, LoggerFuncType, StringerFuncType
 
 
 class IndicatorSettingsArrays(NamedTuple):
@@ -65,10 +65,10 @@ def strat_bt_create_ind(
             period=indicator_settings.rsi_period,
         )
         rsi = np.around(rsi, 2)
-        logger[LoggerFuncType.Info]("nb_strategy.py - strat_bt_create_ind() - Created RSI")
+        logger[LoggerFuncType.Info](".strategy.py - strat_bt_create_ind() - Created RSI")
         return rsi
     except Exception:
-        logger[LoggerFuncType.Info]("nb_strategy.py - strat_bt_create_ind() - Exception creating RSI")
+        logger[LoggerFuncType.Info](".strategy.py - strat_bt_create_ind() - Exception creating RSI")
         raise Exception
 
 
@@ -86,10 +86,10 @@ def strat_liv_create_ind(
             period=indicator_settings.rsi_period,
         )
         rsi = np.around(rsi, 2)
-        logger[LoggerFuncType.Info]("nb_strategy.py - strat_liv_create_ind() - Created RSI")
+        logger[LoggerFuncType.Info](".strategy.py - strat_liv_create_ind() - Created RSI")
         return rsi
     except Exception:
-        logger[LoggerFuncType.Info]("nb_strategy.py - strat_liv_create_ind() - Exception creating rsi")
+        logger[LoggerFuncType.Info](".strategy.py - strat_liv_create_ind() - Exception creating rsi")
         raise Exception
 
 
@@ -107,7 +107,7 @@ def strat_get_current_ind_settings(
         rsi_is_below=ind_set_arrays.rsi_is_below[ind_set_index],
         rsi_period=ind_set_arrays.rsi_period[ind_set_index],
     )
-    logger[LoggerFuncType.Info]("nb_strategy.py - get_current_ind_settings() - Created indicator settings")
+    logger[LoggerFuncType.Info](".strategy.py - get_current_ind_settings() - Created indicator settings")
     return indicator_settings
 
 
@@ -117,7 +117,7 @@ def strat_get_ind_set_str(
     stringer,
 ):
     msg = (
-        "nb_strategy.py - strat_get_ind_set_str() - "
+        ".strategy.py - strat_get_ind_set_str() - "
         + "RSI Period= "
         + str(indicator_settings.rsi_period)
         + " RSI is below= "
@@ -150,7 +150,7 @@ def strat_evaluate(
         if current_rsi < rsi_is_below:
             logger[LoggerFuncType.Info]("\n\n")
             logger[LoggerFuncType.Info](
-                "nb_strategy.py - evaluate() - Entry time!!! "
+                ".strategy.py - evaluate() - Entry time!!! "
                 + "current rsi= "
                 + stringer[StringerFuncType.float_to_str](current_rsi)
                 + " < rsi_is_below= "
@@ -160,10 +160,10 @@ def strat_evaluate(
             return True
         else:
             logger[LoggerFuncType.Info](
-                "nb_strategy.py - evaluate() - No entry "
+                ".strategy.py - evaluate() - No entry "
                 + "current rsi= "
                 + stringer[StringerFuncType.float_to_str](current_rsi)
             )
             return False
     except Exception:
-        raise Exception("nb_strategy.py - evaluate() - Exception evalutating strat")
+        raise Exception(".strategy.py - evaluate() - Exception evalutating strat")

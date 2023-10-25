@@ -1,6 +1,6 @@
 from numba import njit
 
-from nb_quantfreedom.nb_enums import AccountState, LoggerFuncType, OrderResult, OrderStatus, StringerFuncType
+from quantfreedom.enums import AccountState, LoggerFuncType, OrderResult, OrderStatus, StringerFuncType
 
 
 @njit(cache=True)
@@ -28,7 +28,7 @@ def decrease_position(
     # Setting new equity
     equity = round(realized_pnl + equity, 4)
     logger[LoggerFuncType.Debug](
-        "nb_decrease_position.py - decrease_position() -"
+        ".decrease_position.py - decrease_position() -"
         + "\nrealized_pnl= "
         + stringer[StringerFuncType.float_to_str](realized_pnl)
         + "\nequity= "

@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 import numpy as np
 import logging
 import pandas as pd
-from nb_quantfreedom.nb_enums import (
+from quantfreedom.enums import (
     AccountState,
     DynamicOrderSettings,
     DynamicOrderSettingsArrays,

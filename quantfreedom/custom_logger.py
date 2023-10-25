@@ -3,9 +3,9 @@ from numba.experimental import jitclass
 from datetime import datetime
 import os, logging
 import time
-from nb_quantfreedom.nb_enums import CandleBodyType, OrderStatus, ZeroOrEntryType
+from quantfreedom.enums import CandleBodyType, OrderStatus, ZeroOrEntryType
 
-from nb_quantfreedom.nb_helper_funcs import float_to_str
+from quantfreedom.helper_funcs import float_to_str
 
 DIR_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 FORMATTER = "%(asctime)s - %(levelname)s - %(message)s"
@@ -41,7 +41,7 @@ def set_loggers():
     logger = logging.getLogger("info")
     logger.setLevel(logging.DEBUG)
     logger.addHandler(create_logging_handler(filename, FORMATTER))
-    logger.info("nb_custom_logger.py - nb_RegularLogs - set_loggers() - Testing info log")
+    logger.info(".custom_logger.py - .RegularLogs - set_loggers() - Testing info log")
 
     complete_path = os.path.join(DIR_PATH, "logs", "trades")
     isExist = os.path.exists(complete_path)
@@ -51,7 +51,7 @@ def set_loggers():
     logger = logging.getLogger("trades")
     logger.setLevel(logging.INFO)
     logger.addHandler(create_logging_handler(filename, FORMATTER))
-    logger.info("nb_custom_logger.py - nb_RegularLogs - set_loggers() - Testing trades log")
+    logger.info(".custom_logger.py - .RegularLogs - set_loggers() - Testing trades log")
 
 
 def create_logging_handler(filename: str, FORMATTER: str):
