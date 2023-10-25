@@ -347,7 +347,7 @@ def sim_get_or(
     return order_records_df
 
 
-# @njit(cache=True)
+@njit(cache=True)
 def run_sim_or(
     backtest_settings: BacktestSettings,
     candles: np.array,
