@@ -19,8 +19,7 @@ body {
 let chart = new NightVision("chart-container", {
   autoResize: true,
   colors: { back: "#111113", grid: "#2e2f3055" },
-  // scripts: [Entries, StopLosses, TakeProfits],
-  scripts: [Entries],
+  scripts: [Entries, StopLosses, TakeProfits],
 });
 
 let dl = new DataLoader();
@@ -40,11 +39,11 @@ function updateCandles() {
       let entries = chart.hub.chart.overlays[0].data;
       entries.push(dl.more_entries(counter));
 
-      // let stoploss = chart.hub.chart.overlays[1].data;
-      // stoploss.push(dl.more_sl(counter));
+      let stoploss = chart.hub.chart.overlays[1].data;
+      stoploss.push(dl.more_sl(counter));
 
-      // let takeprofit = chart.hub.chart.overlays[2].data;
-      // takeprofit.push(dl.more_tp(counter));
+      let takeprofit = chart.hub.chart.overlays[2].data;
+      takeprofit.push(dl.more_tp(counter));
 
       // let tp_filled = chart.hub.chart.overlays[3].data;
       // tp_filled.push(dl.more_filled_tp(counter));
@@ -52,7 +51,7 @@ function updateCandles() {
       // let sl_filled = chart.hub.chart.overlays[4].data;
       // sl_filled.push(dl.more_filled_sl(counter));
 
-      let candles = chart.hub.chart.overlays[1].data;
+      let candles = chart.hub.chart.overlays[3].data;
       candles.push(dl.more_candles(counter));
 
       // let rsi = chart.data.panes[1].overlays[0].data;
@@ -67,6 +66,6 @@ function updateCandles() {
   }
 }
 
-setInterval(updateCandles, 200);
+setInterval(updateCandles, 50);
 // Refernce for experiments
 window.chart = chart;
