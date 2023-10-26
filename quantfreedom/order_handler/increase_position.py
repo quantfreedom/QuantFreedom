@@ -41,7 +41,7 @@ def c_too_b_s(
     """
     if entry_size_asset < min_asset_size:
         logger[LoggerFuncType.Warning](
-            ".increase_position.py - c_too_b_s() - entry size too small "
+            "increase_position.py - c_too_b_s() - entry size too small "
             + "entry_size_asset= "
             + stringer[StringerFuncType.float_to_str](entry_size_asset)
             + " < min_asset_size= "
@@ -50,7 +50,7 @@ def c_too_b_s(
         raise RejectedOrder
     elif entry_size_asset > max_asset_size:
         logger[LoggerFuncType.Warning](
-            ".increase_position.py - c_too_b_s() - entry size too big"
+            "increase_position.py - c_too_b_s() - entry size too big"
             + "entry_size_asset= "
             + stringer[StringerFuncType.float_to_str](entry_size_asset)
             + " > max_asset_size= "
@@ -59,7 +59,7 @@ def c_too_b_s(
         raise RejectedOrder
 
     logger[LoggerFuncType.Debug](
-        ".increase_position.py - c_too_b_s() - Entry size is fine"
+        "increase_position.py - c_too_b_s() - Entry size is fine"
         + "entry_size_asset= "
         + stringer[StringerFuncType.float_to_str](entry_size_asset)
     )
@@ -77,18 +77,18 @@ def c_pl_ra_ps(
     """
     Possible loss risk account percent size
     """
-    logger[LoggerFuncType.Debug](".increase_position.py - c_pl_ra_ps() - Inside")
+    logger[LoggerFuncType.Debug]("increase_position.py - c_pl_ra_ps() - Inside")
     possible_loss = round(possible_loss + account_state_equity * risk_account_pct_size, 0)
     logger[LoggerFuncType.Debug](
-        ".increase_position.py - c_pl_ra_ps() -" + " possible_loss= " + str(int(possible_loss))
+        "increase_position.py - c_pl_ra_ps() -" + " possible_loss= " + str(int(possible_loss))
     )
     max_equity_risk = round(account_state_equity * max_equity_risk_pct)
     logger[LoggerFuncType.Debug](
-        ".increase_position.py - c_pl_ra_ps() -" + " max_equity_risk= " + str(int(max_equity_risk))
+        "increase_position.py - c_pl_ra_ps() -" + " max_equity_risk= " + str(int(max_equity_risk))
     )
     if possible_loss > max_equity_risk:
         logger[LoggerFuncType.Warning](
-            ".increase_position.py - c_pl_ra_ps() - Too big"
+            "increase_position.py - c_pl_ra_ps() - Too big"
             + " possible_loss= "
             + str(int(possible_loss))
             + " max risk= "
@@ -97,7 +97,7 @@ def c_pl_ra_ps(
         raise RejectedOrder
     total_trades += 1
     logger[LoggerFuncType.Debug](
-        ".increase_position.py - c_pl_ra_ps() - PL is fine"
+        "increase_position.py - c_pl_ra_ps() - PL is fine"
         + " possible_loss= "
         + str(int(possible_loss))
         + " max risk= "
@@ -129,12 +129,12 @@ def c_total_trades(
     fees_paid = fee_open + fee_close  # math checked
     possible_loss = round(-(pnl - fees_paid), 4)
     logger[LoggerFuncType.Debug](
-        ".increase_position.py - c_total_trades() -" + " possible_loss= " + str(int(possible_loss))
+        "increase_position.py - c_total_trades() -" + " possible_loss= " + str(int(possible_loss))
     )
     total_trades += 1
     if total_trades > max_trades:
         logger[LoggerFuncType.Warning](
-            ".increase_position.py - c_total_trades() - Max trades reached"
+            "increase_position.py - c_total_trades() - Max trades reached"
             + " total trades= "
             + str(int(total_trades))
             + " max trades= "
@@ -144,7 +144,7 @@ def c_total_trades(
         )
         raise RejectedOrder
     logger[LoggerFuncType.Debug](
-        ".increase_position.py - c_total_trades() - Max trades reached "
+        "increase_position.py - c_total_trades() - Max trades reached "
         + "total trades= "
         + str(int(total_trades))
         + " max trades= "
@@ -166,7 +166,7 @@ def long_rpa_slbcb(
     Risking percent of your account while also having your stop loss based open high low or close of a candle
     """
     if order_info.in_position:
-        logger[LoggerFuncType.Debug](".increase_position.py - long_rpa_slbcb() - We are in a position")
+        logger[LoggerFuncType.Debug]("increase_position.py - long_rpa_slbcb() - We are in a position")
         return long_rpa_slbcb_p(
             acc_ex_other=acc_ex_other,
             order_info=order_info,
@@ -174,7 +174,7 @@ def long_rpa_slbcb(
             stringer=stringer,
         )
     else:
-        logger[LoggerFuncType.Debug](".increase_position.py - long_rpa_slbcb() - Not in a position")
+        logger[LoggerFuncType.Debug]("increase_position.py - long_rpa_slbcb() - Not in a position")
         return long_rpa_slbcb_np(
             acc_ex_other=acc_ex_other,
             order_info=order_info,
@@ -208,7 +208,7 @@ def long_rpa_slbcb_p(
     risk_account_pct_size = order_info.risk_account_pct_size
     sl_price = order_info.sl_price
 
-    logger[LoggerFuncType.Debug](".increase_position.py - long_rpa_slbcb_p() - Calculating")
+    logger[LoggerFuncType.Debug]("increase_position.py - long_rpa_slbcb_p() - Calculating")
     possible_loss, total_trades = c_pl_ra_ps(
         logger=logger,
         possible_loss=possible_loss,
@@ -232,7 +232,7 @@ def long_rpa_slbcb_p(
         3,
     )
     logger[LoggerFuncType.Debug](
-        ".increase_position.py - long_rpa_slbcb_p() - "
+        "increase_position.py - long_rpa_slbcb_p() - "
         + "entry_size_usd= "
         + stringer[StringerFuncType.float_to_str](entry_size_usd)
     )
@@ -254,14 +254,14 @@ def long_rpa_slbcb_p(
         exchange_num=asset_tick_step,
     )
     logger[LoggerFuncType.Debug](
-        ".increase_position.py - long_rpa_slbcb_p() - "
+        "increase_position.py - long_rpa_slbcb_p() - "
         + "position_size_asset= "
         + stringer[StringerFuncType.float_to_str](position_size_asset)
     )
 
     position_size_usd = round(entry_size_usd + position_size_usd, 4)
     logger[LoggerFuncType.Debug](
-        ".increase_position.py - long_rpa_slbcb_p() - "
+        "increase_position.py - long_rpa_slbcb_p() - "
         + "position_size_usd= "
         + stringer[StringerFuncType.float_to_str](position_size_usd)
     )
@@ -274,20 +274,20 @@ def long_rpa_slbcb_p(
         exchange_num=price_tick_step,
     )
     logger[LoggerFuncType.Debug](
-        ".increase_position.py - long_rpa_slbcb_p() - "
+        "increase_position.py - long_rpa_slbcb_p() - "
         + "average_entry= "
         + stringer[StringerFuncType.float_to_str](average_entry)
     )
 
     sl_pct = round((average_entry - sl_price) / average_entry, 4)
     logger[LoggerFuncType.Debug](
-        ".increase_position.py - long_rpa_slbcb_p() - "
+        "increase_position.py - long_rpa_slbcb_p() - "
         + "sl_pct= "
         + stringer[StringerFuncType.float_to_str](round(sl_pct * 100, 4))
     )
 
     logger[LoggerFuncType.Info](
-        ".increase_position.py - long_rpa_slbcb_p() - "
+        "increase_position.py - long_rpa_slbcb_p() - "
         + "\naverage_entry= "
         + stringer[StringerFuncType.float_to_str](average_entry)
         + "\nentry_price= "
@@ -344,7 +344,7 @@ def long_rpa_slbcb_np(
     risk_account_pct_size = order_info.risk_account_pct_size
     sl_price = order_info.sl_price
 
-    logger[LoggerFuncType.Debug](".increase_position.py - long_rpa_slbcb_np() - Calculating")
+    logger[LoggerFuncType.Debug]("increase_position.py - long_rpa_slbcb_np() - Calculating")
     possible_loss, total_trades = c_pl_ra_ps(
         logger=logger,
         possible_loss=possible_loss,
@@ -359,7 +359,7 @@ def long_rpa_slbcb_np(
         3,
     )
     logger[LoggerFuncType.Debug](
-        ".increase_position.py - long_rpa_slbcb_np() - "
+        "increase_position.py - long_rpa_slbcb_np() - "
         + "entry_size_usd= "
         + stringer[StringerFuncType.float_to_str](entry_size_usd)
     )
@@ -379,13 +379,13 @@ def long_rpa_slbcb_np(
 
     sl_pct = round((average_entry - sl_price) / average_entry, 4)
     logger[LoggerFuncType.Debug](
-        ".increase_position.py - long_rpa_slbcb_np() - "
+        "increase_position.py - long_rpa_slbcb_np() - "
         + "sl_pct= "
         + stringer[StringerFuncType.float_to_str](round(sl_pct * 100, 4))
     )
 
     logger[LoggerFuncType.Info](
-        ".increase_position.py - long_rpa_slbcb_np() - "
+        "increase_position.py - long_rpa_slbcb_np() - "
         + "\naverage_entry= "
         + stringer[StringerFuncType.float_to_str](average_entry)
         + "\nentry_price= "
@@ -430,7 +430,7 @@ def long_min_amount(
 
     """
     if order_info.in_position:
-        logger[LoggerFuncType.Debug](".increase_position.py - long_min_amount() - We are in a position")
+        logger[LoggerFuncType.Debug]("increase_position.py - long_min_amount() - We are in a position")
         return long_min_amount_p(
             acc_ex_other=acc_ex_other,
             order_info=order_info,
@@ -438,7 +438,7 @@ def long_min_amount(
             stringer=stringer,
         )
     else:
-        logger[LoggerFuncType.Debug](".increase_position.py - long_min_amount() - Not in a position")
+        logger[LoggerFuncType.Debug]("increase_position.py - long_min_amount() - Not in a position")
         return long_min_amount_np(
             acc_ex_other=acc_ex_other,
             order_info=order_info,
@@ -468,16 +468,16 @@ def long_min_amount_p(
     position_size_usd = order_info.position_size_usd
     sl_price = order_info.sl_price
 
-    logger[LoggerFuncType.Debug](".increase_position.py - long_min_amount_p() - Calculating")
+    logger[LoggerFuncType.Debug]("increase_position.py - long_min_amount_p() - Calculating")
 
     position_size_asset += min_asset_size
     entry_size_asset = min_asset_size
     logger[LoggerFuncType.Debug](
-        ".increase_position.py - long_min_amount_p() - entry_size_asset position_size_asset{entry_size_asset, position_size_asset}"
+        "increase_position.py - long_min_amount_p() - entry_size_asset position_size_asset{entry_size_asset, position_size_asset}"
     )
 
     entry_size_usd = round(min_asset_size * entry_price, 4)
-    logger[LoggerFuncType.Debug](".increase_position.py - long_min_amount_p() - entry_size_usd entry_size_usd}")
+    logger[LoggerFuncType.Debug]("increase_position.py - long_min_amount_p() - entry_size_usd entry_size_usd}")
 
     average_entry = (entry_size_usd + position_size_usd) / (
         (entry_size_usd / entry_price) + (position_size_usd / average_entry)
@@ -486,13 +486,13 @@ def long_min_amount_p(
         user_num=average_entry,
         exchange_num=price_tick_step,
     )
-    logger[LoggerFuncType.Debug](".increase_position.py - long_min_amount_p() - average_entry average_entry}")
+    logger[LoggerFuncType.Debug]("increase_position.py - long_min_amount_p() - average_entry average_entry}")
 
     sl_pct = round((average_entry - sl_price) / average_entry, 4)
-    logger[LoggerFuncType.Debug](".increase_position.py - long_min_amount_p() - sl_pct={round(sl_pct*100,2))")
+    logger[LoggerFuncType.Debug]("increase_position.py - long_min_amount_p() - sl_pct={round(sl_pct*100,2))")
 
     position_size_usd = round(entry_size_usd + position_size_usd, 4)
-    logger[LoggerFuncType.Debug](".increase_position.py - long_min_amount_p() - position_size_usd position_size_usd}")
+    logger[LoggerFuncType.Debug]("increase_position.py - long_min_amount_p() - position_size_usd position_size_usd}")
 
     possible_loss, total_trades = c_total_trades(
         logger=logger,
@@ -506,7 +506,7 @@ def long_min_amount_p(
         max_trades=max_trades,
     )
     logger[LoggerFuncType.Debug](
-        ".increase_position.py - long_min_amount_p() - possible_loss, total_trades {possible_loss, total_trades}"
+        "increase_position.py - long_min_amount_p() - possible_loss, total_trades {possible_loss, total_trades}"
     )
 
     c_too_b_s(
@@ -517,7 +517,7 @@ def long_min_amount_p(
         stringer=stringer,
     )
     logger[LoggerFuncType.Info](
-        ".increase_position.py - long_rpa_slbcb_np() - "
+        "increase_position.py - long_rpa_slbcb_np() - "
         + "\naverage_entry= "
         + stringer[StringerFuncType.float_to_str](average_entry)
         + "\nentry_price= "
@@ -570,7 +570,7 @@ def long_min_amount_np(
     position_size_usd = order_info.position_size_usd
     sl_price = order_info.sl_price
 
-    logger[LoggerFuncType.Debug](".increase_position.py - long_min_amount_np() - Calculating")
+    logger[LoggerFuncType.Debug]("increase_position.py - long_min_amount_np() - Calculating")
     entry_size_asset = position_size_asset = min_asset_size
     logger[LoggerFuncType.Debug]("entry_size_asset position_size_asset{entry_size_asset, position_size_asset}")
 
@@ -603,7 +603,7 @@ def long_min_amount_np(
         stringer=stringer,
     )
     logger[LoggerFuncType.Info](
-        ".increase_position.py - long_rpa_slbcb_np() - "
+        "increase_position.py - long_rpa_slbcb_np() - "
         + "\naverage_entry= "
         + stringer[StringerFuncType.float_to_str](average_entry)
         + "\nentry_price= "

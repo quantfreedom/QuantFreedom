@@ -28,7 +28,7 @@ def decrease_position(
     # Setting new equity
     equity = round(realized_pnl + equity, 4)
     logger[LoggerFuncType.Debug](
-        ".decrease_position.py - decrease_position() -"
+        "decrease_position.py - decrease_position() -"
         + "\nrealized_pnl= "
         + stringer[StringerFuncType.float_to_str](realized_pnl)
         + "\nequity= "

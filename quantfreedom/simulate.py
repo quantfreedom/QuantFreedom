@@ -344,58 +344,54 @@ def run_df_backtest(
         )
 
         for dos_index in range(total_order_settings):
-            logger[LoggerFuncType.Info](
-                ".simulate.py - .run_backtest() - Indicator settings index=" + str(ind_set_index)
-            )
+            logger[LoggerFuncType.Info]("simulate.py - run_backtest() - Indicator settings index=" + str(ind_set_index))
             logger[LoggerFuncType.Info](get_ind_set_str(indicator_settings=indicator_settings, stringer=stringer))
             dynamic_order_settings = get_dos(
                 dos_cart_arrays=dos_cart_arrays,
                 dos_index=dos_index,
             )
+            logger[LoggerFuncType.Info]("simulate.py - run_backtest() - Dynamic Order settings index=" + str(dos_index))
             logger[LoggerFuncType.Info](
-                ".simulate.py - .run_backtest() - Dynamic Order settings index=" + str(dos_index)
+                "simulate.py - run_backtest() - Created Dynamic Order Settings part 1"
+                + "\nentry_size_asset= "
+                + stringer[StringerFuncType.float_to_str](dynamic_order_settings.entry_size_asset)
+                + "\nmax_equity_risk_pct= "
+                + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.max_equity_risk_pct * 100, 3))
+                + "\nmax_trades= "
+                + str(dynamic_order_settings.max_trades)
+                + "\nnum_candles= "
+                + str(dynamic_order_settings.num_candles)
+                + "\nrisk_account_pct_size= "
+                + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.risk_account_pct_size * 100, 3))
+                + "\nrisk_reward= "
+                + stringer[StringerFuncType.float_to_str](dynamic_order_settings.risk_reward)
+                + "\nsl_based_on_add_pct= "
+                + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.sl_based_on_add_pct * 100, 3))
+                + "\nsl_based_on_lookback= "
+                + str(dynamic_order_settings.sl_based_on_lookback)
             )
-            # logger[LoggerFuncType.Info](
-            #     ".simulate.py - .run_backtest() - Created Dynamic Order Settings part 1"
-            #     + "\nentry_size_asset= "
-            #     + stringer[StringerFuncType.float_to_str](dynamic_order_settings.entry_size_asset)
-            #     + "\nmax_equity_risk_pct= "
-            #     + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.max_equity_risk_pct * 100, 3))
-            #     + "\nmax_trades= "
-            #     + str(dynamic_order_settings.max_trades)
-            #     + "\nnum_candles= "
-            #     + str(dynamic_order_settings.num_candles)
-            #     + "\nrisk_account_pct_size= "
-            #     + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.risk_account_pct_size * 100, 3))
-            #     + "\nrisk_reward= "
-            #     + stringer[StringerFuncType.float_to_str](dynamic_order_settings.risk_reward)
-            #     + "\nsl_based_on_add_pct= "
-            #     + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.sl_based_on_add_pct * 100, 3))
-            #     + "\nsl_based_on_lookback= "
-            #     + str(dynamic_order_settings.sl_based_on_lookback)
-            # )
-            # logger[LoggerFuncType.Info](
-            #     ".simulate.py - .run_backtest() - Created Dynamic Order Settings part 2"
-            #     + "\nsl_bcb_type= "
-            #     + logger.candle_body_str(dynamic_order_settings.sl_bcb_type)
-            #     + "\nsl_to_be_cb_type= "
-            #     + logger.candle_body_str(dynamic_order_settings.sl_to_be_cb_type)
-            #     + "\nsl_to_be_when_pct= "
-            #     + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.sl_to_be_when_pct * 100, 3))
-            #     + "\nsl_to_be_ze_type= "
-            #     + logger.z_or_e_str(dynamic_order_settings.sl_to_be_ze_type)
-            #     + "\nstatic_leverage= "
-            #     + stringer[StringerFuncType.float_to_str](dynamic_order_settings.static_leverage)
-            #     + "\ntrail_sl_bcb_type= "
-            #     + logger.candle_body_str(dynamic_order_settings.trail_sl_bcb_type)
-            #     + "\ntrail_sl_by_pct= "
-            #     + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_by_pct * 100, 3))
-            #     + "\ntrail_sl_when_pct= "
-            #     + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_when_pct * 100, 3))
-            # )
+            logger[LoggerFuncType.Info](
+                "simulate.py - run_backtest() - Created Dynamic Order Settings part 2"
+                + "\nsl_bcb_type= "
+                + stringer[StringerFuncType.candle_body_str](dynamic_order_settings.sl_bcb_type)
+                + "\nsl_to_be_cb_type= "
+                + stringer[StringerFuncType.candle_body_str](dynamic_order_settings.sl_to_be_cb_type)
+                + "\nsl_to_be_when_pct= "
+                + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.sl_to_be_when_pct * 100, 3))
+                + "\nsl_to_be_ze_type= "
+                + stringer[StringerFuncType.z_or_e_str](dynamic_order_settings.sl_to_be_ze_type)
+                + "\nstatic_leverage= "
+                + stringer[StringerFuncType.float_to_str](dynamic_order_settings.static_leverage)
+                + "\ntrail_sl_bcb_type= "
+                + stringer[StringerFuncType.candle_body_str](dynamic_order_settings.trail_sl_bcb_type)
+                + "\ntrail_sl_by_pct= "
+                + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_by_pct * 100, 3))
+                + "\ntrail_sl_when_pct= "
+                + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_when_pct * 100, 3))
+            )
 
             starting_bar = dynamic_order_settings.num_candles - 1
-            logger[LoggerFuncType.Info](".simulate.py - .run_backtest() - Starting Bar=" + str(starting_bar))
+            logger[LoggerFuncType.Info]("simulate.py - run_backtest() - Starting Bar=" + str(starting_bar))
 
             account_state = AccountState(
                 # where we are at
@@ -436,13 +432,13 @@ def run_df_backtest(
 
             total_fees_paid = 0
             logger[LoggerFuncType.Info](
-                ".simulate.py - .run_backtest() - account state order results pnl array all set to default"
+                "simulate.py - run_backtest() - account state order results pnl array all set to default"
             )
             for bar_index in range(starting_bar, total_bars):
                 logger[LoggerFuncType.Info]("\n\n")
                 logger[LoggerFuncType.Info](
                     (
-                        ".simulate.py - .run_backtest() - ind_idx="
+                        "simulate.py - run_backtest() - ind_idx="
                         + str(ind_set_index)
                         + " dos_idx="
                         + str(dos_index)
@@ -456,7 +452,7 @@ def run_df_backtest(
                 if order_result.position_size_usd > 0:
                     try:
                         # checking if sl hit
-                        logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - check_stop_loss_hit")
+                        logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - check_stop_loss_hit")
                         sl_hit_bool = checker_sl_hit(
                             current_candle=candles[bar_index, :],
                             sl_price=order_result.sl_price,
@@ -464,7 +460,7 @@ def run_df_backtest(
                             stringer=stringer,
                         )
                         if sl_hit_bool:
-                            logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - decrease_position")
+                            logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - decrease_position")
                             (
                                 account_state,
                                 order_result,
@@ -489,7 +485,7 @@ def run_df_backtest(
                             raise DecreasePosition
 
                         # checking if liq hit
-                        logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - check_liq_hit")
+                        logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - check_liq_hit")
                         liq_hit_bool = checker_liq_hit(
                             current_candle=candles[bar_index, :],
                             liq_price=order_result.liq_price,
@@ -497,7 +493,7 @@ def run_df_backtest(
                             stringer=stringer,
                         )
                         if liq_hit_bool:
-                            logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - decrease_position")
+                            logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - decrease_position")
                             (
                                 account_state,
                                 order_result,
@@ -522,7 +518,7 @@ def run_df_backtest(
                             raise DecreasePosition
 
                         # checking if tp hit
-                        logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - check_tp_hit")
+                        logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - check_tp_hit")
                         tp_hit_bool = checker_tp_hit(
                             current_candle=candles[bar_index, :],
                             tp_price=order_result.tp_price,
@@ -530,7 +526,7 @@ def run_df_backtest(
                             stringer=stringer,
                         )
                         if tp_hit_bool:
-                            logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - decrease_position")
+                            logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - decrease_position")
                             (
                                 account_state,
                                 order_result,
@@ -556,7 +552,7 @@ def run_df_backtest(
 
                         # checking to move stop loss
 
-                        logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - check_move_stop_loss_to_be")
+                        logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - check_move_stop_loss_to_be")
                         temp_sl = checker_sl_to_be(
                             average_entry=order_result.average_entry,
                             can_move_sl_to_be=order_result.can_move_sl_to_be,
@@ -571,7 +567,7 @@ def run_df_backtest(
                             zero_or_entry_calc=zero_or_entry_calc,
                         )
                         if temp_sl:
-                            logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - move_stop_loss")
+                            logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - move_stop_loss")
                             account_state, order_result = sl_mover(
                                 account_state=account_state,
                                 bar_index=bar_index,
@@ -588,7 +584,7 @@ def run_df_backtest(
 
                         # Checking to move trailing stop loss
 
-                        logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - check_move_trailing_stop_loss")
+                        logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - check_move_trailing_stop_loss")
                         temp_tsl = checker_tsl(
                             average_entry=order_result.average_entry,
                             candle_body_type=dynamic_order_settings.trail_sl_bcb_type,
@@ -601,7 +597,7 @@ def run_df_backtest(
                             trail_sl_when_pct=dynamic_order_settings.trail_sl_when_pct,
                         )
                         if temp_tsl:
-                            logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - move_stop_loss")
+                            logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - move_stop_loss")
                             account_state, order_result = sl_mover(
                                 account_state=account_state,
                                 bar_index=bar_index,
@@ -617,17 +613,17 @@ def run_df_backtest(
                             )
                     # except Exception as e:
                     #     logger[LoggerFuncType.Debug](
-                    #         f".simulate.py - .run_backtest() - Checking hit Exception -> {e}"
+                    #         f"simulate.py - run_backtest() - Checking hit Exception -> {e}"
                     #     )
                     #     pass
                     except Exception:
-                        logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - Checking hit Exception")
+                        logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - Checking hit Exception")
                         pass
                 else:
                     logger[LoggerFuncType.Debug](
-                        ".simulate.py - .run_backtest() - Not in a pos so not checking SL Liq or TP"
+                        "simulate.py - run_backtest() - Not in a pos so not checking SL Liq or TP"
                     )
-                logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - strategy evaluate")
+                logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - strategy evaluate")
                 eval_bool = evaluate(
                     bar_index=bar_index,
                     starting_bar=starting_bar,
@@ -639,7 +635,7 @@ def run_df_backtest(
                 )
                 if eval_bool:
                     try:
-                        logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - calculate_stop_loss")
+                        logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - calculate_stop_loss")
                         sl_price = sl_calculator(
                             bar_index=bar_index,
                             candles=candles,
@@ -652,7 +648,7 @@ def run_df_backtest(
                             sl_bcb_type=dynamic_order_settings.sl_bcb_type,
                         )
 
-                        logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - calculate_increase_posotion")
+                        logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - calculate_increase_posotion")
                         (
                             average_entry,
                             entry_price,
@@ -689,7 +685,7 @@ def run_df_backtest(
                             stringer=stringer,
                         )
 
-                        logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - calculate_leverage")
+                        logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - calculate_leverage")
                         (
                             available_balance,
                             cash_borrowed,
@@ -713,7 +709,7 @@ def run_df_backtest(
                             logger=logger,
                         )
 
-                        logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - calculate_take_profit")
+                        logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - calculate_take_profit")
                         (
                             can_move_sl_to_be,
                             tp_price,
@@ -730,7 +726,7 @@ def run_df_backtest(
                             logger=logger,
                         )
 
-                        logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - Recorded Trade")
+                        logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - Recorded Trade")
                         account_state = AccountState(
                             # where we are at
                             ind_set_index=ind_set_index,
@@ -764,21 +760,21 @@ def run_df_backtest(
                             tp_pct=tp_pct,
                             tp_price=tp_price,
                         )
-                        logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - Account State OrderResult")
+                        logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - Account State OrderResult")
                     # except Exception as e:
                     #     logger[LoggerFuncType.Debug](
-                    #         f".simulate.py - .run_backtest() - Exception hit in eval strat -> {e}"
+                    #         f"simulate.py - run_backtest() - Exception hit in eval strat -> {e}"
                     #     )
                     #     pass
                     except Exception:
-                        logger[LoggerFuncType.Debug](".simulate.py - .run_backtest() - Exception hit in eval strat")
+                        logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - Exception hit in eval strat")
                         pass
             # Checking if gains
             gains_pct = round(((account_state.equity - starting_equity) / starting_equity) * 100, 2)
             wins_and_losses_array = pnl_array[~np.isnan(pnl_array)]
             total_trades_closed = wins_and_losses_array.size
             logger[LoggerFuncType.Info](
-                ".simulate.py - .run_backtest() - Results from backtest\n"
+                "simulate.py - run_backtest() - Results from backtest\n"
                 + "\nind_set_index= "
                 + str(ind_set_index)
                 + "\ndos_index= "

@@ -41,7 +41,7 @@ def set_loggers():
     logger = logging.getLogger("info")
     logger.setLevel(logging.DEBUG)
     logger.addHandler(create_logging_handler(filename, FORMATTER))
-    logger.info(".custom_logger.py - .RegularLogs - set_loggers() - Testing info log")
+    logger.info("custom_logger.py - set_loggers() - Testing info log")
 
     complete_path = os.path.join(DIR_PATH, "logs", "trades")
     isExist = os.path.exists(complete_path)
@@ -51,7 +51,7 @@ def set_loggers():
     logger = logging.getLogger("trades")
     logger.setLevel(logging.INFO)
     logger.addHandler(create_logging_handler(filename, FORMATTER))
-    logger.info(".custom_logger.py - .RegularLogs - set_loggers() - Testing trades log")
+    logger.info("custom_logger.py - set_loggers() - Testing trades log")
 
 
 def create_logging_handler(filename: str, FORMATTER: str):
