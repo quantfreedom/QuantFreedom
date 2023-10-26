@@ -352,7 +352,7 @@ def run_df_backtest(
             )
             logger[LoggerFuncType.Info]("simulate.py - run_backtest() - Dynamic Order settings index=" + str(dos_index))
             logger[LoggerFuncType.Info](
-                "simulate.py - run_backtest() - Created Dynamic Order Settings part 1"
+                "simulate.py - run_backtest() - Created Dynamic Order Settings"
                 + "\nentry_size_asset= "
                 + stringer[StringerFuncType.float_to_str](dynamic_order_settings.entry_size_asset)
                 + "\nmax_equity_risk_pct= "
@@ -369,9 +369,6 @@ def run_df_backtest(
                 + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.sl_based_on_add_pct * 100, 3))
                 + "\nsl_based_on_lookback= "
                 + str(dynamic_order_settings.sl_based_on_lookback)
-            )
-            logger[LoggerFuncType.Info](
-                "simulate.py - run_backtest() - Created Dynamic Order Settings part 2"
                 + "\nsl_bcb_type= "
                 + stringer[StringerFuncType.candle_body_str](dynamic_order_settings.sl_bcb_type)
                 + "\nsl_to_be_cb_type= "

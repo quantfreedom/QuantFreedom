@@ -27,6 +27,9 @@ class Exchange:
         self.secret_key = secret_key
         self.use_test_net = use_test_net
 
+    def get_candles(self, **vargs):
+        pass
+
     def cancel_open_order(self, *vargs):
         pass
 
@@ -94,10 +97,14 @@ class Exchange:
             return timeframe_in_ms * limit
 
     def get_timeframe_in_ms(self, timeframe):
+        timeframe_in_ms = int(
+            timedelta(minutes=TIMEFRAMES_IN_MINUTES[UNIVERSAL_TIMEFRAMES.index(timeframe)]).seconds * 1000
+        )
+        return timeframe_in_ms
+
+    def get_exchange_timeframe(self, ex_timeframe, timeframe):
         try:
-            timeframe_in_ms = int(
-                timedelta(minutes=TIMEFRAMES_IN_MINUTES[UNIVERSAL_TIMEFRAMES.index(timeframe)]).seconds * 1000
-            )
-            return timeframe_in_ms
-        except TypeError as e:
-            raise TypeError(f"You need to send the following {UNIVERSAL_TIMEFRAMES} -> {e}")
+            timeframe = ex_timeframe[UNIVERSAL_TIMEFRAMES.index(timeframe)]
+        except Exception as e:
+            Exception(f"Use one of these timeframes - {UNIVERSAL_TIMEFRAMES} -> {e}")
+        return timeframe

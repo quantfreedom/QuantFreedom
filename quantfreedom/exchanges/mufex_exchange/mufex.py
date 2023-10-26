@@ -187,7 +187,7 @@ class Mufex(Exchange):
     ###################################################################
     """
 
-    def get_candles_df(
+    def get_candles(
         self,
         symbol: str,
         timeframe: str,
@@ -200,13 +200,13 @@ class Mufex(Exchange):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
 
-        timeframe: 1 3 5 15 30 60 120 240 360 720 "D" "M" "W"
+        timeframe: "1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"
 
         returning dict is [start, open, high, low, close, volume, turnover]
 
         use link to see all Request Parameters
         """
-        mufex_timeframe = self.__get_mufex_timeframe(timeframe=timeframe)
+        mufex_timeframe = self.get_exchange_timeframe(ex_timeframe=MUFEX_TIMEFRAMES, timeframe=timeframe)
         timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
         candles_to_dl_ms = self.get_candles_to_dl_in_ms(candles_to_dl, timeframe_in_ms=timeframe_in_ms, limit=limit)
 
@@ -219,10 +219,6 @@ class Mufex(Exchange):
         else:
             if since_date_ms is None:
                 since_date_ms = until_date_ms - candles_to_dl_ms - 5000  # 5000 is to sub 5 seconds
-
-        info_logger.debug(
-            f"since_date_ms={self.get_ms_time_to_pd_datetime(since_date_ms)} until_date_ms={self.get_ms_time_to_pd_datetime(until_date_ms)}, candles to dl={candles_to_dl_ms}"
-        )
 
         candles_list = []
         end_point = "/public/v1/market/kline"
@@ -749,11 +745,6 @@ class Mufex(Exchange):
     ##############################################################
     ##############################################################
     """
-
-    def __get_mufex_timeframe(self, timeframe):
-        timeframe = MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
-        info_logger.debug(f"returning {timeframe}")
-        return timeframe
 
     def set_leverage_mode_isolated(self, symbol: str):
         true_false = self.set_leverage_mode(symbol=symbol, leverage_mode=1)
