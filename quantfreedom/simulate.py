@@ -507,7 +507,7 @@ def run_df_backtest(
                                 dos_index=dos_index,
                                 equity=account_state.equity,
                                 exit_fee_pct=market_fee_pct,
-                                exit_price=order_result.sl_price,
+                                exit_price=order_result.liq_price,
                                 ind_set_index=ind_set_index,
                                 logger=logger,
                                 market_fee_pct=market_fee_pct,
@@ -540,7 +540,7 @@ def run_df_backtest(
                                 dos_index=dos_index,
                                 equity=account_state.equity,
                                 exit_fee_pct=exit_fee_pct,
-                                exit_price=order_result.sl_price,
+                                exit_price=order_result.tp_price,
                                 ind_set_index=ind_set_index,
                                 logger=logger,
                                 market_fee_pct=market_fee_pct,
@@ -806,7 +806,9 @@ def run_df_backtest(
                     # Checking to the upside filter
                     if to_the_upside > backtest_settings.upside_filter:
                         win_loss = np.where(wins_and_losses_array_no_be < 0, 0, 1)
-                        win_rate = round(np.count_nonzero(win_loss) / win_loss.size * 100, 2)
+                        wins = np.count_nonzero(win_loss)
+                        losses = win_loss.size - wins
+                        win_rate = round(wins / win_loss.size * 100, 2)
 
                         total_pnl = wins_and_losses_array.sum()
 
@@ -814,6 +816,8 @@ def run_df_backtest(
                         strategy_result_records[result_records_filled]["ind_set_idx"] = ind_set_index
                         strategy_result_records[result_records_filled]["dos_index"] = dos_index
                         strategy_result_records[result_records_filled]["total_trades"] = wins_and_losses_array.size
+                        strategy_result_records[result_records_filled]["wins"] = wins
+                        strategy_result_records[result_records_filled]["losses"] = losses
                         strategy_result_records[result_records_filled]["gains_pct"] = gains_pct
                         strategy_result_records[result_records_filled]["win_rate"] = win_rate
                         strategy_result_records[result_records_filled]["to_the_upside"] = to_the_upside
