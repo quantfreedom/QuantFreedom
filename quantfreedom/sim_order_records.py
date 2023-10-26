@@ -402,7 +402,7 @@ def run_sim_or(
     )
     logger[LoggerFuncType.Info]("simulate.py - run_backtest() - Dynamic Order settings index=" + str(dos_index))
     logger[LoggerFuncType.Info](
-        "simulate.py - run_backtest() - Created Dynamic Order Settings part 1"
+        "simulate.py - run_backtest() - Created Dynamic Order Settings"
         + "\nentry_size_asset= "
         + stringer[StringerFuncType.float_to_str](dynamic_order_settings.entry_size_asset)
         + "\nmax_equity_risk_pct= "
@@ -419,9 +419,6 @@ def run_sim_or(
         + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.sl_based_on_add_pct * 100, 3))
         + "\nsl_based_on_lookback= "
         + str(dynamic_order_settings.sl_based_on_lookback)
-    )
-    logger[LoggerFuncType.Info](
-        "simulate.py - run_backtest() - Created Dynamic Order Settings part 2"
         + "\nsl_bcb_type= "
         + stringer[StringerFuncType.candle_body_str](dynamic_order_settings.sl_bcb_type)
         + "\nsl_to_be_cb_type= "
@@ -439,6 +436,44 @@ def run_sim_or(
         + "\ntrail_sl_when_pct= "
         + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_when_pct * 100, 3))
     )
+    # logger[LoggerFuncType.Info](
+    #     "simulate.py - run_backtest() - Created Dynamic Order Settings part 1"
+    #     + "\nentry_size_asset= "
+    #     + stringer[StringerFuncType.float_to_str](dynamic_order_settings.entry_size_asset)
+    #     + "\nmax_equity_risk_pct= "
+    #     + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.max_equity_risk_pct * 100, 3))
+    #     + "\nmax_trades= "
+    #     + str(dynamic_order_settings.max_trades)
+    #     + "\nnum_candles= "
+    #     + str(dynamic_order_settings.num_candles)
+    #     + "\nrisk_account_pct_size= "
+    #     + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.risk_account_pct_size * 100, 3))
+    #     + "\nrisk_reward= "
+    #     + stringer[StringerFuncType.float_to_str](dynamic_order_settings.risk_reward)
+    #     + "\nsl_based_on_add_pct= "
+    #     + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.sl_based_on_add_pct * 100, 3))
+    #     + "\nsl_based_on_lookback= "
+    #     + str(dynamic_order_settings.sl_based_on_lookback)
+    # )
+    # logger[LoggerFuncType.Info](
+    #     "simulate.py - run_backtest() - Created Dynamic Order Settings part 2"
+    #     + "\nsl_bcb_type= "
+    #     + stringer[StringerFuncType.candle_body_str](dynamic_order_settings.sl_bcb_type)
+    #     + "\nsl_to_be_cb_type= "
+    #     + stringer[StringerFuncType.candle_body_str](dynamic_order_settings.sl_to_be_cb_type)
+    #     + "\nsl_to_be_when_pct= "
+    #     + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.sl_to_be_when_pct * 100, 3))
+    #     + "\nsl_to_be_ze_type= "
+    #     + stringer[StringerFuncType.z_or_e_str](dynamic_order_settings.sl_to_be_ze_type)
+    #     + "\nstatic_leverage= "
+    #     + stringer[StringerFuncType.float_to_str](dynamic_order_settings.static_leverage)
+    #     + "\ntrail_sl_bcb_type= "
+    #     + stringer[StringerFuncType.candle_body_str](dynamic_order_settings.trail_sl_bcb_type)
+    #     + "\ntrail_sl_by_pct= "
+    #     + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_by_pct * 100, 3))
+    #     + "\ntrail_sl_when_pct= "
+    #     + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_when_pct * 100, 3))
+    # )
 
     starting_bar = dynamic_order_settings.num_candles - 1
     logger[LoggerFuncType.Info]("simulate.py - run_backtest() - Starting Bar=" + str(starting_bar))

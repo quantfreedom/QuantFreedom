@@ -149,7 +149,6 @@ def print_log_datetime(number: float):
 
 @njit(cache=True)
 def print_candle_body_str(number: float):
-    print("candle body str")
     if number == 0:
         answer = "Timestamp"
     if number == 1:
@@ -169,7 +168,6 @@ def print_candle_body_str(number: float):
 
 @njit(cache=True)
 def print_z_or_e_str(number: float):
-    print("candle body str")
     if number == 0:
         answer = "ZeroLoss"
     if number == 1:
@@ -181,7 +179,6 @@ def print_z_or_e_str(number: float):
 
 @njit(cache=True)
 def print_or_to_str(number: float):
-    print("candle body str")
     if number == 0:
         answer = "HitMaxTrades"
     if number == 1:
