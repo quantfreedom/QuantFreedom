@@ -1,11 +1,10 @@
 import numpy as np
-from numba import njit
 
 from quantfreedom.helper_funcs import round_size_by_tick_step
 from quantfreedom.enums import AccountState, CandleBodyType, LoggerFuncType, OrderResult, StringerFuncType
 
 
-@njit(cache=True)
+
 def long_c_sl_hit(
     logger,
     stringer,
@@ -25,7 +24,7 @@ def long_c_sl_hit(
         return False
 
 
-@njit(cache=True)
+
 def long_cm_sl_to_be_pass(
     average_entry: float,
     can_move_sl_to_be: bool,
@@ -45,7 +44,7 @@ def long_cm_sl_to_be_pass(
     return 0.0
 
 
-@njit(cache=True)
+
 def long_cm_sl_to_be(
     average_entry: float,
     can_move_sl_to_be: bool,
@@ -94,7 +93,7 @@ def long_cm_sl_to_be(
         0.0
 
 
-@njit(cache=True)
+
 def long_cm_tsl_pass(
     average_entry: float,
     candle_body_type: CandleBodyType,
@@ -109,7 +108,7 @@ def long_cm_tsl_pass(
     return 0.0
 
 
-@njit(cache=True)
+
 def long_cm_tsl(
     average_entry: float,
     candle_body_type: CandleBodyType,
@@ -157,7 +156,7 @@ def long_cm_tsl(
         return 0.0
 
 
-@njit(cache=True)
+
 def long_sl_bcb(
     bar_index: int,
     candles: np.array,
@@ -197,7 +196,7 @@ def long_sl_bcb(
     return sl_price
 
 
-@njit(cache=True)
+
 def move_stop_loss(
     account_state: AccountState,
     bar_index: int,
@@ -254,7 +253,7 @@ def move_stop_loss(
     return account_state, order_result
 
 
-@njit(cache=True)
+
 def move_stop_loss_pass(
     account_state: AccountState,
     bar_index: int,

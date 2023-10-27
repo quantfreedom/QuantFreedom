@@ -1,6 +1,7 @@
 my_stuff/
 logs/
 docs/
+nb_funcs/
 .ipynb_checkpoints
 .vscode
 .idea

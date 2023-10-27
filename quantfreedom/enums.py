@@ -1,7 +1,5 @@
 from typing import NamedTuple
 import numpy as np
-import os
-from numba.experimental import jitclass
 
 
 class CandleProcessingTypeT(NamedTuple):
@@ -54,9 +52,35 @@ class LeverageStrategyTypeT(NamedTuple):
 LeverageStrategyType = LeverageStrategyTypeT()
 
 
+class LoggerTypeT(NamedTuple):
+    File: int = 0
+    Pass: int = 1
+
+
+LoggerType = LoggerTypeT()
+
+
+class LoggerFuncTypeT(NamedTuple):
+    Debug: int = 0
+    Info: int = 1
+    Warning: int = 2
+    Error: int = 4
+
+
+LoggerFuncType = LoggerFuncTypeT()
+
+
 class OrderPlacementTypeT(NamedTuple):
     Limit: int = 0
     Market: int = 1
+
+
+class NBLoggerTypeT(NamedTuple):
+    Print: int = 0
+    Pass: int = 1
+
+
+NBLoggerType = NBLoggerTypeT()
 
 
 OrderPlacementType = OrderPlacementTypeT()
@@ -80,25 +104,6 @@ class OrderStatusT(NamedTuple):
 
 
 OrderStatus = OrderStatusT()
-
-
-class LoggerTypeT(NamedTuple):
-    Pass: int = 0
-    Print: int = 1
-    File: int = 2
-
-
-LoggerType = LoggerTypeT()
-
-
-class LoggerFuncTypeT(NamedTuple):
-    Debug: int = 0
-    Info: int = 1
-    Warning: int = 2
-    Error: int = 4
-
-
-LoggerFuncType = LoggerFuncTypeT()
 
 
 class LongOrShortTypeT(NamedTuple):

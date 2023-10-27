@@ -1,7 +1,6 @@
 import numpy as np
-from numba import njit, typed
 import pandas as pd
-
+from numba import types, typed
 from quantfreedom.enums import *
 from quantfreedom.custom_logger import *
 
@@ -11,9 +10,11 @@ from quantfreedom.order_handler.take_profit import long_c_tp_hit_regular, long_t
 from quantfreedom.order_handler.leverage import long_check_liq_hit, long_dynamic_lev, long_static_lev
 from quantfreedom.helper_funcs import (
     fill_order_records,
+    get_data_for_plotting,
     get_dos,
     max_price_getter,
     min_price_getter,
+    order_records_to_df,
     sl_to_entry,
     sl_to_z_e_pass,
     long_sl_to_zero,
@@ -46,11 +47,6 @@ def sim_get_or(
     starting_equity: float,
     static_os: StaticOrderSettings,
 ):
-    log_func_type = types.void(types.unicode_type)
-    log_func_list = typed.List.empty_list(log_func_type.as_type())
-
-    str_func_type = types.unicode_type(types.float64)
-    str_func_list = typed.List.empty_list(str_func_type.as_type())
     """
     #########################################
     #########################################
@@ -62,20 +58,10 @@ def sim_get_or(
     #########################################
     #########################################
     """
+    log_func_list = []
+    str_func_list = []
 
-    if logger_type == LoggerType.Print:
-        log_func_list.append(print_log_debug)
-        log_func_list.append(print_log_info)
-        log_func_list.append(print_log_warning)
-        log_func_list.append(print_log_error)
-
-        str_func_list.append(print_float_to_str)
-        str_func_list.append(print_log_datetime)
-        str_func_list.append(print_candle_body_str)
-        str_func_list.append(print_z_or_e_str)
-        str_func_list.append(print_or_to_str)
-
-    elif logger_type == LoggerType.File:
+    if logger_type == LoggerType.File:
         set_loggers()
         log_func_list.append(file_log_debug)
         log_func_list.append(file_log_info)
@@ -99,9 +85,10 @@ def sim_get_or(
         str_func_list.append(stringer_pass)
         str_func_list.append(stringer_pass)
         str_func_list.append(stringer_pass)
+        
 
     else:
-        raise Exception("You need to select the correct logger type")
+        raise Exception("You need to select the correct logger type of file or pass")
     """
     #########################################
     #########################################
@@ -272,82 +259,10 @@ def sim_get_or(
         tp_calculator=tp_calculator,
         zero_or_entry_calc=zero_or_entry_calc,
     )
-    order_records_df = pd.DataFrame(order_records)
-    order_records_df.insert(4, "datetime", pd.to_datetime(order_records_df.timestamp, unit="ms"))
-    order_records_df.replace(
-        {
-            "order_status": {
-                0: "HitMaxTrades",
-                1: "EntryFilled",
-                2: "StopLossFilled",
-                3: "TakeProfitFilled",
-                4: "LiquidationFilled",
-                5: "MovedSLToBE",
-                6: "MovedTSL",
-                7: "MaxEquityRisk",
-                8: "RiskToBig",
-                9: "CashUsedExceed",
-                10: "EntrySizeTooSmall",
-                11: "EntrySizeTooBig",
-                12: "PossibleLossTooBig",
-                13: "Nothing",
-            }
-        },
-        inplace=True,
-    )
-    order_records_df[
-        [
-            "equity",
-            "available_balance",
-            "cash_borrowed",
-            "cash_used",
-            "average_entry",
-            "fees_paid",
-            "leverage",
-            "liq_price",
-            "possible_loss",
-            "entry_size_asset",
-            "entry_size_usd",
-            "entry_price",
-            "exit_price",
-            "position_size_asset",
-            "position_size_usd",
-            "realized_pnl",
-            "sl_pct",
-            "sl_price",
-            "tp_pct",
-            "tp_price",
-        ]
-    ] = order_records_df[
-        [
-            "equity",
-            "available_balance",
-            "cash_borrowed",
-            "cash_used",
-            "average_entry",
-            "fees_paid",
-            "leverage",
-            "liq_price",
-            "possible_loss",
-            "entry_size_asset",
-            "entry_size_usd",
-            "entry_price",
-            "exit_price",
-            "position_size_asset",
-            "position_size_usd",
-            "realized_pnl",
-            "sl_pct",
-            "sl_price",
-            "tp_pct",
-            "tp_price",
-        ]
-    ].replace(
-        {0: np.nan}
-    )
+    order_records_df = order_records_to_df(order_records)
     return order_records_df
 
 
-@njit(cache=True)
 def run_sim_or(
     backtest_settings: BacktestSettings,
     candles: np.array,
@@ -392,7 +307,9 @@ def run_sim_or(
         logger=logger,
     )
 
-    logger[LoggerFuncType.Info]("sim_ordder_records.py - run_backtest() - Indicator settings index=" + str(ind_set_index))
+    logger[LoggerFuncType.Info](
+        "sim_ordder_records.py - run_backtest() - Indicator settings index=" + str(ind_set_index)
+    )
 
     logger[LoggerFuncType.Info](get_ind_set_str(indicator_settings=indicator_settings, stringer=stringer))
 
@@ -400,7 +317,9 @@ def run_sim_or(
         dos_cart_arrays=dos_cart_arrays,
         dos_index=dos_index,
     )
-    logger[LoggerFuncType.Info]("sim_ordder_records.py - run_backtest() - Dynamic Order settings index=" + str(dos_index))
+    logger[LoggerFuncType.Info](
+        "sim_ordder_records.py - run_backtest() - Dynamic Order settings index=" + str(dos_index)
+    )
     logger[LoggerFuncType.Info](
         "sim_ordder_records.py - run_backtest() - Created Dynamic Order Settings"
         + "\nentry_size_asset= "
@@ -687,7 +606,9 @@ def run_sim_or(
                 logger[LoggerFuncType.Debug]("sim_ordder_records.py - run_backtest() - Checking hit Exception")
                 pass
         else:
-            logger[LoggerFuncType.Debug]("sim_ordder_records.py - run_backtest() - Not in a pos so not checking SL Liq or TP")
+            logger[LoggerFuncType.Debug](
+                "sim_ordder_records.py - run_backtest() - Not in a pos so not checking SL Liq or TP"
+            )
         logger[LoggerFuncType.Debug]("sim_ordder_records.py - run_backtest() - strategy evaluate")
         eval_bool = evaluate(
             bar_index=bar_index,

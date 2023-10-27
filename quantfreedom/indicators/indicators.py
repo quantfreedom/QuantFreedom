@@ -1,8 +1,6 @@
 import numpy as np
-from numba import njit
 
 
-@njit(cache=True)
 def qf_calc_rsi(
     prices: np.array,
     period: int,

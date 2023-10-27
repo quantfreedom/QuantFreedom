@@ -1,11 +1,10 @@
 import numpy as np
-from numba import njit
 
 from quantfreedom.enums import CandleBodyType, LoggerFuncType, StringerFuncType
 from quantfreedom.helper_funcs import round_size_by_tick_step
 
 
-@njit(cache=True)
+
 def long_calc_liq_price(
     logger,
     stringer,
@@ -73,7 +72,7 @@ def long_calc_liq_price(
     )
 
 
-@njit(cache=True)
+
 def long_static_lev(
     logger,
     stringer,
@@ -122,7 +121,7 @@ def long_static_lev(
     )
 
 
-@njit(cache=True)
+
 def long_dynamic_lev(
     logger,
     stringer,
@@ -195,7 +194,7 @@ def long_dynamic_lev(
     )
 
 
-@njit(cache=True)
+
 def long_check_liq_hit(
     logger,
     current_candle: np.array,

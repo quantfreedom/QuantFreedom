@@ -1,5 +1,4 @@
 from typing import NamedTuple
-from numba import njit
 
 from quantfreedom.enums import LoggerFuncType, RejectedOrder, StringerFuncType
 from quantfreedom.helper_funcs import round_size_by_tick_step
@@ -28,7 +27,6 @@ class OrderInfo(NamedTuple):
     sl_price: float
 
 
-@njit(cache=True)
 def c_too_b_s(
     entry_size_asset: float,
     min_asset_size: float,
@@ -65,7 +63,6 @@ def c_too_b_s(
     )
 
 
-@njit(cache=True)
 def c_pl_ra_ps(
     logger,
     account_state_equity: float,
@@ -79,9 +76,7 @@ def c_pl_ra_ps(
     """
     logger[LoggerFuncType.Debug]("increase_position.py - c_pl_ra_ps() - Inside")
     possible_loss = round(possible_loss + account_state_equity * risk_account_pct_size, 0)
-    logger[LoggerFuncType.Debug](
-        "increase_position.py - c_pl_ra_ps() -" + " possible_loss= " + str(int(possible_loss))
-    )
+    logger[LoggerFuncType.Debug]("increase_position.py - c_pl_ra_ps() -" + " possible_loss= " + str(int(possible_loss)))
     max_equity_risk = round(account_state_equity * max_equity_risk_pct)
     logger[LoggerFuncType.Debug](
         "increase_position.py - c_pl_ra_ps() -" + " max_equity_risk= " + str(int(max_equity_risk))
@@ -108,7 +103,6 @@ def c_pl_ra_ps(
     return possible_loss, total_trades
 
 
-@njit(cache=True)
 def c_total_trades(
     logger,
     average_entry: float,
@@ -155,7 +149,6 @@ def c_total_trades(
     return possible_loss, total_trades
 
 
-@njit(cache=True)
 def long_rpa_slbcb(
     acc_ex_other: AccExOther,
     order_info: OrderInfo,
@@ -183,7 +176,6 @@ def long_rpa_slbcb(
         )
 
 
-@njit(cache=True)
 def long_rpa_slbcb_p(
     acc_ex_other: AccExOther,
     order_info: OrderInfo,
@@ -320,7 +312,6 @@ def long_rpa_slbcb_p(
     )
 
 
-@njit(cache=True)
 def long_rpa_slbcb_np(
     acc_ex_other: AccExOther,
     order_info: OrderInfo,
@@ -418,7 +409,6 @@ def long_rpa_slbcb_np(
     )
 
 
-@njit(cache=True)
 def long_min_amount(
     acc_ex_other: AccExOther,
     order_info: OrderInfo,
@@ -447,7 +437,6 @@ def long_min_amount(
         )
 
 
-@njit(cache=True)
 def long_min_amount_p(
     acc_ex_other: AccExOther,
     order_info: OrderInfo,
@@ -550,7 +539,6 @@ def long_min_amount_p(
     )
 
 
-@njit(cache=True)
 def long_min_amount_np(
     acc_ex_other: AccExOther,
     order_info: OrderInfo,

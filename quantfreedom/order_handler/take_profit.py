@@ -1,11 +1,10 @@
 import numpy as np
-from numba import njit
 
 from quantfreedom.helper_funcs import round_size_by_tick_step
 from quantfreedom.enums import CandleBodyType, LoggerFuncType, StringerFuncType
 
 
-@njit(cache=True)
+
 def long_tp_rr(
     logger,
     stringer,
@@ -52,7 +51,7 @@ def long_tp_rr(
     )
 
 
-@njit(cache=True)
+
 def long_c_tp_hit_regular(
     logger,
     stringer,
@@ -72,7 +71,7 @@ def long_c_tp_hit_regular(
         return False
 
 
-@njit(cache=True)
+
 def long_c_tp_hit_provided(
     logger,
     stringer,

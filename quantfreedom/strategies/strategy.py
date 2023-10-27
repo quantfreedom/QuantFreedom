@@ -1,5 +1,4 @@
 import numpy as np
-from numba import njit
 from quantfreedom.indicators.indicators import qf_calc_rsi
 
 from typing import NamedTuple
@@ -50,7 +49,6 @@ def create_ind_cart_product(ind_set_arrays: IndicatorSettingsArrays):
 ind_set_arrays = create_ind_cart_product(ind_set_arrays=ind_set_arrays)
 
 
-@njit(cache=True)
 def strat_bt_create_ind(
     bar_index,
     starting_bar,
@@ -72,7 +70,6 @@ def strat_bt_create_ind(
         raise Exception
 
 
-@njit(cache=True)
 def strat_liv_create_ind(
     bar_index,
     starting_bar,
@@ -93,12 +90,10 @@ def strat_liv_create_ind(
         raise Exception
 
 
-@njit(cache=True)
 def strat_get_total_ind_settings():
     return ind_set_arrays[0].size
 
 
-@njit(cache=True)
 def strat_get_current_ind_settings(
     ind_set_index: int,
     logger,
@@ -111,7 +106,6 @@ def strat_get_current_ind_settings(
     return indicator_settings
 
 
-@njit(cache=True)
 def strat_get_ind_set_str(
     indicator_settings: IndicatorSettings,
     stringer,
@@ -126,7 +120,6 @@ def strat_get_ind_set_str(
     return msg
 
 
-@njit(cache=True)
 def strat_evaluate(
     bar_index,
     starting_bar,

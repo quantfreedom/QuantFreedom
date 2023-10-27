@@ -1,22 +1,7 @@
-import plotly.graph_objects as go
 import numpy as np
-import logging
 import pandas as pd
-from quantfreedom.enums import (
-    AccountState,
-    DynamicOrderSettings,
-    DynamicOrderSettingsArrays,
-    LoggerFuncType,
-    OrderResult,
-    StringerFuncType,
-)
-from numba import njit
 
-import numpy as np
-import numba
-from numba import types, njit
-from numba.cpython.unicode import _empty_string, _set_code_point, PY_UNICODE_1BYTE_KIND
-from numba.extending import overload_method
+from quantfreedom.enums import AccountState, DynamicOrderSettings, DynamicOrderSettingsArrays, OrderResult
 
 DIGITS_START = 48
 DIGITS_END = 58
@@ -26,7 +11,6 @@ PLUS = 43
 E_CHAR = 101
 
 
-@njit(cache=True)
 def get_to_the_upside_nb(
     gains_pct: float,
     wins_and_losses_array_no_be: np.array,
@@ -63,7 +47,6 @@ def get_to_the_upside_nb(
     return round(to_the_upside, 3)
 
 
-@njit(cache=True)
 def get_dos(
     dos_cart_arrays: DynamicOrderSettingsArrays,
     dos_index: int,
@@ -88,7 +71,6 @@ def get_dos(
     )
 
 
-@njit(cache=True)
 def round_size_by_tick_step(
     user_num: float,
     exchange_num: float,
@@ -96,7 +78,6 @@ def round_size_by_tick_step(
     return round(user_num, exchange_num)
 
 
-@njit(cache=True)
 def get_n_digits(x):
     l1, l2 = 0, -1
     _x = x
@@ -113,91 +94,10 @@ def get_n_digits(x):
     return l1, l2
 
 
-@njit(cache=True)
 def float_to_str(x: float):
-    if x == np.inf:
-        return "inf"
-    elif x == -np.inf:
-        return "-inf"
-    elif x == 0:
-        return "0.0"
-
-    isneg = int(x < 0.0)
-    x = np.abs(x)
-
-    if x != 0.0:
-        # There is probably a more efficient way to do this
-        e = np.floor(np.log10(x))
-        if 10**e - x > 0:
-            e -= 1
-    else:
-        e = 0
-
-    is_exp, is_neg_exp = e >= 16, e <= -16
-
-    exp_chars = 0
-    if is_exp or is_neg_exp:
-        exp_chars = 4
-        if e >= 100 or e <= -100:
-            exp_chars = 5
-
-    if is_exp:
-        offset_x = np.around(x * (10.0 ** -(e)), 15)
-        l1, l2 = get_n_digits(offset_x)
-    elif is_neg_exp:
-        offset_x = np.around(x * (10 ** -(e)), 15)
-        l1, l2 = get_n_digits(offset_x)
-    else:
-        offset_x = x
-        l1, l2 = get_n_digits(x)
-        l2 = max(1, 3)  # Will have at least .0
-
-    use_dec = l2 > 0
-
-    # print("<<", e, offset_x, l2)
-
-    l = l1 + l2 + use_dec
-    length = l + isneg + exp_chars
-    s = _empty_string(PY_UNICODE_1BYTE_KIND, length)
-    if isneg:
-        _set_code_point(s, 0, DASH)
-
-    _x = offset_x
-    for i in range(l1):
-        digit = int(_x % 10)
-        _set_code_point(s, (isneg + l1) - i - 1, digit + DIGITS_START)
-        _x = _x // 10
-
-    if use_dec:
-        _set_code_point(s, l1 + isneg, DOT)
-
-    _x = offset_x % 10
-    for i in range(l2):
-        _x = (_x * 10) % 10
-        digit = int(_x)
-
-        _set_code_point(s, (isneg + l1) + i + use_dec, digit + DIGITS_START)
-
-    if is_exp or is_neg_exp:
-        i = isneg + l1 + use_dec + l2
-        _set_code_point(s, i, E_CHAR)
-        if is_exp:
-            _set_code_point(s, i + 1, PLUS)
-        if is_neg_exp:
-            _set_code_point(s, i + 1, DASH)
-
-        i = length - 1
-        exp = np.abs(e)
-        while exp > 0:
-            digit = exp % 10
-            _set_code_point(s, i, digit + DIGITS_START)
-            exp = exp // 10
-            i -= 1
-
-    return s
+    return str(x)
 
 
-@njit(cache=True)
 def min_price_getter(
     bar_index: int,
     candles: np.array,
@@ -208,7 +108,6 @@ def min_price_getter(
     return price
 
 
-@njit(cache=True)
 def max_price_getter(
     bar_index: int,
     candles: np.array,
@@ -219,7 +118,6 @@ def max_price_getter(
     return price
 
 
-@njit(cache=True)
 def long_sl_to_zero(
     average_entry,
     market_fee_pct,
@@ -233,7 +131,6 @@ def long_sl_to_zero(
     return sl_price
 
 
-@njit(cache=True)
 def sl_to_entry(
     average_entry,
     market_fee_pct,
@@ -243,7 +140,6 @@ def sl_to_entry(
     return sl_price
 
 
-@njit(cache=True)
 def sl_to_z_e_pass(
     average_entry,
     market_fee_pct,
@@ -252,7 +148,6 @@ def sl_to_z_e_pass(
     pass
 
 
-@njit(cache=True)
 def fill_order_records(
     account_state: AccountState,
     or_index: int,
@@ -327,3 +222,137 @@ def dos_cart_product(dos_arrays: DynamicOrderSettingsArrays):
         trail_sl_by_pct=out.T[14] / 100,
         trail_sl_when_pct=out.T[15] / 100,
     )
+
+
+def order_records_to_df(order_records: np.array):
+    order_records_df = pd.DataFrame(order_records)
+    order_records_df.insert(4, "datetime", pd.to_datetime(order_records_df.timestamp, unit="ms"))
+    order_records_df.replace(
+        {
+            "order_status": {
+                0: "HitMaxTrades",
+                1: "EntryFilled",
+                2: "StopLossFilled",
+                3: "TakeProfitFilled",
+                4: "LiquidationFilled",
+                5: "MovedSLToBE",
+                6: "MovedTSL",
+                7: "MaxEquityRisk",
+                8: "RiskToBig",
+                9: "CashUsedExceed",
+                10: "EntrySizeTooSmall",
+                11: "EntrySizeTooBig",
+                12: "PossibleLossTooBig",
+                13: "Nothing",
+            }
+        },
+        inplace=True,
+    )
+    order_records_df[
+        [
+            "equity",
+            "available_balance",
+            "cash_borrowed",
+            "cash_used",
+            "average_entry",
+            "fees_paid",
+            "leverage",
+            "liq_price",
+            "possible_loss",
+            "entry_size_asset",
+            "entry_size_usd",
+            "entry_price",
+            "exit_price",
+            "position_size_asset",
+            "position_size_usd",
+            "realized_pnl",
+            "sl_pct",
+            "sl_price",
+            "tp_pct",
+            "tp_price",
+        ]
+    ] = order_records_df[
+        [
+            "equity",
+            "available_balance",
+            "cash_borrowed",
+            "cash_used",
+            "average_entry",
+            "fees_paid",
+            "leverage",
+            "liq_price",
+            "possible_loss",
+            "entry_size_asset",
+            "entry_size_usd",
+            "entry_price",
+            "exit_price",
+            "position_size_asset",
+            "position_size_usd",
+            "realized_pnl",
+            "sl_pct",
+            "sl_price",
+            "tp_pct",
+            "tp_price",
+        ]
+    ].replace(
+        {0: np.nan}
+    )
+    return order_records_df
+
+
+def get_data_for_plotting(order_records_df: pd.DataFrame, candles: np.array):
+    data = {
+        "candles": candles.tolist(),
+    }
+    timestamp_list = candles[:, 0].tolist()
+
+    temp_entries_df = order_records_df[
+        ["order_status", "timestamp", "average_entry", "entry_price", "liq_price", "sl_price", "tp_price"]
+    ]
+    entries_df = temp_entries_df[temp_entries_df["order_status"] == "EntryFilled"]
+    entries_list_df = entries_df.values[:, 1:].tolist()
+
+    entries_list = np.vstack(candles[:, 0]).tolist()
+    sl_list = np.vstack(candles[:, 0]).tolist()
+    tp_list = np.vstack(candles[:, 0]).tolist()
+
+    for idx, timestamp in enumerate(timestamp_list):
+        if timestamp == entries_list_df[0][0]:
+            current_entry = entries_list_df[0]
+            entries_list[idx] = [current_entry[0], current_entry[2]]
+            sl_list[idx] = [current_entry[0], current_entry[4]]
+            tp_list[idx] = [current_entry[0], current_entry[5]]
+            del entries_list_df[0]
+            if len(entries_list_df) == 0:
+                break
+    data["entries"] = entries_list
+    data["sl_prices"] = sl_list
+    data["tp_prices"] = tp_list
+
+    temp_sl_filled_df = order_records_df[["order_status", "timestamp", "exit_price"]]
+    sl_filled_df = temp_sl_filled_df[temp_sl_filled_df["order_status"] == "StopLossFilled"]
+    sl_filled_list_df = sl_filled_df.values[:, 1:].tolist()
+    filled_sl_list = np.vstack(candles[:, 0]).tolist()
+
+    for idx, timestamp in enumerate(timestamp_list):
+        if timestamp == sl_filled_list_df[0][0]:
+            filled_sl_list[idx] = sl_filled_list_df[0]
+            del sl_filled_list_df[0]
+            if len(sl_filled_list_df) == 0:
+                break
+    data["sl_filled"] = filled_sl_list
+    
+    temp_tp_filled_df = order_records_df[["order_status", "timestamp", "exit_price"]]
+    tp_filled_df = temp_tp_filled_df[temp_tp_filled_df["order_status"] == "TakeProfitFilled"]
+    tp_filled_list_df = tp_filled_df.values[:, 1:].tolist()
+    filled_tp_list = np.vstack(candles[:, 0]).tolist()
+
+    for idx, timestamp in enumerate(timestamp_list):
+        if timestamp == tp_filled_list_df[0][0]:
+            filled_tp_list[idx] = tp_filled_list_df[0]
+            del tp_filled_list_df[0]
+            if len(tp_filled_list_df) == 0:
+                break
+    data["tp_filled"] = filled_tp_list
+    
+    return data

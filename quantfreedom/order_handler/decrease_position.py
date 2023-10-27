@@ -1,9 +1,6 @@
-from numba import njit
-
 from quantfreedom.enums import AccountState, LoggerFuncType, OrderResult, OrderStatus, StringerFuncType
 
 
-@njit(cache=True)
 def decrease_position(
     average_entry: float,
     bar_index: int,

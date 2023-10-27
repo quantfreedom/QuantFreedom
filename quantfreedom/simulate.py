@@ -1,5 +1,4 @@
 import numpy as np
-from numba import njit, typed
 import pandas as pd
 
 from quantfreedom.enums import *
@@ -44,11 +43,6 @@ def sim_df_backtest(
     starting_equity: float,
     static_os: StaticOrderSettings,
 ):
-    log_func_type = types.void(types.unicode_type)
-    log_func_list = typed.List.empty_list(log_func_type.as_type())
-
-    str_func_type = types.unicode_type(types.float64)
-    str_func_list = typed.List.empty_list(str_func_type.as_type())
     """
     #########################################
     #########################################
@@ -60,20 +54,15 @@ def sim_df_backtest(
     #########################################
     #########################################
     """
+    # log_func_type = types.void(types.unicode_type)
+    # log_func_list = typed.List.empty_list(log_func_type.as_type())
 
-    if logger_type == LoggerType.Print:
-        log_func_list.append(print_log_debug)
-        log_func_list.append(print_log_info)
-        log_func_list.append(print_log_warning)
-        log_func_list.append(print_log_error)
+    # str_func_type = types.unicode_type(types.float64)
+    # str_func_list = typed.List.empty_list(str_func_type.as_type())
+    log_func_list = []
+    str_func_list = []
 
-        str_func_list.append(print_float_to_str)
-        str_func_list.append(print_log_datetime)
-        str_func_list.append(print_candle_body_str)
-        str_func_list.append(print_z_or_e_str)
-        str_func_list.append(print_or_to_str)
-
-    elif logger_type == LoggerType.File:
+    if logger_type == LoggerType.File:
         set_loggers()
         log_func_list.append(file_log_debug)
         log_func_list.append(file_log_info)
@@ -99,7 +88,7 @@ def sim_df_backtest(
         str_func_list.append(stringer_pass)
 
     else:
-        raise Exception("You need to select the correct logger type")
+        raise Exception("You need to select the correct logger type of file or pass")
     """
     #########################################
     #########################################
@@ -288,7 +277,6 @@ def sim_df_backtest(
     return pd.DataFrame(strategy_result_records)
 
 
-@njit(cache=True)
 def run_df_backtest(
     backtest_settings: BacktestSettings,
     candles: np.array,
