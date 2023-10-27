@@ -8,9 +8,7 @@ import plotly.graph_objects as go
 from IPython.paths import get_ipython_cache_dir
 
 
-def delete_dir(
-    p,
-):
+def delete_dir(p):
     """
     Delete info in directory
 
@@ -31,7 +29,7 @@ def clear_cache():
     """
     clears the python cache and numba cache
     """
-    for p in Path(get_ipython_cache_dir()+"\\numba_cache").rglob("*.nb*"):
+    for p in Path(get_ipython_cache_dir() + "\\numba_cache").rglob("*.nb*"):
         p.unlink()
     for p in Path(__file__).parent.parent.rglob("numba_cache"):
         delete_dir(p)

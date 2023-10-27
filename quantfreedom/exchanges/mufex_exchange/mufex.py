@@ -152,18 +152,6 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex Something wrong with HTTP_get_request_no_params - > {e}")
 
-    def __params_as_string(self, params):
-        params_as_string = str(json.dumps(params))
-        return params_as_string
-
-    def __params_to_path(self, params):
-        entries = params.items()
-        if not entries:
-            pass
-
-        paramsString = "&".join("{key}={value}".format(key=x[0], value=x[1]) for x in entries if x[1] is not None)
-        if paramsString:
-            return paramsString
 
     def __gen_signature(self, time_stamp, params_as_string):
         param_str = time_stamp + self.api_key + "5000" + params_as_string
