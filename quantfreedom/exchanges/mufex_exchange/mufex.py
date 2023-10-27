@@ -67,7 +67,7 @@ class Mufex(Exchange):
 
     def __HTTP_post_request(self, end_point, params):
         time_stamp = str(int(time() * 1000))
-        params_as_string = self.__params_as_string(params=params)
+        params_as_string = self.get_params_as_string(params=params)
         signature = self.__gen_signature(time_stamp=time_stamp, params_as_string=params_as_string)
         headers = {
             "MF-ACCESS-API-KEY": self.api_key,
@@ -109,7 +109,7 @@ class Mufex(Exchange):
 
     def HTTP_get_request(self, end_point, params):
         time_stamp = str(int(time() * 1000))
-        params_as_path = self.__params_to_path(params=params)
+        params_as_path = self.get_params_as_path(params=params)
         signature = self.__gen_signature(time_stamp=time_stamp, params_as_string=params_as_path)
         headers = {
             "MF-ACCESS-API-KEY": self.api_key,

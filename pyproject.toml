@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "quantfreedom"
-version = "0.1.0"
+version = "0.0.1"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["QuantFreedom <QuantFreedom1022@gmail.com"]
 
 [tool.poetry.dependencies]
 python = "3.10"
@@ -15,7 +15,6 @@ notebook = "6.5.4"
 numba = "0.58.1"
 numpy = "1.24.0"
 pandas = "2.0.3"
-ta-lib = "0.4.28"
 plotly = "5.16.1"
 
 [tool.poetry.dev-dependencies]
