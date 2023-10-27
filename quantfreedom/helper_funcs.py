@@ -341,7 +341,7 @@ def get_data_for_plotting(order_records_df: pd.DataFrame, candles: np.array):
             if len(sl_filled_list_df) == 0:
                 break
     data["sl_filled"] = filled_sl_list
-    
+
     temp_tp_filled_df = order_records_df[["order_status", "timestamp", "exit_price"]]
     tp_filled_df = temp_tp_filled_df[temp_tp_filled_df["order_status"] == "TakeProfitFilled"]
     tp_filled_list_df = tp_filled_df.values[:, 1:].tolist()
@@ -355,4 +355,19 @@ def get_data_for_plotting(order_records_df: pd.DataFrame, candles: np.array):
                 break
     data["tp_filled"] = filled_tp_list
     
+    temp_tp_filled_df = order_records_df[["order_status", "timestamp", "sl_price"]]
+    moved_sl_df = temp_tp_filled_df[
+        (temp_tp_filled_df["order_status"] == "MovedTSL") | (temp_tp_filled_df["order_status"] == "MovedSLToBE")
+    ]
+    moved_sl_list_df = moved_sl_df.values[:, 1:].tolist()
+    moved_sl_list = np.vstack(candles[:, 0]).tolist()
+    for idx, timestamp in enumerate(timestamp_list):
+        if timestamp == moved_sl_list_df[0][0]:
+            moved_sl_list[idx] = moved_sl_list_df[0]
+            del moved_sl_list_df[0]
+            if len(moved_sl_list_df) == 0:
+                break
+    data["moved_sl"] = moved_sl_list
+    
+
     return data
