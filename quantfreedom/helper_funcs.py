@@ -43,8 +43,8 @@ def get_to_the_upside_nb(
     to_the_upside = yp_ym_s.sum() / y_ym_s.sum()
 
     if gains_pct <= 0:
-        to_the_upside = 0
-    return round(to_the_upside, 3)
+        to_the_upside = -(to_the_upside)
+    return round(to_the_upside, 4)
 
 
 def get_dos(
@@ -354,7 +354,7 @@ def get_data_for_plotting(order_records_df: pd.DataFrame, candles: np.array):
             if len(tp_filled_list_df) == 0:
                 break
     data["tp_filled"] = filled_tp_list
-    
+
     temp_tp_filled_df = order_records_df[["order_status", "timestamp", "sl_price"]]
     moved_sl_df = temp_tp_filled_df[
         (temp_tp_filled_df["order_status"] == "MovedTSL") | (temp_tp_filled_df["order_status"] == "MovedSLToBE")
@@ -368,6 +368,5 @@ def get_data_for_plotting(order_records_df: pd.DataFrame, candles: np.array):
             if len(moved_sl_list_df) == 0:
                 break
     data["moved_sl"] = moved_sl_list
-    
 
     return data
