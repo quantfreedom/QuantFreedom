@@ -1,5 +1,5 @@
 import numpy as np
-from quantfreedom.indicators.indicators import qf_calc_rsi
+from quantfreedom.indicators.indicators import rsi_calc
 
 from typing import NamedTuple
 
@@ -58,7 +58,7 @@ def strat_bt_create_ind(
 ):
     start = max(bar_index - starting_bar, 0)
     try:
-        rsi = qf_calc_rsi(
+        rsi = rsi_calc(
             prices=candles[start : bar_index + 1, CandleBodyType.Close],
             period=indicator_settings.rsi_period,
         )
@@ -78,7 +78,7 @@ def strat_liv_create_ind(
     logger,
 ):
     try:
-        rsi = qf_calc_rsi(
+        rsi = rsi_calc(
             prices=candles[:, CandleBodyType.Close],
             period=indicator_settings.rsi_period,
         )
