@@ -23,9 +23,9 @@ class Exchange:
 
     def __init__(
         self,
-        api_key: str = None,
-        secret_key: str = None,
-        use_test_net: bool = None,
+        api_key: str,
+        secret_key: str,
+        use_test_net: bool,
     ):
         self.api_key = api_key
         self.secret_key = secret_key
