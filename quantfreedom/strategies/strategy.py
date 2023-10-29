@@ -59,8 +59,8 @@ def strat_bt_create_ind(
     start = max(bar_index - starting_bar, 0)
     try:
         rsi = rsi_calc(
-            prices=candles[start : bar_index + 1, CandleBodyType.Close],
-            period=indicator_settings.rsi_period,
+            source=candles[start : bar_index + 1, CandleBodyType.Close],
+            length=indicator_settings.rsi_period,
         )
         rsi = np.around(rsi, 2)
         logger[LoggerFuncType.Info]("strategy.py - strat_bt_create_ind() - Created RSI")
@@ -79,8 +79,8 @@ def strat_liv_create_ind(
 ):
     try:
         rsi = rsi_calc(
-            prices=candles[:, CandleBodyType.Close],
-            period=indicator_settings.rsi_period,
+            source=candles[:, CandleBodyType.Close],
+            length=indicator_settings.rsi_period,
         )
         rsi = np.around(rsi, 2)
         logger[LoggerFuncType.Info]("strategy.py - strat_liv_create_ind() - Created RSI")

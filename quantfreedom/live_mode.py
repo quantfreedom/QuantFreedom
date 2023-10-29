@@ -10,7 +10,6 @@ from quantfreedom.enums import (
     RejectedOrder,
 )
 from quantfreedom.exchanges.live_exchange import LiveExchange
-from quantfreedom.order_handler.order_handler import Order
 from datetime import datetime, timedelta
 from dash_bootstrap_templates import load_figure_template
 from jupyter_dash import JupyterDash

@@ -1,13 +1,31 @@
 import numpy as np
 
 
+def atr_calc(candles: np.array, length: int):
+    """
+    ATR with rma smoothing
+    """
+    high = candles[:, 2]
+    low = candles[:, 3]
+    close_shift = np.roll(candles[:, 4], 1)
+    tr = np.maximum(
+        np.maximum(
+            high - low,
+            np.absolute(high - close_shift),
+        ),
+        np.absolute(low - close_shift),
+    )
+    atr = rma_calc(source=tr, length=length)
+    return atr
+
+
 def rsi_calc(source: np.array, length: int):
     prices_shift = np.roll(source, 1)
     prices_shift[0] = np.nan
     pchgs = (source - prices_shift) / prices_shift
 
     gains = np.where(pchgs > 0, pchgs, 0)
-    losses = np.where(pchgs < 0, abs(pchgs), 0)
+    losses = np.where(pchgs < 0, -(pchgs), 0)
 
     rma_gains, rma_losses = rma_calc_2(length=length, source_1=gains, source_2=losses)
 
@@ -38,7 +56,7 @@ def sma_calc(source: np.array, length: int):
     return final
 
 
-def rma_calc_1(source: np.array, length: int):
+def rma_calc(source: np.array, length: int):
     alpha = 1 / length
 
     rma = np.full_like(source, np.nan)
