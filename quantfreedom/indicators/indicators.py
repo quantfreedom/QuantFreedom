@@ -37,8 +37,8 @@ def rsi_calc(source: np.array, length: int):
 
 def ema_calc(source: np.array, length: int):
     alpha = 2 / (length + 1)
-    ema = np.full_like(source, np.nan)
 
+    ema = np.full_like(source, np.nan)
     ema[length] = source[length]
 
     for i in range(length + 1, ema.size):
@@ -51,18 +51,19 @@ def sma_calc(source: np.array, length: int):
     arr = np.cumsum(source, dtype=np.float_)
     arr[length:] = arr[length:] - arr[:-length]
 
-    final = arr[length - 1 :] / length
+    sma = np.full_like(source, np.nan)
+    sma[length - 1 :] = arr[length - 1 :] / length
 
-    return final
+    return sma
 
 
 def rma_calc(source: np.array, length: int):
     alpha = 1 / length
 
     rma = np.full_like(source, np.nan)
-    rma[length] = source[1 : length + 1].mean()
+    rma[length - 1] = source[:length].mean()
 
-    for i in range(length + 1, rma.size):
+    for i in range(length, rma.size):
         rma[i] = alpha * source[i] + (1 - alpha) * rma[i - 1]
 
     return rma
@@ -74,10 +75,10 @@ def rma_calc_2(source_1: np.array, source_2: np.array, length: int):
     rma_1 = np.full_like(source_1, np.nan)
     rma_2 = np.full_like(source_2, np.nan)
 
-    rma_1[length] = source_1[1 : length + 1].mean()
-    rma_2[length] = source_2[1 : length + 1].mean()
+    rma_1[length - 1] = source_1[:length].mean()
+    rma_2[length - 1] = source_2[:length].mean()
 
-    for i in range(length + 1, rma_1.size):
+    for i in range(length, rma_1.size):
         rma_1[i] = alpha * source_1[i] + (1 - alpha) * rma_1[i - 1]
         rma_2[i] = alpha * source_2[i] + (1 - alpha) * rma_2[i - 1]
 
