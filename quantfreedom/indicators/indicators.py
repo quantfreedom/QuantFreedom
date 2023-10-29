@@ -9,7 +9,7 @@ def rsi_calc(source: np.array, length: int):
     gains = np.where(pchgs > 0, pchgs, 0)
     losses = np.where(pchgs < 0, abs(pchgs), 0)
 
-    rma_gains, rma_losses = rma_calc_2(length=length, source_1=gains, source_1=losses)
+    rma_gains, rma_losses = rma_calc_2(length=length, source_1=gains, source_2=losses)
 
     rs = rma_gains / rma_losses
 
