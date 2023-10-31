@@ -75,6 +75,7 @@ class LiveTrading:
     order_equity = 0
     order_sl_price = 0
     order_total_trades = 0
+    order_average_entry = 0
 
     def __init__(
         self,
@@ -364,31 +365,46 @@ class LiveTrading:
                             logger=self.logger,
                             stringer=self.stringer,
                         )
-                        
+
                         self.logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - calculate_leverage")
                         (
-                            available_balance,
-                            cash_borrowed,
-                            cash_used,
-                            leverage,
-                            liq_price,
+                            self.order_available_balance,
+                            self.order_cash_borrowed,
+                            self.order_cash_used,
+                            self.order_leverage,
+                            self.order_liq_price,
                         ) = self.lev_calculator(
-                            available_balance=account_state.available_balance,
-                            average_entry=average_entry,
-                            cash_borrowed=account_state.cash_borrowed,
-                            cash_used=account_state.cash_used,
-                            entry_size_usd=entry_size_usd,
-                            max_leverage=max_leverage,
-                            min_leverage=min_leverage,
-                            stringer=stringer,
-                            mmr_pct=mmr_pct,
-                            sl_price=sl_price,
-                            static_leverage=dynamic_order_settings.static_leverage,
-                            leverage_tick_step=leverage_tick_step,
-                            price_tick_step=price_tick_step,
-                            logger=logger,
+                            available_balance=self.order_available_balance,
+                            average_entry=self.order_average_entry,
+                            cash_borrowed=self.order_cash_borrowed,
+                            cash_used=self.order_cash_used,
+                            entry_size_usd=self.order_entry_size_usd,
+                            max_leverage=self.exchange.exchange_settings.max_leverage,
+                            min_leverage=self.exchange.exchange_settings.min_leverage,
+                            stringer=self.stringer,
+                            mmr_pct=self.exchange.exchange_settings.mmr_pct,
+                            sl_price=self.sl_price,
+                            static_leverage=self.dynamic_order_settings.static_leverage,
+                            leverage_tick_step=self.exchange.exchange_settings.leverage_tick_step,
+                            price_tick_step=self.exchange.exchange_settings.price_tick_step,
+                            logger=self.logger,
                         )
-                        self.order.calculate_take_profit()
+                        self.logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - calculate_take_profit")
+                        (
+                            self.order_can_move_sl_to_be,
+                            self.order_tp_price,
+                            self.order_tp_pct,
+                        ) = self.tp_calculator(
+                            average_entry=self.order_average_entry,
+                            market_fee_pct=self.exchange.exchange_settings.market_fee_pct,
+                            position_size_usd=self.order_position_size_usd,
+                            possible_loss=self.order_possible_loss,
+                            price_tick_step=self.exchange.exchange_settings.price_tick_step,
+                            risk_reward=self.dynamic_order_settings.risk_reward,
+                            tp_fee_pct=self.exit_fee_pct,
+                            stringer=self.stringer,
+                            logger=self.logger,
+                        )
 
                         # place the order
                         send_verify_error = False
@@ -601,7 +617,7 @@ class LiveTrading:
 
     def __set_order_average_entry(self):
         self.logger[LoggerFuncType.Debug](f"Setting average entry")
-        self.order.average_entry = float(self.get_position_info()["entryPrice"])
+        self.order_average_entry = float(self.get_position_info()["entryPrice"])
 
     def __set_ex_possible_loss(self):
         coin_size = self.ex_position_size_asset
