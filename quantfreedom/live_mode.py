@@ -75,7 +75,11 @@ class LiveTrading:
     order_equity = 0
     order_sl_price = 0
     order_total_trades = 0
+    order_entry_size_asset = 0
     order_average_entry = 0
+    order_entry_size_usd = 0
+    order_entry_price = 0
+    order_entry_price = 0
 
     def __init__(
         self,
@@ -363,9 +367,8 @@ class LiveTrading:
                                 sl_price=self.order_sl_price,
                             ),
                             logger=self.logger,
-                            stringer=self.stringer,
+                            # stringer=self.stringer,
                         )
-
                         self.logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - calculate_leverage")
                         (
                             self.order_available_balance,
@@ -383,7 +386,7 @@ class LiveTrading:
                             min_leverage=self.exchange.exchange_settings.min_leverage,
                             stringer=self.stringer,
                             mmr_pct=self.exchange.exchange_settings.mmr_pct,
-                            sl_price=self.sl_price,
+                            sl_price=self.order_sl_price,
                             static_leverage=self.dynamic_order_settings.static_leverage,
                             leverage_tick_step=self.exchange.exchange_settings.leverage_tick_step,
                             price_tick_step=self.exchange.exchange_settings.price_tick_step,

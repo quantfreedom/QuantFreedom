@@ -363,7 +363,7 @@ class LiveTrading:
                                 sl_price=self.order_sl_price,
                             ),
                             logger=self.logger,
-                            stringer=self.stringer,
+                            # stringer=self.stringer,
                         )
 
                         self.logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - calculate_leverage")
