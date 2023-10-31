@@ -1,0 +1,17 @@
+{
+    "python.analysis.indexing": true,
+    "python.languageServer": "Pylance",
+    "python.formatting.provider": "black",
+    "python.analysis.useLibraryCodeForTypes": false,
+    "python.analysis.logLevel": "Trace",
+    "python.analysis.diagnosticMode": "openFilesOnly",
+    "verboseOutput": true,
+    "exclude": [
+            "**/node_modules",
+            "**/__pycache__",
+            ".pytest_cache",
+            ".pytest_cache/*",
+    "python/packages"
+    ],
+  }
+  
