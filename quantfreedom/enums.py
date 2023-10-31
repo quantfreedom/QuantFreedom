@@ -200,26 +200,28 @@ ZeroOrEntryType = ZeroOrEntryTypeT()
 ############################################################
 
 
+class AccountState(NamedTuple):
+    # where we are at
+    ind_set_index: int
+    dos_index: int
+    bar_index: int
+    timestamp: int
+    # account info
+    available_balance: float = np.nan
+    cash_borrowed: float = np.nan
+    cash_used: float = np.nan
+    equity: float = np.nan
+    fees_paid: float = np.nan
+    possible_loss: float = np.nan
+    realized_pnl: float = np.nan
+    total_trades: int = 0
+
+
 class BacktestSettings(NamedTuple):
     divide_records_array_size_by: float = 1.0
     gains_pct_filter: float = -np.inf
     total_trade_filter: int = -1
     upside_filter: float = -np.inf
-
-
-class ExchangeSettings(NamedTuple):
-    limit_fee_pct: float = None
-    max_leverage: float = None
-    market_fee_pct: float = None
-    mmr_pct: float = None
-    min_leverage: float = None
-    max_asset_size: float = None
-    min_asset_size: float = None
-    asset_tick_step: int = None
-    position_mode: int = None
-    leverage_mode: int = None
-    price_tick_step: int = None
-    leverage_tick_step: int = None
 
 
 class DynamicOrderSettingsArrays(NamedTuple):
@@ -260,21 +262,19 @@ class DynamicOrderSettings(NamedTuple):
     trail_sl_when_pct: float
 
 
-class AccountState(NamedTuple):
-    # where we are at
-    ind_set_index: int
-    dos_index: int
-    bar_index: int
-    timestamp: int
-    # account info
-    available_balance: float = np.nan
-    cash_borrowed: float = np.nan
-    cash_used: float = np.nan
-    equity: float = np.nan
-    fees_paid: float = np.nan
-    possible_loss: float = np.nan
-    realized_pnl: float = np.nan
-    total_trades: int = 0
+class ExchangeSettings(NamedTuple):
+    limit_fee_pct: float = None
+    max_leverage: float = None
+    market_fee_pct: float = None
+    mmr_pct: float = None
+    min_leverage: float = None
+    max_asset_size: float = None
+    min_asset_size: float = None
+    asset_tick_step: int = None
+    position_mode: int = None
+    leverage_mode: int = None
+    price_tick_step: int = None
+    leverage_tick_step: int = None
 
 
 class OrderResult(NamedTuple):
@@ -310,34 +310,15 @@ class StaticOrderSettings(NamedTuple):
 
 
 class RejectedOrder(Exception):
-    def message(self, message: str = "Hey there inside rejected order"):
-        return message
+    pass
 
 
 class DecreasePosition(Exception):
-    def __init__(
-        self,
-        order_status: OrderStatus = None,
-        exit_price: float = None,
-        exit_fee_pct: float = None,
-        msg: str = None,
-    ):
-        self.order_status = order_status
-        self.exit_price = exit_price
-        self.exit_fee_pct = exit_fee_pct
-        self.msg = msg
+    pass
 
 
 class MoveStopLoss(Exception):
-    def __init__(
-        self,
-        order_status: OrderStatus = None,
-        sl_price: float = None,
-        msg: str = None,
-    ):
-        self.order_status = order_status
-        self.sl_price = sl_price
-        self.msg = msg
+    pass
 
 
 order_settings_array_dt = np.dtype(

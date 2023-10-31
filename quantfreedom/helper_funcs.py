@@ -104,7 +104,7 @@ def min_price_getter(
     candle_body_type: int,
     lookback: int,
 ) -> float:
-    price = candles[lookback : bar_index + 1 :, candle_body_type].min()
+    price = candles[lookback : bar_index + 1, candle_body_type].min()
     return price
 
 
@@ -114,7 +114,7 @@ def max_price_getter(
     candle_body_type: int,
     lookback: int,
 ) -> float:
-    price = candles[lookback : bar_index + 1 :, candle_body_type].max()
+    price = candles[lookback : bar_index + 1, candle_body_type].max()
     return price
 
 

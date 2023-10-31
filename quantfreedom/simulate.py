@@ -54,11 +54,6 @@ def sim_df_backtest(
     #########################################
     #########################################
     """
-    # log_func_type = types.void(types.unicode_type)
-    # log_func_list = typed.List.empty_list(log_func_type.as_type())
-
-    # str_func_type = types.unicode_type(types.float64)
-    # str_func_list = typed.List.empty_list(str_func_type.as_type())
     log_func_list = []
     str_func_list = []
 
