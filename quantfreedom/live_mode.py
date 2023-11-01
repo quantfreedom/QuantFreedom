@@ -92,6 +92,7 @@ class LiveTrading:
         ind_creator,
         stringer,
         logger,
+        get_strategy_plot_filename,
         static_os: StaticOrderSettings,
         entry_order_type: OrderPlacementType,
         tp_order_type: OrderPlacementType,
@@ -106,6 +107,7 @@ class LiveTrading:
         self.stringer = stringer
         self.logger = logger
         self.indicator_settings = indicator_settings
+        self.get_strategy_plot_filename = get_strategy_plot_filename
 
         if self.exchange.position_mode == PositionModeType.HedgeMode:
             if self.exchange.long_or_short == LongOrShortType.Long:
@@ -531,7 +533,7 @@ class LiveTrading:
                             )
                             message = self.__create_entry_successful_message()
                             entry_filename = self.__get_entry_plot_filename()
-                            strategy_filename = self.strategy.get_strategy_plot_filename()
+                            strategy_filename = self.get_strategy_plot_filename()
                             self.email_sender.email_new_order(
                                 message=message,
                                 entry_filename=entry_filename,
@@ -550,38 +552,62 @@ class LiveTrading:
                     if self.ex_position_size_asset > 0:
                         self.logger[LoggerFuncType.Info](f"We are in a position ... checking to move stop loss")
                         try:
-                            self.order.check_move_stop_loss_to_be(
-                                bar_index=bar_index,
-                                candles=self.exchange.candles_np,
+                            temp_sl = self.checker_sl_to_be(
+                                average_entry=self.order_average_entry,
+                                can_move_sl_to_be=self.order_can_move_sl_to_be,
+                                candle_body_type=self.dynamic_order_settings.sl_to_be_cb_type,
+                                current_candle=self.exchange.candles_np[bar_index, :],
+                                logger=self.logger,
+                                market_fee_pct=self.exchange.exchange_settings.market_fee_pct,
+                                price_tick_step=self.exchange.exchange_settings.price_tick_step,
+                                sl_price=self.order_sl_price,
+                                sl_to_be_move_when_pct=self.dynamic_order_settings.sl_to_be_when_pct,
+                                stringer=self.stringer,
+                                zero_or_entry_calc=self.zero_or_entry_calc,
                             )
-                            self.logger[LoggerFuncType.Info](f"Wont move sl to be")
-                            self.__set_order_average_entry()
-                            self.order.check_move_trailing_stop_loss(
-                                bar_index=bar_index,
-                                candles=self.exchange.candles_np,
-                            )
-                            self.logger[LoggerFuncType.Info](f"Wont trail stop loss")
-                        except MoveStopLoss as result:
-                            try:
-                                self.logger[LoggerFuncType.Info](
-                                    f"trying to move the stop loss from {self.order.sl_price:,} to {result.sl_price:,}"
-                                )
+                            if temp_sl > 0:
                                 if self.exchange.move_stop_order(
                                     symbol=self.symbol,
                                     order_id=sl_order_id,
                                     asset_amount=self.ex_position_size_asset,
-                                    new_price=result.sl_price,
+                                    new_price=temp_sl,
                                 ):
                                     self.logger[LoggerFuncType.Info](
-                                        f"Moved stop loss from {self.order.sl_price:,} to {result.sl_price:,}"
+                                        f"Moved stop loss from {self.order_sl_price:,} to {temp_sl:,}"
                                     )
-                                    self.order.update_stop_loss_live_trading(sl_price=result.sl_price)
+                                    self.order_sl_price = temp_sl
                                 else:
                                     self.logger[LoggerFuncType.Warning](f"Couldn't verify sl was moved {sl_order_id}")
-                            except Exception as e:
-                                self.logger[LoggerFuncType.Error](f"Exception MoveStopLoss -> {e}")
-                                raise Exception(f"Exception MoveStopLoss -> {e}")
-                            pass
+                                    raise Exception(f"Exception MoveStopLoss -> {e}")
+                            else:
+                                self.logger[LoggerFuncType.Info](f"Wont move sl to be")
+                            temp_tsl = self.checker_tsl(
+                                average_entry=self.order_average_entry,
+                                candle_body_type=self.dynamic_order_settings.trail_sl_bcb_type,
+                                current_candle=self.exchange.candles_np[bar_index, :],
+                                logger=self.logger,
+                                price_tick_step=self.exchange.exchange_settings.price_tick_step,
+                                sl_price=self.order_sl_price,
+                                stringer=self.stringer,
+                                trail_sl_by_pct=self.dynamic_order_settings.trail_sl_by_pct,
+                                trail_sl_when_pct=self.dynamic_order_settings.trail_sl_when_pct,
+                            )
+                            if temp_tsl > 0:
+                                if self.exchange.move_stop_order(
+                                    symbol=self.symbol,
+                                    order_id=sl_order_id,
+                                    asset_amount=self.ex_position_size_asset,
+                                    new_price=temp_tsl,
+                                ):
+                                    self.logger[LoggerFuncType.Info](
+                                        f"Moved stop loss from {self.order_sl_price:,} to {temp_tsl:,}"
+                                    )
+                                    self.order_sl_price = temp_tsl
+                                else:
+                                    self.logger[LoggerFuncType.Warning](f"Couldn't verify tsl was moved {sl_order_id}")
+                                    raise Exception(f"Exception Move TSL -> {e}")
+                            else:
+                                self.logger[LoggerFuncType.Info](f"Wont move tsl")
                         except Exception as e:
                             self.logger[LoggerFuncType.Error](f"Exception checking MoveStopLoss -> {e}")
                             raise Exception(f"Exception checking MoveStopLoss -> {e}")
@@ -681,26 +707,26 @@ class LiveTrading:
 [entry_price={self.order_entry_price:,}]\n\
 [ex_entry_price={self.ex_entry_price:,}]\n\
 [Entry slippage={self.entry_slippage}]\n\n\
-[average_entry={self.order.average_entry:,}]\n\
+[average_entry={self.order_average_entry:,}]\n\
 [ex_average_entry={self.ex_average_entry:,}]\n\
 [Average Entry slippage={self.avg_entry_slippage}]\n\n\
 [position_size_usd={self.order_position_size_usd:,}]\n\
 [ex_position_size_usd={self.ex_position_size_usd:,}]\n\n\
-[entry_size_usd={self.order.entry_size_usd:,}]\n\
+[entry_size_usd={self.order_entry_size_usd:,}]\n\
 [ex_entry_size_usd={self.ex_entry_size_usd:,}]\n\n\
 [leverage={self.order_leverage:,}]\n\
 [ex_leverage={self.ex_leverage:,}]\n\n\
-[liq price={self.order.liq_price:,}]\n\
+[liq price={self.order_liq_price:,}]\n\
 [ex_liq price={self.ex_liq_price:,}]\n\
 [ex_liq_pct={self.ex_liq_pct:,}]\n\n\
 [candle low={self.exchange.candles_np['low'][-1]:,}]\n\
-[stop_loss_price={self.order.sl_price:,}]\n\
+[stop_loss_price={self.order_sl_price:,}]\n\
 [ex_stop_loss_price={self.ex_sl_price:,}]\n\
 [ex_sl_pct={self.ex_sl_pct}]\n\n\
-[take_profit_price={self.order.tp_price:,}]\n\
+[take_profit_price={self.order_tp_price:,}]\n\
 [ex_take_profit_price={self.ex_tp_price:,}]\n\n\
 [ex_tp_pct={self.ex_tp_pct}]\n\n\
-[possible loss={self.order.possible_loss:,}]\n\
+[possible loss={self.order_possible_loss:,}]\n\
 [ex_possible loss={self.ex_possible_loss:,}]\n\
 [ex_possible profit={self.ex_possible_profit:,}]\n"
         return message

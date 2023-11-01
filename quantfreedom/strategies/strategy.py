@@ -1,4 +1,28 @@
+import datetime
+import os
 import numpy as np
+import pandas as pd
+from dash_bootstrap_templates import load_figure_template
+from jupyter_dash import JupyterDash
+from dash import Dash
+from IPython import get_ipython
+import dash_bootstrap_components as dbc
+import plotly.graph_objects as go
+
+load_figure_template("darkly")
+dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
+try:
+    shell = str(get_ipython())
+    if "ZMQInteractiveShell" in shell:
+        app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
+    elif shell == "TerminalInteractiveShell":
+        app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
+    else:
+        app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
+except NameError:
+    app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
+
+bg_color = "#0b0b18"
 from quantfreedom.indicators.indicators import rsi_calc
 
 from typing import NamedTuple
@@ -160,3 +184,41 @@ def strat_evaluate(
             return False
     except Exception:
         raise Exception("strategy.py - evaluate() - Exception evalutating strat")
+
+
+def get_strategy_plot_filename(
+    bar_index,
+    starting_bar,
+    candles,
+    indicator_settings: IndicatorSettings,
+    ind_creator,
+    logger,
+):
+    rsi = ind_creator(
+        bar_index=bar_index,
+        starting_bar=starting_bar,
+        candles=candles,
+        indicator_settings=indicator_settings,
+        logger=logger,
+    )
+    logger[LoggerFuncType.Debug]("Getting entry plot file")
+    last_20 = rsi[-20:]
+    last_20_datetimes = pd.to_datetime(candles[-20:, 0], unit="ms")
+    fig = go.Figure()
+    fig.add_scatter(
+        x=last_20_datetimes,
+        y=last_20,
+        mode="markers",
+        marker=dict(size=10, symbol="hexagram", color="red"),
+        name=f"Liq Price",
+    )
+    fig.update_layout(xaxis_rangeslider_visible=False)
+    fig.show()
+    entry_filename = os.path.join(
+        ".",
+        "logs",
+        "images",
+        f'entry_{datetime.utcnow().strftime("%m-%d-%Y_%H-%M-%S")}.png',
+    )
+    fig.write_image(entry_filename)
+    return entry_filename

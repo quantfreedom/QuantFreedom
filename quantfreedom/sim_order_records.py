@@ -85,7 +85,6 @@ def sim_get_or(
         str_func_list.append(stringer_pass)
         str_func_list.append(stringer_pass)
         str_func_list.append(stringer_pass)
-        
 
     else:
         raise Exception("You need to select the correct logger type of file or pass")
@@ -540,7 +539,7 @@ def run_sim_or(
                     stringer=stringer,
                     zero_or_entry_calc=zero_or_entry_calc,
                 )
-                if temp_sl:
+                if temp_sl > 0:
                     logger[LoggerFuncType.Debug]("sim_ordder_records.py - run_backtest() - move_stop_loss")
                     account_state, order_result = sl_mover(
                         account_state=account_state,
@@ -576,7 +575,7 @@ def run_sim_or(
                     trail_sl_by_pct=dynamic_order_settings.trail_sl_by_pct,
                     trail_sl_when_pct=dynamic_order_settings.trail_sl_when_pct,
                 )
-                if temp_tsl:
+                if temp_tsl > 0:
                     logger[LoggerFuncType.Debug]("sim_ordder_records.py - run_backtest() - move_stop_loss")
                     account_state, order_result = sl_mover(
                         account_state=account_state,

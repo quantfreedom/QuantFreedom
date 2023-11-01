@@ -546,7 +546,7 @@ def run_df_backtest(
                             stringer=stringer,
                             zero_or_entry_calc=zero_or_entry_calc,
                         )
-                        if temp_sl:
+                        if temp_sl > 0:
                             logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - move_stop_loss")
                             account_state, order_result = sl_mover(
                                 account_state=account_state,
@@ -576,7 +576,7 @@ def run_df_backtest(
                             trail_sl_by_pct=dynamic_order_settings.trail_sl_by_pct,
                             trail_sl_when_pct=dynamic_order_settings.trail_sl_when_pct,
                         )
-                        if temp_tsl:
+                        if temp_tsl > 0:
                             logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - move_stop_loss")
                             account_state, order_result = sl_mover(
                                 account_state=account_state,
