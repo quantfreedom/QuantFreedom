@@ -21,7 +21,12 @@ from quantfreedom.exchanges.mufex_exchange.live_mufex import LiveMufex
 from quantfreedom.helper_funcs import dos_cart_product, get_dos
 from quantfreedom.live_mode import LiveTrading
 from my_stuff import EmailSenderInfo, MufexTestKeys
-from quantfreedom.strategies.strategy import strat_get_current_ind_settings
+from quantfreedom.strategies.strategy import (
+    get_strategy_plot_filename,
+    strat_evaluate,
+    strat_get_current_ind_settings,
+    strat_live_create_ind,
+)
 
 from quantfreedom.custom_logger import (
     file_candle_body_str,
@@ -81,23 +86,17 @@ if __name__ == "__main__":
         + "\nentry_size_asset= "
         + stringer[StringerFuncType.float_to_str](dynamic_order_settings.entry_size_asset)
         + "\nmax_equity_risk_pct= "
-        + stringer[StringerFuncType.float_to_str](
-            round(dynamic_order_settings.max_equity_risk_pct * 100, 3)
-        )
+        + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.max_equity_risk_pct * 100, 3))
         + "\nmax_trades= "
         + str(dynamic_order_settings.max_trades)
         + "\nnum_candles= "
         + str(dynamic_order_settings.num_candles)
         + "\nrisk_account_pct_size= "
-        + stringer[StringerFuncType.float_to_str](
-            round(dynamic_order_settings.risk_account_pct_size * 100, 3)
-        )
+        + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.risk_account_pct_size * 100, 3))
         + "\nrisk_reward= "
         + stringer[StringerFuncType.float_to_str](dynamic_order_settings.risk_reward)
         + "\nsl_based_on_add_pct= "
-        + stringer[StringerFuncType.float_to_str](
-            round(dynamic_order_settings.sl_based_on_add_pct * 100, 3)
-        )
+        + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.sl_based_on_add_pct * 100, 3))
         + "\nsl_based_on_lookback= "
         + str(dynamic_order_settings.sl_based_on_lookback)
         + "\nsl_bcb_type= "
@@ -105,9 +104,7 @@ if __name__ == "__main__":
         + "\nsl_to_be_cb_type= "
         + stringer[StringerFuncType.candle_body_str](dynamic_order_settings.sl_to_be_cb_type)
         + "\nsl_to_be_when_pct= "
-        + stringer[StringerFuncType.float_to_str](
-            round(dynamic_order_settings.sl_to_be_when_pct * 100, 3)
-        )
+        + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.sl_to_be_when_pct * 100, 3))
         + "\nsl_to_be_ze_type= "
         + stringer[StringerFuncType.z_or_e_str](dynamic_order_settings.sl_to_be_ze_type)
         + "\nstatic_leverage= "
@@ -117,9 +114,7 @@ if __name__ == "__main__":
         + "\ntrail_sl_by_pct= "
         + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_by_pct * 100, 3))
         + "\ntrail_sl_when_pct= "
-        + stringer[StringerFuncType.float_to_str](
-            round(dynamic_order_settings.trail_sl_when_pct * 100, 3)
-        )
+        + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_when_pct * 100, 3))
     )
     indicator_settings = strat_get_current_ind_settings(
         ind_set_index=0,
@@ -127,7 +122,7 @@ if __name__ == "__main__":
     )
 
     static_os = StaticOrderSettings(
-        increase_position_type=IncreasePositionType.RiskPctAccountEntrySize,
+        increase_position_type=IncreasePositionType.SmalletEntrySizeAsset,
         leverage_strategy_type=LeverageStrategyType.Dynamic,
         long_or_short=LongOrShortType.Long,
         logger_bool=True,
@@ -140,7 +135,7 @@ if __name__ == "__main__":
         trail_sl_bool=True,
     )
 
-    mufex = LiveMufex(
+    mufex_live = LiveMufex(
         api_key=MufexTestKeys.api_key,
         secret_key=MufexTestKeys.secret_key,
         use_test_net=True,
@@ -150,7 +145,6 @@ if __name__ == "__main__":
         candles_to_dl=200,
         long_or_short=LongOrShortType.Long,
     )
-    equity = mufex.get_equity_of_asset(trading_in="USDT")
 
     email_sender = EmailSender(
         smtp_server=EmailSenderInfo.smtp_server,
@@ -160,9 +154,16 @@ if __name__ == "__main__":
     )
 
     LiveTrading(
-        exchange=mufex,
-        entry_order_type=OrderPlacementType.Market,
-        tp_order_type=OrderPlacementType.Limit,
-        email_sender=email_sender,
         dynamic_order_settings=dynamic_order_settings,
+        email_sender=email_sender,
+        entry_order_type=OrderPlacementType.Market,
+        evaluate=strat_evaluate,
+        exchange=mufex_live,
+        get_strategy_plot_filename=get_strategy_plot_filename,
+        ind_creator=strat_live_create_ind,
+        indicator_settings=indicator_settings,
+        logger=logger,
+        static_os=static_os,
+        stringer=stringer,
+        tp_order_type=OrderPlacementType.Limit,
     ).run()

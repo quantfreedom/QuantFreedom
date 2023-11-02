@@ -48,7 +48,7 @@ def c_too_b_s(
         raise RejectedOrder
     elif entry_size_asset > max_asset_size:
         logger[LoggerFuncType.Warning](
-            "increase_position.py - c_too_b_s() - entry size too big"
+            "increase_position.py - c_too_b_s() - entry size too big "
             + "entry_size_asset= "
             + stringer[StringerFuncType.float_to_str](entry_size_asset)
             + " > max_asset_size= "

@@ -64,7 +64,7 @@ class LoggerFuncTypeT(NamedTuple):
     Debug: int = 0
     Info: int = 1
     Warning: int = 2
-    Error: int = 4
+    Error: int = 3
 
 
 LoggerFuncType = LoggerFuncTypeT()

@@ -70,33 +70,33 @@ trade_logger = logging.getLogger("trade")
 
 
 class LiveTrading:
-    ex_position_size_usd = 0
-    ex_average_entry = 0
-    order_equity = 0
-    order_sl_price = 0
+    # ex_position_size_usd = 0
+    # ex_average_entry = 0
+    # order_equity = 0
+    # order_sl_price = 0
+    last_pnl = 0
     order_total_trades = 0
-    order_entry_size_asset = 0
-    order_average_entry = 0
-    order_entry_size_usd = 0
-    order_entry_price = 0
-    order_entry_price = 0
+    # order_entry_size_asset = 0
+    # order_average_entry = 0
+    # order_entry_size_usd = 0
+    # order_entry_price = 0
+    order_position_size_asset = 0
+    # order_available_balance = 0
 
     def __init__(
         self,
-        exchange: LiveExchange,
         dynamic_order_settings: DynamicOrderSettings,
-        evaluate,
-        get_ind_set_str,
-        get_total_ind_settings,
-        indicator_settings,
-        ind_creator,
-        stringer,
-        logger,
-        get_strategy_plot_filename,
-        static_os: StaticOrderSettings,
-        entry_order_type: OrderPlacementType,
-        tp_order_type: OrderPlacementType,
         email_sender: EmailSender,
+        entry_order_type: OrderPlacementType,
+        evaluate,
+        exchange: LiveExchange,
+        get_strategy_plot_filename,
+        ind_creator,
+        indicator_settings,
+        logger: list,
+        static_os: StaticOrderSettings,
+        stringer: list,
+        tp_order_type: OrderPlacementType,
     ):
         self.evaluate = evaluate
         self.ind_creator = ind_creator
@@ -104,8 +104,8 @@ class LiveTrading:
         self.exchange = exchange
         self.email_sender = email_sender
         self.symbol = self.exchange.symbol
-        self.stringer = stringer
-        self.logger = logger
+        self.stringer: list = stringer
+        self.logger: list = logger
         self.indicator_settings = indicator_settings
         self.get_strategy_plot_filename = get_strategy_plot_filename
 
@@ -269,73 +269,107 @@ class LiveTrading:
         pass
 
     def run(self):
+        max_equity_risk_pct = self.dynamic_order_settings.max_equity_risk_pct
+        max_trades = self.dynamic_order_settings.max_trades
+        risk_account_pct_size = self.dynamic_order_settings.risk_account_pct_size
+        risk_reward = self.dynamic_order_settings.risk_reward
+        sl_based_on_add_pct = self.dynamic_order_settings.sl_based_on_add_pct
+        sl_based_on_lookback = self.dynamic_order_settings.sl_based_on_lookback
+        sl_bcb_type = self.dynamic_order_settings.sl_bcb_type
+        sl_to_be_cb_type = self.dynamic_order_settings.sl_to_be_cb_type
+        sl_to_be_when_pct = self.dynamic_order_settings.sl_to_be_when_pct
+        static_leverage = self.dynamic_order_settings.static_leverage
+        trail_sl_bcb_type = self.dynamic_order_settings.trail_sl_bcb_type
+        trail_sl_by_pct = self.dynamic_order_settings.trail_sl_by_pct
+        trail_sl_when_pct = self.dynamic_order_settings.trail_sl_when_pct
+
+        asset_tick_step = self.exchange.exchange_settings.asset_tick_step
+        leverage_tick_step = self.exchange.exchange_settings.leverage_tick_step
+        market_fee_pct = self.exchange.exchange_settings.market_fee_pct
+        max_asset_size = self.exchange.exchange_settings.max_asset_size
+        max_leverage = self.exchange.exchange_settings.max_leverage
+        min_asset_size = self.exchange.exchange_settings.min_asset_size
+        min_leverage = self.exchange.exchange_settings.min_leverage
+        mmr_pct = self.exchange.exchange_settings.mmr_pct
+        price_tick_step = self.exchange.exchange_settings.price_tick_step
+
         latest_pnl = 0
-        self.last_pnl = 0
-        self.logger[LoggerFuncType.Info](f"Starting live trading")
-        print(f"Starting live trading")
+
+        self.logger[LoggerFuncType.Info](f"live_mode.py - run() - Starting live trading")
+        print(f"live_mode.py - run() - Starting live trading")
         try:
             self.last_pnl = self.exchange.get_latest_pnl_result(symbol=self.symbol)
         except Exception as e:
-            self.logger[LoggerFuncType.Warning](f"live mode get_latest_pnl_result {e}")
+            self.logger[LoggerFuncType.Warning](f"live_mode.py - run() - get_latest_pnl_result {e}")
             pass
         entry_order_id = 0
         tp_order_id = 0
         sl_order_id = 0
 
         self.exchange.set_init_last_fetched_time()
-        self.logger[LoggerFuncType.Info](f"Last Candle time {self.exchange.last_fetched_time_to_pd_datetime()}")
+        self.logger[LoggerFuncType.Info](
+            f"live_mode.py - run() - Last Candle time {self.exchange.last_fetched_time_to_pd_datetime()}"
+        )
         sleep(self.get_sleep_time_to_next_bar())
         while True:
             try:
-                self.logger[LoggerFuncType.Info]("Getting Candles")
+                self.logger[LoggerFuncType.Info]("live_mode.py - run() - Getting Candles")
                 print("Getting Candles")
-                self.exchange.set_candles_np()
-                num_candles = self.exchange.candles_np.shape[0]
+                self.candles = self.exchange.get_live_candles()
+                num_candles = self.candles.shape[0]
 
                 # bar_index bar index is always the last bar ... so if we have 200 candles we are at index 200
                 bar_index = num_candles - 1
                 msg = "Couldn't verify that the following orders were placed "
 
-                self.logger[LoggerFuncType.Debug]("Setting indicator")
+                self.logger[LoggerFuncType.Debug]("live_mode.py - run() - Setting indicator")
                 try:
                     latest_pnl = self.exchange.get_latest_pnl_result(symbol=self.symbol)
                 except Exception as e:
-                    self.logger[LoggerFuncType.Warning](f"live mode get_latest_pnl_result {e}")
-                self.logger[LoggerFuncType.Info]("Evaluating Strat")
+                    self.logger[LoggerFuncType.Warning](f"live_mode.py - run() - get_latest_pnl_result {e}")
+                self.logger[LoggerFuncType.Info]("live_mode.py - run() - Evaluating Strat")
                 if self.evaluate(
                     bar_index=0,
                     starting_bar=0,
-                    candles=self.exchange.candles_np,
+                    candles=self.candles,
                     indicator_settings=self.indicator_settings,
                     ind_creator=self.ind_creator,
                     logger=self.logger,
                     stringer=self.stringer,
                 ):
                     try:
-                        self.logger[LoggerFuncType.Debug]("Setting ex postion size usd")
+                        self.logger[LoggerFuncType.Debug]("live_mode.py - run() - Setting ex postion size usd")
                         self.__set_ex_position_size_usd()
                         if self.ex_position_size_usd > 0:
-                            self.logger[LoggerFuncType.Debug]("We are in a position updating order info")
+                            self.logger[LoggerFuncType.Debug](
+                                "live_mode.py - run() - We are in a position updating order info"
+                            )
                             self.order_position_size_usd = self.ex_position_size_usd
                             self.__set_order_average_entry()
                         else:
-                            self.logger[LoggerFuncType.Debug]("we are not in a position updating order info")
+                            self.logger[LoggerFuncType.Debug](
+                                "live_mode.py - run() - we are not in a position updating order info"
+                            )
                             self.order_position_size_usd = 0.0
                             self.order_average_entry = 0.0
                             self.order_equity = self.exchange.get_equity_of_asset(trading_in=self.exchange.trading_in)
+                            self.order_available_balance = self.order_equity
                             self.order_possible_loss = 0.0
+                            self.order_cash_used = 0.0
+                            self.order_cach_borrowed = 0.0
 
                         self.order_sl_price = self.sl_calculator(
                             bar_index=num_candles,
-                            candles=self.exchange.candles_np,
+                            candles=self.candles,
                             logger=self.logger,
                             stringer=self.stringer,
-                            price_tick_step=self.exchange.exchange_settings.price_tick_step,
-                            sl_based_on_add_pct=self.dynamic_order_settings.sl_based_on_add_pct,
-                            sl_based_on_lookback=self.dynamic_order_settings.sl_based_on_lookback,
+                            price_tick_step=price_tick_step,
+                            sl_based_on_add_pct=sl_based_on_add_pct,
+                            sl_based_on_lookback=sl_based_on_lookback,
                             sl_bcb_price_getter=self.sl_bcb_price_getter,
-                            sl_bcb_type=self.dynamic_order_settings.sl_bcb_type,
+                            sl_bcb_type=sl_bcb_type,
                         )
+
                         (
                             self.order_average_entry,
                             self.order_entry_price,
@@ -349,29 +383,29 @@ class LiveTrading:
                         ) = self.inc_pos_calculator(
                             acc_ex_other=AccExOther(
                                 account_state_equity=self.order_equity,
-                                asset_tick_step=self.exchange.exchange_settings.asset_tick_step,
-                                market_fee_pct=self.exchange.exchange_settings.market_fee_pct,
-                                max_asset_size=self.exchange.exchange_settings.max_asset_size,
-                                min_asset_size=self.exchange.exchange_settings.min_asset_size,
+                                asset_tick_step=asset_tick_step,
+                                market_fee_pct=market_fee_pct,
+                                max_asset_size=max_asset_size,
+                                min_asset_size=min_asset_size,
                                 possible_loss=self.order_possible_loss,
-                                price_tick_step=self.exchange.exchange_settings.price_tick_step,
+                                price_tick_step=price_tick_step,
                                 total_trades=self.order_total_trades,
                             ),
                             order_info=OrderInfo(
                                 average_entry=self.order_average_entry,
-                                entry_price=self.exchange.candles_np[-1, CandleBodyType.Close],
+                                entry_price=self.candles[-1, CandleBodyType.Close],
                                 in_position=self.order_position_size_usd > 0,
-                                max_equity_risk_pct=self.dynamic_order_settings.max_equity_risk_pct,
-                                max_trades=self.dynamic_order_settings.max_trades,
+                                max_equity_risk_pct=max_equity_risk_pct,
+                                max_trades=max_trades,
                                 position_size_asset=self.order_position_size_asset,
                                 position_size_usd=self.order_position_size_usd,
-                                risk_account_pct_size=self.dynamic_order_settings.risk_account_pct_size,
+                                risk_account_pct_size=risk_account_pct_size,
                                 sl_price=self.order_sl_price,
                             ),
-                            logger=self.logger,
-                            # stringer=self.stringer,
+                            # logger=self.logger,
+                            stringer=self.stringer,
                         )
-                        self.logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - calculate_leverage")
+                        self.logger[LoggerFuncType.Debug]("live_mode.py - run() - calculate_leverage")
                         (
                             self.order_available_balance,
                             self.order_cash_borrowed,
@@ -384,28 +418,28 @@ class LiveTrading:
                             cash_borrowed=self.order_cash_borrowed,
                             cash_used=self.order_cash_used,
                             entry_size_usd=self.order_entry_size_usd,
-                            max_leverage=self.exchange.exchange_settings.max_leverage,
-                            min_leverage=self.exchange.exchange_settings.min_leverage,
+                            max_leverage=max_leverage,
+                            min_leverage=min_leverage,
                             stringer=self.stringer,
-                            mmr_pct=self.exchange.exchange_settings.mmr_pct,
+                            mmr_pct=mmr_pct,
                             sl_price=self.order_sl_price,
-                            static_leverage=self.dynamic_order_settings.static_leverage,
-                            leverage_tick_step=self.exchange.exchange_settings.leverage_tick_step,
-                            price_tick_step=self.exchange.exchange_settings.price_tick_step,
+                            static_leverage=static_leverage,
+                            leverage_tick_step=leverage_tick_step,
+                            price_tick_step=price_tick_step,
                             logger=self.logger,
                         )
-                        self.logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - calculate_take_profit")
+                        self.logger[LoggerFuncType.Debug]("live_mode.py - run() - calculate_take_profit")
                         (
                             self.order_can_move_sl_to_be,
                             self.order_tp_price,
                             self.order_tp_pct,
                         ) = self.tp_calculator(
                             average_entry=self.order_average_entry,
-                            market_fee_pct=self.exchange.exchange_settings.market_fee_pct,
+                            market_fee_pct=market_fee_pct,
                             position_size_usd=self.order_position_size_usd,
                             possible_loss=self.order_possible_loss,
-                            price_tick_step=self.exchange.exchange_settings.price_tick_step,
-                            risk_reward=self.dynamic_order_settings.risk_reward,
+                            price_tick_step=price_tick_step,
+                            risk_reward=risk_reward,
                             tp_fee_pct=self.exit_fee_pct,
                             stringer=self.stringer,
                             logger=self.logger,
@@ -413,96 +447,114 @@ class LiveTrading:
 
                         # place the order
                         send_verify_error = False
-                        self.logger[LoggerFuncType.Info]("Placing Entry Order")
+                        self.logger[LoggerFuncType.Info]("live_mode.py - run() - Placing Entry Order")
                         entry_order_id = self.entry_order(
                             asset_amount=self.order_entry_size_asset,
                             entry_price=self.order_entry_price,
                         )
 
-                        self.logger[LoggerFuncType.Info](f"Submitted entry order -> [order_id={entry_order_id}]")
+                        self.logger[LoggerFuncType.Info](
+                            f"live_mode.py - run() - Submitted entry order -> [order_id={entry_order_id}]"
+                        )
                         sleep(1)
 
                         # check if order fileld
-                        self.logger[LoggerFuncType.Debug](f"Checking if entry order was filled")
+                        self.logger[LoggerFuncType.Debug](f"live_mode.py - run() - Checking if entry order was filled")
                         if self.exchange.check_if_order_filled(
                             symbol=self.symbol,
                             order_id=entry_order_id,
                         ):
-                            self.logger[LoggerFuncType.Info]("Entry was filled")
+                            self.logger[LoggerFuncType.Info]("live_mode.py - run() - Entry was filled")
                         else:
                             msg += f"entry_order_id {entry_order_id} "
                             send_verify_error = True
                             self.logger[LoggerFuncType.Warning](
-                                f"Couldn't verify entry order was filled {entry_order_id}"
+                                f"live_mode.py - run() - Couldn't verify entry order was filled {entry_order_id}"
                             )
 
                         # cancel other orders if in position
-                        self.logger[LoggerFuncType.Info](f"checking if in position to cancel tp and sl")
+                        self.logger[LoggerFuncType.Info](
+                            f"live_mode.py - run() - checking if in position to cancel tp and sl"
+                        )
                         self.__set_ex_position_size_asset()
                         if self.ex_position_size_asset > 0:
-                            self.logger[LoggerFuncType.Info](f"We are in a pos and trying to cancle tp and sl")
+                            self.logger[LoggerFuncType.Info](
+                                f"live_mode.py - run() - We are in a pos and trying to cancle tp and sl"
+                            )
                             if self.exchange.cancel_all_open_order_per_symbol(symbol=self.symbol):
-                                self.logger[LoggerFuncType.Info](f"Canceled the orders")
+                                self.logger[LoggerFuncType.Info](f"live_mode.py - run() - Canceled the orders")
                             else:
                                 self.logger[LoggerFuncType.Warning](
-                                    "Wasn't able to verify that the tp and sl were canceled"
+                                    "live_mode.py - run() - Wasn't able to verify that the tp and sl were canceled"
                                 )
 
                         sleep(0.5)
 
                         # set the levergae
-                        self.logger[LoggerFuncType.Info]("Setting leverage")
+                        self.logger[LoggerFuncType.Info]("live_mode.py - run() - Setting leverage")
                         if self.exchange.set_leverage_value(
                             symbol=self.symbol,
                             leverage=self.order_leverage,
                         ):
-                            self.logger[LoggerFuncType.Info](f"Leverage Changed")
+                            self.logger[LoggerFuncType.Info](f"live_mode.py - run() - Leverage Changed")
                         else:
-                            self.logger[LoggerFuncType.Warning]("Couldn't verify that leverage was set")
+                            self.logger[LoggerFuncType.Warning](
+                                "live_mode.py - run() - Couldn't verify that leverage was set"
+                            )
                             msg += f"leverage was set "
                             send_verify_error = True
 
-                        self.logger[LoggerFuncType.Info](f"Submitting stop loss order")
+                        self.logger[LoggerFuncType.Info](f"live_mode.py - run() - Submitting stop loss order")
                         sl_order_id = self.place_sl_order(
                             asset_amount=self.ex_position_size_asset,
                             trigger_price=self.order_sl_price,
                         )
-                        self.logger[LoggerFuncType.Info](f"Submitted SL order -> [order_id={sl_order_id}]")
+                        self.logger[LoggerFuncType.Info](
+                            f"live_mode.py - run() - Submitted SL order -> [order_id={sl_order_id}]"
+                        )
 
                         sleep(0.5)
-                        self.logger[LoggerFuncType.Info](f"Submitting take profit order")
+                        self.logger[LoggerFuncType.Info](f"live_mode.py - run() - Submitting take profit order")
                         tp_order_id = self.place_tp_order(
                             asset_amount=self.ex_position_size_asset,
                             tp_price=self.order_tp_price,
                         )
-                        self.logger[LoggerFuncType.Info](f"Submitted TP order -> [order_id={tp_order_id}]")
-                        self.exchange.exchange_settings.market_fee_pct
+                        self.logger[LoggerFuncType.Info](
+                            f"live_mode.py - run() - Submitted TP order -> [order_id={tp_order_id}]"
+                        )
+                        market_fee_pct
                         # sleep 1 second before checking to see if orders were placed
                         sleep(1)
-                        self.logger[LoggerFuncType.Info](f"Checking if stop loss was placed")
+                        self.logger[LoggerFuncType.Info](f"live_mode.py - run() - Checking if stop loss was placed")
                         if self.exchange.check_if_order_open(
                             symbol=self.symbol,
                             order_id=sl_order_id,
                         ):
-                            self.logger[LoggerFuncType.Info](f"Stop loss was placed")
+                            self.logger[LoggerFuncType.Info](f"live_mode.py - run() - Stop loss was placed")
                         else:
-                            self.logger[LoggerFuncType.Warning](f"Couldn't verify sl order was placed {sl_order_id} ")
+                            self.logger[LoggerFuncType.Warning](
+                                f"live_mode.py - run() - Couldn't verify sl order was placed {sl_order_id} "
+                            )
                             msg += f"sl_order_id {sl_order_id} "
                             send_verify_error = True
 
-                        self.logger[LoggerFuncType.Debug](f"Checking if tp was placed")
+                        self.logger[LoggerFuncType.Debug](f"live_mode.py - run() - Checking if tp was placed")
                         if self.exchange.check_if_order_open(
                             symbol=self.symbol,
                             order_id=tp_order_id,
                         ):
-                            self.logger[LoggerFuncType.Info](f"take profit placed")
+                            self.logger[LoggerFuncType.Info](f"live_mode.py - run() - take profit placed")
                         else:
-                            self.logger[LoggerFuncType.Info](f"Couldn't verify tp order was filled {tp_order_id}")
+                            self.logger[LoggerFuncType.Info](
+                                f"live_mode.py - run() - Couldn't verify tp order was filled {tp_order_id}"
+                            )
                             msg += f"tp_order_id {tp_order_id}"
                             send_verify_error = True
 
                         if send_verify_error:
-                            self.logger[LoggerFuncType.Info]("Something wan't verified so rechecking all")
+                            self.logger[LoggerFuncType.Info](
+                                "live_mode.py - run() - Something wan't verified so rechecking all"
+                            )
                             entry_placed = self.exchange.check_if_order_filled(
                                 symbol=self.symbol,
                                 order_id=entry_order_id,
@@ -523,7 +575,7 @@ class LiveTrading:
                             if not all(v == True for v in verify_list):
                                 self.logger[LoggerFuncType.Error](msg)
                                 raise Exception(msg)
-                            self.logger[LoggerFuncType.Info]("All verified")
+                            self.logger[LoggerFuncType.Info]("live_mode.py - run() - All verified")
 
                         else:
                             self.__set_exchange_variables(
@@ -539,29 +591,31 @@ class LiveTrading:
                                 entry_filename=entry_filename,
                                 strategy_filename=strategy_filename,
                             )
-                            self.logger[LoggerFuncType.Info]("Entry placed on exchange")
+                            self.logger[LoggerFuncType.Info]("live_mode.py - run() - Entry placed on exchange")
                             trade_logger.info(f"{message}")
 
                     except RejectedOrder as e:
-                        self.logger[LoggerFuncType.Warning](f"RejectedOrder -> {e.msg}")
+                        self.logger[LoggerFuncType.Warning](f"live_mode.py - run() - RejectedOrder -> {e}")
                         pass
                     except Exception as e:
-                        self.logger[LoggerFuncType.Error](f"Exception Entry -> {e}")
-                        raise Exception(f"Exception Entry -> {e}")
+                        self.logger[LoggerFuncType.Error](f"live_mode.py - run() - Exception Entry -> {e}")
+                        raise Exception(f"live_mode.py - run() - Exception Entry -> {e}")
                     self.__set_ex_position_size_asset()
                     if self.ex_position_size_asset > 0:
-                        self.logger[LoggerFuncType.Info](f"We are in a position ... checking to move stop loss")
+                        self.logger[LoggerFuncType.Info](
+                            f"live_mode.py - run() - We are in a position ... checking to move stop loss"
+                        )
                         try:
                             temp_sl = self.checker_sl_to_be(
                                 average_entry=self.order_average_entry,
                                 can_move_sl_to_be=self.order_can_move_sl_to_be,
-                                candle_body_type=self.dynamic_order_settings.sl_to_be_cb_type,
-                                current_candle=self.exchange.candles_np[bar_index, :],
+                                candle_body_type=sl_to_be_cb_type,
+                                current_candle=self.candles[bar_index, :],
                                 logger=self.logger,
-                                market_fee_pct=self.exchange.exchange_settings.market_fee_pct,
-                                price_tick_step=self.exchange.exchange_settings.price_tick_step,
+                                market_fee_pct=market_fee_pct,
+                                price_tick_step=price_tick_step,
                                 sl_price=self.order_sl_price,
-                                sl_to_be_move_when_pct=self.dynamic_order_settings.sl_to_be_when_pct,
+                                sl_to_be_move_when_pct=sl_to_be_when_pct,
                                 stringer=self.stringer,
                                 zero_or_entry_calc=self.zero_or_entry_calc,
                             )
@@ -573,24 +627,26 @@ class LiveTrading:
                                     new_price=temp_sl,
                                 ):
                                     self.logger[LoggerFuncType.Info](
-                                        f"Moved stop loss from {self.order_sl_price:,} to {temp_sl:,}"
+                                        f"live_mode.py - run() - Moved stop loss from {self.order_sl_price:,} to {temp_sl:,}"
                                     )
                                     self.order_sl_price = temp_sl
                                 else:
-                                    self.logger[LoggerFuncType.Warning](f"Couldn't verify sl was moved {sl_order_id}")
-                                    raise Exception(f"Exception MoveStopLoss -> {e}")
+                                    self.logger[LoggerFuncType.Warning](
+                                        f"live_mode.py - run() - Couldn't verify sl was moved {sl_order_id}"
+                                    )
+                                    raise Exception(f"live_mode.py - run() - Exception MoveStopLoss -> {e}")
                             else:
-                                self.logger[LoggerFuncType.Info](f"Wont move sl to be")
+                                self.logger[LoggerFuncType.Info](f"live_mode.py - run() - Wont move sl to be")
                             temp_tsl = self.checker_tsl(
                                 average_entry=self.order_average_entry,
-                                candle_body_type=self.dynamic_order_settings.trail_sl_bcb_type,
-                                current_candle=self.exchange.candles_np[bar_index, :],
+                                candle_body_type=trail_sl_bcb_type,
+                                current_candle=self.candles[bar_index, :],
                                 logger=self.logger,
-                                price_tick_step=self.exchange.exchange_settings.price_tick_step,
+                                price_tick_step=price_tick_step,
                                 sl_price=self.order_sl_price,
                                 stringer=self.stringer,
-                                trail_sl_by_pct=self.dynamic_order_settings.trail_sl_by_pct,
-                                trail_sl_when_pct=self.dynamic_order_settings.trail_sl_when_pct,
+                                trail_sl_by_pct=trail_sl_by_pct,
+                                trail_sl_when_pct=trail_sl_when_pct,
                             )
                             if temp_tsl > 0:
                                 if self.exchange.move_stop_order(
@@ -600,28 +656,31 @@ class LiveTrading:
                                     new_price=temp_tsl,
                                 ):
                                     self.logger[LoggerFuncType.Info](
-                                        f"Moved stop loss from {self.order_sl_price:,} to {temp_tsl:,}"
+                                        f"live_mode.py - run() - Moved stop loss from {self.order_sl_price:,} to {temp_tsl:,}"
                                     )
                                     self.order_sl_price = temp_tsl
                                 else:
-                                    self.logger[LoggerFuncType.Warning](f"Couldn't verify tsl was moved {sl_order_id}")
-                                    raise Exception(f"Exception Move TSL -> {e}")
+                                    self.logger[LoggerFuncType.Warning](
+                                        f"live_mode.py - run() - Couldn't verify tsl was moved {sl_order_id}"
+                                    )
+                                    raise Exception(f"live_mode.py - run() - Exception Move TSL -> {e}")
                             else:
-                                self.logger[LoggerFuncType.Info](f"Wont move tsl")
+                                self.logger[LoggerFuncType.Info](f"live_mode.py - run() - Wont move tsl")
                         except Exception as e:
-                            self.logger[LoggerFuncType.Error](f"Exception checking MoveStopLoss -> {e}")
-                            raise Exception(f"Exception checking MoveStopLoss -> {e}")
+                            self.logger[LoggerFuncType.Error](
+                                f"live_mode.py - run() - Exception checking MoveStopLoss -> {e}"
+                            )
+                            raise Exception(f"live_mode.py - run() - Exception checking MoveStopLoss -> {e}")
                 elif latest_pnl != self.last_pnl:
-                    self.logger[LoggerFuncType.Info](f"Got a new pnl {latest_pnl}")
-                    self.email_sender.email_pnl(pnl=latest_pnl)
+                    self.logger[LoggerFuncType.Info](f"live_mode.py - run() - Got a new pnl {latest_pnl}")
+                    # self.email_sender.email_pnl(pnl=latest_pnl)
                     self.last_pnl = latest_pnl
                 else:
                     pass
             except Exception as e:
-                self.logger[LoggerFuncType.Error](f"Exception -> {e}")
-                self.logger[LoggerFuncType.Error]("Server stopped")
-                self.email_sender.email_error_msg(msg=f"Exception -> {e}")
-                raise Exception(f"Exception -> {e}")
+                self.logger[LoggerFuncType.Error](f"live_mode.py - run() - Exception -> {e}")
+                # self.email_sender.email_error_msg(msg=f"live_mode.py - run() - Exception -> {e}")
+                raise Exception(f"live_mode.py - run() - Exception -> {e}")
             sleep(self.get_sleep_time_to_next_bar())
 
     def get_sleep_time_to_next_bar(self):
@@ -631,21 +690,27 @@ class LiveTrading:
             - self.exchange.get_current_time_ms(),
         )
         td = str(timedelta(seconds=ms_to_next_candle / 1000)).split(":")
-        self.logger[LoggerFuncType.Info](f"Will sleep for {td[0]} hrs {td[1]} mins and {td[2]} seconds till next bar\n")
-        print(f"Will sleep for {td[0]} hrs {td[1]} mins and {td[2]} seconds till next bar\n")
+        self.logger[LoggerFuncType.Info](
+            f"live_mode.py - get_sleep_time_to_next_bar() - Will sleep for {td[0]} hrs {td[1]} mins and {td[2]} seconds till next bar\n"
+        )
+        print(
+            f"live_mode.py - get_sleep_time_to_next_bar() - Will sleep for {td[0]} hrs {td[1]} mins and {td[2]} seconds till next bar\n"
+        )
 
         return int(ms_to_next_candle / 1000)
 
     def __set_ex_position_size_asset(self):
-        self.logger[LoggerFuncType.Debug](f"Setting position size asset")
+        self.logger[LoggerFuncType.Debug](
+            f"live_mode.py - __set_ex_position_size_asset() - Setting position size asset"
+        )
         self.ex_position_size_asset = float(self.get_position_info()["size"])
 
     def __set_ex_position_size_usd(self):
-        self.logger[LoggerFuncType.Debug](f"Setting position size usd")
+        self.logger[LoggerFuncType.Debug](f"live_mode.py - __set_ex_position_size_usd() - Setting position size usd")
         self.ex_position_size_usd = float(self.get_position_info()["positionValue"])
 
     def __set_order_average_entry(self):
-        self.logger[LoggerFuncType.Debug](f"Setting average entry")
+        self.logger[LoggerFuncType.Debug](f"live_mode.py - __set_order_average_entry() - Setting average entry")
         self.order_average_entry = float(self.get_position_info()["entryPrice"])
 
     def __set_ex_possible_loss(self):
@@ -665,7 +730,7 @@ class LiveTrading:
         self.ex_possible_profit = round(abs(pnl - self.fees_paid), 3)
 
     def __set_exchange_variables(self, entry_order_id, sl_order_id, tp_order_id):
-        self.logger[LoggerFuncType.Debug](f"setting all exchange vars")
+        self.logger[LoggerFuncType.Debug](f"live_mode.py - __set_exchange_variables() - setting all exchange vars")
         pos_info = self.get_position_info()
         entry_info = self.exchange.get_filled_orders_by_order_id(symbol=self.symbol, order_id=entry_order_id)
         tp_info = self.exchange.get_open_order_by_order_id(symbol=self.symbol, order_id=tp_order_id)
@@ -674,7 +739,7 @@ class LiveTrading:
         self.ex_position_size_asset = float(pos_info.get("size"))
         self.ex_position_size_usd = float(pos_info.get("positionValue"))
         self.ex_average_entry = float(pos_info.get("entryPrice"))
-        self.avg_entry_slippage = self.__get_pct_difference(self.order.average_entry, self.ex_average_entry)
+        self.avg_entry_slippage = self.__get_pct_difference(self.order_average_entry, self.ex_average_entry)
         self.ex_entry_price = float(entry_info.get("execPrice"))
         self.entry_slippage = self.__get_pct_difference(self.order_entry_price, self.ex_entry_price)
         self.ex_entry_size_asset = float(entry_info.get("execQty"))
@@ -694,16 +759,16 @@ class LiveTrading:
         self.ex_possible_loss = round(-(pnl - self.fees_paid), 3)
 
     def __get_pct_difference(self, starting_num, diff_num):
-        self.logger[LoggerFuncType.Debug](f"getting pct difference")
+        self.logger[LoggerFuncType.Debug](f"live_mode.py - __get_pct_difference() - getting pct difference")
         return round(abs((starting_num - diff_num) / starting_num) * 100, 2)
 
     def __create_entry_successful_message(self):
-        self.logger[LoggerFuncType.Debug](f"Creating message")
+        self.logger[LoggerFuncType.Debug](f"live_mode.py - __create_entry_successful_message() - Creating message")
         self.__set_ex_possible_loss()
         self.__set_ex_possible_profit()
 
         message = f"An order was placed successfully\n\
-[ex_candle_closing_price={self.exchange.candles_np['close'][-1]:,}]\n\
+[ex_candle_closing_price={self.candles[-1:CandleBodyType.Close]:,}]\n\
 [entry_price={self.order_entry_price:,}]\n\
 [ex_entry_price={self.ex_entry_price:,}]\n\
 [Entry slippage={self.entry_slippage}]\n\n\
@@ -719,7 +784,7 @@ class LiveTrading:
 [liq price={self.order_liq_price:,}]\n\
 [ex_liq price={self.ex_liq_price:,}]\n\
 [ex_liq_pct={self.ex_liq_pct:,}]\n\n\
-[candle low={self.exchange.candles_np['low'][-1]:,}]\n\
+[candle low={self.candles[-1: CandleBodyType.Low]:,}]\n\
 [stop_loss_price={self.order_sl_price:,}]\n\
 [ex_stop_loss_price={self.ex_sl_price:,}]\n\
 [ex_sl_pct={self.ex_sl_pct}]\n\n\
@@ -732,8 +797,8 @@ class LiveTrading:
         return message
 
     def __get_entry_plot_filename(self):
-        self.logger[LoggerFuncType.Debug]("Getting entry plot file")
-        last_20 = self.exchange.candles_np[-20:]
+        self.logger[LoggerFuncType.Debug]("live_mode.py - __get_entry_plot_filename() - Getting entry plot file")
+        last_20 = self.candles[-20:]
         last_20_datetimes = pd.to_datetime(last_20["timestamp"], unit="ms")
         graph_entry = [last_20_datetimes[-1]]
         fig = go.Figure()

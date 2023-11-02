@@ -373,7 +373,7 @@ def run_df_backtest(
             starting_bar = dynamic_order_settings.num_candles - 1
             logger[LoggerFuncType.Info]("simulate.py - run_backtest() - Starting Bar=" + str(starting_bar))
 
-            account_state = AccountState(
+            account_state: AccountState = AccountState(
                 # where we are at
                 ind_set_index=-1,
                 dos_index=-1,
@@ -389,7 +389,7 @@ def run_df_backtest(
                 realized_pnl=0.0,
                 total_trades=0,
             )
-            order_result = OrderResult(
+            order_result: OrderResult = OrderResult(
                 average_entry=0.0,
                 can_move_sl_to_be=False,
                 entry_price=0.0,

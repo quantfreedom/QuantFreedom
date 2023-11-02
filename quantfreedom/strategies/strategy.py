@@ -94,7 +94,7 @@ def strat_bt_create_ind(
         raise Exception
 
 
-def strat_liv_create_ind(
+def strat_live_create_ind(
     bar_index,
     starting_bar,
     candles,
