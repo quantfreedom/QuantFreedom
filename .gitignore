@@ -1,11 +1,7 @@
 my_stuff/
 logs/
 docs/
-math/
-old_quantfreedom/
-nightvision/
-my_main.py
-init_script.sh
+nb_funcs/
 .ipynb_checkpoints
 .vscode
 .idea
@@ -17,8 +13,9 @@ numba_cache
 *.todo
 thinking.txt
 .mustache
-nb_funcs
 *.csv
+*.h5
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

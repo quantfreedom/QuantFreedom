@@ -58,7 +58,7 @@ class LiveExchange(Exchange):
     def set_init_last_fetched_time(self, *vargs):
         pass
 
-    def set_candles_np(self, *vargs):
+    def get_live_candles(self, *vargs):
         pass
 
     def get_long_hedge_mode_position_info(self, *vargs):

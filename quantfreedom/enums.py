@@ -4,19 +4,20 @@ import numpy as np
 
 class CandleProcessingTypeT(NamedTuple):
     Backtest: int = 0
-    RealBacktest: int = 1
-    LiveTrading: int = 2
+    LiveTrading: int = 1
 
 
 CandleProcessingType = CandleProcessingTypeT()
 
 
 class CandleBodyTypeT(NamedTuple):
-    Nothing: int = 0
+    Timestamp: int = 0
     Open: int = 1
     High: int = 2
     Low: int = 3
     Close: int = 4
+    Volume: int = 5
+    Nothing: int = 6
 
 
 CandleBodyType = CandleBodyTypeT()
@@ -51,29 +52,55 @@ class LeverageStrategyTypeT(NamedTuple):
 LeverageStrategyType = LeverageStrategyTypeT()
 
 
+class LoggerTypeT(NamedTuple):
+    File: int = 0
+    Pass: int = 1
+
+
+LoggerType = LoggerTypeT()
+
+
+class LoggerFuncTypeT(NamedTuple):
+    Debug: int = 0
+    Info: int = 1
+    Warning: int = 2
+    Error: int = 3
+
+
+LoggerFuncType = LoggerFuncTypeT()
+
+
 class OrderPlacementTypeT(NamedTuple):
     Limit: int = 0
     Market: int = 1
+
+
+class NBLoggerTypeT(NamedTuple):
+    Print: int = 0
+    Pass: int = 1
+
+
+NBLoggerType = NBLoggerTypeT()
 
 
 OrderPlacementType = OrderPlacementTypeT()
 
 
 class OrderStatusT(NamedTuple):
-    Nothing: int = 0
+    HitMaxTrades: int = 0
     EntryFilled: int = 1
     StopLossFilled: int = 2
     TakeProfitFilled: int = 3
     LiquidationFilled: int = 4
-    MovedStopLossToBE: int = 5
-    MovedTrailingStopLoss: int = 6
+    MovedSLToBE: int = 5
+    MovedTSL: int = 6
     MaxEquityRisk: int = 7
     RiskToBig: int = 8
     CashUsedExceed: int = 9
     EntrySizeTooSmall: int = 10
     EntrySizeTooBig: int = 11
     PossibleLossTooBig: int = 12
-    HitMaxTrades: int = 13
+    Nothing: int = 13
 
 
 OrderStatus = OrderStatusT()
@@ -95,19 +122,29 @@ class PositionModeTypeT(NamedTuple):
 PositionModeType = PositionModeTypeT()
 
 
-class SLToBeZeroOrEntryTypeT(NamedTuple):
-    Nothing: int = 0
-    ZeroLoss: int = 1
-    AverageEntry: int = 2
+class PriceGetterTypeT(NamedTuple):
+    Min: int = 0
+    Max: int = 1
+    Nothing: int = 2
 
 
-SLToBeZeroOrEntryType = SLToBeZeroOrEntryTypeT()
+PriceGetterType = PriceGetterTypeT()
+
+
+class StringerFuncTypeT(NamedTuple):
+    float_to_str: int = 0
+    log_datetime: int = 1
+    candle_body_str: int = 2
+    z_or_e_str: int = 3
+    or_to_str: int = 4
+
+
+StringerFuncType = StringerFuncTypeT()
 
 
 class StopLossStrategyTypeT(NamedTuple):
-    Nothing: int = 0
-    SLBasedOnCandleBody: int = 1
-    SLPct: int = 2
+    SLBasedOnCandleBody: int = 0
+    Nothing: int = 1
 
 
 StopLossStrategyType = StopLossStrategyTypeT()
@@ -123,12 +160,12 @@ TakeProfitFeeType = TakeProfitFeeTypeT()
 
 
 class TakeProfitStrategyTypeT(NamedTuple):
-    Nothing: int = 0
+    ProvidedandRR: int = 0
     RiskReward: int = 1
     TPPct: int = 2
     Provided: int = 3
     ProvidedandPct: int = 4
-    ProvidedandRR: int = 5
+    Nothing: int = 5
 
 
 TakeProfitStrategyType = TakeProfitStrategyTypeT()
@@ -142,11 +179,87 @@ class TriggerDirectionTypeT(NamedTuple):
 TriggerDirectionType = TriggerDirectionTypeT()
 
 
+class ZeroOrEntryTypeT(NamedTuple):
+    ZeroLoss: int = 0
+    AverageEntry: int = 1
+    Nothing: int = 2
+
+
+ZeroOrEntryType = ZeroOrEntryTypeT()
+
+
+############################################################
+############################################################
+############################################################
+############################################################
+############################################################
+############################################################
+############################################################
+############################################################
+############################################################
+############################################################
+
+
+class AccountState(NamedTuple):
+    # where we are at
+    ind_set_index: int
+    dos_index: int
+    bar_index: int
+    timestamp: int
+    # account info
+    available_balance: float = np.nan
+    cash_borrowed: float = np.nan
+    cash_used: float = np.nan
+    equity: float = np.nan
+    fees_paid: float = np.nan
+    possible_loss: float = np.nan
+    realized_pnl: float = np.nan
+    total_trades: int = 0
+
+
 class BacktestSettings(NamedTuple):
     divide_records_array_size_by: float = 1.0
     gains_pct_filter: float = -np.inf
     total_trade_filter: int = -1
     upside_filter: float = -np.inf
+
+
+class DynamicOrderSettingsArrays(NamedTuple):
+    entry_size_asset: np.array
+    max_equity_risk_pct: np.array
+    max_trades: np.array
+    num_candles: np.array
+    risk_account_pct_size: np.array
+    risk_reward: np.array
+    sl_based_on_add_pct: np.array
+    sl_based_on_lookback: np.array
+    sl_bcb_type: np.array
+    sl_to_be_cb_type: np.array
+    sl_to_be_when_pct: np.array
+    sl_to_be_ze_type: np.array
+    static_leverage: np.array
+    trail_sl_bcb_type: np.array
+    trail_sl_by_pct: np.array
+    trail_sl_when_pct: np.array
+
+
+class DynamicOrderSettings(NamedTuple):
+    entry_size_asset: float
+    max_equity_risk_pct: float
+    max_trades: int
+    num_candles: int
+    risk_account_pct_size: float
+    risk_reward: float
+    sl_based_on_add_pct: float
+    sl_based_on_lookback: int
+    sl_bcb_type: int
+    sl_to_be_cb_type: int
+    sl_to_be_when_pct: float
+    sl_to_be_ze_type: int
+    static_leverage: float
+    trail_sl_bcb_type: int
+    trail_sl_by_pct: float
+    trail_sl_when_pct: float
 
 
 class ExchangeSettings(NamedTuple):
@@ -164,120 +277,48 @@ class ExchangeSettings(NamedTuple):
     leverage_tick_step: int = None
 
 
-class OrderSettingsArrays(NamedTuple):
-    increase_position_type: np.array
-    leverage_type: np.array
-    max_equity_risk_pct: np.array
-    long_or_short: np.array
-    risk_account_pct_size: np.array
-    risk_reward: np.array
-    sl_based_on_add_pct: np.array
-    sl_based_on_lookback: np.array
-    sl_candle_body_type: np.array
-    sl_to_be_based_on_candle_body_type: np.array
-    sl_to_be_when_pct_from_candle_body: np.array
-    sl_to_be_zero_or_entry_type: np.array
-    static_leverage: np.array
-    stop_loss_type: np.array
-    take_profit_type: np.array
-    tp_fee_type: np.array
-    trail_sl_based_on_candle_body_type: np.array
-    trail_sl_by_pct: np.array
-    trail_sl_when_pct_from_candle_body: np.array
-    num_candles: np.array
-    entry_size_asset: np.array
-    max_trades: np.array
-
-
-class OrderSettings(NamedTuple):
-    increase_position_type: int
-    leverage_type: int
-    max_equity_risk_pct: float
-    long_or_short: int
-    risk_account_pct_size: float
-    risk_reward: float
-    sl_based_on_add_pct: float
-    sl_based_on_lookback: int
-    sl_candle_body_type: int
-    sl_to_be_based_on_candle_body_type: int
-    sl_to_be_when_pct_from_candle_body: float
-    sl_to_be_zero_or_entry_type: int
-    static_leverage: float
-    stop_loss_type: int
-    take_profit_type: int
-    tp_fee_type: int
-    trail_sl_based_on_candle_body_type: int
-    trail_sl_by_pct: float
-    trail_sl_when_pct_from_candle_body: float
-    num_candles: int
-    entry_size_asset: float
-    max_trades: int
-
-
 class OrderResult(NamedTuple):
-    indicator_settings_index: int
-    order_settings_index: int
-    bar_index: int
-    equity: float = np.nan
-    available_balance: float = np.nan
-    cash_borrowed: float = np.nan
-    cash_used: float = np.nan
-    average_entry: float = np.nan
-    fees_paid: float = np.nan
-    leverage: float = np.nan
-    liq_price: float = np.nan
-    order_status: int = np.nan
-    possible_loss: float = np.nan
-    entry_size_asset: float = np.nan
-    entry_size_usd: float = np.nan
-    entry_price: float = np.nan
-    exit_price: float = np.nan
-    position_size_asset: float = np.nan
-    position_size_usd: float = np.nan
-    realized_pnl: float = np.nan
-    sl_pct: float = np.nan
-    sl_price: float = np.nan
-    total_trades: int = 0
-    tp_pct: float = np.nan
-    tp_price: float = np.nan
+    average_entry: np.float_ = np.nan
+    can_move_sl_to_be: np.bool_ = False
+    entry_price: np.float_ = np.nan
+    entry_size_asset: np.float_ = np.nan
+    entry_size_usd: np.float_ = np.nan
+    exit_price: np.float_ = np.nan
+    leverage: np.float_ = np.nan
+    liq_price: np.float_ = np.nan
+    order_status: np.int_ = np.nan
+    position_size_asset: np.float_ = np.nan
+    position_size_usd: np.float_ = np.nan
+    sl_pct: np.float_ = np.nan
+    sl_price: np.float_ = np.nan
+    tp_pct: np.float_ = np.nan
+    tp_price: np.float_ = np.nan
+
+
+class StaticOrderSettings(NamedTuple):
+    increase_position_type: int
+    leverage_strategy_type: int
+    long_or_short: int
+    logger_bool: bool
+    pg_min_max_sl_bcb: int
+    sl_strategy_type: int
+    sl_to_be_bool: bool
+    z_or_e_type: int
+    tp_strategy_type: int
+    tp_fee_type: int
+    trail_sl_bool: bool
 
 
 class RejectedOrder(Exception):
-    def __init__(
-        self,
-        order_status: OrderStatus = None,
-        msg: str = None,
-    ):
-        self.order_status = order_status
-        self.msg = msg
+    pass
 
 
 class DecreasePosition(Exception):
-    def __init__(
-        self,
-        order_status: OrderStatus = None,
-        exit_price: float = None,
-        exit_fee_pct: float = None,
-        msg: str = None,
-    ):
-        self.order_status = order_status
-        self.exit_price = exit_price
-        self.exit_fee_pct = exit_fee_pct
-        self.msg = msg
+    pass
 
 
 class MoveStopLoss(Exception):
-    def __init__(
-        self,
-        order_status: OrderStatus = None,
-        sl_price: float = None,
-        can_move_sl_to_be: bool = None,
-        msg: str = None,
-    ):
-        self.order_status = order_status
-        self.sl_price = sl_price
-        self.can_move_sl_to_be = can_move_sl_to_be
-        self.msg = msg
+    pass
 
 
 order_settings_array_dt = np.dtype(
@@ -291,17 +332,17 @@ order_settings_array_dt = np.dtype(
         ("risk_reward", np.float_),
         ("sl_based_on_add_pct", np.float_),
         ("sl_based_on_lookback", np.int_),
-        ("sl_candle_body_type", np.int_),
-        ("sl_to_be_based_on_candle_body_type", np.int_),
-        ("sl_to_be_when_pct_from_candle_body", np.float_),
-        ("sl_to_be_zero_or_entry_type", np.int_),
+        ("sl_bcb_type", np.int_),
+        ("sl_to_be_cb_type", np.int_),
+        ("sl_to_be_when_pct", np.float_),
+        ("sl_to_be_ze_type", np.int_),
         ("static_leverage", np.float_),
         ("stop_loss_type", np.int_),
         ("take_profit_type", np.int_),
         ("tp_fee_type", np.int_),
-        ("trail_sl_based_on_candle_body_type", np.int_),
+        ("trail_sl_bcb_type", np.int_),
         ("trail_sl_by_pct", np.float_),
-        ("trail_sl_when_pct_from_candle_body", np.float_),
+        ("trail_sl_when_pct", np.float_),
         ("num_candles", np.int_),
         ("entry_size_asset", np.float_),
         ("max_trades", np.int_),
@@ -315,6 +356,8 @@ or_dt = np.dtype(
         ("ind_set_idx", np.int_),
         ("or_set_idx", np.int_),
         ("bar_idx", np.int_),
+        ("timestamp", np.int64),
+        ("order_status", np.int_),
         ("equity", np.float_),
         ("available_balance", np.float_),
         ("cash_borrowed", np.float_),
@@ -323,7 +366,6 @@ or_dt = np.dtype(
         ("fees_paid", np.float_),
         ("leverage", np.float_),
         ("liq_price", np.float_),
-        ("order_status", np.int_),
         ("possible_loss", np.float_),
         ("total_trades", np.int_),
         ("entry_size_asset", np.float_),
@@ -344,24 +386,16 @@ or_dt = np.dtype(
 strat_df_array_dt = np.dtype(
     [
         ("ind_set_idx", np.int_),
-        ("or_set_idx", np.int_),
+        ("dos_index", np.int_),
         ("total_trades", np.float_),
+        ("wins", np.int_),
+        ("losses", np.int_),
         ("gains_pct", np.float_),
         ("win_rate", np.float_),
         ("to_the_upside", np.float_),
+        ("fees_paid", np.float_),
         ("total_pnl", np.float_),
         ("ending_eq", np.float_),
-    ],
-    align=True,
-)
-
-strat_records_dt = np.dtype(
-    [
-        ("equity", np.float_),
-        ("bar_idx", np.int_),
-        ("or_set_idx", np.int_),
-        ("ind_set_idx", np.int_),
-        ("real_pnl", np.float_),
     ],
     align=True,
 )

@@ -5,13 +5,10 @@ import pandas as pd
 
 from pathlib import Path
 import plotly.graph_objects as go
+from IPython.paths import get_ipython_cache_dir
 
-dir_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 
-
-def delete_dir(
-    p,
-):
+def delete_dir(p):
     """
     Delete info in directory
 
@@ -32,7 +29,9 @@ def clear_cache():
     """
     clears the python cache and numba cache
     """
-    for p in Path(dir_path).parent.parent.rglob("numba_cache"):
+    for p in Path(get_ipython_cache_dir() + "\\numba_cache").rglob("*.nb*"):
+        p.unlink()
+    for p in Path(__file__).parent.parent.rglob("numba_cache"):
         delete_dir(p)
     for p in Path(__file__).parent.parent.rglob("__pycache__"):
         delete_dir(p)
@@ -61,8 +60,8 @@ def pretty_qf(
         items = []
         indent = str("    ")
         for x in range(len(object)):
-            items.append(indent + object._fields[x] + " = " + str(object[x]) + "\n")
-        return type(object).__name__ + "(" + "\n" + "".join(items) + ")"
+            items.append(indent + object._fields[x] + " = " + str(object[x]) + ",\n")
+        return print(type(object).__name__ + "(" + "\n" + "".join(items) + ")")
     except:
         return object
 
