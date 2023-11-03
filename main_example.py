@@ -81,6 +81,10 @@ if __name__ == "__main__":
         dos_cart_arrays=dos_cart_arrays,
         dos_index=0,
     )
+    indicator_settings = strat_get_current_ind_settings(
+        ind_set_index=0,
+        logger=logger,
+    )
     logger[LoggerFuncType.Info](
         "simulate.py - run_backtest() - Created Dynamic Order Settings"
         + "\nentry_size_asset= "
@@ -115,10 +119,6 @@ if __name__ == "__main__":
         + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_by_pct * 100, 3))
         + "\ntrail_sl_when_pct= "
         + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_when_pct * 100, 3))
-    )
-    indicator_settings = strat_get_current_ind_settings(
-        ind_set_index=0,
-        logger=logger,
     )
 
     static_os = StaticOrderSettings(

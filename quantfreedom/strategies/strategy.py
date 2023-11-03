@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import os
 import numpy as np
 import pandas as pd
@@ -40,9 +40,13 @@ class IndicatorSettings(NamedTuple):
     rsi_period: int
 
 
+# ind_set_arrays = IndicatorSettingsArrays(
+#     rsi_is_below=np.array([70, 50, 30]),
+#     rsi_period=np.array([14, 20]),
+# )
 ind_set_arrays = IndicatorSettingsArrays(
-    rsi_is_below=np.array([70, 50, 30]),
-    rsi_period=np.array([14, 20]),
+    rsi_is_below=np.array([100]),
+    rsi_period=np.array([14]),
 )
 
 
@@ -201,15 +205,13 @@ def get_strategy_plot_filename(
         indicator_settings=indicator_settings,
         logger=logger,
     )
-    logger[LoggerFuncType.Debug]("Getting entry plot file")
+    logger[LoggerFuncType.Debug]("strategy.py - evaluate() - Getting entry plot file")
     last_20 = rsi[-20:]
-    last_20_datetimes = pd.to_datetime(candles[-20:, 0], unit="ms")
+    last_20_datetimes = pd.to_datetime(candles[-20:, CandleBodyType.Timestamp], unit="ms")
     fig = go.Figure()
     fig.add_scatter(
         x=last_20_datetimes,
         y=last_20,
-        mode="markers",
-        marker=dict(size=10, symbol="hexagram", color="red"),
         name=f"Liq Price",
     )
     fig.update_layout(xaxis_rangeslider_visible=False)
@@ -218,7 +220,7 @@ def get_strategy_plot_filename(
         ".",
         "logs",
         "images",
-        f'entry_{datetime.utcnow().strftime("%m-%d-%Y_%H-%M-%S")}.png',
+        f'indicator_{datetime.utcnow().strftime("%m-%d-%Y_%H-%M-%S")}.png',
     )
     fig.write_image(entry_filename)
     return entry_filename

@@ -13,6 +13,8 @@ numba_cache
 *.todo
 thinking.txt
 .mustache
+*.csv
+*.h5
 
 
 # Byte-compiled / optimized / DLL files

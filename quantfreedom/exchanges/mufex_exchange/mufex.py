@@ -28,8 +28,6 @@ candles_dt = np.dtype(
 
 MUFEX_TIMEFRAMES = [1, 3, 5, 15, 30, 60, 120, 240, 360, 720, "D", "W", "M"]
 
-info_logger = logging.getLogger("info")
-
 
 class Mufex(Exchange):
     def __init__(
@@ -51,7 +49,6 @@ class Mufex(Exchange):
             self.url_start = "https://api.testnet.mufex.finance"
         else:
             self.url_start = "https://api.mufex.finance"
-        info_logger.debug(f"start url is {self.url_start}")
 
     """
     ################################################################
@@ -152,7 +149,6 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex Something wrong with HTTP_get_request_no_params - > {e}")
 
-
     def __gen_signature(self, time_stamp, params_as_string):
         param_str = time_stamp + self.api_key + "5000" + params_as_string
         hash = hmac.new(bytes(self.secret_key, "utf-8"), param_str.encode("utf-8"), hashlib.sha256)
@@ -225,15 +221,11 @@ class Mufex(Exchange):
                 new_candles = response["data"]["list"]
                 last_candle_time_ms = int(new_candles[-1][0])
                 if last_candle_time_ms == params["start"]:
-                    info_logger.debug("last times are the same. sleep .2 and try again")
                     sleep(0.2)
                 else:
                     candles_list.extend(new_candles)
                     # add 2 sec so we don't download the same candle two times
                     params["start"] = last_candle_time_ms + 2000
-                    info_logger.debug(
-                        f"set params start as lc + 2 sec {self.get_ms_time_to_pd_datetime(params['start'])}"
-                    )
 
             except Exception as e:
                 raise Exception(f"Mufex get_candles_df {response.get('message')} - > {e}")
@@ -242,7 +234,7 @@ class Mufex(Exchange):
         time_it_took_in_seconds = self.get_current_time_seconds() - start_time
         td = str(timedelta(seconds=time_it_took_in_seconds)).split(":")
         print(f"It took {td[1]} mins and {td[2]} seconds to download {len(candles_list)} candles")
-        info_logger.info(f"It took {td[1]} mins and {td[2]} seconds to download {len(candles_list)} candles")
+
         return candles_np
 
     def get_closed_pnl(self, symbol: str, limit: int = 10, params: dict = {}, **vargs):
@@ -256,13 +248,12 @@ class Mufex(Exchange):
         try:
             response["data"]["list"][0]
             data_list = response["data"]["list"]
-            info_logger.debug("Got data list")
+
             return data_list
         except Exception as e:
             raise Exception(f"Data or List is empty {response['message']} -> {e}")
 
     def get_latest_pnl_result(self, symbol: str, **vargs):
-        info_logger.debug("Calling get closed pnl")
         return float(self.get_closed_pnl(symbol=symbol)[0]["closedPnl"])
 
     def get_all_symbols_info(self, category: str = "linear", limit: int = 1000, params: dict = {}, **vargs):
@@ -279,13 +270,12 @@ class Mufex(Exchange):
         try:
             response["data"]["list"][0]
             data_list = response["data"]["list"]
-            info_logger.debug("Got data list")
+
             return data_list
         except Exception as e:
             raise Exception(f"Mufex get_all_symbols_info = Data or List is empty {response['message']} -> {e}")
 
     def get_symbol_info(self, symbol: str, **vargs):
-        info_logger.debug("Calling get_all_symbols_info")
         return self.get_all_symbols_info(params={"symbol": symbol})[0]
 
     def get_risk_limit_info(self, symbol: str, category: str = "linear", **vargs):
@@ -299,7 +289,7 @@ class Mufex(Exchange):
         response = self.HTTP_get_request(end_point=end_point, params=params)
         try:
             data_list = response["data"]["list"][0]
-            info_logger.debug("Got data list")
+
             return data_list
         except Exception as e:
             raise Exception(f"Mufex get_risk_limit_info = Data or List is empty {response['message']} -> {e}")
@@ -313,7 +303,7 @@ class Mufex(Exchange):
         response = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
             order_id = response["data"]["orderId"]
-            info_logger.debug("Got data orderId")
+
             return order_id
         except Exception as e:
             raise Exception(f"Mufex Something is wrong with create_order {response['message']} -> {e}")
@@ -326,7 +316,7 @@ class Mufex(Exchange):
         response = self.HTTP_get_request_no_params(end_point=end_point)
         try:
             data_list = response["data"]["list"][0]
-            info_logger.debug("Got data list")
+
             return data_list
         except Exception as e:
             raise Exception(f"Mufex get_trading_fee_rates = Data or List is empty {response['message']} -> {e}")
@@ -341,7 +331,7 @@ class Mufex(Exchange):
         response = self.HTTP_get_request(end_point=end_point, params=params)
         try:
             data_list = response["data"]["list"][0]
-            info_logger.debug("Got data list")
+
             return data_list
         except Exception as e:
             raise Exception(f"Mufex get_symbol_trading_fee_rates = Data or List is empty {response['message']} -> {e}")
@@ -359,13 +349,12 @@ class Mufex(Exchange):
         try:
             response["data"]["list"][0]
             data_list = response["data"]["list"]
-            info_logger.debug("Got data list")
+
             return data_list
         except Exception as e:
             raise Exception(f"Mufex get_order_history = Data or List is empty {response['message']} -> {e}")
 
     def get_order_history_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **vargs):
-        info_logger.debug("Calling get_order_history")
         params["orderId"] = order_id
         return self.get_order_history(symbol=symbol, params=params)[0]
 
@@ -384,13 +373,12 @@ class Mufex(Exchange):
         try:
             response["data"]["list"][0]
             data_list = response["data"]["list"]
-            info_logger.debug("Got data list")
+
             return data_list
         except Exception as e:
             raise Exception(f"Mufex get_open_orders = Data or List is empty {response['message']} -> {e}")
 
     def get_open_order_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **vargs):
-        info_logger.debug("Calling get open orders")
         params["orderId"] = order_id
         return self.get_open_orders(symbol=symbol, params=params)[0]
 
@@ -409,13 +397,12 @@ class Mufex(Exchange):
         try:
             response["data"]["list"][0]
             data_list = response["data"]["list"]
-            info_logger.debug("Got data list")
+
             return data_list
         except Exception as e:
             raise Exception(f"Mufex get_filled_orders = Data or List is empty {response['message']} -> {e}")
 
     def get_filled_orders_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **vargs):
-        info_logger.debug("Calling get filled orders")
         params["orderId"] = order_id
         return self.get_filled_orders(symbol=symbol, params=params)[0]
 
@@ -428,7 +415,7 @@ class Mufex(Exchange):
         try:
             response["data"]["list"][0]
             data_list = response["data"]["list"]
-            info_logger.debug("Got data list")
+
             return data_list
         except Exception as e:
             raise Exception(f"Mufex get_account_position_info = Data or List is empty {response['message']} -> {e}")
@@ -445,7 +432,7 @@ class Mufex(Exchange):
         try:
             response["data"]["list"][0]
             data_list = response["data"]["list"]
-            info_logger.debug("Got data list")
+
             return data_list
         except Exception as e:
             raise Exception(f"Mufex get_symbol_position_info = Data or List is empty {response['message']} -> {e}")
@@ -463,7 +450,6 @@ class Mufex(Exchange):
             response = self.__HTTP_post_request(end_point=end_point, params=params)
             response_order_id = response.get("data").get("orderId")
             if response_order_id == order_id or response["message"] == "OK":
-                info_logger.debug(f"orderid = {response_order_id} or message ok")
                 return True
             else:
                 raise Exception
@@ -481,7 +467,6 @@ class Mufex(Exchange):
         try:
             response = self.__HTTP_post_request(end_point=end_point, params=params)
             if response["message"] == "OK":
-                info_logger.debug(f"message ok")
                 return True
             else:
                 raise Exception
@@ -500,7 +485,6 @@ class Mufex(Exchange):
         try:
             response_order_id = response.get("data").get("orderId")
             if response_order_id == params["orderId"] or response["message"] == "OK":
-                info_logger.debug(f"orderid = {response_order_id} or message ok")
                 return True
             else:
                 raise Exception
@@ -521,7 +505,6 @@ class Mufex(Exchange):
         try:
             response_order_id = response.get("data").get("orderId")
             if response_order_id == params["orderId"] or response["message"] == "OK":
-                info_logger.debug(f"orderid = {response_order_id} or message ok")
                 return True
             else:
                 raise Exception
@@ -543,7 +526,6 @@ class Mufex(Exchange):
         try:
             response_order_id = response.get("data").get("orderId")
             if response_order_id == params["orderId"] or response["message"] == "OK":
-                info_logger.debug(f"orderid = {response_order_id} or message ok")
                 return True
             else:
                 raise Exception
@@ -559,7 +541,7 @@ class Mufex(Exchange):
         try:
             response["data"]["list"][0]
             data_list = response["data"]["list"]
-            info_logger.debug("Got data list")
+
             return data_list
         except Exception as e:
             raise Exception(f"Mufex get_wallet_info = Data or List is empty {response['message']} -> {e}")
@@ -573,13 +555,12 @@ class Mufex(Exchange):
         response = self.HTTP_get_request(end_point=end_point, params=params)
         try:
             data_list = response["data"]["list"][0]
-            info_logger.debug("Got data list")
+
             return data_list
         except Exception as e:
             raise Exception(f"Mufex: get_wallet_info_of_asset = Data or List is empty {response['message']} -> {e}")
 
     def get_equity_of_asset(self, trading_in: str, **vargs):
-        info_logger.debug("Calling get wallet info of asset")
         return float(self.get_wallet_info_of_asset(trading_in=trading_in)["equity"])
 
     def set_position_mode(self, symbol: str, position_mode: PositionModeType, **vargs):
@@ -594,7 +575,6 @@ class Mufex(Exchange):
         response = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
             if response["message"] in ["OK", "position mode not modified"]:
-                info_logger.debug(f"Response message {response['message']}")
                 return True
             else:
                 raise Exception
@@ -615,7 +595,6 @@ class Mufex(Exchange):
         response = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
             if response["message"] in ["OK", "leverage not modified"]:
-                info_logger.debug(f"Response message {response['message']}")
                 return True
             else:
                 raise Exception
@@ -638,7 +617,6 @@ class Mufex(Exchange):
         response = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
             if response["message"] in ["OK", "Isolated not modified"]:
-                info_logger.debug(f"Response message {response['message']}")
                 return True
             else:
                 raise Exception
@@ -660,12 +638,10 @@ class Mufex(Exchange):
         response = self.HTTP_get_request(end_point=end_point, params=params)
         try:
             if response["message"] == "OK":
-                info_logger.debug("Message Ok")
                 return True
             else:
                 response["data"]["list"][0]
                 if response["orderId"] == order_id:
-                    info_logger.debug("IDs match")
                     return True
                 else:
                     raise Exception
@@ -685,12 +661,10 @@ class Mufex(Exchange):
         response = self.HTTP_get_request(end_point=end_point, params=params)
         try:
             if response["message"] == "OK":
-                info_logger.debug("Message Ok")
                 return True
             else:
                 response["data"]["list"][0]
                 if response["orderId"] == order_id:
-                    info_logger.debug("IDs match")
                     return True
                 else:
                     raise Exception
@@ -710,12 +684,10 @@ class Mufex(Exchange):
         response = self.HTTP_get_request(end_point=end_point, params=params)
         try:
             if response["message"] == "OK":
-                info_logger.debug("Message Ok")
                 return True
             else:
                 response["data"]["list"][0]
                 if response["orderId"] == order_id:
-                    info_logger.debug("IDs match")
                     return True
                 else:
                     raise Exception
@@ -736,35 +708,35 @@ class Mufex(Exchange):
 
     def set_leverage_mode_isolated(self, symbol: str):
         true_false = self.set_leverage_mode(symbol=symbol, leverage_mode=1)
-        info_logger.debug(f"returning {true_false}")
+
         return true_false
 
     def set_leverage_mode_cross(self, symbol: str):
         true_false = self.set_leverage_mode(symbol=symbol, leverage_mode=0)
-        info_logger.debug(f"returning {true_false}")
+
         return true_false
 
     def __get_fee_pcts(self, symbol):
         trading_fee_info = self.get_symbol_trading_fee_rates(symbol=symbol)
         market_fee_pct = float(trading_fee_info["takerFeeRate"])
         limit_fee_pct = float(trading_fee_info["makerFeeRate"])
-        info_logger.debug(f"returning market fee={market_fee_pct} limit fee={limit_fee_pct}")
+
         return market_fee_pct, limit_fee_pct
 
     def __get_mmr_pct(self, symbol, category: str = "linear"):
         risk_limit_info = self.get_risk_limit_info(symbol=symbol, category=category)
         mmr_pct = float(risk_limit_info["maintainMargin"])
-        info_logger.debug(f"returning {mmr_pct}")
+
         return mmr_pct
 
     def set_position_mode_as_hedge_mode(self, symbol):
         true_false = self.set_position_mode(symbol=symbol, position_mode=1)
-        info_logger.debug(f"returning {true_false}")
+
         return true_false
 
     def set_position_mode_as_one_way_mode(self, symbol):
         true_false = self.set_position_mode(symbol=symbol, position_mode=0)
-        info_logger.debug(f"returning {true_false}")
+
         return true_false
 
     def __int_value_of_step_size(self, step_size: str):
@@ -779,16 +751,7 @@ class Mufex(Exchange):
         asset_tick_step = self.__int_value_of_step_size(symbol_info["lotSizeFilter"]["qtyStep"])
         price_tick_step = self.__int_value_of_step_size(symbol_info["priceFilter"]["tickSize"])
         leverage_tick_step = self.__int_value_of_step_size(symbol_info["leverageFilter"]["leverageStep"])
-        info_logger.debug(
-            f"Returning\n\
-max_leverage={max_leverage}\n\
-min_leverage={min_leverage}\n\
-max_asset_size={max_asset_size}\n\
-min_asset_size={min_asset_size}\n\
-asset_tick_step={asset_tick_step}\n\
-price_tick_step={price_tick_step}\n\
-leverage_tick_step={leverage_tick_step}"
-        )
+
         return (
             max_leverage,
             min_leverage,
@@ -832,8 +795,4 @@ leverage_tick_step={leverage_tick_step}"
             leverage_mode=leverage_mode,
             price_tick_step=price_tick_step,
             leverage_tick_step=leverage_tick_step,
-        )
-        info_logger.debug(
-            f"Returning\n\
-{pretty_qf(self.exchange_settings)}"
         )

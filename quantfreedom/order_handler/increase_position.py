@@ -18,7 +18,7 @@ class AccExOther(NamedTuple):
 class OrderInfo(NamedTuple):
     average_entry: float
     entry_price: float
-    in_position: float
+    in_position: bool
     max_equity_risk_pct: float
     max_trades: int
     position_size_asset: float

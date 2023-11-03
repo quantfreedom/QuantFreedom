@@ -70,18 +70,21 @@ trade_logger = logging.getLogger("trade")
 
 
 class LiveTrading:
-    # ex_position_size_usd = 0
-    # ex_average_entry = 0
-    # order_equity = 0
-    # order_sl_price = 0
+    ex_position_size_usd = 0
+    ex_average_entry = 0
     last_pnl = 0
-    order_total_trades = 0
-    # order_entry_size_asset = 0
-    # order_average_entry = 0
-    # order_entry_size_usd = 0
-    # order_entry_price = 0
+    order_available_balance = 0
+    order_average_entry = 0
+    order_cash_borrowed = 0
+    order_cash_used = 0
+    order_entry_price = 0
+    order_entry_size_asset = 0
+    order_entry_size_usd = 0
+    order_equity = 0
     order_position_size_asset = 0
-    # order_available_balance = 0
+    order_sl_price = 0
+    order_total_trades = 0
+    order_possible_loss = 0
 
     def __init__(
         self,
@@ -296,7 +299,7 @@ class LiveTrading:
         latest_pnl = 0
 
         self.logger[LoggerFuncType.Info](f"live_mode.py - run() - Starting live trading")
-        print(f"live_mode.py - run() - Starting live trading")
+        print(f"Starting live trading")
         try:
             self.last_pnl = self.exchange.get_latest_pnl_result(symbol=self.symbol)
         except Exception as e:
@@ -402,7 +405,7 @@ class LiveTrading:
                                 risk_account_pct_size=risk_account_pct_size,
                                 sl_price=self.order_sl_price,
                             ),
-                            # logger=self.logger,
+                            logger=self.logger,
                             stringer=self.stringer,
                         )
                         self.logger[LoggerFuncType.Debug]("live_mode.py - run() - calculate_leverage")
@@ -456,7 +459,7 @@ class LiveTrading:
                         self.logger[LoggerFuncType.Info](
                             f"live_mode.py - run() - Submitted entry order -> [order_id={entry_order_id}]"
                         )
-                        sleep(1)
+                        sleep(0.5)
 
                         # check if order fileld
                         self.logger[LoggerFuncType.Debug](f"live_mode.py - run() - Checking if entry order was filled")
@@ -479,7 +482,7 @@ class LiveTrading:
                         self.__set_ex_position_size_asset()
                         if self.ex_position_size_asset > 0:
                             self.logger[LoggerFuncType.Info](
-                                f"live_mode.py - run() - We are in a pos and trying to cancle tp and sl"
+                                f"live_mode.py - run() - We are in a pos and trying to cancel tp and sl"
                             )
                             if self.exchange.cancel_all_open_order_per_symbol(symbol=self.symbol):
                                 self.logger[LoggerFuncType.Info](f"live_mode.py - run() - Canceled the orders")
@@ -585,12 +588,19 @@ class LiveTrading:
                             )
                             message = self.__create_entry_successful_message()
                             entry_filename = self.__get_entry_plot_filename()
-                            strategy_filename = self.get_strategy_plot_filename()
-                            self.email_sender.email_new_order(
-                                message=message,
-                                entry_filename=entry_filename,
-                                strategy_filename=strategy_filename,
+                            strategy_filename = self.get_strategy_plot_filename(
+                                bar_index=0,
+                                starting_bar=0,
+                                candles=self.candles,
+                                indicator_settings=self.indicator_settings,
+                                ind_creator=self.ind_creator,
+                                logger=self.logger,
                             )
+                            # self.email_sender.email_new_order(
+                            #     message=message,
+                            #     entry_filename=entry_filename,
+                            #     strategy_filename=strategy_filename,
+                            # )
                             self.logger[LoggerFuncType.Info]("live_mode.py - run() - Entry placed on exchange")
                             trade_logger.info(f"{message}")
 
@@ -693,9 +703,7 @@ class LiveTrading:
         self.logger[LoggerFuncType.Info](
             f"live_mode.py - get_sleep_time_to_next_bar() - Will sleep for {td[0]} hrs {td[1]} mins and {td[2]} seconds till next bar\n"
         )
-        print(
-            f"live_mode.py - get_sleep_time_to_next_bar() - Will sleep for {td[0]} hrs {td[1]} mins and {td[2]} seconds till next bar\n"
-        )
+        print(f"Will sleep for {td[0]} hrs {td[1]} mins and {td[2]} seconds till next bar\n")
 
         return int(ms_to_next_candle / 1000)
 
@@ -714,6 +722,7 @@ class LiveTrading:
         self.order_average_entry = float(self.get_position_info()["entryPrice"])
 
     def __set_ex_possible_loss(self):
+        self.logger[LoggerFuncType.Debug](f"live_mode.py - __set_ex_possible_loss() - setting all exchange vars")
         coin_size = self.ex_position_size_asset
         pnl = coin_size * (self.ex_sl_price - self.ex_average_entry)
         fee_open = coin_size * self.ex_average_entry * self.exchange.exchange_settings.market_fee_pct  # math checked
@@ -722,6 +731,7 @@ class LiveTrading:
         self.ex_possible_loss = round(abs(pnl - self.fees_paid), 3)
 
     def __set_ex_possible_profit(self):
+        self.logger[LoggerFuncType.Debug](f"live_mode.py - __set_ex_possible_profit() - setting all exchange vars")
         coin_size = self.ex_position_size_asset
         pnl = coin_size * (self.ex_tp_price - self.ex_average_entry)
         fee_open = coin_size * self.ex_average_entry * self.exchange.exchange_settings.market_fee_pct  # math checked
@@ -768,7 +778,7 @@ class LiveTrading:
         self.__set_ex_possible_profit()
 
         message = f"An order was placed successfully\n\
-[ex_candle_closing_price={self.candles[-1:CandleBodyType.Close]:,}]\n\
+[ex_candle_closing_price={self.candles[-1,CandleBodyType.Close]:,}]\n\
 [entry_price={self.order_entry_price:,}]\n\
 [ex_entry_price={self.ex_entry_price:,}]\n\
 [Entry slippage={self.entry_slippage}]\n\n\
@@ -784,7 +794,7 @@ class LiveTrading:
 [liq price={self.order_liq_price:,}]\n\
 [ex_liq price={self.ex_liq_price:,}]\n\
 [ex_liq_pct={self.ex_liq_pct:,}]\n\n\
-[candle low={self.candles[-1: CandleBodyType.Low]:,}]\n\
+[candle low={self.candles[-1,CandleBodyType.Low]:,}]\n\
 [stop_loss_price={self.order_sl_price:,}]\n\
 [ex_stop_loss_price={self.ex_sl_price:,}]\n\
 [ex_sl_pct={self.ex_sl_pct}]\n\n\
@@ -799,15 +809,15 @@ class LiveTrading:
     def __get_entry_plot_filename(self):
         self.logger[LoggerFuncType.Debug]("live_mode.py - __get_entry_plot_filename() - Getting entry plot file")
         last_20 = self.candles[-20:]
-        last_20_datetimes = pd.to_datetime(last_20["timestamp"], unit="ms")
+        last_20_datetimes = pd.to_datetime(last_20[:, CandleBodyType.Timestamp], unit="ms")
         graph_entry = [last_20_datetimes[-1]]
         fig = go.Figure()
         fig.add_candlestick(
             x=last_20_datetimes,
-            open=last_20["open"],
-            high=last_20["high"],
-            low=last_20["low"],
-            close=last_20["close"],
+            open=last_20[:, CandleBodyType.Open],
+            high=last_20[:, CandleBodyType.High],
+            low=last_20[:, CandleBodyType.Low],
+            close=last_20[:, CandleBodyType.Close],
             name="Exchange order",
         )
         # entry
