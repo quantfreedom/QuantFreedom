@@ -406,7 +406,7 @@ class LiveTrading:
                                 sl_price=self.order_sl_price,
                             ),
                             logger=self.logger,
-                            stringer=self.stringer,
+                            # stringer=self.stringer,
                         )
                         self.logger[LoggerFuncType.Debug]("live_mode.py - run() - calculate_leverage")
                         (
