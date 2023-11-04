@@ -91,37 +91,37 @@ class OrderHandler:
             #########################################
             """
 
-            # stop loss calulator
-            if static_os.sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
-                self.sl_calculator = long_sl_bcb
-                self.checker_sl_hit = long_c_sl_hit
-                if static_os.pg_min_max_sl_bcb == PriceGetterType.Min:
-                    self.sl_bcb_price_getter = min_price_getter
-                elif static_os.pg_min_max_sl_bcb == PriceGetterType.Max:
-                    self.sl_bcb_price_getter = max_price_getter
+            # # stop loss calulator
+            # if static_os.sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
+            #     self.sl_calculator = long_sl_bcb
+            #     self.checker_sl_hit = long_c_sl_hit
+            #     if static_os.pg_min_max_sl_bcb == PriceGetterType.Min:
+            #         self.sl_bcb_price_getter = min_price_getter
+            #     elif static_os.pg_min_max_sl_bcb == PriceGetterType.Max:
+            #         self.sl_bcb_price_getter = max_price_getter
 
-            # SL break even
-            if static_os.sl_to_be_bool:
-                self.checker_sl_to_be = long_cm_sl_to_be
-                # setting up stop loss be zero or entry
-                if static_os.z_or_e_type == ZeroOrEntryType.ZeroLoss:
-                    self.zero_or_entry_calc = long_sl_to_zero
-                elif static_os.z_or_e_type == ZeroOrEntryType.AverageEntry:
-                    self.zero_or_entry_calc = sl_to_entry
-            else:
-                self.checker_sl_to_be = long_cm_sl_to_be_pass
-                self.zero_or_entry_calc = sl_to_z_e_pass
+            # # SL break even
+            # if static_os.sl_to_be_bool:
+            #     self.checker_sl_to_be = long_cm_sl_to_be
+            #     # setting up stop loss be zero or entry
+            #     if static_os.z_or_e_type == ZeroOrEntryType.ZeroLoss:
+            #         self.zero_or_entry_calc = long_sl_to_zero
+            #     elif static_os.z_or_e_type == ZeroOrEntryType.AverageEntry:
+            #         self.zero_or_entry_calc = sl_to_entry
+            # else:
+            #     self.checker_sl_to_be = long_cm_sl_to_be_pass
+            #     self.zero_or_entry_calc = sl_to_z_e_pass
 
-            # Trailing stop loss
-            if static_os.trail_sl_bool:
-                self.checker_tsl = long_cm_tsl
-            else:
-                self.checker_tsl = long_cm_tsl_pass
+            # # Trailing stop loss
+            # if static_os.trail_sl_bool:
+            #     self.checker_tsl = long_cm_tsl
+            # else:
+            #     self.checker_tsl = long_cm_tsl_pass
 
-            if static_os.trail_sl_bool or static_os.sl_to_be_bool:
-                self.sl_mover = move_stop_loss
-            else:
-                self.sl_mover = move_stop_loss_pass
+            # if static_os.trail_sl_bool or static_os.sl_to_be_bool:
+            #     self.sl_mover = move_stop_loss
+            # else:
+            #     self.sl_mover = move_stop_loss_pass
 
             """
             #########################################

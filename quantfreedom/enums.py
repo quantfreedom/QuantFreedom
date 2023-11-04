@@ -310,15 +310,41 @@ class StaticOrderSettings(NamedTuple):
 
 
 class RejectedOrder(Exception):
-    pass
+    def __init__(
+        self,
+        order_status: OrderStatus = None,
+        msg: str = None,
+    ):
+        self.order_status = order_status
+        self.msg = msg
 
 
 class DecreasePosition(Exception):
-    pass
+    def __init__(
+        self,
+        order_status: OrderStatus = None,
+        exit_price: float = None,
+        exit_fee_pct: float = None,
+        msg: str = None,
+    ):
+        self.order_status = order_status
+        self.exit_price = exit_price
+        self.exit_fee_pct = exit_fee_pct
+        self.msg = msg
 
 
 class MoveStopLoss(Exception):
-    pass
+    def __init__(
+        self,
+        order_status: OrderStatus = None,
+        sl_price: float = None,
+        can_move_sl_to_be: bool = None,
+        msg: str = None,
+    ):
+        self.order_status = order_status
+        self.sl_price = sl_price
+        self.can_move_sl_to_be = can_move_sl_to_be
+        self.msg = msg
 
 
 order_settings_array_dt = np.dtype(

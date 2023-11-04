@@ -98,46 +98,13 @@ def float_to_str(x: float):
     return str(x)
 
 
-def min_price_getter(
-    bar_index: int,
-    candles: np.array,
-    candle_body_type: int,
-    lookback: int,
-) -> float:
-    price = candles[lookback : bar_index + 1, candle_body_type].min()
-    return price
 
 
-def max_price_getter(
-    bar_index: int,
-    candles: np.array,
-    candle_body_type: int,
-    lookback: int,
-) -> float:
-    price = candles[lookback : bar_index + 1, candle_body_type].max()
-    return price
 
 
-def long_sl_to_zero(
-    average_entry,
-    market_fee_pct,
-    price_tick_step,
-):
-    sl_price = (market_fee_pct * average_entry + average_entry) / (1 - market_fee_pct)
-    sl_price = round_size_by_tick_step(
-        user_num=sl_price,
-        exchange_num=price_tick_step,
-    )
-    return sl_price
 
 
-def sl_to_entry(
-    average_entry,
-    market_fee_pct,
-    price_tick_step,
-):
-    sl_price = average_entry
-    return sl_price
+
 
 
 def sl_to_z_e_pass(
