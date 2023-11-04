@@ -38,11 +38,6 @@ class IndicatorSettingsArrays(NamedTuple):
     rsi_period: np.array
 
 
-class IndicatorSettings(NamedTuple):
-    rsi_is_below: float
-    rsi_period: int
-
-
 def create_ind_cart_product(ind_set_arrays: IndicatorSettingsArrays):
     n = 1
     for x in ind_set_arrays:
@@ -87,10 +82,15 @@ class Strategy:
             self.set_indicator = self.set_backtesting_indicator
         elif candle_processing_type == CandleProcessingType.LiveTrading:
             if indicator_setting_index is None:
-                self.set_current_ind_settings(ind_set_index=indicator_setting_index)
+                self.set_ind_settings(ind_set_index=indicator_setting_index)
             else:
                 raise Exception("You need to set indicator_setting_index when going live")
             self.set_indicator = self.set_live_trading_indicator
+
+    def set_ind_settings(self, ind_set_index: int):
+        logger.info("setting indicator settings")
+        self.rsi_is_below = self.indicator_settings_arrays.rsi_is_below[ind_set_index]
+        self.rsi_period = self.indicator_settings_arrays.rsi_period[ind_set_index]
 
     def set_backtesting_indicator(
         self,
@@ -100,13 +100,12 @@ class Strategy:
     ):
         start = max(bar_index - starting_bar, 0)
         try:
-            rsi = rsi_calc(
+            self.rsi = rsi_calc(
                 source=candles[start : bar_index + 1, CandleBodyType.Close],
-                length=self.indicator_settings.rsi_period,
+                length=self.rsi_period,
             )
-            rsi = np.around(rsi, 2)
+            self.rsi = np.around(self.rsi, 2)
             logger.info("Created RSI")
-            return rsi
         except Exception as e:
             logger.info(f"Exception creating RSI -> {e}")
             raise Exception(f"Exception creating RSI -> {e}")
@@ -115,7 +114,7 @@ class Strategy:
         try:
             self.rsi = rsi_calc(
                 source=candles[:, CandleBodyType.Close],
-                length=self.indicator_settings.rsi_period,
+                length=self.rsi_period,
             )
             self.rsi = np.around(self.rsi, 2)
             logger.info("Created RSI")
@@ -123,19 +122,11 @@ class Strategy:
             logger.info(f"Exception creating rsi -> {e}")
             raise Exception(f"Something happened -> {e}")
 
-    def set_current_ind_settings(self, ind_set_index: int):
-        logger.info("Created indicator settings")
-        self.indicator_settings = IndicatorSettings(
-            rsi_is_below=self.indicator_settings_arrays.rsi_is_below[ind_set_index],
-            rsi_period=self.indicator_settings_arrays.rsi_period[ind_set_index],
-        )
-
-    def strat_evaluate(self):
+    def evaluate_strategy(self):
         try:
             current_rsi = self.rsi[-1]
-            rsi_is_below = self.indicator_settings.rsi_is_below
 
-            if current_rsi < rsi_is_below:
+            if current_rsi < self.rsi_is_below:
                 logger.info("\n\n")
                 logger.info(f"Entry time!!!")
 
@@ -146,22 +137,11 @@ class Strategy:
         except Exception as e:
             raise Exception(f"Exception evalutating strat -> {e}")
 
-    def get_strategy_plot_filename(
-        bar_index,
-        starting_bar,
-        candles,
-        indicator_settings: IndicatorSettings,
-        ind_creator,
-    ):
-        rsi = ind_creator(
-            bar_index=bar_index,
-            starting_bar=starting_bar,
-            candles=candles,
-            indicator_settings=indicator_settings,
-        )
+    def get_strategy_plot_filename(self, candles):
         logger.debug("Getting entry plot file")
-        last_20 = rsi[-20:]
+        last_20 = self.rsi[-20:]
         last_20_datetimes = pd.to_datetime(candles[-20:, CandleBodyType.Timestamp], unit="ms")
+        
         fig = go.Figure()
         fig.add_scatter(
             x=last_20_datetimes,

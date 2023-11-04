@@ -20,27 +20,6 @@ from quantfreedom.enums import (
     TakeProfitStrategyType,
     ZeroOrEntryType,
 )
-from quantfreedom.order_handler.decrease_position import decrease_position
-from quantfreedom.order_handler.increase_position import AccExOther, OrderInfo, long_min_amount, long_rpa_slbcb
-from quantfreedom.order_handler.take_profit import long_c_tp_hit_regular, long_tp_rr
-from quantfreedom.order_handler.leverage import long_check_liq_hit, long_dynamic_lev, long_static_lev
-from quantfreedom.helper_funcs import (
-    max_price_getter,
-    min_price_getter,
-    sl_to_entry,
-    sl_to_z_e_pass,
-    long_sl_to_zero,
-)
-from quantfreedom.order_handler.stop_loss import (
-    long_c_sl_hit,
-    long_cm_sl_to_be,
-    long_cm_sl_to_be_pass,
-    long_cm_tsl,
-    long_cm_tsl_pass,
-    long_sl_bcb,
-    move_stop_loss,
-    move_stop_loss_pass,
-)
 from quantfreedom.exchanges.live_exchange import LiveExchange
 from datetime import datetime, timedelta
 from dash_bootstrap_templates import load_figure_template
@@ -70,21 +49,6 @@ trade_logger = logging.getLogger("trade")
 
 
 class LiveTrading:
-    ex_position_size_usd = 0
-    ex_average_entry = 0
-    last_pnl = 0
-    order_available_balance = 0
-    order_average_entry = 0
-    order_cash_borrowed = 0
-    order_cash_used = 0
-    order_entry_price = 0
-    order_entry_size_asset = 0
-    order_entry_size_usd = 0
-    order_equity = 0
-    order_position_size_asset = 0
-    order_sl_price = 0
-    order_total_trades = 0
-    order_possible_loss = 0
 
     def __init__(
         self,
@@ -127,146 +91,7 @@ class LiveTrading:
         self.ex_position_size_asset = float(self.get_position_info().get("size"))
         self.order_equity = self.exchange.get_equity_of_asset(trading_in=self.exchange.trading_in)
 
-        """
-        #########################################
-        #########################################
-        #########################################
-                        Trading
-                        Trading
-                        Trading
-        #########################################
-        #########################################
-        #########################################
-        """
-        if static_os.long_or_short == LongOrShortType.Long:
-            # Decrease Position
-            self.dec_pos_calculator = decrease_position
-
-            """
-            #########################################
-            #########################################
-            #########################################
-                            Stop Loss
-                            Stop Loss
-                            Stop Loss
-            #########################################
-            #########################################
-            #########################################
-            """
-
-            # stop loss calulator
-            if static_os.sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
-                self.sl_calculator = long_sl_bcb
-                self.checker_sl_hit = long_c_sl_hit
-                if static_os.pg_min_max_sl_bcb == PriceGetterType.Min:
-                    self.sl_bcb_price_getter = min_price_getter
-                elif static_os.pg_min_max_sl_bcb == PriceGetterType.Max:
-                    self.sl_bcb_price_getter = max_price_getter
-
-            # SL break even
-            if static_os.sl_to_be_bool:
-                self.checker_sl_to_be = long_cm_sl_to_be
-                # setting up stop loss be zero or entry
-                if static_os.z_or_e_type == ZeroOrEntryType.ZeroLoss:
-                    self.zero_or_entry_calc = long_sl_to_zero
-                elif static_os.z_or_e_type == ZeroOrEntryType.AverageEntry:
-                    self.zero_or_entry_calc = sl_to_entry
-            else:
-                self.checker_sl_to_be = long_cm_sl_to_be_pass
-                self.zero_or_entry_calc = sl_to_z_e_pass
-
-            # Trailing stop loss
-            if static_os.trail_sl_bool:
-                self.checker_tsl = long_cm_tsl
-            else:
-                self.checker_tsl = long_cm_tsl_pass
-
-            if static_os.trail_sl_bool or static_os.sl_to_be_bool:
-                self.sl_mover = move_stop_loss
-            else:
-                self.sl_mover = move_stop_loss_pass
-
-            """
-            #########################################
-            #########################################
-            #########################################
-                        Increase position
-                        Increase position
-                        Increase position
-            #########################################
-            #########################################
-            #########################################
-            """
-
-            if static_os.sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
-                if static_os.increase_position_type == IncreasePositionType.RiskPctAccountEntrySize:
-                    self.inc_pos_calculator = long_rpa_slbcb
-
-                elif static_os.increase_position_type == IncreasePositionType.SmalletEntrySizeAsset:
-                    self.inc_pos_calculator = long_min_amount
-
-            """
-            #########################################
-            #########################################
-            #########################################
-                            Leverage
-                            Leverage
-                            Leverage
-            #########################################
-            #########################################
-            #########################################
-            """
-
-            if static_os.leverage_strategy_type == LeverageStrategyType.Dynamic:
-                self.lev_calculator = long_dynamic_lev
-            else:
-                self.lev_calculator = long_static_lev
-
-            self.checker_liq_hit = long_check_liq_hit
-            """
-            #########################################
-            #########################################
-            #########################################
-                            Take Profit
-                            Take Profit
-                            Take Profit
-            #########################################
-            #########################################
-            #########################################
-            """
-
-            if static_os.tp_strategy_type == TakeProfitStrategyType.RiskReward:
-                self.tp_calculator = long_tp_rr
-                self.checker_tp_hit = long_c_tp_hit_regular
-            elif static_os.tp_strategy_type == TakeProfitStrategyType.Provided:
-                pass
-        """
-        #########################################
-        #########################################
-        #########################################
-                    Other Settings
-                    Other Settings
-                    Other Settings
-        #########################################
-        #########################################
-        #########################################
-        """
-
-        if static_os.tp_fee_type == TakeProfitFeeType.Market:
-            self.exit_fee_pct = exchange.exchange_settings.market_fee_pct
-        else:
-            self.exit_fee_pct = exchange.exchange_settings.limit_fee_pct
-        """
-        #########################################
-        #########################################
-        #########################################
-                    End User Setup
-                    End User Setup
-                    End User Setup
-        #########################################
-        #########################################
-        #########################################
-        """
+        
 
     def pass_function(self, **vargs):
         pass
