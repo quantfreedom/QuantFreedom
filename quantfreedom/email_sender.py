@@ -1,5 +1,5 @@
 import smtplib, ssl
-import logging
+from logging import getLogger
 
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
@@ -26,11 +26,13 @@ class EmailSender:
         self.password = password
         self.receiver = receiver
 
-    def email_plotting(self,):
+    def email_plotting(
+        self,
+    ):
         subject = "Plotting"
         body = f"We are about to plot"
         self._send_email(subject=subject, body=body)
-        
+
     def email_pnl(self, pnl: float):
         subject = "Updated PNL"
         body = f"We got a new pnl ... i hope it is positive ${round(pnl,4)}"

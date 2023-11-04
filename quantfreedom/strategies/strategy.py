@@ -1,5 +1,5 @@
 from datetime import datetime
-import logging
+from logging import getLogger
 import os
 import numpy as np
 import pandas as pd
@@ -10,7 +10,7 @@ from IPython import get_ipython
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 
-logger = logging.getLogger("info")
+logger = getLogger("info")
 
 load_figure_template("darkly")
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
@@ -141,7 +141,7 @@ class Strategy:
         logger.debug("Getting entry plot file")
         last_20 = self.rsi[-20:]
         last_20_datetimes = pd.to_datetime(candles[-20:, CandleBodyType.Timestamp], unit="ms")
-        
+
         fig = go.Figure()
         fig.add_scatter(
             x=last_20_datetimes,

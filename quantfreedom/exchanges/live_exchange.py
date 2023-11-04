@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-import logging
+from logging import getLogger
 import pandas as pd
 import numpy as np
 

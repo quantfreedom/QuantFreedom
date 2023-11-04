@@ -1,4 +1,4 @@
-import logging
+from logging import getLogger
 import numpy as np
 from quantfreedom.enums import (
     DynamicOrderSettings,
@@ -16,9 +16,10 @@ from quantfreedom.enums import (
 )
 from quantfreedom.helper_funcs import long_sl_to_zero, max_price_getter, min_price_getter, sl_to_entry, sl_to_z_e_pass
 from quantfreedom.order_handler.decrease_position import decrease_position
-from quantfreedom.order_handler.increase_position import long_min_amount, long_rpa_slbcb
-from quantfreedom.order_handler.leverage import long_check_liq_hit, long_dynamic_lev, long_static_lev
+from quantfreedom.order_handler.increase_position import LongIncreasePosition, long_min_amount, long_rpa_slbcb
+from quantfreedom.order_handler.leverage import LongLeverage, long_check_liq_hit, long_dynamic_lev, long_static_lev
 from quantfreedom.order_handler.stop_loss import (
+    LongStopLoss,
     long_c_sl_hit,
     long_cm_sl_to_be,
     long_cm_sl_to_be_pass,
@@ -28,9 +29,9 @@ from quantfreedom.order_handler.stop_loss import (
     move_stop_loss,
     move_stop_loss_pass,
 )
-from quantfreedom.order_handler.take_profit import long_c_tp_hit_regular, long_tp_rr
+from quantfreedom.order_handler.take_profit import LongTakeProfit, long_c_tp_hit_regular, long_tp_rr
 
-logger = logging.getLogger("info")
+logger = getLogger("info")
 
 
 class OrderHandler:
@@ -43,223 +44,200 @@ class OrderHandler:
         static_os: StaticOrderSettings,
         exchange_settings: ExchangeSettings,
     ) -> None:
-        """
-        #########################################
-        #########################################
-        #########################################
-                    Exchange Settings
-                    Exchange Settings
-                    Exchange Settings
-        #########################################
-        #########################################
-        #########################################
-        """
-        self.market_fee_pct = exchange_settings.market_fee_pct
-        self.leverage_tick_step = exchange_settings.leverage_tick_step
-        self.price_tick_step = exchange_settings.price_tick_step
-        self.asset_tick_step = exchange_settings.asset_tick_step
-        self.min_asset_size = exchange_settings.min_asset_size
-        self.max_asset_size = exchange_settings.max_asset_size
-        self.max_leverage = exchange_settings.max_leverage
-        self.min_leverage = exchange_settings.min_leverage
-        self.mmr_pct = exchange_settings.mmr_pct
-
-        """
-        #########################################
-        #########################################
-        #########################################
-                        Trading
-                        Trading
-                        Trading
-        #########################################
-        #########################################
-        #########################################
-        """
         if static_os.long_or_short == LongOrShortType.Long:
             # Decrease Position
             self.dec_pos_calculator = decrease_position
 
-            """
-            #########################################
-            #########################################
-            #########################################
-                            Stop Loss
-                            Stop Loss
-                            Stop Loss
-            #########################################
-            #########################################
-            #########################################
-            """
-
-            # # stop loss calulator
-            # if static_os.sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
-            #     self.sl_calculator = long_sl_bcb
-            #     self.checker_sl_hit = long_c_sl_hit
-            #     if static_os.pg_min_max_sl_bcb == PriceGetterType.Min:
-            #         self.sl_bcb_price_getter = min_price_getter
-            #     elif static_os.pg_min_max_sl_bcb == PriceGetterType.Max:
-            #         self.sl_bcb_price_getter = max_price_getter
-
-            # # SL break even
-            # if static_os.sl_to_be_bool:
-            #     self.checker_sl_to_be = long_cm_sl_to_be
-            #     # setting up stop loss be zero or entry
-            #     if static_os.z_or_e_type == ZeroOrEntryType.ZeroLoss:
-            #         self.zero_or_entry_calc = long_sl_to_zero
-            #     elif static_os.z_or_e_type == ZeroOrEntryType.AverageEntry:
-            #         self.zero_or_entry_calc = sl_to_entry
-            # else:
-            #     self.checker_sl_to_be = long_cm_sl_to_be_pass
-            #     self.zero_or_entry_calc = sl_to_z_e_pass
-
-            # # Trailing stop loss
-            # if static_os.trail_sl_bool:
-            #     self.checker_tsl = long_cm_tsl
-            # else:
-            #     self.checker_tsl = long_cm_tsl_pass
-
-            # if static_os.trail_sl_bool or static_os.sl_to_be_bool:
-            #     self.sl_mover = move_stop_loss
-            # else:
-            #     self.sl_mover = move_stop_loss_pass
-
-            """
-            #########################################
-            #########################################
-            #########################################
-                        Increase position
-                        Increase position
-                        Increase position
-            #########################################
-            #########################################
-            #########################################
-            """
-
-            if static_os.sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
-                if static_os.increase_position_type == IncreasePositionType.RiskPctAccountEntrySize:
-                    self.inc_pos_calculator = long_rpa_slbcb
-
-                elif static_os.increase_position_type == IncreasePositionType.SmalletEntrySizeAsset:
-                    self.inc_pos_calculator = long_min_amount
-
-            """
-            #########################################
-            #########################################
-            #########################################
-                            Leverage
-                            Leverage
-                            Leverage
-            #########################################
-            #########################################
-            #########################################
-            """
-
-            if static_os.leverage_strategy_type == LeverageStrategyType.Dynamic:
-                self.lev_calculator = long_dynamic_lev
-            else:
-                self.lev_calculator = long_static_lev
-
-            self.checker_liq_hit = long_check_liq_hit
-            """
-            #########################################
-            #########################################
-            #########################################
-                            Take Profit
-                            Take Profit
-                            Take Profit
-            #########################################
-            #########################################
-            #########################################
-            """
-
-            if static_os.tp_strategy_type == TakeProfitStrategyType.RiskReward:
-                self.tp_calculator = long_tp_rr
-                self.checker_tp_hit = long_c_tp_hit_regular
-            elif static_os.tp_strategy_type == TakeProfitStrategyType.Provided:
-                pass
-            """
-            #########################################
-            #########################################
-            #########################################
-                        Other Settings
-                        Other Settings
-                        Other Settings
-            #########################################
-            #########################################
-            #########################################
-            """
+            self.obj_stop_loss = LongStopLoss(
+                market_fee_pct=exchange_settings.market_fee_pct,
+                pg_min_max_sl_bcb=static_os.pg_min_max_sl_bcb,
+                price_tick_step=exchange_settings.price_tick_step,
+                sl_strategy_type=static_os.sl_strategy_type,
+                sl_to_be_bool=static_os.sl_to_be_bool,
+                trail_sl_bool=static_os.trail_sl_bool,
+                z_or_e_type=static_os.z_or_e_type,
+            )
+            self.obj_inc_pos = LongIncreasePosition(
+                asset_tick_step=exchange_settings.asset_tick_step,
+                increase_position_type=static_os.increase_position_type,
+                market_fee_pct=exchange_settings.market_fee_pct,
+                max_asset_size=exchange_settings.max_asset_size,
+                min_asset_size=exchange_settings.min_asset_size,
+                price_tick_step=exchange_settings.price_tick_step,
+                sl_strategy_type=static_os.sl_strategy_type,
+            )
+            self.obj_leverage = LongLeverage(
+                leverage_strategy_type=static_os.leverage_strategy_type,
+                leverage_tick_step=exchange_settings.leverage_tick_step,
+                market_fee_pct=exchange_settings.market_fee_pct,
+                max_leverage=exchange_settings.max_leverage,
+                min_leverage=exchange_settings.min_leverage,
+                mmr_pct=exchange_settings.mmr_pct,
+                price_tick_step=exchange_settings.price_tick_step,
+            )
 
             if static_os.tp_fee_type == TakeProfitFeeType.Market:
-                self.exit_fee_pct = exchange_settings.market_fee_pct
+                exit_fee_pct = exchange_settings.market_fee_pct
             else:
-                self.exit_fee_pct = exchange_settings.limit_fee_pct
-            """
-            #########################################
-            #########################################
-            #########################################
-                        End User Setup
-                        End User Setup
-                        End User Setup
-            #########################################
-            #########################################
-            #########################################
-            """
+                exit_fee_pct = exchange_settings.limit_fee_pct
 
-    def set_dynamic_order_settings(
+            self.obj_take_profit = LongTakeProfit(
+                market_fee_pct=exchange_settings.market_fee_pct,
+                price_tick_step=exchange_settings.price_tick_step,
+                tp_fee_pct=exit_fee_pct,
+                tp_strategy_type=static_os.tp_strategy_type,
+            )
+
+    def update_class_dos(
         self,
         dynamic_order_settings: DynamicOrderSettings,
     ):
-        self.entry_size_asset = dynamic_order_settings.entry_size_asset
-        self.max_equity_risk_pct = dynamic_order_settings.max_equity_risk_pct
-        self.max_trades = dynamic_order_settings.max_trades
-        self.num_candles = dynamic_order_settings.num_candles
-        self.risk_account_pct_size = dynamic_order_settings.risk_account_pct_size
-        self.risk_reward = dynamic_order_settings.risk_reward
-        self.sl_based_on_add_pct = dynamic_order_settings.sl_based_on_add_pct
-        self.sl_based_on_lookback = dynamic_order_settings.sl_based_on_lookback
-        self.sl_bcb_type = dynamic_order_settings.sl_bcb_type
-        self.sl_to_be_cb_type = dynamic_order_settings.sl_to_be_cb_type
-        self.sl_to_be_when_pct = dynamic_order_settings.sl_to_be_when_pct
-        self.sl_to_be_ze_type = dynamic_order_settings.sl_to_be_ze_type
-        self.static_leverage = dynamic_order_settings.static_leverage
-        self.trail_sl_bcb_type = dynamic_order_settings.trail_sl_bcb_type
-        self.trail_sl_by_pct = dynamic_order_settings.trail_sl_by_pct
-        self.trail_sl_when_pct = dynamic_order_settings.trail_sl_when_pct
+        # take profit
+        self.obj_take_profit.risk_reward = dynamic_order_settings.risk_reward
+
+        # leverage
+        self.obj_leverage.static_leverage = dynamic_order_settings.static_leverage
+
+        # increase position
+        self.obj_inc_pos.max_trades = dynamic_order_settings.max_trades
+        self.obj_inc_pos.risk_account_pct_size = dynamic_order_settings.risk_account_pct_size
+        self.obj_inc_pos.max_equity_risk_pct = dynamic_order_settings.max_equity_risk_pct
+
+        # stop loss updates
+        self.obj_stop_loss.sl_based_on_add_pct = dynamic_order_settings.sl_based_on_add_pct
+        self.obj_stop_loss.sl_based_on_lookback = dynamic_order_settings.sl_based_on_lookback
+        self.obj_stop_loss.sl_bcb_type = dynamic_order_settings.sl_bcb_type
+        self.obj_stop_loss.sl_to_be_cb_type = dynamic_order_settings.sl_to_be_cb_type
+        self.obj_stop_loss.sl_to_be_when_pct = dynamic_order_settings.sl_to_be_when_pct
+        self.obj_stop_loss.trail_sl_bcb_type = dynamic_order_settings.trail_sl_bcb_type
+        self.obj_stop_loss.trail_sl_by_pct = dynamic_order_settings.trail_sl_by_pct
+        self.obj_stop_loss.trail_sl_when_pct = dynamic_order_settings.trail_sl_when_pct
 
     def calc_stop_loss(
         self,
         bar_index: int,
         candles: np.array,
-    ) -> float:
-        return self.sl_calculator(
+    ):
+        sl_price = self.obj_stop_loss.sl_calculator(
             bar_index=bar_index,
             candles=candles,
-            price_tick_step=self.price_tick_step,
-            sl_based_on_add_pct=self.sl_based_on_add_pct,
-            sl_based_on_lookback=self.sl_based_on_lookback,
-            sl_bcb_price_getter=self.sl_bcb_price_getter,
-            sl_bcb_type=self.sl_bcb_type,
+        )
+        logger.info(f"sl price= {sl_price}")
+        return sl_price
+
+    def calculate_increase_posotion(
+        self,
+        account_state_equity: float,
+        average_entry: float,
+        entry_price: float,
+        position_size_asset: float,
+        position_size_usd: float,
+        possible_loss: float,
+        sl_price: float,
+        total_trades: int,
+    ):
+        (
+            average_entry,
+            entry_price,
+            entry_size_asset,
+            entry_size_usd,
+            position_size_asset,
+            position_size_usd,
+            possible_loss,
+            total_trades,
+            sl_pct,
+        ) = self.obj_inc_pos.inc_pos_calculator(
+            account_state_equity=account_state_equity,
+            average_entry=average_entry,
+            entry_price=entry_price,
+            in_position=position_size_asset > 0,
+            position_size_asset=position_size_asset,
+            position_size_usd=position_size_usd,
+            possible_loss=possible_loss,
+            sl_price=sl_price,
+            total_trades=total_trades,
+        )
+        logger.info(
+            f"\n\
+average_entry={average_entry:,}\n\
+entry_price={entry_price:,}\n\
+entry_size_asset={entry_size_asset:,}\n\
+entry_size_usd={entry_size_usd:,}\n\
+position_size_asset={position_size_asset:,}\n\
+position_size_usd={position_size_usd:,}\n\
+possible_loss={possible_loss:,}\n\
+total_trades={total_trades:,}\n\
+sl_pct={round(sl_pct*100,2):,}"
+        )
+        return (
+            average_entry,
+            entry_price,
+            entry_size_asset,
+            entry_size_usd,
+            position_size_asset,
+            position_size_usd,
+            possible_loss,
+            total_trades,
+            sl_pct,
         )
 
-    def calc_decrease_position(
+    def calculate_leverage(
         self,
-        bar_index,
-        dos_index,
-        exit_price,
-        ind_set_index,
-        order_status,
-        timestamp,
+        available_balance: float,
+        average_entry: float,
+        cash_borrowed: float,
+        cash_used: float,
+        entry_size_usd: float,
+        sl_price: float,
     ):
-        self.dec_pos_calculator(
-            average_entry=self.order_average_entry,
-            bar_index=bar_index,
-            dos_index=dos_index,
-            equity=self.equity,
-            exit_fee_pct=self.exit_fee_pct,
-            exit_price=exit_price,
-            ind_set_index=ind_set_index,
-            market_fee_pct=self.market_fee_pct,
-            order_status=order_status,
-            position_size_asset=self.order_position_size_asset,
-            timestamp=timestamp,
+        (
+            available_balance,
+            cash_borrowed,
+            cash_used,
+            leverage,
+            liq_price,
+        ) = self.obj_leverage.lev_calculator(
+            available_balance=available_balance,
+            average_entry=average_entry,
+            cash_borrowed=cash_borrowed,
+            cash_used=cash_used,
+            entry_size_usd=entry_size_usd,
+            sl_price=sl_price,
+        )
+        logger.info(
+            f"\n\
+available_balance={available_balance:,}\n\
+cash_borrowed={cash_borrowed:,}\n\
+cash_used={cash_used:,}\n\
+leverage={leverage:,}\n\
+liq_price={liq_price:,}"
+        )
+        return (
+            available_balance,
+            cash_borrowed,
+            cash_used,
+            leverage,
+            liq_price,
+        )
+
+    def calc_take_profit(
+        self,
+        average_entry: float,
+        position_size_usd: float,
+        possible_loss: float,
+    ):
+        (
+            can_move_sl_to_be,
+            tp_price,
+            tp_pct,
+        ) = self.obj_take_profit.tp_calculator(
+            average_entry=average_entry,
+            position_size_usd=position_size_usd,
+            possible_loss=possible_loss,
+        )
+        logger.info(f"tp_price= {tp_price} tp_pct= {round(tp_pct * 100, 3)}")
+        return (
+            can_move_sl_to_be,
+            tp_price,
+            tp_pct,
         )

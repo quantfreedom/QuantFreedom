@@ -321,8 +321,6 @@ def run_sim_or(
     )
     logger[LoggerFuncType.Info](
         "sim_ordder_records.py - run_backtest() - Created Dynamic Order Settings"
-        + "\nentry_size_asset= "
-        + stringer[StringerFuncType.float_to_str](dynamic_order_settings.entry_size_asset)
         + "\nmax_equity_risk_pct= "
         + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.max_equity_risk_pct * 100, 3))
         + "\nmax_trades= "
@@ -343,8 +341,6 @@ def run_sim_or(
         + stringer[StringerFuncType.candle_body_str](dynamic_order_settings.sl_to_be_cb_type)
         + "\nsl_to_be_when_pct= "
         + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.sl_to_be_when_pct * 100, 3))
-        + "\nsl_to_be_ze_type= "
-        + stringer[StringerFuncType.z_or_e_str](dynamic_order_settings.sl_to_be_ze_type)
         + "\nstatic_leverage= "
         + stringer[StringerFuncType.float_to_str](dynamic_order_settings.static_leverage)
         + "\ntrail_sl_bcb_type= "
@@ -535,7 +531,7 @@ def run_sim_or(
                     market_fee_pct=market_fee_pct,
                     price_tick_step=price_tick_step,
                     sl_price=order_result.sl_price,
-                    sl_to_be_move_when_pct=dynamic_order_settings.sl_to_be_when_pct,
+                    sl_to_be_when_pct=dynamic_order_settings.sl_to_be_when_pct,
                     stringer=stringer,
                     zero_or_entry_calc=zero_or_entry_calc,
                 )

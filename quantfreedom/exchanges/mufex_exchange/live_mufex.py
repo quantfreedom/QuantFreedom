@@ -5,7 +5,7 @@ from quantfreedom.enums import LeverageModeType, LongOrShortType, PositionModeTy
 from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES
 from quantfreedom.exchanges.live_exchange import LiveExchange
 from quantfreedom.exchanges.mufex_exchange.mufex import MUFEX_TIMEFRAMES, Mufex
-import logging
+from logging import getLogger
 
 
 class LiveMufex(LiveExchange, Mufex):

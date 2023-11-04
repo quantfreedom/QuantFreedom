@@ -225,7 +225,6 @@ class BacktestSettings(NamedTuple):
 
 
 class DynamicOrderSettingsArrays(NamedTuple):
-    entry_size_asset: np.array
     max_equity_risk_pct: np.array
     max_trades: np.array
     num_candles: np.array
@@ -236,7 +235,6 @@ class DynamicOrderSettingsArrays(NamedTuple):
     sl_bcb_type: np.array
     sl_to_be_cb_type: np.array
     sl_to_be_when_pct: np.array
-    sl_to_be_ze_type: np.array
     static_leverage: np.array
     trail_sl_bcb_type: np.array
     trail_sl_by_pct: np.array
@@ -244,7 +242,6 @@ class DynamicOrderSettingsArrays(NamedTuple):
 
 
 class DynamicOrderSettings(NamedTuple):
-    entry_size_asset: float
     max_equity_risk_pct: float
     max_trades: int
     num_candles: int
@@ -255,7 +252,6 @@ class DynamicOrderSettings(NamedTuple):
     sl_bcb_type: int
     sl_to_be_cb_type: int
     sl_to_be_when_pct: float
-    sl_to_be_ze_type: int
     static_leverage: float
     trail_sl_bcb_type: int
     trail_sl_by_pct: float
@@ -361,7 +357,6 @@ order_settings_array_dt = np.dtype(
         ("sl_bcb_type", np.int_),
         ("sl_to_be_cb_type", np.int_),
         ("sl_to_be_when_pct", np.float_),
-        ("sl_to_be_ze_type", np.int_),
         ("static_leverage", np.float_),
         ("stop_loss_type", np.int_),
         ("take_profit_type", np.int_),

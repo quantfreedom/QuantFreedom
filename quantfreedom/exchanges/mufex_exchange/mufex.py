@@ -1,5 +1,5 @@
 import json
-import logging
+from logging import getLogger
 import hashlib
 import hmac
 import numpy as np

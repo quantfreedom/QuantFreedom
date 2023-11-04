@@ -1,4 +1,4 @@
-import logging
+from logging import getLogger
 import os
 from time import sleep
 from quantfreedom.email_sender import EmailSender
@@ -66,7 +66,7 @@ except NameError:
 
 bg_color = "#0b0b18"
 
-trade_logger = logging.getLogger("trade")
+trade_logger = getLogger("trade")
 
 
 class LiveTrading:

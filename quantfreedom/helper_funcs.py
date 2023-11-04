@@ -52,7 +52,6 @@ def get_dos(
     dos_index: int,
 ):
     return DynamicOrderSettings(
-        entry_size_asset=dos_cart_arrays.entry_size_asset[dos_index],
         max_equity_risk_pct=dos_cart_arrays.max_equity_risk_pct[dos_index],
         max_trades=dos_cart_arrays.max_trades[dos_index],
         num_candles=dos_cart_arrays.num_candles[dos_index],
@@ -63,7 +62,6 @@ def get_dos(
         sl_bcb_type=dos_cart_arrays.sl_bcb_type[dos_index],
         sl_to_be_cb_type=dos_cart_arrays.sl_to_be_cb_type[dos_index],
         sl_to_be_when_pct=dos_cart_arrays.sl_to_be_when_pct[dos_index],
-        sl_to_be_ze_type=dos_cart_arrays.sl_to_be_ze_type[dos_index],
         static_leverage=dos_cart_arrays.static_leverage[dos_index],
         trail_sl_bcb_type=dos_cart_arrays.trail_sl_bcb_type[dos_index],
         trail_sl_by_pct=dos_cart_arrays.trail_sl_by_pct[dos_index],
@@ -171,21 +169,19 @@ def dos_cart_product(dos_arrays: DynamicOrderSettingsArrays):
             out[j * m : (j + 1) * m, k + 1 :] = out[0:m, k + 1 :]
 
     return DynamicOrderSettingsArrays(
-        entry_size_asset=out.T[0],
-        max_equity_risk_pct=out.T[1] / 100,
-        max_trades=out.T[2].astype(np.int_),
-        num_candles=out.T[3].astype(np.int_),
-        risk_account_pct_size=out.T[4] / 100,
-        risk_reward=out.T[5],
-        sl_based_on_add_pct=out.T[6] / 100,
-        sl_based_on_lookback=out.T[7].astype(np.int_),
-        sl_bcb_type=out.T[8].astype(np.int_),
-        sl_to_be_cb_type=out.T[9].astype(np.int_),
-        sl_to_be_when_pct=out.T[10] / 100,
-        sl_to_be_ze_type=out.T[11].astype(np.int_),
-        static_leverage=out.T[12],
-        trail_sl_bcb_type=out.T[13].astype(np.int_),
-        trail_sl_by_pct=out.T[14] / 100,
-        trail_sl_when_pct=out.T[15] / 100,
+        max_equity_risk_pct=out.T[0] / 100,
+        max_trades=out.T[1].astype(np.int_),
+        num_candles=out.T[2].astype(np.int_),
+        risk_account_pct_size=out.T[3] / 100,
+        risk_reward=out.T[4],
+        sl_based_on_add_pct=out.T[5] / 100,
+        sl_based_on_lookback=out.T[6].astype(np.int_),
+        sl_bcb_type=out.T[7].astype(np.int_),
+        sl_to_be_cb_type=out.T[8].astype(np.int_),
+        sl_to_be_when_pct=out.T[9] / 100,
+        static_leverage=out.T[10],
+        trail_sl_bcb_type=out.T[11].astype(np.int_),
+        trail_sl_by_pct=out.T[12] / 100,
+        trail_sl_when_pct=out.T[13] / 100,
     )
 

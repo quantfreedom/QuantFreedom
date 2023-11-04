@@ -1,4 +1,4 @@
-import logging
+from logging import getLogger
 import os
 from time import sleep
 from quantfreedom.email_sender import EmailSender
@@ -45,11 +45,10 @@ except NameError:
 
 bg_color = "#0b0b18"
 
-trade_logger = logging.getLogger("trade")
+trade_logger = getLogger("trade")
 
 
 class LiveTrading:
-
     def __init__(
         self,
         dynamic_order_settings: DynamicOrderSettings,
@@ -90,8 +89,6 @@ class LiveTrading:
 
         self.ex_position_size_asset = float(self.get_position_info().get("size"))
         self.order_equity = self.exchange.get_equity_of_asset(trading_in=self.exchange.trading_in)
-
-        
 
     def pass_function(self, **vargs):
         pass
@@ -450,7 +447,7 @@ class LiveTrading:
                                 market_fee_pct=market_fee_pct,
                                 price_tick_step=price_tick_step,
                                 sl_price=self.order_sl_price,
-                                sl_to_be_move_when_pct=sl_to_be_when_pct,
+                                sl_to_be_when_pct=sl_to_be_when_pct,
                                 stringer=self.stringer,
                                 zero_or_entry_calc=self.zero_or_entry_calc,
                             )
