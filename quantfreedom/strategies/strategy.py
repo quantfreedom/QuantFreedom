@@ -70,7 +70,6 @@ class Strategy:
         candle_processing_type: CandleProcessingType,
         rsi_is_below: np.array,
         rsi_period: np.array,
-        indicator_setting_index: int = None,
     ) -> None:
         logger.debug("Creating Strategy class init")
 
@@ -83,16 +82,12 @@ class Strategy:
         if candle_processing_type == CandleProcessingType.Backtest:
             self.set_indicator = self.set_backtesting_indicator
         elif candle_processing_type == CandleProcessingType.LiveTrading:
-            if indicator_setting_index is None:
-                self.set_ind_settings(ind_set_index=indicator_setting_index)
-            else:
-                raise Exception("You need to set indicator_setting_index when going live")
             self.set_indicator = self.set_live_trading_indicator
 
     def set_ind_settings(self, ind_set_index: int):
         self.rsi_is_below = self.indicator_settings_arrays.rsi_is_below[ind_set_index]
         self.rsi_period = self.indicator_settings_arrays.rsi_period[ind_set_index]
-        logger.info("Set Indicator Settings")
+        logger.debug("Set Indicator Settings")
 
     def log_indicator_settings(self):
         logger.info(
@@ -118,7 +113,7 @@ rsi_period={self.rsi_period}".strip()
             logger.info(f"Exception creating RSI -> {e}")
             raise Exception(f"Exception creating RSI -> {e}")
 
-    def set_live_trading_indicator(self, candles: np.array):
+    def set_live_trading_indicator(self, bar_index: int, candles: np.array):
         try:
             self.rsi = rsi_calc(
                 source=candles[:, CandleBodyType.Close],

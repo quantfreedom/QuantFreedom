@@ -109,7 +109,7 @@ def run_df_backtest(
                     f"ind_idx= {ind_set_index} dos_idx= {dos_index} bar_idx= {bar_index} timestamp= {timestamp}"
                 )
 
-                if order.order_position_size_usd > 0:
+                if order.position_size_usd > 0:
                     try:
                         current_candle = candles[bar_index, :]
                         logger.debug("Checking stop loss hit")
@@ -122,14 +122,14 @@ def run_df_backtest(
                         logger.debug("Checking to move stop to break even")
                         sl_to_be_price, sl_to_be_pct = order.check_move_sl_to_be(current_candle=current_candle)
                         if sl_to_be_price:
-                            order.order_sl_price = sl_to_be_price
-                            order.order_sl_pct = sl_to_be_pct
+                            order.sl_pct = sl_to_be_pct
+                            order.sl_price = sl_to_be_price
 
                         logger.debug("Checking to move trailing stop loss")
                         tsl_price, tsl_pct = order.check_move_tsl(current_candle=current_candle)
                         if tsl_price:
-                            order.order_sl_price = tsl_price
-                            order.order_sl_price = tsl_pct
+                            order.sl_pct = tsl_pct
+                            order.sl_price = tsl_price
 
                     except DecreasePosition as e:
                         (
@@ -177,14 +177,14 @@ def run_df_backtest(
                             total_trades,
                             sl_pct,
                         ) = order.calculate_increase_posotion(
-                            average_entry=order.order_average_entry,
-                            entry_price=candles[bar_index + 1, CandleBodyType.Open],
-                            equity=order.order_equity,
-                            position_size_asset=order.order_position_size_asset,
-                            position_size_usd=order.order_position_size_usd,
-                            possible_loss=order.order_possible_loss,
+                            average_entry=order.average_entry,
+                            entry_price=candles[bar_index, CandleBodyType.Close],
+                            equity=order.equity,
+                            position_size_asset=order.position_size_asset,
+                            position_size_usd=order.position_size_usd,
+                            possible_loss=order.possible_loss,
                             sl_price=sl_price,
-                            total_trades=order.order_total_trades,
+                            total_trades=order.total_trades,
                         )
 
                         logger.debug("calculate_leverage")
@@ -195,10 +195,10 @@ def run_df_backtest(
                             leverage,
                             liq_price,
                         ) = order.calculate_leverage(
-                            available_balance=order.order_available_balance,
+                            available_balance=order.available_balance,
                             average_entry=average_entry,
-                            cash_borrowed=order.order_cash_borrowed,
-                            cash_used=order.order_cash_used,
+                            cash_borrowed=order.cash_borrowed,
+                            cash_used=order.cash_used,
                             entry_size_usd=entry_size_usd,
                             sl_price=sl_price,
                         )
@@ -223,7 +223,7 @@ def run_df_backtest(
                             entry_price=entry_price,
                             entry_size_asset=entry_size_asset,
                             entry_size_usd=entry_size_usd,
-                            equity=order.order_equity,
+                            equity=order.equity,
                             exit_price=np.nan,
                             fees_paid=np.nan,
                             leverage=leverage,
@@ -243,11 +243,11 @@ def run_df_backtest(
                     except RejectedOrder:
                         pass
                     except Exception as e:
-                        logger.warning(f"Exception hit in eval strat -> {e}")
+                        logger.error(f"Exception hit in eval strat -> {e}")
                         pass
 
             # Checking if gains
-            gains_pct = round(((order.order_equity - starting_equity) / starting_equity) * 100, 3)
+            gains_pct = round(((order.equity - starting_equity) / starting_equity) * 100, 3)
             wins_and_losses_array = pnl_array[~np.isnan(pnl_array)]
             total_trades_closed = wins_and_losses_array.size
             logger.info(
@@ -255,7 +255,7 @@ def run_df_backtest(
 ind_set_index={ind_set_index}\n\
 dos_index={dos_index}\n\
 Starting eq={starting_equity}\n\
-Ending eq={order.order_equity}\n\
+Ending eq={order.equity}\n\
 Gains pct={gains_pct}\n\
 Total_trades={total_trades_closed}"
             )
@@ -291,7 +291,7 @@ Total_trades={total_trades_closed}"
                         record["to_the_upside"] = to_the_upside
                         record["fees_paid"] = round(total_fees_paid, 3)
                         record["total_pnl"] = total_pnl
-                        record["ending_eq"] = order.order_equity
+                        record["ending_eq"] = order.equity
 
                         result_records_filled += 1
             logger.info(
@@ -354,7 +354,7 @@ def or_backtest(
         pd_timestamp = pd.to_datetime(candles[bar_index, CandleBodyType.Timestamp], unit="ms")
         logger.info(f"ind_idx= {ind_set_index} dos_idx= {dos_index} bar_idx= {bar_index} timestamp= {pd_timestamp}")
 
-        if order.order_position_size_usd > 0:
+        if order.position_size_usd > 0:
             try:
                 current_candle = candles[bar_index, :]
                 logger.debug("Checking stop loss hit")
@@ -367,8 +367,8 @@ def or_backtest(
                 logger.debug("Checking to move stop to break even")
                 sl_to_be_price, sl_to_be_pct = order.check_move_sl_to_be(current_candle=current_candle)
                 if sl_to_be_price:
-                    order.order_sl_price = sl_to_be_price
-                    order.order_sl_pct = sl_to_be_pct
+                    order.sl_pct = sl_to_be_pct
+                    order.sl_price = sl_to_be_price
                     logger.debug(f"Filling order for move sl to be")
                     order.fill_or_exit_move(
                         bar_index=bar_index,
@@ -377,16 +377,16 @@ def or_backtest(
                         order_records=order_records[or_filled],
                         order_status=OrderStatus.MovedSLToBE,
                         timestamp=current_candle[CandleBodyType.Timestamp],
-                        sl_pct=sl_to_be_pct,
                         sl_price=sl_to_be_price,
+                        sl_pct=sl_to_be_pct,
                     )
                     or_filled += 1
                     logger.debug(f"Filled sl to be order records")
                 logger.debug("Checking to move trailing stop loss")
                 tsl_price, tsl_pct = order.check_move_tsl(current_candle=current_candle)
                 if tsl_price:
-                    order.order_sl_price = tsl_price
-                    order.order_sl_price = tsl_pct
+                    order.sl_pct = tsl_pct
+                    order.sl_price = tsl_price
                     logger.debug(f"Filling order for tsl")
                     order.fill_or_exit_move(
                         bar_index=bar_index,
@@ -395,8 +395,8 @@ def or_backtest(
                         order_records=order_records[or_filled],
                         order_status=OrderStatus.MovedTSL,
                         timestamp=current_candle[CandleBodyType.Timestamp],
-                        sl_pct=sl_to_be_pct,
-                        sl_price=sl_to_be_price,
+                        sl_pct=tsl_pct,
+                        sl_price=tsl_price,
                     )
                     or_filled += 1
                     logger.debug(f"Filled move tsl order records")
@@ -456,14 +456,14 @@ def or_backtest(
                     total_trades,
                     sl_pct,
                 ) = order.calculate_increase_posotion(
-                    average_entry=order.order_average_entry,
-                    entry_price=candles[bar_index + 1, CandleBodyType.Open],
-                    equity=order.order_equity,
-                    position_size_asset=order.order_position_size_asset,
-                    position_size_usd=order.order_position_size_usd,
-                    possible_loss=order.order_possible_loss,
+                    average_entry=order.average_entry,
+                    entry_price=candles[bar_index, CandleBodyType.Close],
+                    equity=order.equity,
+                    position_size_asset=order.position_size_asset,
+                    position_size_usd=order.position_size_usd,
+                    possible_loss=order.possible_loss,
                     sl_price=sl_price,
-                    total_trades=order.order_total_trades,
+                    total_trades=order.total_trades,
                 )
 
                 logger.debug("calculate_leverage")
@@ -474,10 +474,10 @@ def or_backtest(
                     leverage,
                     liq_price,
                 ) = order.calculate_leverage(
-                    available_balance=order.order_available_balance,
+                    available_balance=order.available_balance,
                     average_entry=average_entry,
-                    cash_borrowed=order.order_cash_borrowed,
-                    cash_used=order.order_cash_used,
+                    cash_borrowed=order.cash_borrowed,
+                    cash_used=order.cash_used,
                     entry_size_usd=entry_size_usd,
                     sl_price=sl_price,
                 )
@@ -503,7 +503,7 @@ def or_backtest(
                     entry_price=entry_price,
                     entry_size_asset=entry_size_asset,
                     entry_size_usd=entry_size_usd,
-                    equity=order.order_equity,
+                    equity=order.equity,
                     exit_price=np.nan,
                     fees_paid=np.nan,
                     leverage=leverage,
@@ -532,7 +532,7 @@ def or_backtest(
             except RejectedOrder:
                 pass
             except Exception as e:
-                logger.warning(f"Exception hit in eval strat -> {e}")
+                logger.error(f"Exception hit in eval strat -> {e}")
                 pass
     order_records_df = pd.DataFrame(order_records[:or_filled])
     order_records_df.insert(4, "datetime", pd.to_datetime(order_records_df["timestamp"], unit="ms"))

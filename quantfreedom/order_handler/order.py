@@ -18,29 +18,7 @@ logger = getLogger("info")
 
 
 class OrderHandler:
-    order_available_balance: float = 0
-    order_average_entry: float = 0
-    order_can_move_sl_to_be: bool = False
-    order_cash_borrowed: float = 0
-    order_cash_used: float = 0
-    order_entry_price: float = 0
-    order_entry_size_asset: float = 0
-    order_entry_size_usd: float = 0
-    order_equity: float = 0
-    order_exit_price: float = 0
-    order_fees_paid: float = 0
-    order_leverage: float = 0
-    order_liq_price: float = 0
-    order_order_status: float = 0
-    order_position_size_asset: float = 0
-    order_position_size_usd: float = 0
-    order_possible_loss: float = 0
-    order_realized_pnl: float = 0
-    order_sl_pct: float = 0
-    order_sl_price: float = 0
-    order_total_trades: int = 0
-    order_tp_pct: float = 0
-    order_tp_price: float = 0
+    cach_borrowed = 0
 
     def __init__(
         self,
@@ -52,7 +30,6 @@ class OrderHandler:
             self.obj_dec_position = LongDecreasePosition(
                 market_fee_pct=exchange_settings.market_fee_pct,
             )
-
             self.obj_stop_loss = LongStopLoss(
                 market_fee_pct=exchange_settings.market_fee_pct,
                 pg_min_max_sl_bcb=static_os.pg_min_max_sl_bcb,
@@ -97,29 +74,29 @@ class OrderHandler:
         pass
 
     def set_order_variables(self, equity: float):
-        self.order_available_balance = equity
-        self.order_average_entry = 0.0
-        self.order_can_move_sl_to_be = False
-        self.order_cash_borrowed = 0.0
-        self.order_cash_used = 0.0
-        self.order_entry_price = 0.0
-        self.order_entry_size_asset = 0.0
-        self.order_entry_size_usd = 0.0
-        self.order_equity = equity
-        self.order_exit_price = 0.0
-        self.order_fees_paid = 0.0
-        self.order_leverage = 0.0
-        self.order_liq_price = 0.0
-        self.order_order_status = 0
-        self.order_position_size_asset = 0.0
-        self.order_position_size_usd = 0.0
-        self.order_possible_loss = 0.0
-        self.order_realized_pnl = 0.0
-        self.order_sl_pct = 0.0
-        self.order_sl_price = 0.0
-        self.order_total_trades = 0
-        self.order_tp_pct = 0.0
-        self.order_tp_price = 0.0
+        self.available_balance = equity
+        self.average_entry = 0.0
+        self.can_move_sl_to_be = False
+        self.cash_borrowed = 0.0
+        self.cash_used = 0.0
+        self.entry_price = 0.0
+        self.entry_size_asset = 0.0
+        self.entry_size_usd = 0.0
+        self.equity = equity
+        self.exit_price = 0.0
+        self.fees_paid = 0.0
+        self.leverage = 0.0
+        self.liq_price = 0.0
+        self.order_status = 0
+        self.position_size_asset = 0.0
+        self.position_size_usd = 0.0
+        self.possible_loss = 0.0
+        self.realized_pnl = 0.0
+        self.sl_pct = 0.0
+        self.sl_price = 0.0
+        self.total_trades = 0
+        self.tp_pct = 0.0
+        self.tp_price = 0.0
 
     def fill_or_exit_move(
         self,
@@ -178,61 +155,61 @@ class OrderHandler:
         order_records["bar_idx"] = bar_index
         order_records["timestamp"] = timestamp
 
-        order_records["equity"] = self.order_equity
-        order_records["available_balance"] = self.order_available_balance
-        order_records["cash_borrowed"] = self.order_cash_borrowed
-        order_records["cash_used"] = self.order_cash_used
+        order_records["equity"] = self.equity
+        order_records["available_balance"] = self.available_balance
+        order_records["cash_borrowed"] = self.cash_borrowed
+        order_records["cash_used"] = self.cash_used
 
-        order_records["average_entry"] = self.order_average_entry
-        order_records["fees_paid"] = self.order_fees_paid
-        order_records["leverage"] = self.order_leverage
-        order_records["liq_price"] = self.order_liq_price
-        order_records["order_status"] = self.order_order_status
-        order_records["possible_loss"] = self.order_possible_loss
-        order_records["total_trades"] = self.order_total_trades
-        order_records["entry_size_asset"] = self.order_entry_size_asset
-        order_records["entry_size_usd"] = self.order_entry_size_usd
-        order_records["entry_price"] = self.order_entry_price
-        order_records["exit_price"] = self.order_exit_price
-        order_records["position_size_asset"] = self.order_position_size_asset
-        order_records["position_size_usd"] = self.order_position_size_usd
-        order_records["realized_pnl"] = self.order_realized_pnl
-        order_records["sl_pct"] = round(self.order_sl_pct * 100, 3)
-        order_records["sl_price"] = self.order_sl_price
-        order_records["tp_pct"] = round(self.order_tp_pct * 100, 3)
-        order_records["tp_price"] = self.order_tp_price
+        order_records["average_entry"] = self.average_entry
+        order_records["fees_paid"] = self.fees_paid
+        order_records["leverage"] = self.leverage
+        order_records["liq_price"] = self.liq_price
+        order_records["order_status"] = self.order_status
+        order_records["possible_loss"] = self.possible_loss
+        order_records["total_trades"] = self.total_trades
+        order_records["entry_size_asset"] = self.entry_size_asset
+        order_records["entry_size_usd"] = self.entry_size_usd
+        order_records["entry_price"] = self.entry_price
+        order_records["exit_price"] = self.exit_price
+        order_records["position_size_asset"] = self.position_size_asset
+        order_records["position_size_usd"] = self.position_size_usd
+        order_records["realized_pnl"] = self.realized_pnl
+        order_records["sl_pct"] = round(self.sl_pct * 100, 3)
+        order_records["sl_price"] = self.sl_price
+        order_records["tp_pct"] = round(self.tp_pct * 100, 3)
+        order_records["tp_price"] = self.tp_price
 
     def check_move_tsl(self, current_candle: np.array):
         return self.obj_stop_loss.checker_tsl(
-            average_entry=self.order_average_entry,
+            average_entry=self.average_entry,
             current_candle=current_candle,
-            sl_price=self.order_sl_price,
+            sl_price=self.sl_price,
         )
 
     def check_move_sl_to_be(self, current_candle: np.array):
         return self.obj_stop_loss.checker_sl_to_be(
-            average_entry=self.order_average_entry,
-            can_move_sl_to_be=self.order_can_move_sl_to_be,
+            average_entry=self.average_entry,
+            can_move_sl_to_be=self.can_move_sl_to_be,
             current_candle=current_candle,
-            sl_price=self.order_sl_price,
+            sl_price=self.sl_price,
         )
 
     def check_liq_hit(self, current_candle: np.array):
         self.obj_leverage.checker_liq_hit(
             current_candle=current_candle,
-            liq_price=self.order_liq_price,
+            liq_price=self.liq_price,
         )
 
     def check_take_profit_hit(self, current_candle: np.array):
         self.obj_take_profit.checker_tp_hit(
             current_candle=current_candle,
-            tp_price=self.order_tp_price,
+            tp_price=self.tp_price,
         )
 
     def check_stop_loss_hit(self, current_candle: np.array):
         self.obj_stop_loss.checker_sl_hit(
             current_candle=current_candle,
-            sl_price=self.order_sl_price,
+            sl_price=self.sl_price,
         )
 
     def update_class_dos(
@@ -400,11 +377,11 @@ liq_price= {liq_price}"
             fees_paid,
             realized_pnl,
         ) = self.obj_dec_position.dec_pos_calculator(
-            average_entry=self.order_average_entry,
-            equity=self.order_equity,
+            average_entry=self.average_entry,
+            equity=self.equity,
             exit_fee_pct=exit_fee_pct,
             exit_price=exit_price,
-            position_size_asset=self.order_position_size_asset,
+            position_size_asset=self.position_size_asset,
         )
         logger.info(
             f"\n\
@@ -445,26 +422,26 @@ realized_pnl= {realized_pnl}"
         tp_pct: float,
         tp_price: float,
     ):
-        self.order_available_balance = available_balance
-        self.order_average_entry = average_entry
-        self.order_can_move_sl_to_be = can_move_sl_to_be
-        self.order_cash_borrowed = cash_borrowed
-        self.order_cash_used = cash_used
-        self.order_entry_price = entry_price
-        self.order_entry_size_asset = entry_size_asset
-        self.order_entry_size_usd = entry_size_usd
-        self.order_equity = equity
-        self.order_exit_price = exit_price
-        self.order_fees_paid = fees_paid
-        self.order_leverage = leverage
-        self.order_liq_price = liq_price
-        self.order_order_status = order_status
-        self.order_position_size_asset = position_size_asset
-        self.order_position_size_usd = position_size_usd
-        self.order_possible_loss = possible_loss
-        self.order_realized_pnl = realized_pnl
-        self.order_sl_pct = sl_pct
-        self.order_sl_price = sl_price
-        self.order_total_trades = total_trades
-        self.order_tp_pct = tp_pct
-        self.order_tp_price = tp_price
+        self.available_balance = available_balance
+        self.average_entry = average_entry
+        self.can_move_sl_to_be = can_move_sl_to_be
+        self.cash_borrowed = cash_borrowed
+        self.cash_used = cash_used
+        self.entry_price = entry_price
+        self.entry_size_asset = entry_size_asset
+        self.entry_size_usd = entry_size_usd
+        self.equity = equity
+        self.exit_price = exit_price
+        self.fees_paid = fees_paid
+        self.leverage = leverage
+        self.liq_price = liq_price
+        self.order_status = order_status
+        self.position_size_asset = position_size_asset
+        self.position_size_usd = position_size_usd
+        self.possible_loss = possible_loss
+        self.realized_pnl = realized_pnl
+        self.sl_pct = sl_pct
+        self.sl_price = sl_price
+        self.total_trades = total_trades
+        self.tp_pct = tp_pct
+        self.tp_price = tp_price

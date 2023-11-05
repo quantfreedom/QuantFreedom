@@ -226,8 +226,8 @@ class LongIncreasePosition:
         sl_price: float,
     ):
         possible_loss, total_trades = self.c_pl_ra_ps(
-            possible_loss=0,
             equity=equity,
+            possible_loss=0,
             total_trades=0,
         )
 
@@ -364,10 +364,10 @@ class LongIncreasePosition:
 
         possible_loss, total_trades = self.c_total_trades(
             average_entry=average_entry,
-            possible_loss=possible_loss,
-            total_trades=total_trades,
             position_size_asset=position_size_asset,
+            possible_loss=0,
             sl_price=sl_price,
+            total_trades=0,
         )
         logger.debug(f"possible_loss= {possible_loss} total_trades {total_trades}")
 
