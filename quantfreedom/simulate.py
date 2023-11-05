@@ -46,74 +46,9 @@ def sim_df_backtest(
     starting_equity: float,
     static_os: StaticOrderSettings,
 ):
-
-    if static_os.long_or_short == LongOrShortType.Long:
-        # Decrease Position
-        dec_pos_calculator = decrease_position
-  
-
-        """
-        #########################################
-        #########################################
-        #########################################
-                        Leverage
-                        Leverage
-                        Leverage
-        #########################################
-        #########################################
-        #########################################
-        """
-
-        if static_os.leverage_strategy_type == LeverageStrategyType.Dynamic:
-            lev_calculator = long_dynamic_lev
-        else:
-            lev_calculator = long_static_lev
-
-        checker_liq_hit = long_check_liq_hit
-        """
-        #########################################
-        #########################################
-        #########################################
-                        Take Profit
-                        Take Profit
-                        Take Profit
-        #########################################
-        #########################################
-        #########################################
-        """
-
-        if static_os.tp_strategy_type == TakeProfitStrategyType.RiskReward:
-            tp_calculator = long_tp_rr
-            checker_tp_hit = long_c_tp_hit_regular
-        elif static_os.tp_strategy_type == TakeProfitStrategyType.Provided:
-            pass
-    """
-    #########################################
-    #########################################
-    #########################################
-                Other Settings
-                Other Settings
-                Other Settings
-    #########################################
-    #########################################
-    #########################################
-    """
-
-    if static_os.tp_fee_type == TakeProfitFeeType.Market:
-        exit_fee_pct = exchange_settings.market_fee_pct
-    else:
-        exit_fee_pct = exchange_settings.limit_fee_pct
-    """
-    #########################################
-    #########################################
-    #########################################
-                End User Setup
-                End User Setup
-                End User Setup
-    #########################################
-    #########################################
-    #########################################
-    """
+    order = OrderHandler(
+        
+    )
     # Creating Settings Vars
     total_order_settings = dos_cart_arrays[0].size
 
@@ -277,7 +212,7 @@ def run_df_backtest(
                 if eval_bool:
                     try:
                         logger.debug("calculate_stop_loss")
-                        sl_price = order.calc_stop_loss(
+                        sl_price = order.calculate_stop_loss(
                             bar_index=bar_index,
                             candles=candles,
                         )
@@ -293,30 +228,15 @@ def run_df_backtest(
                             possible_loss,
                             total_trades,
                             sl_pct,
-                        ) = inc_pos_calculator(
-                            acc_ex_other=AccExOther(
-                                account_state_equity=account_state.equity,
-                                asset_tick_step=asset_tick_step,
-                                market_fee_pct=market_fee_pct,
-                                max_asset_size=max_asset_size,
-                                min_asset_size=min_asset_size,
-                                possible_loss=account_state.possible_loss,
-                                price_tick_step=price_tick_step,
-                                total_trades=account_state.total_trades,
-                            ),
-                            order_info=OrderInfo(
-                                average_entry=order_result.average_entry,
-                                entry_price=candles[bar_index, CandleBodyType.Close],
-                                in_position=order_result.position_size_usd > 0,
-                                max_equity_risk_pct=dynamic_order_settings.max_equity_risk_pct,
-                                max_trades=dynamic_order_settings.max_trades,
-                                position_size_asset=order_result.position_size_asset,
-                                position_size_usd=order_result.position_size_usd,
-                                risk_account_pct_size=dynamic_order_settings.risk_account_pct_size,
-                                sl_price=sl_price,
-                            ),
-                            logger=logger,
-                            stringer=stringer,
+                        ) = order.calculate_increase_posotion(
+                            average_entry=order.order_average_entry,
+                            entry_price=order.order_entry_price,
+                            equity=order.order_equity,
+                            position_size_asset=order.order_position_size_asset,
+                            position_size_usd=order.order_position_size_usd,
+                            possible_loss=order.order_possible_loss,
+                            sl_price=sl_price,
+                            total_trades=order.order_total_trades,
                         )
 
                         logger.debug("calculate_leverage")
@@ -326,21 +246,13 @@ def run_df_backtest(
                             cash_used,
                             leverage,
                             liq_price,
-                        ) = lev_calculator(
-                            available_balance=account_state.available_balance,
+                        ) = order.calculate_leverage(
+                            available_balance=order.order_available_balance,
                             average_entry=average_entry,
-                            cash_borrowed=account_state.cash_borrowed,
-                            cash_used=account_state.cash_used,
+                            cash_borrowed=order.order_cash_borrowed,
+                            cash_used=order.order_cash_used,
                             entry_size_usd=entry_size_usd,
-                            max_leverage=max_leverage,
-                            min_leverage=min_leverage,
-                            stringer=stringer,
-                            mmr_pct=mmr_pct,
                             sl_price=sl_price,
-                            static_leverage=dynamic_order_settings.static_leverage,
-                            leverage_tick_step=leverage_tick_step,
-                            price_tick_step=price_tick_step,
-                            logger=logger,
                         )
 
                         logger.debug("calculate_take_profit")
@@ -348,60 +260,41 @@ def run_df_backtest(
                             can_move_sl_to_be,
                             tp_price,
                             tp_pct,
-                        ) = tp_calculator(
+                        ) = order.calculate_take_profit(
                             average_entry=average_entry,
-                            market_fee_pct=market_fee_pct,
                             position_size_usd=position_size_usd,
                             possible_loss=possible_loss,
-                            price_tick_step=price_tick_step,
-                            risk_reward=dynamic_order_settings.risk_reward,
-                            tp_fee_pct=exit_fee_pct,
-                            stringer=stringer,
-                            logger=logger,
                         )
 
-                        logger.debug("Recorded Trade")
-                        account_state = AccountState(
-                            # where we are at
-                            ind_set_index=ind_set_index,
-                            dos_index=dos_index,
-                            bar_index=bar_index + 1,  # put plus 1 because we need to place entry on next bar
-                            timestamp=int(candles[bar_index + 1, CandleBodyType.Timestamp]),
-                            # account info
+                        logger.debug("Fill Order Result")
+                        order.fill_order_result(
                             available_balance=available_balance,
-                            cash_borrowed=cash_borrowed,
-                            cash_used=cash_used,
-                            equity=account_state.equity,
-                            fees_paid=0.0,
-                            possible_loss=possible_loss,
-                            realized_pnl=0.0,
-                            total_trades=total_trades,
-                        )
-                        order_result = OrderResult(
                             average_entry=average_entry,
                             can_move_sl_to_be=can_move_sl_to_be,
+                            cash_borrowed=cash_borrowed,
+                            cash_used=cash_used,
                             entry_price=entry_price,
                             entry_size_asset=entry_size_asset,
                             entry_size_usd=entry_size_usd,
-                            exit_price=0.0,
+                            equity=order.order_equity,
+                            exit_price=np.nan,
+                            fees_paid=np.nan,
                             leverage=leverage,
                             liq_price=liq_price,
                             order_status=OrderStatus.EntryFilled,
                             position_size_asset=position_size_asset,
                             position_size_usd=position_size_usd,
+                            possible_loss=possible_loss,
+                            realized_pnl=np.nan,
                             sl_pct=sl_pct,
                             sl_price=sl_price,
+                            total_trades=total_trades,
                             tp_pct=tp_pct,
                             tp_price=tp_price,
                         )
-                        logger.debug("Account State OrderResult")
-                    # except Exception as e:
-                    #     logger.debug(
-                    #         f"Exception hit in eval strat -> {e}"
-                    #     )
-                    #     pass
-                    except Exception:
-                        logger.debug("Exception hit in eval strat")
+                        order.fill_records()
+                    except Exception as e:
+                        logger.debug(f"Exception hit in eval strat -> {e}")
                         pass
             # Checking if gains
             gains_pct = round(((account_state.equity - starting_equity) / starting_equity) * 100, 2)

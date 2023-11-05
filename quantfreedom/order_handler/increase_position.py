@@ -59,17 +59,17 @@ class LongIncreasePosition:
 
     def c_pl_ra_ps(
         self,
-        account_state_equity: float,
+        equity: float,
         possible_loss: float,
         total_trades: int,
     ):
         """
         Check if Possible loss is bigger than risk account percent size
         """
-        possible_loss = round(possible_loss + account_state_equity * self.risk_account_pct_size, 0)
+        possible_loss = round(possible_loss + equity * self.risk_account_pct_size, 0)
         logger.debug(f"possible_loss= {possible_loss}")
 
-        max_equity_risk = round(account_state_equity * self.max_equity_risk_pct)
+        max_equity_risk = round(equity * self.max_equity_risk_pct)
         logger.debug(f"max_equity_risk= {max_equity_risk}")
         if possible_loss > max_equity_risk:
             logger.warning(f"PL too big possible_loss= {possible_loss} max risk= {max_equity_risk}")
@@ -114,7 +114,7 @@ class LongIncreasePosition:
 
     def long_rpa_slbcb(
         self,
-        account_state_equity: float,
+        equity: float,
         average_entry: float,
         entry_price: float,
         in_position: bool,
@@ -130,7 +130,7 @@ class LongIncreasePosition:
         if in_position:
             logger.debug("We are in a position")
             return self.long_rpa_slbcb_p(
-                account_state_equity=account_state_equity,
+                equity=equity,
                 average_entry=average_entry,
                 entry_price=entry_price,
                 position_size_asset=position_size_asset,
@@ -142,14 +142,14 @@ class LongIncreasePosition:
         else:
             logger.debug("Not in a position")
             return self.long_rpa_slbcb_np(
-                account_state_equity=account_state_equity,
+                equity=equity,
                 entry_price=entry_price,
                 sl_price=sl_price,
             )
 
     def long_rpa_slbcb_p(
         self,
-        account_state_equity: float,
+        equity: float,
         average_entry: float,
         entry_price: float,
         position_size_asset: float,
@@ -159,7 +159,7 @@ class LongIncreasePosition:
         total_trades: int,
     ):
         possible_loss, total_trades = self.c_pl_ra_ps(
-            account_state_equity=account_state_equity,
+            equity=equity,
             possible_loss=possible_loss,
             total_trades=total_trades,
         )
@@ -222,13 +222,13 @@ class LongIncreasePosition:
 
     def long_rpa_slbcb_np(
         self,
-        account_state_equity: float,
+        equity: float,
         entry_price: float,
         sl_price: float,
     ):
         possible_loss, total_trades = self.c_pl_ra_ps(
             possible_loss=0,
-            account_state_equity=account_state_equity,
+            equity=equity,
             total_trades=0,
         )
 
@@ -262,7 +262,7 @@ class LongIncreasePosition:
 
     def long_min_amount(
         self,
-        account_state_equity: float,
+        equity: float,
         average_entry: float,
         entry_price: float,
         in_position: bool,

@@ -2,6 +2,14 @@ from typing import NamedTuple
 import numpy as np
 
 
+class BacktestTypeT(NamedTuple):
+    StratResults: int = 0
+    OrderRecords: int = 1
+
+
+BacktestType = BacktestTypeT()
+
+
 class CandleProcessingTypeT(NamedTuple):
     Backtest: int = 0
     LiveTrading: int = 1
