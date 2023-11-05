@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from logging import getLogger
 from quantfreedom.custom_logger import set_loggers
-from quantfreedom.helper_funcs import dos_cart_product, get_dos, get_to_the_upside_nb
+from quantfreedom.helper_funcs import dos_cart_product, get_dos, get_to_the_upside_nb, log_dynamic_order_settings
 from quantfreedom.order_handler.order import OrderHandler
 from quantfreedom.strategies.strategy import Strategy
 from quantfreedom.enums import (
@@ -15,6 +15,7 @@ from quantfreedom.enums import (
     RejectedOrder,
     StaticOrderSettings,
     strat_df_array_dt,
+    or_dt,
 )
 
 logger = getLogger("info")
@@ -97,11 +98,11 @@ def run_df_backtest(
             total_fees_paid = 0
 
             order.update_class_dos(dynamic_order_settings=dynamic_order_settings)
-            order.reset_order_variables(equity=starting_equity)
+            order.set_order_variables(equity=starting_equity)
 
             logger.debug("Set order variables, class dos and pnl array")
 
-            for bar_index in range(starting_bar, total_bars):
+            for bar_index in range(starting_bar, total_bars - 1):
                 logger.info("\n\n")
                 timestamp = pd.to_datetime(candles[bar_index, CandleBodyType.Timestamp], unit="ms")
                 logger.info(
@@ -119,14 +120,17 @@ def run_df_backtest(
                         order.check_take_profit_hit(current_candle=current_candle)
 
                         logger.debug("Checking to move stop to break even")
-                        sl_to_be_price = order.check_move_sl_to_be(current_candle=current_candle)
+                        sl_to_be_price, sl_to_be_pct = order.check_move_sl_to_be(current_candle=current_candle)
                         if sl_to_be_price:
                             order.order_sl_price = sl_to_be_price
+                            order.order_sl_pct = sl_to_be_pct
 
                         logger.debug("Checking to move trailing stop loss")
-                        tsl_price = order.check_move_tsl(current_candle=current_candle)
+                        tsl_price, tsl_pct = order.check_move_tsl(current_candle=current_candle)
                         if tsl_price:
                             order.order_sl_price = tsl_price
+                            order.order_sl_price = tsl_pct
+
                     except DecreasePosition as e:
                         (
                             equity,
@@ -143,7 +147,7 @@ def run_df_backtest(
                         total_fees_paid += fees_paid
                         logger.debug("Filled pnl array and updated total fees paid")
 
-                        order.reset_order_variables(equity=equity)
+                        order.set_order_variables(equity=equity)
                         logger.debug("reset order variables")
 
                     except Exception as e:
@@ -209,6 +213,7 @@ def run_df_backtest(
                             position_size_usd=position_size_usd,
                             possible_loss=possible_loss,
                         )
+                        logger.debug("filling order result")
                         order.fill_order_result(
                             available_balance=available_balance,
                             average_entry=average_entry,
@@ -234,12 +239,13 @@ def run_df_backtest(
                             tp_pct=tp_pct,
                             tp_price=tp_price,
                         )
-                        logger.debug("We are in a position and filled the result")
+                        logger.info("We are in a position and filled the result")
                     except RejectedOrder:
                         pass
                     except Exception as e:
-                        logger.debug(f"Exception hit in eval strat -> {e}")
+                        logger.warning(f"Exception hit in eval strat -> {e}")
                         pass
+
             # Checking if gains
             gains_pct = round(((order.order_equity - starting_equity) / starting_equity) * 100, 3)
             wins_and_losses_array = pnl_array[~np.isnan(pnl_array)]
@@ -294,21 +300,261 @@ Total_trades={total_trades_closed}"
     return pd.DataFrame(strategy_result_records[:result_records_filled])
 
 
-def log_dynamic_order_settings(dynamic_order_settings: DynamicOrderSettingsArrays):
-    logger.info(
-        f"Set Dynamic Order Settings\n\
-max_equity_risk_pct={round(dynamic_order_settings.max_equity_risk_pct * 100, 3)}\n\
-max_trades={dynamic_order_settings.max_trades}\n\
-num_candles={dynamic_order_settings.num_candles}\n\
-risk_account_pct_size={round(dynamic_order_settings.risk_account_pct_size * 100, 3)}\n\
-risk_reward={dynamic_order_settings.risk_reward}\n\
-sl_based_on_add_pct={round(dynamic_order_settings.sl_based_on_add_pct * 100, 3)}\n\
-sl_based_on_lookback={dynamic_order_settings.sl_based_on_lookback}\n\
-sl_bcb_type={dynamic_order_settings.sl_bcb_type}\n\
-sl_to_be_cb_type={dynamic_order_settings.sl_to_be_cb_type}\n\
-sl_to_be_when_pct={round(dynamic_order_settings.sl_to_be_when_pct * 100, 3)}\n\
-static_leverage={dynamic_order_settings.static_leverage}\n\
-trail_sl_bcb_type={dynamic_order_settings.trail_sl_bcb_type}\n\
-trail_sl_by_pct={round(dynamic_order_settings.trail_sl_by_pct * 100, 3)}\n\
-trail_sl_when_pct={round(dynamic_order_settings.trail_sl_when_pct * 100, 3)}"
+def or_backtest(
+    backtest_settings: BacktestSettings,
+    candles: np.array,
+    dos_arrays: DynamicOrderSettingsArrays,
+    exchange_settings: ExchangeSettings,
+    static_os: StaticOrderSettings,
+    strategy: Strategy,
+    dos_index: int,
+    ind_set_index: int,
+):
+    if static_os.logger_bool == False:
+        logger.disabled = True
+    else:
+        logger.disabled = False
+        set_loggers()
+
+    starting_equity = static_os.starting_equity
+
+    dos_cart_arrays = dos_cart_product(
+        dos_arrays=dos_arrays,
     )
+
+    order = OrderHandler(
+        static_os=static_os,
+        exchange_settings=exchange_settings,
+    )
+
+    strategy.set_ind_settings(ind_set_index=ind_set_index)
+    logger.info(f"Indicator settings index= {ind_set_index}")
+    strategy.log_indicator_settings()
+
+    logger.info(f"Dynamic Order settings index= {dos_index}")
+    dynamic_order_settings = get_dos(dos_cart_arrays=dos_cart_arrays, dos_index=dos_index)
+    log_dynamic_order_settings(dynamic_order_settings=dynamic_order_settings)
+
+    starting_bar = dynamic_order_settings.num_candles - 1
+    strategy.starting_bar = starting_bar
+    logger.debug(f"Starting Bar= {starting_bar}")
+
+    order.update_class_dos(dynamic_order_settings=dynamic_order_settings)
+    order.set_order_variables(equity=starting_equity)
+
+    logger.debug("Set order variables, class dos and pnl array")
+
+    total_bars = candles.shape[0]
+
+    or_filled = 0
+    order_records = np.empty(shape=int(total_bars / 3), dtype=or_dt)
+
+    for bar_index in range(starting_bar, total_bars - 1):
+        logger.info("\n\n")
+        pd_timestamp = pd.to_datetime(candles[bar_index, CandleBodyType.Timestamp], unit="ms")
+        logger.info(f"ind_idx= {ind_set_index} dos_idx= {dos_index} bar_idx= {bar_index} timestamp= {pd_timestamp}")
+
+        if order.order_position_size_usd > 0:
+            try:
+                current_candle = candles[bar_index, :]
+                logger.debug("Checking stop loss hit")
+                order.check_stop_loss_hit(current_candle=current_candle)
+                logger.debug("Checking liq hit")
+                order.check_liq_hit(current_candle=current_candle)
+                logger.debug("Checking take profit hit")
+                order.check_take_profit_hit(current_candle=current_candle)
+
+                logger.debug("Checking to move stop to break even")
+                sl_to_be_price, sl_to_be_pct = order.check_move_sl_to_be(current_candle=current_candle)
+                if sl_to_be_price:
+                    order.order_sl_price = sl_to_be_price
+                    order.order_sl_pct = sl_to_be_pct
+                    logger.debug(f"Filling order for move sl to be")
+                    order.fill_or_exit_move(
+                        bar_index=bar_index,
+                        dos_index=dos_index,
+                        ind_set_index=ind_set_index,
+                        order_records=order_records[or_filled],
+                        order_status=OrderStatus.MovedSLToBE,
+                        timestamp=current_candle[CandleBodyType.Timestamp],
+                        sl_pct=sl_to_be_pct,
+                        sl_price=sl_to_be_price,
+                    )
+                    or_filled += 1
+                    logger.debug(f"Filled sl to be order records")
+                logger.debug("Checking to move trailing stop loss")
+                tsl_price, tsl_pct = order.check_move_tsl(current_candle=current_candle)
+                if tsl_price:
+                    order.order_sl_price = tsl_price
+                    order.order_sl_price = tsl_pct
+                    logger.debug(f"Filling order for tsl")
+                    order.fill_or_exit_move(
+                        bar_index=bar_index,
+                        dos_index=dos_index,
+                        ind_set_index=ind_set_index,
+                        order_records=order_records[or_filled],
+                        order_status=OrderStatus.MovedTSL,
+                        timestamp=current_candle[CandleBodyType.Timestamp],
+                        sl_pct=sl_to_be_pct,
+                        sl_price=sl_to_be_price,
+                    )
+                    or_filled += 1
+                    logger.debug(f"Filled move tsl order records")
+            except DecreasePosition as e:
+                (
+                    equity,
+                    fees_paid,
+                    realized_pnl,
+                ) = order.calculate_decrease_position(
+                    exit_fee_pct=e.exit_fee_pct,
+                    exit_price=e.exit_price,
+                    order_status=e.order_status,
+                )
+                logger.debug(f"Filling or for decrease postiion {OrderStatus._fields[e.order_status]}")
+                order.fill_or_exit_move(
+                    bar_index=bar_index,
+                    dos_index=dos_index,
+                    ind_set_index=ind_set_index,
+                    order_records=order_records[or_filled],
+                    order_status=e.order_status,
+                    timestamp=current_candle[CandleBodyType.Timestamp],
+                    equity=equity,
+                    exit_price=e.exit_price,
+                    fees_paid=fees_paid,
+                    realized_pnl=realized_pnl,
+                )
+                or_filled += 1
+                logger.debug(f"Filled decrease postiion order records for {OrderStatus._fields[e.order_status]}")
+
+                order.set_order_variables(equity=equity)
+                logger.debug("reset order variables")
+
+            except Exception as e:
+                logger.error(f"Exception checking sl liq tp and move -> {e}")
+                raise Exception(f"Exception checking sl liq tp and move -> {e}")
+        else:
+            logger.debug("Not in a pos so not checking SL Liq or TP")
+
+        logger.debug("strategy evaluate")
+        if strategy.evaluate(bar_index=bar_index, candles=candles):
+            try:
+                logger.debug("calculate_stop_loss")
+                sl_price = order.calculate_stop_loss(
+                    bar_index=bar_index,
+                    candles=candles,
+                )
+
+                logger.debug("calculate_increase_posotion")
+                (
+                    average_entry,
+                    entry_price,
+                    entry_size_asset,
+                    entry_size_usd,
+                    position_size_asset,
+                    position_size_usd,
+                    possible_loss,
+                    total_trades,
+                    sl_pct,
+                ) = order.calculate_increase_posotion(
+                    average_entry=order.order_average_entry,
+                    entry_price=candles[bar_index + 1, CandleBodyType.Open],
+                    equity=order.order_equity,
+                    position_size_asset=order.order_position_size_asset,
+                    position_size_usd=order.order_position_size_usd,
+                    possible_loss=order.order_possible_loss,
+                    sl_price=sl_price,
+                    total_trades=order.order_total_trades,
+                )
+
+                logger.debug("calculate_leverage")
+                (
+                    available_balance,
+                    cash_borrowed,
+                    cash_used,
+                    leverage,
+                    liq_price,
+                ) = order.calculate_leverage(
+                    available_balance=order.order_available_balance,
+                    average_entry=average_entry,
+                    cash_borrowed=order.order_cash_borrowed,
+                    cash_used=order.order_cash_used,
+                    entry_size_usd=entry_size_usd,
+                    sl_price=sl_price,
+                )
+
+                logger.debug("calculate_take_profit")
+                (
+                    can_move_sl_to_be,
+                    tp_price,
+                    tp_pct,
+                ) = order.calculate_take_profit(
+                    average_entry=average_entry,
+                    position_size_usd=position_size_usd,
+                    possible_loss=possible_loss,
+                )
+
+                logger.debug("calculate_take_profit")
+                order.fill_order_result(
+                    available_balance=available_balance,
+                    average_entry=average_entry,
+                    can_move_sl_to_be=can_move_sl_to_be,
+                    cash_borrowed=cash_borrowed,
+                    cash_used=cash_used,
+                    entry_price=entry_price,
+                    entry_size_asset=entry_size_asset,
+                    entry_size_usd=entry_size_usd,
+                    equity=order.order_equity,
+                    exit_price=np.nan,
+                    fees_paid=np.nan,
+                    leverage=leverage,
+                    liq_price=liq_price,
+                    order_status=OrderStatus.EntryFilled,
+                    position_size_asset=position_size_asset,
+                    position_size_usd=position_size_usd,
+                    possible_loss=possible_loss,
+                    realized_pnl=np.nan,
+                    sl_pct=sl_pct,
+                    sl_price=sl_price,
+                    total_trades=total_trades,
+                    tp_pct=tp_pct,
+                    tp_price=tp_price,
+                )
+                logger.debug("filling entry order records")
+                order.fill_or_entry(
+                    bar_index=bar_index + 1,
+                    dos_index=dos_index,
+                    ind_set_index=ind_set_index,
+                    order_records=order_records[or_filled],
+                    timestamp=candles[bar_index + 1, CandleBodyType.Timestamp],
+                )
+                or_filled += 1
+                logger.info("We are in a position and filled the result")
+            except RejectedOrder:
+                pass
+            except Exception as e:
+                logger.warning(f"Exception hit in eval strat -> {e}")
+                pass
+    order_records_df = pd.DataFrame(order_records[:or_filled])
+    order_records_df.insert(4, "datetime", pd.to_datetime(order_records_df["timestamp"], unit="ms"))
+    order_records_df.replace(
+        {
+            "order_status": {
+                0: "HitMaxTrades",
+                1: "EntryFilled",
+                2: "StopLossFilled",
+                3: "TakeProfitFilled",
+                4: "LiquidationFilled",
+                5: "MovedSLToBE",
+                6: "MovedTSL",
+                7: "MaxEquityRisk",
+                8: "RiskToBig",
+                9: "CashUsedExceed",
+                10: "EntrySizeTooSmall",
+                11: "EntrySizeTooBig",
+                12: "PossibleLossTooBig",
+                13: "Nothing",
+            }
+        },
+        inplace=True,
+    )
+    return order_records_df

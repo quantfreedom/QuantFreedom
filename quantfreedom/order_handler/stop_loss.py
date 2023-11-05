@@ -170,15 +170,15 @@ class LongStopLoss:
             if move_sl:
                 old_sl = sl_price
                 sl_price = self.zero_or_entry_calc(average_entry=average_entry)
-                logger.debug(f"Moving old_sl= {old_sl} to new sl= {sl_price}")
-
-                return sl_price
+                sl_pct = round((average_entry - sl_price) / average_entry, 3)
+                logger.debug(f"Moving old_sl= {old_sl} to new sl= {sl_price} sl_pct= {round(sl_pct*100, 3)}")
+                return sl_price, sl_pct
             else:
                 logger.debug("not moving sl to be")
-                pass
+                return None, None
         else:
             logger.debug("can't move sl to be")
-            pass
+            return None, None
 
     def long_cm_tsl(
         self,
@@ -202,14 +202,15 @@ class LongStopLoss:
             )
             logger.debug(f"temp sl= {temp_sl_price}")
             if temp_sl_price > sl_price:
-                logger.debug(f"Moving tsl new sl= {temp_sl_price} > old sl= {sl_price}")
-                return temp_sl_price
+                sl_pct = round((average_entry - sl_price) / average_entry, 3)
+                logger.debug(f"Moving tsl new sl= {temp_sl_price} > old sl= {sl_price} sl_pct= {round(sl_pct*100, 3)}")
+                return temp_sl_price, sl_pct
             else:
                 logger.debug("Wont move tsl")
-                pass
+                return None, None
         else:
             logger.debug("Not moving tsl")
-            pass
+            return None, None
 
     def pass_func(self, **vargs):
-        pass
+        return None, None

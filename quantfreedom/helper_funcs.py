@@ -1,14 +1,9 @@
 import numpy as np
 import pandas as pd
-
+from logging import getLogger
 from quantfreedom.enums import AccountState, DynamicOrderSettings, DynamicOrderSettingsArrays, OrderResult
 
-DIGITS_START = 48
-DIGITS_END = 58
-DASH = 45
-DOT = 46
-PLUS = 43
-E_CHAR = 101
+logger = getLogger("info")
 
 
 def get_to_the_upside_nb(
@@ -69,39 +64,47 @@ def get_dos(
     )
 
 
+def dos_cart_product(dos_arrays: DynamicOrderSettingsArrays):
+    n = 1
+    for x in dos_arrays:
+        n *= x.size
+    out = np.empty((n, len(dos_arrays)))
+
+    for i in range(len(dos_arrays)):
+        m = int(n / dos_arrays[i].size)
+        out[:n, i] = np.repeat(dos_arrays[i], m)
+        n //= dos_arrays[i].size
+
+    n = dos_arrays[-1].size
+    for k in range(len(dos_arrays) - 2, -1, -1):
+        n *= dos_arrays[k].size
+        m = int(n / dos_arrays[k].size)
+        for j in range(1, dos_arrays[k].size):
+            out[j * m : (j + 1) * m, k + 1 :] = out[0:m, k + 1 :]
+
+    return DynamicOrderSettingsArrays(
+        max_equity_risk_pct=out.T[0] / 100,
+        max_trades=out.T[1].astype(np.int_),
+        num_candles=out.T[2].astype(np.int_),
+        risk_account_pct_size=out.T[3] / 100,
+        risk_reward=out.T[4],
+        sl_based_on_add_pct=out.T[5] / 100,
+        sl_based_on_lookback=out.T[6].astype(np.int_),
+        sl_bcb_type=out.T[7].astype(np.int_),
+        sl_to_be_cb_type=out.T[8].astype(np.int_),
+        sl_to_be_when_pct=out.T[9] / 100,
+        static_leverage=out.T[10],
+        trail_sl_bcb_type=out.T[11].astype(np.int_),
+        trail_sl_by_pct=out.T[12] / 100,
+        trail_sl_when_pct=out.T[13] / 100,
+    )
+
+
 def round_size_by_tick_step(
     user_num: float,
     exchange_num: float,
 ) -> float:
     return round(user_num, exchange_num)
-
-
-def get_n_digits(x):
-    l1, l2 = 0, -1
-    _x = x
-    while _x > 0:
-        _x = _x // 10
-        l1 += 1
-
-    _x = x % 10
-    while _x > 1e-10:
-        _x = (_x * 10) % 10
-        l2 += 1
-        if l2 >= 16:
-            break
-    return l1, l2
-
-
-def float_to_str(x: float):
-    return str(x)
-
-
-def sl_to_z_e_pass(
-    average_entry,
-    market_fee_pct,
-    price_tick_step,
-):
-    pass
 
 
 def fill_order_records(
@@ -141,37 +144,21 @@ def fill_order_records(
     return or_index + 1
 
 
-def dos_cart_product(dos_arrays: DynamicOrderSettingsArrays):
-    n = 1
-    for x in dos_arrays:
-        n *= x.size
-    out = np.empty((n, len(dos_arrays)))
-
-    for i in range(len(dos_arrays)):
-        m = int(n / dos_arrays[i].size)
-        out[:n, i] = np.repeat(dos_arrays[i], m)
-        n //= dos_arrays[i].size
-
-    n = dos_arrays[-1].size
-    for k in range(len(dos_arrays) - 2, -1, -1):
-        n *= dos_arrays[k].size
-        m = int(n / dos_arrays[k].size)
-        for j in range(1, dos_arrays[k].size):
-            out[j * m : (j + 1) * m, k + 1 :] = out[0:m, k + 1 :]
-
-    return DynamicOrderSettingsArrays(
-        max_equity_risk_pct=out.T[0] / 100,
-        max_trades=out.T[1].astype(np.int_),
-        num_candles=out.T[2].astype(np.int_),
-        risk_account_pct_size=out.T[3] / 100,
-        risk_reward=out.T[4],
-        sl_based_on_add_pct=out.T[5] / 100,
-        sl_based_on_lookback=out.T[6].astype(np.int_),
-        sl_bcb_type=out.T[7].astype(np.int_),
-        sl_to_be_cb_type=out.T[8].astype(np.int_),
-        sl_to_be_when_pct=out.T[9] / 100,
-        static_leverage=out.T[10],
-        trail_sl_bcb_type=out.T[11].astype(np.int_),
-        trail_sl_by_pct=out.T[12] / 100,
-        trail_sl_when_pct=out.T[13] / 100,
+def log_dynamic_order_settings(dynamic_order_settings: DynamicOrderSettingsArrays):
+    logger.info(
+        f"Set Dynamic Order Settings\n\
+max_equity_risk_pct={round(dynamic_order_settings.max_equity_risk_pct * 100, 3)}\n\
+max_trades={dynamic_order_settings.max_trades}\n\
+num_candles={dynamic_order_settings.num_candles}\n\
+risk_account_pct_size={round(dynamic_order_settings.risk_account_pct_size * 100, 3)}\n\
+risk_reward={dynamic_order_settings.risk_reward}\n\
+sl_based_on_add_pct={round(dynamic_order_settings.sl_based_on_add_pct * 100, 3)}\n\
+sl_based_on_lookback={dynamic_order_settings.sl_based_on_lookback}\n\
+sl_bcb_type={dynamic_order_settings.sl_bcb_type}\n\
+sl_to_be_cb_type={dynamic_order_settings.sl_to_be_cb_type}\n\
+sl_to_be_when_pct={round(dynamic_order_settings.sl_to_be_when_pct * 100, 3)}\n\
+static_leverage={dynamic_order_settings.static_leverage}\n\
+trail_sl_bcb_type={dynamic_order_settings.trail_sl_bcb_type}\n\
+trail_sl_by_pct={round(dynamic_order_settings.trail_sl_by_pct * 100, 3)}\n\
+trail_sl_when_pct={round(dynamic_order_settings.trail_sl_when_pct * 100, 3)}"
     )

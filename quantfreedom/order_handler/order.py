@@ -96,7 +96,7 @@ class OrderHandler:
     def pass_func(self, **vargs):
         pass
 
-    def reset_order_variables(self, equity: float):
+    def set_order_variables(self, equity: float):
         self.order_available_balance = equity
         self.order_average_entry = 0.0
         self.order_can_move_sl_to_be = False
@@ -121,10 +121,86 @@ class OrderHandler:
         self.order_tp_pct = 0.0
         self.order_tp_price = 0.0
 
+    def fill_or_exit_move(
+        self,
+        bar_index: int,
+        dos_index: int,
+        ind_set_index: int,
+        order_records: np.array,
+        order_status: OrderStatus,
+        timestamp: int,
+        equity: float = np.nan,
+        exit_price: float = np.nan,
+        fees_paid: float = np.nan,
+        realized_pnl: float = np.nan,
+        sl_pct: float = np.nan,
+        sl_price: float = np.nan,
+    ):
+        order_records["ind_set_idx"] = ind_set_index
+        order_records["or_set_idx"] = dos_index
+        order_records["bar_idx"] = bar_index
+        order_records["timestamp"] = timestamp
+
+        order_records["equity"] = equity
+        order_records["available_balance"] = equity
+        order_records["cash_borrowed"] = np.nan
+        order_records["cash_used"] = np.nan
+
+        order_records["average_entry"] = np.nan
+        order_records["fees_paid"] = fees_paid
+        order_records["leverage"] = np.nan
+        order_records["liq_price"] = np.nan
+        order_records["order_status"] = order_status
+        order_records["possible_loss"] = np.nan
+        order_records["total_trades"] = 0
+        order_records["entry_size_asset"] = np.nan
+        order_records["entry_size_usd"] = np.nan
+        order_records["entry_price"] = np.nan
+        order_records["exit_price"] = exit_price
+        order_records["position_size_asset"] = np.nan
+        order_records["position_size_usd"] = np.nan
+        order_records["realized_pnl"] = realized_pnl
+        order_records["sl_pct"] = sl_pct
+        order_records["sl_price"] = sl_price
+        order_records["tp_pct"] = np.nan
+        order_records["tp_price"] = np.nan
+
     def fill_or_entry(
         self,
+        bar_index: int,
+        dos_index: int,
+        ind_set_index: int,
+        order_records: np.array,
+        timestamp: int,
     ):
-        pass
+        order_records["ind_set_idx"] = ind_set_index
+        order_records["or_set_idx"] = dos_index
+        order_records["bar_idx"] = bar_index
+        order_records["timestamp"] = timestamp
+
+        order_records["equity"] = self.order_equity
+        order_records["available_balance"] = self.order_available_balance
+        order_records["cash_borrowed"] = self.order_cash_borrowed
+        order_records["cash_used"] = self.order_cash_used
+
+        order_records["average_entry"] = self.order_average_entry
+        order_records["fees_paid"] = self.order_fees_paid
+        order_records["leverage"] = self.order_leverage
+        order_records["liq_price"] = self.order_liq_price
+        order_records["order_status"] = self.order_order_status
+        order_records["possible_loss"] = self.order_possible_loss
+        order_records["total_trades"] = self.order_total_trades
+        order_records["entry_size_asset"] = self.order_entry_size_asset
+        order_records["entry_size_usd"] = self.order_entry_size_usd
+        order_records["entry_price"] = self.order_entry_price
+        order_records["exit_price"] = self.order_exit_price
+        order_records["position_size_asset"] = self.order_position_size_asset
+        order_records["position_size_usd"] = self.order_position_size_usd
+        order_records["realized_pnl"] = self.order_realized_pnl
+        order_records["sl_pct"] = round(self.order_sl_pct * 100, 3)
+        order_records["sl_price"] = self.order_sl_price
+        order_records["tp_pct"] = round(self.order_tp_pct * 100, 3)
+        order_records["tp_price"] = self.order_tp_price
 
     def check_move_tsl(self, current_candle: np.array):
         return self.obj_stop_loss.checker_tsl(
