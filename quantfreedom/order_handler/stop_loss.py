@@ -3,10 +3,8 @@ from logging import getLogger
 
 from quantfreedom.helper_funcs import round_size_by_tick_step
 from quantfreedom.enums import (
-    AccountState,
     CandleBodyType,
-    MoveStopLoss,
-    OrderResult,
+    DecreasePosition,
     OrderStatus,
     PriceGetterType,
     StopLossStrategyType,
@@ -85,7 +83,6 @@ class LongStopLoss:
             user_num=sl_price,
             exchange_num=self.price_tick_step,
         )
-
         return sl_price
 
     def min_price_getter(
@@ -107,84 +104,6 @@ class LongStopLoss:
     ) -> float:
         price = candles[lookback : bar_index + 1, candle_body_type].max()
         return price
-
-    def long_c_sl_hit(
-        self,
-        current_candle: np.array,
-        sl_price: float,
-    ):
-        logger.debug("Starting")
-        candle_low = current_candle[CandleBodyType.Low]
-        logger.debug(f"candle_low= {candle_low}")
-        if sl_price > candle_low:
-            logger.debug("Stop loss hit")
-            return True
-        else:
-            logger.debug("No hit on stop loss")
-            return False
-
-    def long_cm_sl_to_be(
-        self,
-        average_entry: float,
-        can_move_sl_to_be: bool,
-        current_candle: np.array,
-        sl_price: float,
-    ):
-        """
-        Checking to see if we move the stop loss to break even
-        """
-        if can_move_sl_to_be:
-            logger.debug("Might move sl to break even")
-            # Stop Loss to break even
-            candle_body = current_candle[self.sl_to_be_cb_type]
-            pct_from_ae = (candle_body - average_entry) / average_entry
-            logger.debug("pct_from_ae= {round(pct_from_ae * 100, 4)}")
-            move_sl = pct_from_ae > self.sl_to_be_when_pct
-            if move_sl:
-                old_sl = sl_price
-                sl_price = self.zero_or_entry_calc(average_entry=average_entry)
-                logger.debug(f"moving old_sl= {old_sl} to new sl= {sl_price}")
-
-                raise MoveStopLoss(
-                    sl_price=sl_price,
-                    order_status=OrderStatus.MovedSLToBE,
-                )
-            else:
-                logger.debug("not moving sl to be")
-        else:
-            logger.debug("can't move sl to be")
-
-    def long_cm_tsl(
-        self,
-        average_entry: float,
-        current_candle: np.array,
-        sl_price: float,
-    ):
-        """
-        Checking to see if we move the trailing stop loss
-        """
-        candle_body = current_candle[self.trail_sl_bcb_type]
-        pct_from_ae = (candle_body - average_entry) / average_entry
-        logger.debug(f"pct_from_ae= {round(pct_from_ae * 100, 4)}")
-        possible_move_tsl = pct_from_ae > self.trail_sl_when_pct
-        if possible_move_tsl:
-            logger.debug("Maybe move tsl")
-            temp_sl_price = candle_body - candle_body * self.trail_sl_by_pct
-            temp_sl_price = round_size_by_tick_step(
-                user_num=temp_sl_price,
-                exchange_num=self.price_tick_step,
-            )
-            logger.debug(f"temp sl= {temp_sl_price}")
-            if temp_sl_price > sl_price:
-                logger.debug(f"Moving tsl new sl= {temp_sl_price} > old sl= {sl_price}")
-                raise MoveStopLoss(
-                    sl_price=temp_sl_price,
-                    order_status=OrderStatus.MovedTSL,
-                )
-            else:
-                logger.debug("Wont move tsl")
-        else:
-            logger.debug("Not moving tsl")
 
     def long_sl_bcb(
         self,
@@ -211,6 +130,86 @@ class LongStopLoss:
         )
         logger.debug(f"sl_price= {sl_price}")
         return sl_price
+
+    def long_c_sl_hit(
+        self,
+        current_candle: np.array,
+        sl_price: float,
+    ):
+        logger.debug("Starting")
+        candle_low = current_candle[CandleBodyType.Low]
+        logger.debug(f"candle_low= {candle_low}")
+        if sl_price > candle_low:
+            logger.debug("Stop loss hit")
+            raise DecreasePosition(
+                exit_fee_pct=self.market_fee_pct,
+                exit_price=sl_price,
+                order_status=OrderStatus.StopLossFilled,
+            )
+        else:
+            logger.debug("No hit on stop loss")
+            pass
+
+    def long_cm_sl_to_be(
+        self,
+        average_entry: float,
+        can_move_sl_to_be: bool,
+        current_candle: np.array,
+        sl_price: float,
+    ):
+        """
+        Checking to see if we move the stop loss to break even
+        """
+        if can_move_sl_to_be:
+            logger.debug("Might move sl to break even")
+            # Stop Loss to break even
+            candle_body = current_candle[self.sl_to_be_cb_type]
+            pct_from_ae = (candle_body - average_entry) / average_entry
+            logger.debug("pct_from_ae= {round(pct_from_ae * 100, 3)}")
+            move_sl = pct_from_ae > self.sl_to_be_when_pct
+            if move_sl:
+                old_sl = sl_price
+                sl_price = self.zero_or_entry_calc(average_entry=average_entry)
+                logger.debug(f"Moving old_sl= {old_sl} to new sl= {sl_price}")
+
+                return sl_price
+            else:
+                logger.debug("not moving sl to be")
+                pass
+        else:
+            logger.debug("can't move sl to be")
+            pass
+
+    def long_cm_tsl(
+        self,
+        average_entry: float,
+        current_candle: np.array,
+        sl_price: float,
+    ):
+        """
+        Checking to see if we move the trailing stop loss
+        """
+        candle_body = current_candle[self.trail_sl_bcb_type]
+        pct_from_ae = (candle_body - average_entry) / average_entry
+        logger.debug(f"pct_from_ae= {round(pct_from_ae * 100, 3)}")
+        possible_move_tsl = pct_from_ae > self.trail_sl_when_pct
+        if possible_move_tsl:
+            logger.debug("Maybe move tsl")
+            temp_sl_price = candle_body - candle_body * self.trail_sl_by_pct
+            temp_sl_price = round_size_by_tick_step(
+                user_num=temp_sl_price,
+                exchange_num=self.price_tick_step,
+            )
+            logger.debug(f"temp sl= {temp_sl_price}")
+            if temp_sl_price > sl_price:
+                logger.debug(f"Moving tsl new sl= {temp_sl_price} > old sl= {sl_price}")
+                return temp_sl_price
+            else:
+                logger.debug("Wont move tsl")
+                pass
+        else:
+            logger.debug("Not moving tsl")
+            pass
 
     def pass_func(self, **vargs):
         pass

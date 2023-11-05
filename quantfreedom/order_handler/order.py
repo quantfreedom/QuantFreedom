@@ -1,36 +1,18 @@
 from logging import getLogger
 import numpy as np
 from quantfreedom.enums import (
-    BacktestType,
     DynamicOrderSettings,
-    DynamicOrderSettingsArrays,
     ExchangeSettings,
-    IncreasePositionType,
-    LeverageStrategyType,
     LongOrShortType,
-    PriceGetterType,
+    OrderStatus,
     StaticOrderSettings,
-    StopLossStrategyType,
     TakeProfitFeeType,
-    TakeProfitStrategyType,
-    ZeroOrEntryType,
 )
-from quantfreedom.helper_funcs import long_sl_to_zero, max_price_getter, min_price_getter, sl_to_entry, sl_to_z_e_pass
-from quantfreedom.order_handler.decrease_position import decrease_position
-from quantfreedom.order_handler.increase_position import LongIncreasePosition, long_min_amount, long_rpa_slbcb
-from quantfreedom.order_handler.leverage import LongLeverage, long_check_liq_hit, long_dynamic_lev, long_static_lev
-from quantfreedom.order_handler.stop_loss import (
-    LongStopLoss,
-    long_c_sl_hit,
-    long_cm_sl_to_be,
-    long_cm_sl_to_be_pass,
-    long_cm_tsl,
-    long_cm_tsl_pass,
-    long_sl_bcb,
-    move_stop_loss,
-    move_stop_loss_pass,
-)
-from quantfreedom.order_handler.take_profit import LongTakeProfit, long_c_tp_hit_regular, long_tp_rr
+from quantfreedom.order_handler.decrease_position import LongDecreasePosition
+from quantfreedom.order_handler.increase_position import LongIncreasePosition
+from quantfreedom.order_handler.leverage import LongLeverage
+from quantfreedom.order_handler.stop_loss import LongStopLoss
+from quantfreedom.order_handler.take_profit import LongTakeProfit
 
 logger = getLogger("info")
 
@@ -64,23 +46,12 @@ class OrderHandler:
         self,
         static_os: StaticOrderSettings,
         exchange_settings: ExchangeSettings,
-        backtest_type: BacktestType = None,
     ) -> None:
-        if backtest_type == BacktestType.StratResults:
-            self.pnl_array = np.array([0])
-            self.total_fees_paid = 0
-            self.filled_pnl_counter = 0
-            self.fill_entry_records = self.pass_func
-            self.fill_dec_pos_records = self.fill_strat_dec_pos_results
-            self.fill_move_sl_records = self.fill_strat_move_sl
-        elif backtest_type == BacktestType.OrderRecords:
-            self.fill_entry_records = self.fill_entry_or
-            self.fill_dec_pos_records = self.fill_strat_dec_pos_results
-            self.fill_move_sl_records = self.fill_strat_move_sl
-
         if static_os.long_or_short == LongOrShortType.Long:
             # Decrease Position
-            self.dec_pos_calculator = decrease_position
+            self.obj_dec_position = LongDecreasePosition(
+                market_fee_pct=exchange_settings.market_fee_pct,
+            )
 
             self.obj_stop_loss = LongStopLoss(
                 market_fee_pct=exchange_settings.market_fee_pct,
@@ -111,32 +82,82 @@ class OrderHandler:
             )
 
             if static_os.tp_fee_type == TakeProfitFeeType.Market:
-                exit_fee_pct = exchange_settings.market_fee_pct
+                tp_fee_pct = exchange_settings.market_fee_pct
             else:
-                exit_fee_pct = exchange_settings.limit_fee_pct
+                tp_fee_pct = exchange_settings.limit_fee_pct
 
             self.obj_take_profit = LongTakeProfit(
                 market_fee_pct=exchange_settings.market_fee_pct,
                 price_tick_step=exchange_settings.price_tick_step,
-                tp_fee_pct=exit_fee_pct,
+                tp_fee_pct=tp_fee_pct,
                 tp_strategy_type=static_os.tp_strategy_type,
             )
 
     def pass_func(self, **vargs):
         pass
 
-    def fill_strat_move_sl(self, sl_price):
-        self.order_sl_price = sl_price
+    def reset_order_variables(self, equity: float):
+        self.order_available_balance = equity
+        self.order_average_entry = 0.0
+        self.order_can_move_sl_to_be = False
+        self.order_cash_borrowed = 0.0
+        self.order_cash_used = 0.0
+        self.order_entry_price = 0.0
+        self.order_entry_size_asset = 0.0
+        self.order_entry_size_usd = 0.0
+        self.order_equity = equity
+        self.order_exit_price = 0.0
+        self.order_fees_paid = 0.0
+        self.order_leverage = 0.0
+        self.order_liq_price = 0.0
+        self.order_order_status = 0
+        self.order_position_size_asset = 0.0
+        self.order_position_size_usd = 0.0
+        self.order_possible_loss = 0.0
+        self.order_realized_pnl = 0.0
+        self.order_sl_pct = 0.0
+        self.order_sl_price = 0.0
+        self.order_total_trades = 0
+        self.order_tp_pct = 0.0
+        self.order_tp_price = 0.0
 
-    def fill_strat_dec_pos_results(self):
-        self.pnl_array[self.filled_pnl_counter] = self.order_realized_pnl
-        self.filled_pnl_counter += 1
-        self.total_fees_paid += self.order_fees_paid
-
-    def fill_entry_or(
+    def fill_or_entry(
         self,
     ):
         pass
+
+    def check_move_tsl(self, current_candle: np.array):
+        return self.obj_stop_loss.checker_tsl(
+            average_entry=self.order_average_entry,
+            current_candle=current_candle,
+            sl_price=self.order_sl_price,
+        )
+
+    def check_move_sl_to_be(self, current_candle: np.array):
+        return self.obj_stop_loss.checker_sl_to_be(
+            average_entry=self.order_average_entry,
+            can_move_sl_to_be=self.order_can_move_sl_to_be,
+            current_candle=current_candle,
+            sl_price=self.order_sl_price,
+        )
+
+    def check_liq_hit(self, current_candle: np.array):
+        self.obj_leverage.checker_liq_hit(
+            current_candle=current_candle,
+            liq_price=self.order_liq_price,
+        )
+
+    def check_take_profit_hit(self, current_candle: np.array):
+        self.obj_take_profit.checker_tp_hit(
+            current_candle=current_candle,
+            tp_price=self.order_tp_price,
+        )
+
+    def check_stop_loss_hit(self, current_candle: np.array):
+        self.obj_stop_loss.checker_sl_hit(
+            current_candle=current_candle,
+            sl_price=self.order_sl_price,
+        )
 
     def update_class_dos(
         self,
@@ -209,15 +230,15 @@ class OrderHandler:
         )
         logger.info(
             f"\n\
-average_entry={average_entry:,}\n\
-entry_price={entry_price:,}\n\
-entry_size_asset={entry_size_asset:,}\n\
-entry_size_usd={entry_size_usd:,}\n\
-position_size_asset={position_size_asset:,}\n\
-position_size_usd={position_size_usd:,}\n\
-possible_loss={possible_loss:,}\n\
-total_trades={total_trades:,}\n\
-sl_pct={round(sl_pct*100,2):,}"
+average_entry= {average_entry}\n\
+entry_price= {entry_price}\n\
+entry_size_asset= {entry_size_asset}\n\
+entry_size_usd= {entry_size_usd}\n\
+position_size_asset= {position_size_asset}\n\
+position_size_usd= {position_size_usd}\n\
+possible_loss= {possible_loss}\n\
+total_trades= {total_trades}\n\
+sl_pct= {round(sl_pct*100, 3)}"
         )
         return (
             average_entry,
@@ -256,11 +277,11 @@ sl_pct={round(sl_pct*100,2):,}"
         )
         logger.info(
             f"\n\
-available_balance={available_balance:,}\n\
-cash_borrowed={cash_borrowed:,}\n\
-cash_used={cash_used:,}\n\
-leverage={leverage:,}\n\
-liq_price={liq_price:,}"
+available_balance= {available_balance}\n\
+cash_borrowed= {cash_borrowed}\n\
+cash_used= {cash_used}\n\
+leverage= {leverage}\n\
+liq_price= {liq_price}"
         )
         return (
             available_balance,
@@ -294,24 +315,32 @@ liq_price={liq_price:,}"
 
     def calculate_decrease_position(
         self,
-        average_entry: float,
-        position_size_usd: float,
-        possible_loss: float,
+        exit_fee_pct: float,
+        exit_price: float,
+        order_status: OrderStatus,
     ):
         (
-            can_move_sl_to_be,
-            tp_price,
-            tp_pct,
-        ) = self.obj_take_profit.tp_calculator(
-            average_entry=average_entry,
-            position_size_usd=position_size_usd,
-            possible_loss=possible_loss,
+            equity,
+            fees_paid,
+            realized_pnl,
+        ) = self.obj_dec_position.dec_pos_calculator(
+            average_entry=self.order_average_entry,
+            equity=self.order_equity,
+            exit_fee_pct=exit_fee_pct,
+            exit_price=exit_price,
+            position_size_asset=self.order_position_size_asset,
         )
-        logger.info(f"tp_price= {tp_price} tp_pct= {round(tp_pct * 100, 3)}")
+        logger.info(
+            f"\n\
+equity= {equity}\n\
+fees_paid= {fees_paid}\n\
+order_status= {OrderStatus._fields[order_status]}\n\
+realized_pnl= {realized_pnl}"
+        )
         return (
-            can_move_sl_to_be,
-            tp_price,
-            tp_pct,
+            equity,
+            fees_paid,
+            realized_pnl,
         )
 
     def fill_order_result(

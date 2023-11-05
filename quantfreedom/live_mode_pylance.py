@@ -666,7 +666,7 @@ class LiveTrading:
 
     def __get_pct_difference(self, starting_num, diff_num):
         self.logger[LoggerFuncType.Debug](f"getting pct difference")
-        return round(abs((starting_num - diff_num) / starting_num) * 100, 2)
+        return round(abs((starting_num - diff_num) / starting_num) * 100, 3)
 
     def __create_entry_successful_message(self):
         self.logger[LoggerFuncType.Debug](f"Creating message")

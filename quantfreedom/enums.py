@@ -2,14 +2,6 @@ from typing import NamedTuple
 import numpy as np
 
 
-class BacktestTypeT(NamedTuple):
-    StratResults: int = 0
-    OrderRecords: int = 1
-
-
-BacktestType = BacktestTypeT()
-
-
 class CandleProcessingTypeT(NamedTuple):
     Backtest: int = 0
     LiveTrading: int = 1
@@ -226,7 +218,7 @@ class AccountState(NamedTuple):
 
 
 class BacktestSettings(NamedTuple):
-    divide_records_array_size_by: float = 1.0
+    array_size: int = 1000
     gains_pct_filter: float = -np.inf
     total_trade_filter: int = -1
     upside_filter: float = -np.inf
@@ -302,15 +294,16 @@ class OrderResult(NamedTuple):
 class StaticOrderSettings(NamedTuple):
     increase_position_type: int
     leverage_strategy_type: int
-    long_or_short: int
     logger_bool: bool
+    long_or_short: int
     pg_min_max_sl_bcb: int
     sl_strategy_type: int
     sl_to_be_bool: bool
-    z_or_e_type: int
-    tp_strategy_type: int
+    starting_equity: float
     tp_fee_type: int
+    tp_strategy_type: int
     trail_sl_bool: bool
+    z_or_e_type: int
 
 
 class RejectedOrder(Exception):

@@ -35,7 +35,7 @@ class EmailSender:
 
     def email_pnl(self, pnl: float):
         subject = "Updated PNL"
-        body = f"We got a new pnl ... i hope it is positive ${round(pnl,4)}"
+        body = f"We got a new pnl ... i hope it is positive ${round(pnl, 3)}"
         self._send_email(subject=subject, body=body)
 
     def email_error_msg(self, msg):

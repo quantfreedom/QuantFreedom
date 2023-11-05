@@ -1,6 +1,6 @@
 import numpy as np
 from logging import getLogger
-from quantfreedom.enums import CandleBodyType, LeverageStrategyType
+from quantfreedom.enums import CandleBodyType, DecreasePosition, LeverageStrategyType, OrderStatus
 from quantfreedom.helper_funcs import round_size_by_tick_step
 
 logger = getLogger("info")
@@ -18,7 +18,6 @@ class LongLeverage:
         min_leverage: float,
         mmr_pct: float,
         price_tick_step: float,
-
     ):
         self.min_leverage = min_leverage
         self.price_tick_step = price_tick_step
@@ -70,12 +69,6 @@ class LongLeverage:
             liq_price = round_size_by_tick_step(
                 user_num=liq_price,
                 exchange_num=self.price_tick_step,
-            )
-            logger.debug(
-                f"\navailable_balance= {available_balance}\
-                \nnew cash_used= {cash_used}\
-                \ncash_borrowed= {cash_borrowed}\
-                \nliq_price= {liq_price}"
             )
 
         return (
@@ -133,10 +126,10 @@ class LongLeverage:
             exchange_num=self.leverage_tick_step,
         )
         if leverage > self.max_leverage:
-            logger.warning(f"Lev too high Old Lev= {leverage} Max Lev= {self.max_leverage}")
+            logger.warning(f"Lev too high Lev= {leverage} Max Lev= {self.max_leverage}")
             leverage = self.max_leverage
         elif leverage < self.min_leverage:
-            logger.warning(f"Lev too high Old Lev= {leverage} Max Lev= {self.max_leverage}")
+            logger.warning(f"Lev too high Lev= {leverage} Max Lev= {self.max_leverage}")
             leverage = 1
         else:
             logger.debug(f"Leverage= {leverage}")
@@ -163,6 +156,7 @@ class LongLeverage:
         )
 
     def long_check_liq_hit(
+        self,
         current_candle: np.array,
         liq_price: float,
     ):
@@ -170,7 +164,11 @@ class LongLeverage:
         logger.debug(f"candle_low= {candle_low}")
         if liq_price > candle_low:
             logger.debug("Liq Hit")
-            return True
+            raise DecreasePosition(
+                exit_fee_pct=self.market_fee_pct,
+                exit_price=liq_price,
+                order_status=OrderStatus.LiquidationFilled,
+            )
         else:
             logger.debug("No hit on liq price")
-            return False
+            pass

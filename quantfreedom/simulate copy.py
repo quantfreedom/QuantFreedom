@@ -748,7 +748,7 @@ def run_df_backtest(
                         logger[LoggerFuncType.Debug]("simulate.py - run_backtest() - Exception hit in eval strat")
                         pass
             # Checking if gains
-            gains_pct = round(((account_state.equity - starting_equity) / starting_equity) * 100, 2)
+            gains_pct = round(((account_state.equity - starting_equity) / starting_equity) * 100, 3)
             wins_and_losses_array = pnl_array[~np.isnan(pnl_array)]
             total_trades_closed = wins_and_losses_array.size
             logger[LoggerFuncType.Info](
@@ -782,7 +782,7 @@ def run_df_backtest(
                         win_loss = np.where(wins_and_losses_array_no_be < 0, 0, 1)
                         wins = np.count_nonzero(win_loss)
                         losses = win_loss.size - wins
-                        win_rate = round(wins / win_loss.size * 100, 2)
+                        win_rate = round(wins / win_loss.size * 100, 3)
 
                         total_pnl = wins_and_losses_array.sum()
 

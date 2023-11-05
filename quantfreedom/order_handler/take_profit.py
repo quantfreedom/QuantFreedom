@@ -1,7 +1,7 @@
 import numpy as np
 from logging import getLogger
 from quantfreedom.helper_funcs import round_size_by_tick_step
-from quantfreedom.enums import CandleBodyType, TakeProfitStrategyType
+from quantfreedom.enums import CandleBodyType, DecreasePosition, OrderStatus, TakeProfitStrategyType
 
 logger = getLogger("info")
 
@@ -56,6 +56,7 @@ class LongTakeProfit:
         )
 
     def long_c_tp_hit_regular(
+        self,
         current_candle: np.array,
         tp_price: float,
     ):
@@ -63,7 +64,11 @@ class LongTakeProfit:
         logger.debug(f"candle_high= {candle_high}")
         if tp_price < candle_high:
             logger.debug("TP Hit")
-            return True
+            raise DecreasePosition(
+                exit_fee_pct=self.tp_fee_pct,
+                exit_price=tp_price,
+                order_status=OrderStatus.TakeProfitFilled,
+            )
         else:
             logger.debug("No Tp Hit")
-            return False
+            pass

@@ -44,7 +44,7 @@ def get_to_the_upside_nb(
 
     if gains_pct <= 0:
         to_the_upside = -(to_the_upside)
-    return round(to_the_upside, 4)
+    return round(to_the_upside, 3)
 
 
 def get_dos(
@@ -96,15 +96,6 @@ def float_to_str(x: float):
     return str(x)
 
 
-
-
-
-
-
-
-
-
-
 def sl_to_z_e_pass(
     average_entry,
     market_fee_pct,
@@ -143,9 +134,9 @@ def fill_order_records(
     order_records["position_size_asset"] = order_result.position_size_asset
     order_records["position_size_usd"] = order_result.position_size_usd
     order_records["realized_pnl"] = account_state.realized_pnl
-    order_records["sl_pct"] = round(order_result.sl_pct * 100, 4)
+    order_records["sl_pct"] = round(order_result.sl_pct * 100, 3)
     order_records["sl_price"] = order_result.sl_price
-    order_records["tp_pct"] = round(order_result.tp_pct * 100, 4)
+    order_records["tp_pct"] = round(order_result.tp_pct * 100, 3)
     order_records["tp_price"] = order_result.tp_price
     return or_index + 1
 
@@ -184,4 +175,3 @@ def dos_cart_product(dos_arrays: DynamicOrderSettingsArrays):
         trail_sl_by_pct=out.T[12] / 100,
         trail_sl_when_pct=out.T[13] / 100,
     )
-

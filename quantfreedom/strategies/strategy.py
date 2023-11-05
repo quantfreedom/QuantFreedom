@@ -63,6 +63,8 @@ def create_ind_cart_product(ind_set_arrays: IndicatorSettingsArrays):
 
 
 class Strategy:
+    starting_bar: int
+
     def __init__(
         self,
         candle_processing_type: CandleProcessingType,
@@ -88,24 +90,30 @@ class Strategy:
             self.set_indicator = self.set_live_trading_indicator
 
     def set_ind_settings(self, ind_set_index: int):
-        logger.info("setting indicator settings")
         self.rsi_is_below = self.indicator_settings_arrays.rsi_is_below[ind_set_index]
         self.rsi_period = self.indicator_settings_arrays.rsi_period[ind_set_index]
+        logger.info("Set Indicator Settings")
+
+    def log_indicator_settings(self):
+        logger.info(
+            f"Indicator Settings\n\
+rsi_is_below={self.rsi_is_below}\n\
+rsi_period={self.rsi_period}".strip()
+        )
 
     def set_backtesting_indicator(
         self,
         bar_index: int,
-        starting_bar: int,
         candles: np.array,
     ):
-        start = max(bar_index - starting_bar, 0)
+        start = max(bar_index - self.starting_bar, 0)
         try:
             self.rsi = rsi_calc(
                 source=candles[start : bar_index + 1, CandleBodyType.Close],
                 length=self.rsi_period,
             )
-            self.rsi = np.around(self.rsi, 2)
-            logger.info("Created RSI")
+            self.rsi = np.around(self.rsi, 3)
+            logger.info(f"Created RSI rsi_is_below= {self.rsi_is_below} rsi_period= {self.rsi_period}")
         except Exception as e:
             logger.info(f"Exception creating RSI -> {e}")
             raise Exception(f"Exception creating RSI -> {e}")
@@ -116,20 +124,18 @@ class Strategy:
                 source=candles[:, CandleBodyType.Close],
                 length=self.rsi_period,
             )
-            self.rsi = np.around(self.rsi, 2)
-            logger.info("Created RSI")
+            self.rsi = np.around(self.rsi, 3)
+            logger.info(f"Created RSI rsi_is_below= {self.rsi_is_below} rsi_period= {self.rsi_period}")
         except Exception as e:
             logger.info(f"Exception creating rsi -> {e}")
-            raise Exception(f"Something happened -> {e}")
+            raise Exception(f"Exception creating rsi -> {e}")
 
-    def evaluate_strategy(self):
+    def evaluate(self, bar_index: int, candles: np.array):
         try:
-            current_rsi = self.rsi[-1]
-
-            if current_rsi < self.rsi_is_below:
+            self.set_indicator(bar_index=bar_index, candles=candles)
+            if self.rsi[-1] < self.rsi_is_below:
                 logger.info("\n\n")
-                logger.info(f"Entry time!!!")
-
+                logger.info(f"Entry time!!! rsi= {self.rsi[-1]} < rsi_is_below= {self.rsi_is_below}")
                 return True
             else:
                 logger.info("No entry")

@@ -23,14 +23,13 @@ class LongIncreasePosition:
         market_fee_pct: float,
         sl_strategy_type: StopLossStrategyType,
         increase_position_type: IncreasePositionType,
-        
     ) -> None:
         self.min_asset_size = min_asset_size
         self.asset_tick_step = asset_tick_step
         self.price_tick_step = price_tick_step
         self.max_asset_size = max_asset_size
         self.market_fee_pct = market_fee_pct
-        
+
         if sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
             if increase_position_type == IncreasePositionType.RiskPctAccountEntrySize:
                 self.inc_pos_calculator = self.long_rpa_slbcb
@@ -97,7 +96,7 @@ class LongIncreasePosition:
         fee_open = position_size_asset * average_entry * self.market_fee_pct  # math checked
         fee_close = position_size_asset * sl_price * self.market_fee_pct  # math checked
         fees_paid = fee_open + fee_close  # math checked
-        possible_loss = round(-(pnl - fees_paid), 4)
+        possible_loss = round(-(pnl - fees_paid), 3)
 
         logger.debug(f"possible_loss= {possible_loss}")
 
@@ -194,7 +193,7 @@ class LongIncreasePosition:
         )
         logger.debug(f"position_size_asset= {position_size_asset}")
 
-        position_size_usd = round(entry_size_usd + position_size_usd, 4)
+        position_size_usd = round(entry_size_usd + position_size_usd, 3)
         logger.debug(f"position_size_usd= {position_size_usd}")
 
         average_entry = (entry_size_usd + position_size_usd) / (
@@ -206,8 +205,8 @@ class LongIncreasePosition:
         )
         logger.debug(f"average_entry= {average_entry}")
 
-        sl_pct = round((average_entry - sl_price) / average_entry, 4)
-        logger.debug(f"sl_pct= {round(sl_pct * 100, 4)}")
+        sl_pct = round((average_entry - sl_price) / average_entry, 3)
+        logger.debug(f"sl_pct= {round(sl_pct * 100, 3)}")
         return (
             average_entry,
             entry_price,
@@ -237,7 +236,7 @@ class LongIncreasePosition:
             / (sl_price / entry_price - 1 - self.market_fee_pct - sl_price * self.market_fee_pct / entry_price),
             3,
         )
-        logger.debug(f"entry_size_usd=             {entry_size_usd}")
+        logger.debug(f"entry_size_usd= {entry_size_usd}")
         entry_size_asset = position_size_asset = round_size_by_tick_step(
             user_num=entry_size_usd / entry_price,
             exchange_num=self.asset_tick_step,
@@ -246,8 +245,8 @@ class LongIncreasePosition:
 
         average_entry = entry_price
 
-        sl_pct = round((average_entry - sl_price) / average_entry, 4)
-        logger.debug(f"sl_pct= {round(sl_pct * 100, 4)}")
+        sl_pct = round((average_entry - sl_price) / average_entry, 3)
+        logger.debug(f"sl_pct= {round(sl_pct * 100, 3)}")
         return (
             average_entry,
             entry_price,
@@ -307,7 +306,7 @@ class LongIncreasePosition:
         entry_size_asset = self.min_asset_size
         logger.debug(f"entry_size_asset= {entry_size_asset} position_size_asset{position_size_asset}")
 
-        entry_size_usd = round(self.min_asset_size * entry_price, 4)
+        entry_size_usd = round(self.min_asset_size * entry_price, 3)
         logger.debug(f"entry_size_usd = {entry_size_usd}")
 
         average_entry = (entry_size_usd + position_size_usd) / (
@@ -319,10 +318,10 @@ class LongIncreasePosition:
         )
         logger.debug(f"average_entry {average_entry}")
 
-        sl_pct = round((average_entry - sl_price) / average_entry, 4)
-        logger.debug(f"sl_pct= {round(sl_pct*100,4)}")
+        sl_pct = round((average_entry - sl_price) / average_entry, 3)
+        logger.debug(f"sl_pct= {round(sl_pct*100, 3)}")
 
-        position_size_usd = round(entry_size_usd + position_size_usd, 4)
+        position_size_usd = round(entry_size_usd + position_size_usd, 3)
         logger.debug(f"position_size_usd= {position_size_usd}")
 
         possible_loss, total_trades = self.c_total_trades(
@@ -355,13 +354,13 @@ class LongIncreasePosition:
         entry_size_asset = position_size_asset = self.min_asset_size
         logger.debug(f"entry_size_asset={entry_size_asset} position_size_asset= {position_size_asset}")
 
-        entry_size_usd = position_size_usd = round(entry_size_asset * entry_price, 4)
+        entry_size_usd = position_size_usd = round(entry_size_asset * entry_price, 3)
         logger.debug(f"entry_size_usd= {entry_size_usd} position_size_usd= {position_size_usd}")
 
         average_entry = entry_price
         logger.debug(f"average_entry {average_entry}")
-        sl_pct = round((average_entry - sl_price) / average_entry, 4)
-        logger.debug(f"sl_pct= {round(sl_pct*100,2)}")
+        sl_pct = round((average_entry - sl_price) / average_entry, 3)
+        logger.debug(f"sl_pct= {round(sl_pct*100, 3)}")
 
         possible_loss, total_trades = self.c_total_trades(
             average_entry=average_entry,
