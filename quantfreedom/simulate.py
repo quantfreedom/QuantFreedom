@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 from logging import getLogger
 from quantfreedom.custom_logger import set_loggers
+from quantfreedom.helper_funcs import dos_cart_product, get_dos, get_to_the_upside_nb
+from quantfreedom.order_handler.order import OrderHandler
+from quantfreedom.strategies.strategy import Strategy
 from quantfreedom.enums import (
     BacktestSettings,
     CandleBodyType,
@@ -13,9 +16,6 @@ from quantfreedom.enums import (
     StaticOrderSettings,
     strat_df_array_dt,
 )
-from quantfreedom.helper_funcs import dos_cart_product, get_dos, get_to_the_upside_nb
-from quantfreedom.order_handler.order import OrderHandler
-from quantfreedom.strategies.strategy import Strategy
 
 logger = getLogger("info")
 
@@ -31,6 +31,7 @@ def run_df_backtest(
     if static_os.logger_bool == False:
         logger.disabled = True
     else:
+        logger.disabled = False
         set_loggers()
 
     starting_equity = static_os.starting_equity
