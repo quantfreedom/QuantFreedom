@@ -1,10 +1,8 @@
-import json
-from logging import getLogger
 import hashlib
 import hmac
+import json
 import numpy as np
 from datetime import timedelta
-from quantfreedom.utils import pretty_qf
 from requests import get, post
 from time import sleep, time
 
@@ -13,18 +11,7 @@ from quantfreedom.enums import (
     LeverageModeType,
     PositionModeType,
 )
-from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES, Exchange
-
-candles_dt = np.dtype(
-    [
-        ("timestamp", np.int64),
-        ("open", np.float_),
-        ("high", np.float_),
-        ("low", np.float_),
-        ("close", np.float_),
-    ],
-    align=True,
-)
+from quantfreedom.exchanges.exchange import Exchange
 
 MUFEX_TIMEFRAMES = [1, 3, 5, 15, 30, 60, 120, 240, 360, 720, "D", "W", "M"]
 
@@ -64,7 +51,7 @@ class Mufex(Exchange):
 
     def __HTTP_post_request(self, end_point, params):
         time_stamp = str(int(time() * 1000))
-        params_as_string = self.get_params_as_string(params=params)
+        params_as_string = self.__get_params_as_json_string(params=params)
         signature = self.__gen_signature(time_stamp=time_stamp, params_as_string=params_as_string)
         headers = {
             "MF-ACCESS-API-KEY": self.api_key,
@@ -106,7 +93,7 @@ class Mufex(Exchange):
 
     def HTTP_get_request(self, end_point, params):
         time_stamp = str(int(time() * 1000))
-        params_as_path = self.get_params_as_path(params=params)
+        params_as_path = self.__get_params_as_string(params=params)
         signature = self.__gen_signature(time_stamp=time_stamp, params_as_string=params_as_path)
         headers = {
             "MF-ACCESS-API-KEY": self.api_key,
@@ -159,6 +146,19 @@ class Mufex(Exchange):
         hash = hmac.new(bytes(self.secret_key, "utf-8"), param_str.encode("utf-8"), hashlib.sha256)
         return hash.hexdigest()
 
+    def __get_params_as_json_string(self, params):
+        params_as_string = str(json.dumps(params))
+        return params_as_string
+
+    def __get_params_as_string(self, params):
+        entries = params.items()
+        if not entries:
+            pass
+
+        paramsString = "&".join("{key}={value}".format(key=x[0], value=x[1]) for x in entries if x[1] is not None)
+        if paramsString:
+            return paramsString
+
     """
     ###################################################################
     ###################################################################
@@ -184,13 +184,13 @@ class Mufex(Exchange):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
 
-        timeframe: "1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"
+        timeframe: "1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"
 
         returning dict is [start, open, high, low, close, volume, turnover]
 
         use link to see all Request Parameters
         """
-        mufex_timeframe = self.get_exchange_timeframe(ex_timeframe=MUFEX_TIMEFRAMES, timeframe=timeframe)
+        timeframe = self.get_exchange_timeframe(ex_timeframe=MUFEX_TIMEFRAMES, timeframe=timeframe)
         timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
         candles_to_dl_ms = self.get_candles_to_dl_in_ms(candles_to_dl, timeframe_in_ms=timeframe_in_ms, limit=limit)
 
@@ -209,7 +209,7 @@ class Mufex(Exchange):
         params = {
             "category": category,
             "symbol": symbol,
-            "interval": mufex_timeframe,
+            "interval": timeframe,
             "start": since_date_ms,
             "end": until_date_ms,
             "limit": limit,

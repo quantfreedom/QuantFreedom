@@ -1,5 +1,3 @@
-from decimal import Decimal
-import json
 import pandas as pd
 import numpy as np
 
@@ -11,8 +9,8 @@ from quantfreedom.enums import ExchangeSettings
 from quantfreedom.exchanges.binance_exchange.binance_futures import BINANCE_FUTURES_TIMEFRAMES
 
 UNIVERSAL_SIDES = ["buy", "sell"]
-UNIVERSAL_TIMEFRAMES = ["1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"]
-TIMEFRAMES_IN_MINUTES = [1, 3, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 10080, 43800]
+UNIVERSAL_TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"]
+TIMEFRAMES_IN_MINUTES = [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 10080, 43800]
 
 
 class Exchange:
@@ -113,19 +111,6 @@ class Exchange:
             Exception(f"Use one of these timeframes - {UNIVERSAL_TIMEFRAMES} -> {e}")
         return timeframe
 
-    def get_params_as_string(self, params):
-        params_as_string = str(json.dumps(params))
-        return params_as_string
-
-    def get_params_as_path(self, params):
-        entries = params.items()
-        if not entries:
-            pass
-
-        paramsString = "&".join("{key}={value}".format(key=x[0], value=x[1]) for x in entries if x[1] is not None)
-        if paramsString:
-            return paramsString
-
     def get_binance_futures_candles(
         self,
         symbol: str,
@@ -138,7 +123,7 @@ class Exchange:
         """
         https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data
 
-        timeframe: "1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"
+        timeframe: "1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"
 
         Response is
         [
@@ -185,7 +170,7 @@ class Exchange:
 
         start_time = self.get_current_time_seconds()
         while params["startTime"] + timeframe_in_ms < until_date_ms:
-            params_as_path = self.get_params_as_path(params=params)
+            params_as_path = self.get_params_as_string(params=params)
             new_candles = get(url="https://fapi.binance.com/fapi/v1/klines?" + params_as_path).json()
             try:
                 last_candle_time_ms = int(new_candles[-1][0])

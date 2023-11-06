@@ -39,7 +39,7 @@ class LiveMufex(LiveExchange, Mufex):
         )
 
         self.category = category
-        self.mufex_timeframe = MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
+        self.timeframe = MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
 
         if keep_volume_in_candles:
             self.volume_yes_no = -1
@@ -80,7 +80,7 @@ class LiveMufex(LiveExchange, Mufex):
         params = {
             "category": self.category,
             "symbol": self.symbol,
-            "interval": self.mufex_timeframe,
+            "interval": self.timeframe,
             "start": init_start,
             "end": init_end,
         }
@@ -107,7 +107,7 @@ class LiveMufex(LiveExchange, Mufex):
         params = {
             "category": self.category,
             "symbol": self.symbol,
-            "interval": self.mufex_timeframe,
+            "interval": self.timeframe,
             "start": since_date_ms,
             "end": until_date_ms,
         }

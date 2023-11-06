@@ -16,6 +16,8 @@ numba = "0.58.1"
 numpy = "1.24.0"
 pandas = "2.0.3"
 plotly = "5.16.1"
+web3 = "6.0.0"
+apexpro = "1.1.8"
 
 [tool.poetry.dev-dependencies]
 
