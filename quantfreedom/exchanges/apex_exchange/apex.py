@@ -51,3 +51,47 @@ class Apex(Exchange):
         )
         self.apex_stark.configs()
         self.apex_stark.get_account()
+
+    def create_order(
+        self,
+        symbol,
+        side,
+        type,
+        size,
+        limitFeeRate=None,
+        limitFee=None,
+        price=None,
+        accountId=None,
+        timeInForce="GOOD_TIL_CANCEL",
+        reduceOnly=False,
+        triggerPrice=None,
+        triggerPriceType=None,
+        trailingPercent=None,
+        clientId=None,
+        expiration=None,
+        expirationEpochSeconds=None,
+        isPositionTpsl=False,
+        signature=None,
+        sourceFlag=None,
+    ):
+        return self.apex_stark.create_order(
+            symbol=symbol,
+            side=side,
+            type=type,
+            size=size,
+            limitFeeRate=limitFeeRate,
+            limitFee=limitFee,
+            price=price,
+            accountId=accountId,
+            timeInForce=timeInForce,
+            reduceOnly=reduceOnly,
+            triggerPrice=triggerPrice,
+            triggerPriceType=triggerPriceType,
+            trailingPercent=trailingPercent,
+            clientId=clientId,
+            expiration=expiration,
+            expirationEpochSeconds=expirationEpochSeconds,
+            isPositionTpsl=isPositionTpsl,
+            signature=signature,
+            sourceFlag=sourceFlag,
+        )

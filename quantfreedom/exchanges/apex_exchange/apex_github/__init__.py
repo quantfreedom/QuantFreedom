@@ -106,8 +106,6 @@ class HTTP:
         # Setup logger.
 
         self.logger = logging.getLogger(__name__)
-        self.logger.disabled = True
-
         if len(logging.root.handlers) == 0:
             # no handler on root logger set -> we add handler just for this logger to not mess with custom logic from outside
             handler = logging.StreamHandler()
