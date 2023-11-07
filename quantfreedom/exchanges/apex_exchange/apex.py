@@ -57,6 +57,11 @@ class Apex(Exchange):
         signature=None,
         sourceFlag=None,
     ):
+        """
+        https://api-docs.pro.apex.exchange/#privateapi-post-creating-orders
+
+        Use this website to see all the params
+        """
         return self.apex_stark.create_order(
             symbol=symbol,
             side=side,

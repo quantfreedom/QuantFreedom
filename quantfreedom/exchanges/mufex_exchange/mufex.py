@@ -312,6 +312,7 @@ class Mufex(Exchange):
     def create_order(self, params: dict):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_placeorder
+
         use this website to see all the params
         """
         end_point = "/private/v1/trade/create"

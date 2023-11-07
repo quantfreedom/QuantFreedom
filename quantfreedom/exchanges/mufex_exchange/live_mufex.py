@@ -68,7 +68,6 @@ class LiveMufex(LiveExchange, Mufex):
 
     def set_init_last_fetched_time(
         self,
-        **kwargs,
     ):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
@@ -97,7 +96,6 @@ class LiveMufex(LiveExchange, Mufex):
 
     def get_live_candles(
         self,
-        **kwargs,
     ):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
@@ -137,7 +135,6 @@ class LiveMufex(LiveExchange, Mufex):
 
     def check_long_hedge_mode_if_in_position(
         self,
-        **kwargs,
     ):
         if float(self.get_symbol_position_info(symbol=self.symbol)[0]["entryPrice"]) > 0:
             return True
@@ -147,8 +144,7 @@ class LiveMufex(LiveExchange, Mufex):
     def create_long_hedge_mode_entry_market_order(
         self,
         asset_amount: float,
-        time_in_force: str = "ImmediateOrCancel",
-        **kwargs,
+        time_in_force: str = "GoodTillCancel",
     ):
         params = {
             "symbol": self.symbol,
@@ -167,7 +163,6 @@ class LiveMufex(LiveExchange, Mufex):
         asset_amount: float,
         tp_price: float,
         time_in_force: str = "PostOnly",
-        **kwargs,
     ):
         params = {
             "symbol": self.symbol,
@@ -187,8 +182,7 @@ class LiveMufex(LiveExchange, Mufex):
         self,
         asset_amount: float,
         trigger_price: float,
-        time_in_force: str = "ImmediateOrCancel",
-        **kwargs,
+        time_in_force: str = "GoodTillCancel",
     ):
         params = {
             "symbol": self.symbol,
