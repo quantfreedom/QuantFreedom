@@ -73,7 +73,7 @@ createOrderRes = client.create_order(
 )
 print(createOrderRes)
 
-# sample3
+# sample 3
 # Create a conditional order
 
 createOrderRes = client.create_order(

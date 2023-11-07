@@ -1,5 +1,6 @@
 from quantfreedom.exchanges.apex_exchange.apex_github.http_private_stark_key_sign import HttpPrivateStark
 from quantfreedom.exchanges.exchange import Exchange
+from time import time
 
 APEX_TIMEFRAMES = [1, 5, 15, 30, 60, 120, 240, 360, 720, "D", "W", "M"]
 
@@ -53,7 +54,7 @@ class Apex(Exchange):
         trailingPercent=None,
         clientId=None,
         expiration=None,
-        expirationEpochSeconds=None,
+        expirationEpochSeconds=time(),
         isPositionTpsl=False,
         signature=None,
         sourceFlag=None,

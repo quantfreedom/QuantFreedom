@@ -163,12 +163,12 @@ class HTTP:
                 stark_private_key
             )
         if stark_public_key is not None and stark_public_key != self.stark_public_key:
-            self.logger.warning("STARK public/private key mismatch")
+            self.logger.debug("STARK public/private key mismatch")
         if (
             stark_public_key_y_coordinate is not None
             and stark_public_key_y_coordinate != self.stark_public_key_y_coordinate
         ):
-            self.logger.warning("STARK public/private key mismatch (y)")
+            self.logger.debug("STARK public/private key mismatch (y)")
         else:
             self.stark_public_key = stark_public_key
             self.stark_public_key_y_coordinate = stark_public_key_y_coordinate
