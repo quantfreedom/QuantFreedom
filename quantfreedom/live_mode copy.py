@@ -90,7 +90,7 @@ class LiveTrading:
         self.ex_position_size_asset = float(self.get_position_info().get("size"))
         self.order_equity = self.exchange.get_equity_of_asset(trading_in=self.exchange.trading_in)
 
-    def pass_function(self, **vargs):
+    def pass_function(self, **kwargs):
         pass
 
     def run(self):

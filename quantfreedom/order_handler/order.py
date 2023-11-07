@@ -70,7 +70,7 @@ class OrderHandler:
                 tp_strategy_type=static_os.tp_strategy_type,
             )
 
-    def pass_func(self, **vargs):
+    def pass_func(self, **kwargs):
         pass
 
     def set_order_variables(self, equity: float):

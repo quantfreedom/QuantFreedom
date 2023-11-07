@@ -1,5 +1,5 @@
-from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.um_futures import UMFutures
 from quantfreedom.exchanges.exchange import Exchange
+from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.um_futures import UMFutures
 
 BINANCE_FUTURES_TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "1d", "1w", "1M"]
 

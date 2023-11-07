@@ -2,10 +2,8 @@ from time import sleep
 from uuid import uuid4
 import numpy as np
 from quantfreedom.enums import LeverageModeType, LongOrShortType, PositionModeType
-from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES
 from quantfreedom.exchanges.live_exchange import LiveExchange
-from quantfreedom.exchanges.mufex_exchange.mufex import MUFEX_TIMEFRAMES, Mufex
-from logging import getLogger
+from quantfreedom.exchanges.mufex_exchange.mufex import MUFEX_TIMEFRAMES, UNIVERSAL_TIMEFRAMES, Mufex
 
 
 class LiveMufex(LiveExchange, Mufex):
@@ -68,7 +66,10 @@ class LiveMufex(LiveExchange, Mufex):
             leverage_mode=leverage_mode,
         )
 
-    def set_init_last_fetched_time(self, **vargs):
+    def set_init_last_fetched_time(
+        self,
+        **kwargs,
+    ):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
         """
@@ -94,7 +95,10 @@ class LiveMufex(LiveExchange, Mufex):
         except Exception as e:
             raise Exception(f"LiveMufex Class Something is wrong with set_init_last_fetched_time -> {e}")
 
-    def get_live_candles(self, **vargs):
+    def get_live_candles(
+        self,
+        **kwargs,
+    ):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
         """
@@ -131,14 +135,20 @@ class LiveMufex(LiveExchange, Mufex):
                 )
         return np.array(candles_list, dtype=np.float_)[:, :-2]
 
-    def check_long_hedge_mode_if_in_position(self, **vargs):
+    def check_long_hedge_mode_if_in_position(
+        self,
+        **kwargs,
+    ):
         if float(self.get_symbol_position_info(symbol=self.symbol)[0]["entryPrice"]) > 0:
             return True
         else:
             return False
 
     def create_long_hedge_mode_entry_market_order(
-        self, asset_amount: float, time_in_force: str = "ImmediateOrCancel", **vargs
+        self,
+        asset_amount: float,
+        time_in_force: str = "ImmediateOrCancel",
+        **kwargs,
     ):
         params = {
             "symbol": self.symbol,
@@ -153,7 +163,11 @@ class LiveMufex(LiveExchange, Mufex):
         return self.create_order(params=params)
 
     def create_long_hedge_mode_tp_limit_order(
-        self, asset_amount: float, tp_price: float, time_in_force: str = "PostOnly", **vargs
+        self,
+        asset_amount: float,
+        tp_price: float,
+        time_in_force: str = "PostOnly",
+        **kwargs,
     ):
         params = {
             "symbol": self.symbol,
@@ -170,7 +184,11 @@ class LiveMufex(LiveExchange, Mufex):
         return self.create_order(params=params)
 
     def create_long_hedge_mode_sl_order(
-        self, asset_amount: float, trigger_price: float, time_in_force: str = "ImmediateOrCancel", **vargs
+        self,
+        asset_amount: float,
+        trigger_price: float,
+        time_in_force: str = "ImmediateOrCancel",
+        **kwargs,
     ):
         params = {
             "symbol": self.symbol,

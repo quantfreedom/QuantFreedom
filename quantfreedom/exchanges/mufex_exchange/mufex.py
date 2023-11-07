@@ -14,6 +14,8 @@ from quantfreedom.enums import (
 from quantfreedom.exchanges.exchange import Exchange
 
 MUFEX_TIMEFRAMES = [1, 3, 5, 15, 30, 60, 120, 240, 360, 720, "D", "W", "M"]
+UNIVERSAL_TIMEFRAMES = ["1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"]
+TIMEFRAMES_IN_MINUTES = [1, 3, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 10080, 43800]
 
 
 class Mufex(Exchange):
@@ -159,6 +161,19 @@ class Mufex(Exchange):
         if paramsString:
             return paramsString
 
+    def __get_exchange_timeframe(self, timeframe):
+        try:
+            timeframe = MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
+        except Exception as e:
+            Exception(f"Use one of these timeframes - {UNIVERSAL_TIMEFRAMES} -> {e}")
+        return timeframe
+
+    def __get_timeframe_in_ms(self, timeframe):
+        timeframe_in_ms = int(
+            timedelta(minutes=TIMEFRAMES_IN_MINUTES[UNIVERSAL_TIMEFRAMES.index(timeframe)]).seconds * 1000
+        )
+        return timeframe_in_ms
+
     """
     ###################################################################
     ###################################################################
@@ -184,14 +199,14 @@ class Mufex(Exchange):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
 
-        timeframe: "1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"
+        timeframe: "1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"
 
         returning dict is [start, open, high, low, close, volume, turnover]
 
         use link to see all Request Parameters
         """
-        timeframe = self.get_exchange_timeframe(ex_timeframe=MUFEX_TIMEFRAMES, timeframe=timeframe)
-        timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
+        ex_timeframe = self.__get_exchange_timeframe(timeframe=timeframe)
+        timeframe_in_ms = self.__get_timeframe_in_ms(timeframe=timeframe)
         candles_to_dl_ms = self.get_candles_to_dl_in_ms(candles_to_dl, timeframe_in_ms=timeframe_in_ms, limit=limit)
 
         if until_date_ms is None:
@@ -209,7 +224,7 @@ class Mufex(Exchange):
         params = {
             "category": category,
             "symbol": symbol,
-            "interval": timeframe,
+            "interval": ex_timeframe,
             "start": since_date_ms,
             "end": until_date_ms,
             "limit": limit,
@@ -237,7 +252,7 @@ class Mufex(Exchange):
 
         return candles_np
 
-    def get_closed_pnl(self, symbol: str, limit: int = 10, params: dict = {}, **vargs):
+    def get_closed_pnl(self, symbol: str, limit: int = 10, params: dict = {}, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_closedprofitandloss
         """
@@ -253,10 +268,10 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Data or List is empty {response['message']} -> {e}")
 
-    def get_latest_pnl_result(self, symbol: str, **vargs):
+    def get_latest_pnl_result(self, symbol: str, **kwargs):
         return float(self.get_closed_pnl(symbol=symbol)[0]["closedPnl"])
 
-    def get_all_symbols_info(self, category: str = "linear", limit: int = 1000, params: dict = {}, **vargs):
+    def get_all_symbols_info(self, category: str = "linear", limit: int = 1000, params: dict = {}, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_instrhead
 
@@ -275,10 +290,10 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_all_symbols_info = Data or List is empty {response['message']} -> {e}")
 
-    def get_symbol_info(self, symbol: str, **vargs):
+    def get_symbol_info(self, symbol: str, **kwargs):
         return self.get_all_symbols_info(params={"symbol": symbol})[0]
 
-    def get_risk_limit_info(self, symbol: str, category: str = "linear", **vargs):
+    def get_risk_limit_info(self, symbol: str, category: str = "linear", **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_risklimithead
         """
@@ -294,7 +309,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_risk_limit_info = Data or List is empty {response['message']} -> {e}")
 
-    def create_order(self, params: dict, **vargs):
+    def create_order(self, params: dict, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_placeorder
         use this website to see all the params
@@ -308,7 +323,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex Something is wrong with create_order {response['message']} -> {e}")
 
-    def get_trading_fee_rates(self, **vargs):
+    def get_trading_fee_rates(self, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-tradingfeerate
         """
@@ -321,7 +336,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_trading_fee_rates = Data or List is empty {response['message']} -> {e}")
 
-    def get_symbol_trading_fee_rates(self, symbol: str, **vargs):
+    def get_symbol_trading_fee_rates(self, symbol: str, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-tradingfeerate
         """
@@ -336,7 +351,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_symbol_trading_fee_rates = Data or List is empty {response['message']} -> {e}")
 
-    def get_order_history(self, symbol: str, limit: int = 50, params: dict = {}, **vargs):
+    def get_order_history(self, symbol: str, limit: int = 50, params: dict = {}, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_getorder
 
@@ -354,11 +369,11 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_order_history = Data or List is empty {response['message']} -> {e}")
 
-    def get_order_history_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **vargs):
+    def get_order_history_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **kwargs):
         params["orderId"] = order_id
         return self.get_order_history(symbol=symbol, params=params)[0]
 
-    def get_open_orders(self, symbol: str, params: dict = {}, **vargs):
+    def get_open_orders(self, symbol: str, params: dict = {}, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_getopenorder
 
@@ -378,11 +393,11 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_open_orders = Data or List is empty {response['message']} -> {e}")
 
-    def get_open_order_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **vargs):
+    def get_open_order_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **kwargs):
         params["orderId"] = order_id
         return self.get_open_orders(symbol=symbol, params=params)[0]
 
-    def get_filled_orders(self, symbol: str, limit: int = 200, params: dict = {}, **vargs):
+    def get_filled_orders(self, symbol: str, limit: int = 200, params: dict = {}, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-usertraderecords
 
@@ -402,11 +417,11 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_filled_orders = Data or List is empty {response['message']} -> {e}")
 
-    def get_filled_orders_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **vargs):
+    def get_filled_orders_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **kwargs):
         params["orderId"] = order_id
         return self.get_filled_orders(symbol=symbol, params=params)[0]
 
-    def get_account_position_info(self, **vargs):
+    def get_account_position_info(self, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_myposition
         """
@@ -420,7 +435,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_account_position_info = Data or List is empty {response['message']} -> {e}")
 
-    def get_symbol_position_info(self, symbol: str, limit: int = 20, **vargs):
+    def get_symbol_position_info(self, symbol: str, limit: int = 20, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_myposition
         """
@@ -437,7 +452,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_symbol_position_info = Data or List is empty {response['message']} -> {e}")
 
-    def cancel_open_order(self, symbol: str, order_id: str, **vargs):
+    def cancel_open_order(self, symbol: str, order_id: str, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-contract_cancelorder
         """
@@ -456,7 +471,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex cancel_open_order message= {response['message']} -> {e}")
 
-    def cancel_all_open_order_per_symbol(self, symbol: str, **vargs):
+    def cancel_all_open_order_per_symbol(self, symbol: str, **kwargs):
         """
         no link yet
         """
@@ -473,7 +488,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex cancel_open_order message = {response['message']} -> {e}")
 
-    def adjust_order(self, params: dict = {}, **vargs):
+    def adjust_order(self, params: dict = {}, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_replaceorder
 
@@ -491,7 +506,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex adjust_order message = {response['message']} -> {e}")
 
-    def move_limit_order(self, symbol: str, order_id: str, new_price: float, asset_amount: float, **vargs):
+    def move_limit_order(self, symbol: str, order_id: str, new_price: float, asset_amount: float, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_replaceorder
         """
@@ -511,7 +526,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex move_limit_order message = {response['message']} -> {e}")
 
-    def move_stop_order(self, symbol: str, order_id: str, new_price: float, asset_amount: float, **vargs):
+    def move_stop_order(self, symbol: str, order_id: str, new_price: float, asset_amount: float, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_replaceorder
 
@@ -532,7 +547,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex: move_stop_order message= {response['message']} -> {e}")
 
-    def get_wallet_info(self, **vargs):
+    def get_wallet_info(self, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-balance
         """
@@ -546,7 +561,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_wallet_info = Data or List is empty {response['message']} -> {e}")
 
-    def get_wallet_info_of_asset(self, trading_in: str, **vargs):
+    def get_wallet_info_of_asset(self, trading_in: str, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-balance
         """
@@ -560,10 +575,10 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex: get_wallet_info_of_asset = Data or List is empty {response['message']} -> {e}")
 
-    def get_equity_of_asset(self, trading_in: str, **vargs):
+    def get_equity_of_asset(self, trading_in: str, **kwargs):
         return float(self.get_wallet_info_of_asset(trading_in=trading_in)["equity"])
 
-    def set_position_mode(self, symbol: str, position_mode: PositionModeType, **vargs):
+    def set_position_mode(self, symbol: str, position_mode: PositionModeType, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_switchpositionmode
         """
@@ -581,7 +596,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex: set_position_mode= {response['message']} -> {e}")
 
-    def set_leverage_value(self, symbol: str, leverage: float, **vargs):
+    def set_leverage_value(self, symbol: str, leverage: float, **kwargs):
         """
         No link yet
         """
@@ -601,7 +616,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex set_leverage_value = Data or List is empty {response['message']} -> {e}")
 
-    def set_leverage_mode(self, symbol: str, leverage_mode: LeverageModeType, leverage: int = 5, **vargs):
+    def set_leverage_mode(self, symbol: str, leverage_mode: LeverageModeType, leverage: int = 5, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_marginswitch
         Cross/isolated mode. 0: cross margin mode; 1: isolated margin mode
@@ -623,7 +638,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex set_leverage_mode = Data or List is empty {response['message']} -> {e}")
 
-    def check_if_order_filled(self, symbol: str, order_id: str, **vargs):
+    def check_if_order_filled(self, symbol: str, order_id: str, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-usertraderecords
 
@@ -648,7 +663,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex check_if_order_filled = Something wrong {response['message']} -> {e}")
 
-    def check_if_order_canceled(self, symbol: str, order_id: str, **vargs):
+    def check_if_order_canceled(self, symbol: str, order_id: str, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_getorder
 
@@ -671,7 +686,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex check_if_order_canceled= {response['message']} -> {e}")
 
-    def check_if_order_open(self, symbol: str, order_id: str, **vargs):
+    def check_if_order_open(self, symbol: str, order_id: str, **kwargs):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_getopenorder
 

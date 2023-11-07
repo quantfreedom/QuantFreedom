@@ -212,5 +212,5 @@ class LongStopLoss:
             logger.debug("Not moving tsl")
             return None, None
 
-    def pass_func(self, **vargs):
+    def pass_func(self, **kwargs):
         return None, None

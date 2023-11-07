@@ -259,7 +259,7 @@ class LiveTrading:
         #########################################
         """
 
-    def pass_function(self, **vargs):
+    def pass_function(self, **kwargs):
         pass
 
     def run(self):

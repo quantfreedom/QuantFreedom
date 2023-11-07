@@ -43,23 +43,23 @@ class LiveExchange(Exchange):
         self.leverage_mode = leverage_mode
         self.long_or_short = long_or_short
 
-    def last_fetched_time_to_pd_datetime(self, *vargs):
+    def last_fetched_time_to_pd_datetime(self, **kwargs):
         return self.get_ms_time_to_pd_datetime(time_in_ms=self.last_fetched_ms_time)
 
-    def create_long_hedge_mode_sl_order(self, *vargs):
+    def create_long_hedge_mode_sl_order(self, **kwargs):
         pass
 
-    def create_long_hedge_mode_tp_limit_order(self, *vargs):
+    def create_long_hedge_mode_tp_limit_order(self, **kwargs):
         pass
 
-    def create_long_hedge_mode_entry_market_order(self, *vargs):
+    def create_long_hedge_mode_entry_market_order(self, **kwargs):
         pass
 
-    def set_init_last_fetched_time(self, *vargs):
+    def set_init_last_fetched_time(self, **kwargs):
         pass
 
-    def get_live_candles(self, *vargs):
+    def get_live_candles(self, **kwargs):
         pass
 
-    def get_long_hedge_mode_position_info(self, *vargs):
+    def get_long_hedge_mode_position_info(self, **kwargs):
         pass
