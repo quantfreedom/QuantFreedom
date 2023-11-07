@@ -27,7 +27,9 @@ class Exchange:
     ):
         self.api_key = api_key
         self.secret_key = secret_key
-        self.use_test_net = use_test_net
+
+    def create_order(self, **vargs):
+        pass
 
     def get_candles(self, **vargs):
         pass
