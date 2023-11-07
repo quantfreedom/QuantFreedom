@@ -8,7 +8,7 @@ from websocket import (
     WebSocketException,
     WebSocketConnectionClosedException,
 )
-from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.lib.utils import parse_proxies
+from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.lib_usdm.utils import parse_proxies
 
 
 class BinanceSocketManager(threading.Thread):

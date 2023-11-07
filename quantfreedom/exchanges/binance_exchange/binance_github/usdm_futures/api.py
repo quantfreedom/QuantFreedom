@@ -4,11 +4,11 @@ from json import JSONDecodeError
 import requests
 from .__version__ import __version__
 from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.error import ClientError, ServerError
-from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.lib.utils import get_timestamp
-from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.lib.utils import cleanNoneValue
-from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.lib.utils import encoded_string
-from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.lib.utils import check_required_parameter
-from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.lib.authentication import (
+from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.lib_usdm.utils import get_timestamp
+from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.lib_usdm.utils import cleanNoneValue
+from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.lib_usdm.utils import encoded_string
+from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.lib_usdm.utils import check_required_parameter
+from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.lib_usdm.authentication import (
     hmac_hashing,
     rsa_signature,
 )

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import logging
 from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.um_futures import UMFutures
-from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.lib.utils import config_logging
+from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.lib_usdm.utils import config_logging
 from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.error import ClientError
 
 config_logging(logging, logging.DEBUG)

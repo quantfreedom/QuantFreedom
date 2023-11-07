@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.um_futures import UMFutures
 import logging
-from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.lib.utils import config_logging
+from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.lib_usdm.utils import config_logging
 
 config_logging(logging, logging.DEBUG)
 

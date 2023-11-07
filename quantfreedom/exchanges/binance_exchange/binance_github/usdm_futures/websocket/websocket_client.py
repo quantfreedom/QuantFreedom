@@ -3,7 +3,7 @@ from typing import Optional
 import json
 import logging
 
-from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.lib.utils import get_timestamp
+from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.lib_usdm.utils import get_timestamp
 from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.websocket.binance_socket_manager import (
     BinanceSocketManager,
 )

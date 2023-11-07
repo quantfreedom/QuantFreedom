@@ -1,4 +1,4 @@
-from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.lib.utils import check_required_parameter
+from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.lib_usdm.utils import check_required_parameter
 
 
 def new_listen_key(self):
