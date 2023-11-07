@@ -1,12 +1,4 @@
-import hmac
-import hashlib
-from base64 import b64encode
-from Crypto.PublicKey import RSA
-from Crypto.Hash import SHA256
-from Crypto.Signature import pkcs1_15
-from time import time
-from quantfreedom.exchanges.binance_exchange.binance_github.um_futures import UMFutures
-
+from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.um_futures import UMFutures
 from quantfreedom.exchanges.exchange import Exchange
 
 BINANCE_FUTURES_TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "1d", "1w", "1M"]
