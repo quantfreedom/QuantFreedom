@@ -52,14 +52,14 @@ class Mufex(Exchange):
     """
 
     def __HTTP_post_request(self, end_point, params):
-        time_stamp = str(int(time() * 1000))
+        timestamp = str(int(time() * 1000))
         params_as_string = self.__get_params_as_json_string(params=params)
-        signature = self.__gen_signature(time_stamp=time_stamp, params_as_string=params_as_string)
+        signature = self.__gen_signature(timestamp=timestamp, params_as_string=params_as_string)
         headers = {
             "MF-ACCESS-API-KEY": self.api_key,
             "MF-ACCESS-SIGN": signature,
             "MF-ACCESS-SIGN-TYPE": "2",
-            "MF-ACCESS-TIMESTAMP": time_stamp,
+            "MF-ACCESS-TIMESTAMP": timestamp,
             "MF-ACCESS-RECV-WINDOW": "5000",
             "Content-Type": "application/json",
         }
@@ -76,13 +76,13 @@ class Mufex(Exchange):
             raise Exception(f"Mufex Something wrong with __HTTP_post_request - > {e}")
 
     def __HTTP_post_request_no_params(self, end_point):
-        time_stamp = str(int(time() * 1000))
-        signature = self.__gen_signature_no_params(time_stamp=time_stamp)
+        timestamp = str(int(time() * 1000))
+        signature = self.__gen_signature_no_params(timestamp=timestamp)
         headers = {
             "MF-ACCESS-API-KEY": self.api_key,
             "MF-ACCESS-SIGN": signature,
             "MF-ACCESS-SIGN-TYPE": "2",
-            "MF-ACCESS-TIMESTAMP": time_stamp,
+            "MF-ACCESS-TIMESTAMP": timestamp,
             "MF-ACCESS-RECV-WINDOW": "5000",
             "Content-Type": "application/json",
         }
@@ -94,14 +94,14 @@ class Mufex(Exchange):
             raise Exception(f"Mufex Something wrong with __HTTP_post_request_no_params - > {e}")
 
     def HTTP_get_request(self, end_point, params):
-        time_stamp = str(int(time() * 1000))
+        timestamp = str(int(time() * 1000))
         params_as_path = self.__get_params_as_string(params=params)
-        signature = self.__gen_signature(time_stamp=time_stamp, params_as_string=params_as_path)
+        signature = self.__gen_signature(timestamp=timestamp, params_as_string=params_as_path)
         headers = {
             "MF-ACCESS-API-KEY": self.api_key,
             "MF-ACCESS-SIGN": signature,
             "MF-ACCESS-SIGN-TYPE": "2",
-            "MF-ACCESS-TIMESTAMP": time_stamp,
+            "MF-ACCESS-TIMESTAMP": timestamp,
             "MF-ACCESS-RECV-WINDOW": "5000",
             "Content-Type": "application/json",
         }
@@ -117,13 +117,13 @@ class Mufex(Exchange):
             raise Exception(f"Mufex Something wrong with HTTP_get_request - > {e}")
 
     def HTTP_get_request_no_params(self, end_point):
-        time_stamp = str(int(time() * 1000))
-        signature = self.__gen_signature_no_params(time_stamp=time_stamp)
+        timestamp = str(int(time() * 1000))
+        signature = self.__gen_signature_no_params(timestamp=timestamp)
         headers = {
             "MF-ACCESS-API-KEY": self.api_key,
             "MF-ACCESS-SIGN": signature,
             "MF-ACCESS-SIGN-TYPE": "2",
-            "MF-ACCESS-TIMESTAMP": time_stamp,
+            "MF-ACCESS-TIMESTAMP": timestamp,
             "MF-ACCESS-RECV-WINDOW": "5000",
             "Content-Type": "application/json",
         }
@@ -138,13 +138,13 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex Something wrong with HTTP_get_request_no_params - > {e}")
 
-    def __gen_signature(self, time_stamp, params_as_string):
-        param_str = time_stamp + self.api_key + "5000" + params_as_string
+    def __gen_signature(self, timestamp, params_as_string):
+        param_str = timestamp + self.api_key + "5000" + params_as_string
         hash = hmac.new(bytes(self.secret_key, "utf-8"), param_str.encode("utf-8"), hashlib.sha256)
         return hash.hexdigest()
 
-    def __gen_signature_no_params(self, time_stamp):
-        param_str = time_stamp + self.api_key + "5000"
+    def __gen_signature_no_params(self, timestamp):
+        param_str = timestamp + self.api_key + "5000"
         hash = hmac.new(bytes(self.secret_key, "utf-8"), param_str.encode("utf-8"), hashlib.sha256)
         return hash.hexdigest()
 
@@ -252,7 +252,7 @@ class Mufex(Exchange):
 
         return candles_np
 
-    def get_closed_pnl(self, symbol: str, limit: int = 10, params: dict = {}, **kwargs):
+    def get_closed_pnl(self, symbol: str, limit: int = 10, params: dict = {}):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_closedprofitandloss
         """
@@ -268,10 +268,10 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Data or List is empty {response['message']} -> {e}")
 
-    def get_latest_pnl_result(self, symbol: str, **kwargs):
+    def get_latest_pnl_result(self, symbol: str):
         return float(self.get_closed_pnl(symbol=symbol)[0]["closedPnl"])
 
-    def get_all_symbols_info(self, category: str = "linear", limit: int = 1000, params: dict = {}, **kwargs):
+    def get_all_symbols_info(self, category: str = "linear", limit: int = 1000, params: dict = {}):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_instrhead
 
@@ -290,10 +290,10 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_all_symbols_info = Data or List is empty {response['message']} -> {e}")
 
-    def get_symbol_info(self, symbol: str, **kwargs):
+    def get_symbol_info(self, symbol: str):
         return self.get_all_symbols_info(params={"symbol": symbol})[0]
 
-    def get_risk_limit_info(self, symbol: str, category: str = "linear", **kwargs):
+    def get_risk_limit_info(self, symbol: str, category: str = "linear"):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_risklimithead
         """
@@ -309,7 +309,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_risk_limit_info = Data or List is empty {response['message']} -> {e}")
 
-    def create_order(self, params: dict, **kwargs):
+    def create_order(self, params: dict):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_placeorder
         use this website to see all the params
@@ -323,7 +323,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex Something is wrong with create_order {response['message']} -> {e}")
 
-    def get_trading_fee_rates(self, **kwargs):
+    def get_trading_fee_rates(self):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-tradingfeerate
         """
@@ -336,7 +336,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_trading_fee_rates = Data or List is empty {response['message']} -> {e}")
 
-    def get_symbol_trading_fee_rates(self, symbol: str, **kwargs):
+    def get_symbol_trading_fee_rates(self, symbol: str):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-tradingfeerate
         """
@@ -351,7 +351,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_symbol_trading_fee_rates = Data or List is empty {response['message']} -> {e}")
 
-    def get_order_history(self, symbol: str, limit: int = 50, params: dict = {}, **kwargs):
+    def get_order_history(self, symbol: str, limit: int = 50, params: dict = {}):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_getorder
 
@@ -369,11 +369,11 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_order_history = Data or List is empty {response['message']} -> {e}")
 
-    def get_order_history_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **kwargs):
+    def get_order_history_by_order_id(self, symbol: str, order_id: str, params: dict = {}):
         params["orderId"] = order_id
         return self.get_order_history(symbol=symbol, params=params)[0]
 
-    def get_open_orders(self, symbol: str, params: dict = {}, **kwargs):
+    def get_open_orders(self, symbol: str, params: dict = {}):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_getopenorder
 
@@ -393,11 +393,11 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_open_orders = Data or List is empty {response['message']} -> {e}")
 
-    def get_open_order_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **kwargs):
+    def get_open_order_by_order_id(self, symbol: str, order_id: str, params: dict = {}):
         params["orderId"] = order_id
         return self.get_open_orders(symbol=symbol, params=params)[0]
 
-    def get_filled_orders(self, symbol: str, limit: int = 200, params: dict = {}, **kwargs):
+    def get_filled_orders(self, symbol: str, limit: int = 200, params: dict = {}):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-usertraderecords
 
@@ -417,11 +417,11 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_filled_orders = Data or List is empty {response['message']} -> {e}")
 
-    def get_filled_orders_by_order_id(self, symbol: str, order_id: str, params: dict = {}, **kwargs):
+    def get_filled_orders_by_order_id(self, symbol: str, order_id: str, params: dict = {}):
         params["orderId"] = order_id
         return self.get_filled_orders(symbol=symbol, params=params)[0]
 
-    def get_account_position_info(self, **kwargs):
+    def get_account_position_info(self):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_myposition
         """
@@ -435,7 +435,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_account_position_info = Data or List is empty {response['message']} -> {e}")
 
-    def get_symbol_position_info(self, symbol: str, limit: int = 20, **kwargs):
+    def get_symbol_position_info(self, symbol: str, limit: int = 20):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_myposition
         """
@@ -452,7 +452,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_symbol_position_info = Data or List is empty {response['message']} -> {e}")
 
-    def cancel_open_order(self, symbol: str, order_id: str, **kwargs):
+    def cancel_open_order(self, symbol: str, order_id: str):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-contract_cancelorder
         """
@@ -471,7 +471,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex cancel_open_order message= {response['message']} -> {e}")
 
-    def cancel_all_open_order_per_symbol(self, symbol: str, **kwargs):
+    def cancel_all_open_order_per_symbol(self, symbol: str):
         """
         no link yet
         """
@@ -488,7 +488,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex cancel_open_order message = {response['message']} -> {e}")
 
-    def adjust_order(self, params: dict = {}, **kwargs):
+    def adjust_order(self, params: dict = {}):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_replaceorder
 
@@ -506,7 +506,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex adjust_order message = {response['message']} -> {e}")
 
-    def move_limit_order(self, symbol: str, order_id: str, new_price: float, asset_amount: float, **kwargs):
+    def move_limit_order(self, symbol: str, order_id: str, new_price: float, asset_amount: float):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_replaceorder
         """
@@ -526,7 +526,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex move_limit_order message = {response['message']} -> {e}")
 
-    def move_stop_order(self, symbol: str, order_id: str, new_price: float, asset_amount: float, **kwargs):
+    def move_stop_order(self, symbol: str, order_id: str, new_price: float, asset_amount: float):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_replaceorder
 
@@ -547,7 +547,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex: move_stop_order message= {response['message']} -> {e}")
 
-    def get_wallet_info(self, **kwargs):
+    def get_wallet_info(self):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-balance
         """
@@ -561,7 +561,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_wallet_info = Data or List is empty {response['message']} -> {e}")
 
-    def get_wallet_info_of_asset(self, trading_in: str, **kwargs):
+    def get_wallet_info_of_asset(self, trading_in: str):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-balance
         """
@@ -575,10 +575,10 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex: get_wallet_info_of_asset = Data or List is empty {response['message']} -> {e}")
 
-    def get_equity_of_asset(self, trading_in: str, **kwargs):
+    def get_equity_of_asset(self, trading_in: str):
         return float(self.get_wallet_info_of_asset(trading_in=trading_in)["equity"])
 
-    def set_position_mode(self, symbol: str, position_mode: PositionModeType, **kwargs):
+    def set_position_mode(self, symbol: str, position_mode: PositionModeType):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_switchpositionmode
         """
@@ -596,7 +596,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex: set_position_mode= {response['message']} -> {e}")
 
-    def set_leverage_value(self, symbol: str, leverage: float, **kwargs):
+    def set_leverage_value(self, symbol: str, leverage: float):
         """
         No link yet
         """
@@ -616,7 +616,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex set_leverage_value = Data or List is empty {response['message']} -> {e}")
 
-    def set_leverage_mode(self, symbol: str, leverage_mode: LeverageModeType, leverage: int = 5, **kwargs):
+    def set_leverage_mode(self, symbol: str, leverage_mode: LeverageModeType, leverage: int = 5):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_marginswitch
         Cross/isolated mode. 0: cross margin mode; 1: isolated margin mode
@@ -638,7 +638,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex set_leverage_mode = Data or List is empty {response['message']} -> {e}")
 
-    def check_if_order_filled(self, symbol: str, order_id: str, **kwargs):
+    def check_if_order_filled(self, symbol: str, order_id: str):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-usertraderecords
 
@@ -663,7 +663,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex check_if_order_filled = Something wrong {response['message']} -> {e}")
 
-    def check_if_order_canceled(self, symbol: str, order_id: str, **kwargs):
+    def check_if_order_canceled(self, symbol: str, order_id: str):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_getorder
 
@@ -686,7 +686,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex check_if_order_canceled= {response['message']} -> {e}")
 
-    def check_if_order_open(self, symbol: str, order_id: str, **kwargs):
+    def check_if_order_open(self, symbol: str, order_id: str):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_getopenorder
 

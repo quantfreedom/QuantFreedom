@@ -23,7 +23,29 @@ class BinanceUSDM(Exchange):
 
         self.binance_ex = UMFutures(key=api_key, secret=secret_key, base_url=self.url_start)
 
-    def create_order(self, symbol: str, side: str, type: str, **kwargs):
+    def create_order(
+        self,
+        symbol: str,
+        side: str,
+        type: str,
+        quantity: float = None,
+        positionSide: str = None,
+        timeInForce: str = "GTC",
+        reduceOnly: str = None,
+        price: float = None,
+        newClientOrderId: str = None,
+        stopPrice: float = None,
+        closePosition: str = None,
+        activationPrice: float = None,
+        callbackRate=None,
+        workingType: str = None,
+        priceProtect: str = None,
+        newOrderRespType: str = None,
+        priceMatch=None,
+        selfTradePreventionMode=None,
+        goodTillDate=None,
+        recvWindow=None,
+    ):
         """
         |
         | **New Order (TRADE)**
@@ -51,4 +73,25 @@ class BinanceUSDM(Exchange):
         :parameter recvWindow: optional int
         |
         """
-        return self.binance_ex.new_order(symbol=symbol, side=side, type=type, kwargs=kwargs)
+        return self.binance_ex.new_order(
+            symbol=symbol,
+            side=side,
+            positionSide=positionSide,
+            type=type,
+            timeInForce=timeInForce,
+            quantity=quantity,
+            reduceOnly=reduceOnly,
+            price=price,
+            newClientOrderId=newClientOrderId,
+            stopPrice=stopPrice,
+            closePosition=closePosition,
+            activationPrice=activationPrice,
+            callbackRate=callbackRate,
+            workingType=workingType,
+            priceProtect=priceProtect,
+            newOrderRespType=newOrderRespType,
+            priceMatch=priceMatch,
+            selfTradePreventionMode=selfTradePreventionMode,
+            goodTillDate=goodTillDate,
+            recvWindow=recvWindow,
+        )
