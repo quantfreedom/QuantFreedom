@@ -18,7 +18,7 @@ class HttpPublic(HTTP):
         """ "
         GET Retrieve Market Depth.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#publicapi-get-retrieve-market-depth
+        https://api-docs.pro.apex.exchange/#publicapi-get-market-depth
         :returns: Request results as dictionary.
         """
         suffix = URL_SUFFIX + "/v1/depth"
@@ -30,7 +30,7 @@ class HttpPublic(HTTP):
         """ "
         GET Retrieve Newest Trading Data.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#publicapi-get-retrieve-newest-trading-data
+        https://api-docs.pro.apex.exchange/#publicapi-get-newest-trading-data
         :returns: Request results as dictionary.
         """
         suffix = URL_SUFFIX + "/v1/trades"
@@ -42,7 +42,7 @@ class HttpPublic(HTTP):
         """ "
         GET Retrieve Candlestick Chart Data.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#publicapi-get-retrieve-candlestick-chart-data
+        https://api-docs.pro.apex.exchange/#publicapi-get-candlestick-chart-data
         :returns: Request results as dictionary.
         """
         suffix = URL_SUFFIX + "/v1/klines"
@@ -54,7 +54,7 @@ class HttpPublic(HTTP):
         """ "
         GET Retrieve Ticker Data.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#publicapi-get-retrieve-ticker-data
+        https://api-docs.pro.apex.exchange/#publicapi-get-ticker-data
         :returns: Request results as dictionary.
         """
         suffix = URL_SUFFIX + "/v1/ticker"
@@ -66,7 +66,7 @@ class HttpPublic(HTTP):
         """ "
         GET Retrieve Funding Rate History.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#publicapi-get-retrieve-funding-rate-history
+        https://api-docs.pro.apex.exchange/#publicapi-get-funding-rate-history
         :returns: Request results as dictionary.
         """
         suffix = URL_SUFFIX + "/v1/history-funding"

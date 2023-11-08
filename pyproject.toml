@@ -2,7 +2,7 @@
 name = "quantfreedom"
 version = "0.0.1"
 description = ""
-authors = ["QuantFreedom <QuantFreedom1022@gmail.com"]
+authors = ["QuantFreedom <QuantFreedom1022@gmail.com>"]
 
 [tool.poetry.dependencies]
 dash = "2.9.1"
