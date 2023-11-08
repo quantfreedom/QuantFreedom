@@ -3,10 +3,62 @@ import numpy as np
 import pandas as pd
 from logging import getLogger
 from quantfreedom.enums import AccountState, DynamicOrderSettings, DynamicOrderSettingsArrays, OrderResult
-from quantfreedom.exchanges.binance_exchange.binance_usdm import BINANCE_USDM_TIMEFRAMES
-from quantfreedom.exchanges.exchange import get_ex_tf, get_tf_in_ms
+from quantfreedom.exchanges.apex_exchange.apex import Apex
+from quantfreedom.exchanges.binance_exchange.binance_usdm import BINANCE_USDM_TIMEFRAMES, BinanceUSDM
+from quantfreedom.exchanges.exchange import Exchange
+from quantfreedom.exchanges.mufex_exchange.mufex import Mufex
 
 logger = getLogger("info")
+
+
+def dl_ex_candles(
+    symbol: str,
+    exchange: str,
+    timeframe: str,
+    since_date_ms: int = None,
+    until_date_ms: int = None,
+    candles_to_dl: int = None,
+):
+    """
+    exchange param
+        binance futures = binance_usdm | default candles to dl is 1500
+        apex = apex | default candles to dl is 200
+        mufex = mufex | default candles to dl is 1500
+    """
+    if exchange.lower() == "binance_usdm":
+        return BinanceUSDM(use_test_net=False).get_candles(
+            symbol=symbol,
+            timeframe=timeframe,
+            since_date_ms=since_date_ms,
+            until_date_ms=until_date_ms,
+            candles_to_dl=1500 if candles_to_dl is None else candles_to_dl,
+        )
+    elif exchange.lower() == "apex":
+        return Apex(use_test_net=False).get_candles(
+            symbol=symbol,
+            timeframe=timeframe,
+            since_date_ms=since_date_ms,
+            until_date_ms=until_date_ms,
+            candles_to_dl=200 if candles_to_dl is None else candles_to_dl,
+        )
+    elif exchange.lower() == "mufex":
+        return Mufex(use_test_net=False).get_candles(
+            symbol=symbol,
+            timeframe=timeframe,
+            since_date_ms=since_date_ms,
+            until_date_ms=until_date_ms,
+            candles_to_dl=1500 if candles_to_dl is None else candles_to_dl,
+        )
+    else:
+        raise Exception("You need to pick an exchange from this list apex, binance_usdm, mufex")
+
+
+def candles_to_df(candles: np.array):
+    candles_df = pd.DataFrame(candles, columns=["timestamp", "open", "high", "low", "close"])
+    candles_df["timestamp"] = candles_df["timestamp"].astype(dtype=np.int64)
+    candles_df.set_index(pd.to_datetime(candles_df["timestamp"], unit="ms"), inplace=True)
+    candles_df.index.rename("datetime", inplace=True)
+    return candles_df
 
 
 def get_to_the_upside_nb(

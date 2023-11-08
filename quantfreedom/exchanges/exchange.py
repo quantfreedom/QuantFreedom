@@ -88,12 +88,6 @@ class Exchange:
     def get_ms_time_to_pd_datetime(self, time_in_ms):
         return pd.to_datetime(time_in_ms / 1000, unit="s")
 
-    def turn_candles_list_to_pd(self, candles_np):
-        candles_df = pd.DataFrame(candles_np)
-        candles_df["datetime"] = self.get_ms_time_to_pd_datetime(candles_df["timestamp"])
-        candles_df.set_index("datetime", inplace=True)
-        return candles_df
-
     def get_timeframe_in_ms(self, timeframe: str):
         return self.get_timeframe_in_s(timeframe=timeframe) * 1000
 
