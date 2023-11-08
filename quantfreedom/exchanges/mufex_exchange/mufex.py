@@ -13,9 +13,7 @@ from quantfreedom.enums import (
 )
 from quantfreedom.exchanges.exchange import Exchange
 
-MUFEX_TIMEFRAMES = [1, 3, 5, 15, 30, 60, 120, 240, 360, 720, "D", "W", "M"]
-UNIVERSAL_TIMEFRAMES = ["1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"]
-TIMEFRAMES_IN_MINUTES = [1, 3, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 10080, 43800]
+MUFEX_TIMEFRAMES = [1, 5, 15, 30, 60, 120, 240, 360, 720, "D", "W"]
 
 
 class Mufex(Exchange):
@@ -161,19 +159,6 @@ class Mufex(Exchange):
         if paramsString:
             return paramsString
 
-    def __get_exchange_timeframe(self, timeframe):
-        try:
-            timeframe = MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
-        except Exception as e:
-            Exception(f"Use one of these timeframes - {UNIVERSAL_TIMEFRAMES} -> {e}")
-        return timeframe
-
-    def __get_timeframe_in_ms(self, timeframe):
-        timeframe_in_ms = int(
-            timedelta(minutes=TIMEFRAMES_IN_MINUTES[UNIVERSAL_TIMEFRAMES.index(timeframe)]).seconds * 1000
-        )
-        return timeframe_in_ms
-
     """
     ###################################################################
     ###################################################################
@@ -192,9 +177,8 @@ class Mufex(Exchange):
         timeframe: str,
         since_date_ms: int = None,
         until_date_ms: int = None,
-        candles_to_dl: int = None,
+        candles_to_dl: int = 1500,
         category: str = "linear",
-        limit: int = 1500,
     ):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
@@ -205,9 +189,9 @@ class Mufex(Exchange):
 
         use link to see all Request Parameters
         """
-        ex_timeframe = self.__get_exchange_timeframe(timeframe=timeframe)
-        timeframe_in_ms = self.__get_timeframe_in_ms(timeframe=timeframe)
-        candles_to_dl_ms = self.get_candles_to_dl_in_ms(candles_to_dl, timeframe_in_ms=timeframe_in_ms, limit=limit)
+        ex_timeframe = self.get_exchange_timeframe(ex_timeframes=MUFEX_TIMEFRAMES, timeframe=timeframe)
+        timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
+        candles_to_dl_ms = candles_to_dl * timeframe_in_ms
 
         if until_date_ms is None:
             if since_date_ms is None:
@@ -227,9 +211,8 @@ class Mufex(Exchange):
             "interval": ex_timeframe,
             "start": since_date_ms,
             "end": until_date_ms,
-            "limit": limit,
         }
-        start_time = self.get_current_time_seconds()
+        start_time = self.get_current_time_sec()
         while params["start"] + timeframe_in_ms < until_date_ms:
             response = self.HTTP_get_request(end_point=end_point, params=params)
             try:
@@ -246,7 +229,7 @@ class Mufex(Exchange):
                 raise Exception(f"Mufex get_candles_df {response.get('message')} - > {e}")
 
         candles_np = np.array(candles_list, dtype=np.float_)[:, :-2]
-        time_it_took_in_seconds = self.get_current_time_seconds() - start_time
+        time_it_took_in_seconds = self.get_current_time_sec() - start_time
         td = str(timedelta(seconds=time_it_took_in_seconds)).split(":")
         print(f"It took {td[1]} mins and {td[2]} seconds to download {len(candles_list)} candles")
 

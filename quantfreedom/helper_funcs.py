@@ -1,7 +1,10 @@
+from time import time
 import numpy as np
 import pandas as pd
 from logging import getLogger
 from quantfreedom.enums import AccountState, DynamicOrderSettings, DynamicOrderSettingsArrays, OrderResult
+from quantfreedom.exchanges.binance_exchange.binance_usdm import BINANCE_USDM_TIMEFRAMES
+from quantfreedom.exchanges.exchange import get_ex_tf, get_tf_in_ms
 
 logger = getLogger("info")
 

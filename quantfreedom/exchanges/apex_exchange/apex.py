@@ -1,25 +1,24 @@
 from datetime import timedelta
 from quantfreedom.exchanges.apex_exchange.apex_github.http_private_stark_key_sign import HttpPrivateStark
+from quantfreedom.exchanges.apex_exchange.apex_github.http_public import HttpPublic
 from quantfreedom.exchanges.exchange import Exchange
 from time import time
 import numpy as np
 
-APEX_TIMEFRAMES = [1, 5, 15, 30, 60, 120, 240, 360, 720, "D", "W", "M"]
-UNIVERSAL_TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"]
-TIMEFRAMES_IN_MINUTES = [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 10080, 43800]
+APEX_TIMEFRAMES = [1, 5, 15, 30, 60, 120, 240, 360, 720, "D", "W"]
 
 
 class Apex(Exchange):
     def __init__(
         # Exchange Vars
         self,
-        api_key: str,
-        secret_key: str,
-        passphrase: str,
-        stark_key_public: str,
-        stark_key_private: str,
-        stark_key_y: str,
         use_test_net: bool,
+        api_key: str = None,
+        secret_key: str = None,
+        passphrase: str = None,
+        stark_key_public: str = None,
+        stark_key_private: str = None,
+        stark_key_y: str = None,
     ):
         """
         main docs page https://api-docs.pro.apex.exchange
@@ -31,28 +30,18 @@ class Apex(Exchange):
         else:
             url_start = "https://pro.apex.exchange"
 
-        self.apex_stark = HttpPrivateStark(
-            endpoint=url_start,
-            stark_public_key=stark_key_public,
-            stark_private_key=stark_key_private,
-            stark_public_key_y_coordinate=stark_key_y,
-            api_key_credentials={"key": api_key, "secret": secret_key, "passphrase": passphrase},
-        )
-        self.apex_stark.configs()
-        self.apex_stark.get_account()
-
-    def __get_exchange_timeframe(self, timeframe):
-        try:
-            timeframe = APEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
-        except Exception as e:
-            Exception(f"Use one of these timeframes - {UNIVERSAL_TIMEFRAMES} -> {e}")
-        return timeframe
-
-    def __get_timeframe_in_ms(self, timeframe):
-        timeframe_in_ms = int(
-            timedelta(minutes=TIMEFRAMES_IN_MINUTES[UNIVERSAL_TIMEFRAMES.index(timeframe)]).seconds * 1000
-        )
-        return timeframe_in_ms
+        if api_key is None:
+            self.apex_ex = HttpPublic(endpoint=url_start)
+        else:
+            self.apex_ex = HttpPrivateStark(
+                endpoint=url_start,
+                stark_public_key=stark_key_public,
+                stark_private_key=stark_key_private,
+                stark_public_key_y_coordinate=stark_key_y,
+                api_key_credentials={"key": api_key, "secret": secret_key, "passphrase": passphrase},
+            )
+            self.apex_ex.configs()
+            self.apex_ex.get_account()
 
     def create_order(
         self,
@@ -79,12 +68,12 @@ class Apex(Exchange):
 
         Use this website to see all the params
         """
-        return self.apex_stark.create_order(
+        return self.apex_ex.create_order(
             symbol=symbol,
             side=side,
             type=type,
             size=size,
-            limitFeeRate=self.apex_stark.account["takerFeeRate"],
+            limitFeeRate=self.apex_ex.account["takerFeeRate"],
             limitFee=limitFee,
             price=price,
             accountId=accountId,
@@ -107,12 +96,11 @@ class Apex(Exchange):
         timeframe: str,
         since_date_ms: int = None,
         until_date_ms: int = None,
-        candles_to_dl: int = None,
-        limit: int = 200,
+        candles_to_dl: int = 200,
     ):
-        ex_timeframe = self.__get_exchange_timeframe(timeframe=timeframe)
-        timeframe_in_ms = self.__get_timeframe_in_ms(timeframe=timeframe)
-        candles_to_dl_ms = self.get_candles_to_dl_in_ms(candles_to_dl, timeframe_in_ms=timeframe_in_ms, limit=limit)
+        ex_timeframe = self.get_exchange_timeframe(ex_timeframes=APEX_TIMEFRAMES, timeframe=timeframe)
+        timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
+        candles_to_dl_ms = candles_to_dl * timeframe_in_ms
 
         if until_date_ms is None:
             if since_date_ms is None:
@@ -124,12 +112,11 @@ class Apex(Exchange):
             if since_date_ms is None:
                 since_date_ms = until_date_ms - candles_to_dl_ms - 5000  # 5000 is to sub 5 seconds
 
-        apex_data = self.apex_stark.klines(
+        apex_data = self.apex_ex.klines(
             symbol=symbol,
             interval=ex_timeframe,
             start=int(since_date_ms / 1000),
             end=int(until_date_ms / 1000),
-            limit=limit,
         )
         apex_candles = apex_data["data"][symbol]
         candle_list = []

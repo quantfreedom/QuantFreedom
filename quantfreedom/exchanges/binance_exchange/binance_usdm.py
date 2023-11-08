@@ -1,15 +1,16 @@
+import numpy as np
 from quantfreedom.exchanges.exchange import Exchange
 from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.um_futures import UMFutures
 
-BINANCE_FUTURES_TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "1d", "1w", "1M"]
+BINANCE_USDM_TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "1d", "1w"]
 
 
 class BinanceUSDM(Exchange):
     def __init__(
         self,
-        api_key: str,
-        secret_key: str,
         use_test_net: bool,
+        api_key: str = None,
+        secret_key: str = None,
     ):
         """
         main docs page https://binance-docs.github.io/apidocs/futures/en
@@ -95,3 +96,35 @@ class BinanceUSDM(Exchange):
             goodTillDate=goodTillDate,
             recvWindow=recvWindow,
         )
+
+    def get_candles(
+        self,
+        symbol: str,
+        timeframe: str,
+        since_date_ms: int = None,
+        until_date_ms: int = None,
+        candles_to_dl: int = 1500,
+    ):
+        ex_timeframe = self.get_exchange_timeframe(ex_timeframes=BINANCE_USDM_TIMEFRAMES, timeframe=timeframe)
+        timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
+        candles_to_dl_ms = candles_to_dl * timeframe_in_ms
+
+        if until_date_ms is None:
+            if since_date_ms is None:
+                until_date_ms = self.get_current_time_ms() - timeframe_in_ms
+                since_date_ms = until_date_ms - candles_to_dl_ms
+            else:
+                until_date_ms = since_date_ms + candles_to_dl_ms - 5000  # 5000 is to add 5 seconds
+        else:
+            if since_date_ms is None:
+                since_date_ms = until_date_ms - candles_to_dl_ms - 5000  # 5000 is to sub 5 seconds
+
+        return np.array(
+            self.binance_ex.klines(
+                symbol=symbol,
+                interval=ex_timeframe,
+                startTime=since_date_ms,
+                endTime=until_date_ms,
+            ),
+            dtype=np.float_,
+        )[:, :5]
