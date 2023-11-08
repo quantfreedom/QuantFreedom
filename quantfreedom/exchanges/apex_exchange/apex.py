@@ -2,6 +2,7 @@ from datetime import timedelta
 from quantfreedom.exchanges.apex_exchange.apex_github.http_private_stark_key_sign import HttpPrivateStark
 from quantfreedom.exchanges.exchange import Exchange
 from time import time
+import numpy as np
 
 APEX_TIMEFRAMES = [1, 5, 15, 30, 60, 120, 240, 360, 720, "D", "W", "M"]
 UNIVERSAL_TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"]
@@ -107,8 +108,7 @@ class Apex(Exchange):
         since_date_ms: int = None,
         until_date_ms: int = None,
         candles_to_dl: int = None,
-        category: str = "linear",
-        limit: int = 1500,
+        limit: int = 200,
     ):
         ex_timeframe = self.__get_exchange_timeframe(timeframe=timeframe)
         timeframe_in_ms = self.__get_timeframe_in_ms(timeframe=timeframe)
@@ -124,15 +124,17 @@ class Apex(Exchange):
             if since_date_ms is None:
                 since_date_ms = until_date_ms - candles_to_dl_ms - 5000  # 5000 is to sub 5 seconds
 
-        candles_list = []
-        end_point = "/public/v1/market/kline"
-        params = {
-            "category": category,
-            "symbol": symbol,
-            "interval": ex_timeframe,
-            "start": since_date_ms,
-            "end": until_date_ms,
-            "limit": limit,
-        }
-        start_time = self.get_current_time_seconds()
-        pass
+        apex_data = self.apex_stark.klines(
+            symbol=symbol,
+            interval=ex_timeframe,
+            start=int(since_date_ms / 1000),
+            end=int(until_date_ms / 1000),
+            limit=limit,
+        )
+        apex_candles = apex_data["data"][symbol]
+        candle_list = []
+        keys = ["t", "o", "h", "l", "c"]
+        for candle in apex_candles:
+            candle_list.append([candle.get(key) for key in keys])
+        candles_np = np.array(candle_list, dtype=np.float_)
+        return candles_np
