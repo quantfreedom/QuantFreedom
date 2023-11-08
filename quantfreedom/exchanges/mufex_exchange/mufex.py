@@ -20,9 +20,9 @@ class Mufex(Exchange):
     def __init__(
         # Exchange Vars
         self,
-        api_key: str,
-        secret_key: str,
         use_test_net: bool,
+        api_key: str = None,
+        secret_key: str = None,
     ):
         """
         main docs page https://www.mufex.finance/apidocs/derivatives/contract/index.html
@@ -214,7 +214,7 @@ class Mufex(Exchange):
         }
         start_time = self.get_current_time_sec()
         while params["start"] + timeframe_in_ms < until_date_ms:
-            response = self.HTTP_get_request(end_point=end_point, params=params)
+            response = get(url=self.url_start + end_point, params=params).json()
             try:
                 new_candles = response["data"]["list"]
                 last_candle_time_ms = int(new_candles[-1][0])
@@ -264,7 +264,7 @@ class Mufex(Exchange):
         end_point = "/public/v1/instruments"
         params["limit"] = limit
         params["category"] = category
-        response = self.HTTP_get_request(end_point=end_point, params=params)
+        response = get(url=self.url_start + end_point, params=params).json()
         try:
             response["data"]["list"][0]
             data_list = response["data"]["list"]
@@ -284,7 +284,7 @@ class Mufex(Exchange):
         params = {}
         params["category"] = category
         params["symbol"] = symbol
-        response = self.HTTP_get_request(end_point=end_point, params=params)
+        response = get(url=self.url_start + end_point, params=params).json()
         try:
             data_list = response["data"]["list"][0]
 
