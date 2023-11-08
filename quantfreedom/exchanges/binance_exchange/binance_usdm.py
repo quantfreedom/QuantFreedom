@@ -48,31 +48,7 @@ class BinanceUSDM(Exchange):
         recvWindow=None,
     ):
         """
-        |
-        | **New Order (TRADE)**
-        | *Send a new order*
-
-        :API endpoint: ``POST /fapi/v1/order``
-        :API doc: https://binance-docs.github.io/apidocs/futures/en/#new-order-trade
-
-        :parameter symbol: string
-        :parameter side: string
-        :parameter type: string
-        :parameter positionSide: optional string. Default BOTH for One-way Mode; LONG or SHORT for Hedge Mode. It must be passed in Hedge Mode.
-        :parameter timeInForce: optional string
-        :parameter quantity: optional float
-        :parameter reduceOnly: optional string
-        :parameter price: optional float
-        :parameter newClientOrderId: optional string. An unique ID among open orders. Automatically generated if not sent.
-        :parameter stopPrice: optional float. Use with STOP/STOP_MARKET or TAKE_PROFIT/TAKE_PROFIT_MARKET orders.
-        :parameter closePosition: optional string. true or false; Close-All, use with STOP_MARKET or TAKE_PROFIT_MARKET.
-        :parameter activationPrice: optional float. Use with TRAILING_STOP_MARKET orders, default is the latest price (supporting different workingType).
-        :parameter callbackRate: optional float. Use with TRAILING_STOP_MARKET orders, min 0.1, max 5 where 1 for 1%.
-        :parameter workingType: optional string. stopPrice triggered by: "MARK_PRICE", "CONTRACT_PRICE". Default "CONTRACT_PRICE".
-        :parameter priceProtect: optional string. "TRUE" or "FALSE", default "FALSE". Use with STOP/STOP_MARKET or TAKE_PROFIT/TAKE_PROFIT_MARKET orders.
-        :parameter newOrderRespType: optional float. "ACK" or "RESULT", default "ACK".
-        :parameter recvWindow: optional int
-        |
+        https://binance-docs.github.io/apidocs/futures/en/#new-order-trade
         """
         return self.binance_ex.new_order(
             symbol=symbol,
@@ -105,6 +81,9 @@ class BinanceUSDM(Exchange):
         until_date_ms: int = None,
         candles_to_dl: int = 1500,
     ):
+        """
+        https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data
+        """
         ex_timeframe = self.get_exchange_timeframe(ex_timeframes=BINANCE_USDM_TIMEFRAMES, timeframe=timeframe)
         timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
         candles_to_dl_ms = candles_to_dl * timeframe_in_ms
