@@ -24,30 +24,52 @@ except NameError:
 bg_color = "#0b0b18"
 
 
-def plot_candles_1_ind_same_pane(candles: np.array, indicator: np.array, ind_name: str, ind_hex_color: str = "#2E91E5"):
-    fig = go.Figure(
-        data=[
-            go.Candlestick(
-                x=pd.to_datetime(candles[:, 0], unit="ms"),
-                open=candles[:, 1],
-                high=candles[:, 2],
-                low=candles[:, 3],
-                close=candles[:, 4],
-                name="Candles",
-            ),
-            go.Scatter(
-                x=pd.to_datetime(candles[:, 0], unit="ms"),
-                y=indicator,
-                marker=dict(color=ind_hex_color),
-                name=ind_name,
-            ),
-        ]
+def plot_candles_1_ind_same_pane(
+    candles: np.array,
+    indicator: np.array,
+    ind_name: str | list,
+):
+    datetimes = pd.to_datetime(candles[:, 0], unit="ms")
+    data = []
+    data.append(
+        go.Candlestick(
+            x=datetimes,
+            open=candles[:, 1],
+            high=candles[:, 2],
+            low=candles[:, 3],
+            close=candles[:, 4],
+            name="Candles",
+        )
     )
+    try:
+        for i in range(indicator.shape[1]):
+            data.append(
+                go.Scatter(
+                    x=datetimes,
+                    y=indicator[:, i],
+                    name=ind_name[i],
+                )
+            )
+    except:
+        data.append(
+            go.Scatter(
+                x=datetimes,
+                y=indicator,
+                name=ind_name,
+                marker=dict(color="#2E91E5"),
+            ),
+        )
+    fig = go.Figure(data=data)
     fig.update_layout(height=600, xaxis_rangeslider_visible=False)
     fig.show()
 
 
-def plot_candles_1_ind_dif_pane(candles: np.array, indicator: np.array, ind_name: str, ind_hex_color: str = "#2E91E5"):
+def plot_candles_1_ind_dif_pane(
+    candles: np.array,
+    indicator: np.array,
+    ind_name: str | list,
+):
+    datetimes = pd.to_datetime(candles[:, 0], unit="ms")
     fig = make_subplots(
         cols=1,
         rows=2,
@@ -58,7 +80,7 @@ def plot_candles_1_ind_dif_pane(candles: np.array, indicator: np.array, ind_name
     )
     fig.add_trace(
         go.Candlestick(
-            x=pd.to_datetime(candles[:, 0], unit="ms"),
+            x=datetimes,
             open=candles[:, 1],
             high=candles[:, 2],
             low=candles[:, 3],
@@ -68,15 +90,28 @@ def plot_candles_1_ind_dif_pane(candles: np.array, indicator: np.array, ind_name
         row=1,
         col=1,
     )
-    fig.add_trace(
-        go.Scatter(
-            x=pd.to_datetime(candles[:, 0], unit="ms"),
-            y=indicator,
-            marker=dict(color=ind_hex_color),
-            name=ind_name,
-        ),
-        row=2,
-        col=1,
-    )
+    try:
+        for i in range(indicator.shape[1]):
+            fig.add_trace(
+                go.Scatter(
+                    x=datetimes,
+                    y=indicator[:, i],
+                    name=ind_name[i],
+                ),
+                row=2,
+                col=1,
+            )
+    except:
+        fig.add_trace(
+            go.Scatter(
+                x=datetimes,
+                y=indicator,
+                name=ind_name,
+                marker=dict(color="#2E91E5"),
+            ),
+            row=2,
+            col=1,
+        )
+
     fig.update_layout(height=800, xaxis_rangeslider_visible=False)
     fig.show()
