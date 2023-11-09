@@ -40,17 +40,19 @@ class Apex(Exchange):
             )
             self.apex_ex.configs()
             self.apex_ex.get_account()
+        self.limit_free_rate = self.apex_ex.get_account()["data"]["makerFeeRate"]
+        self.market_free_rate = self.apex_ex.get_account()["data"]["takerFeeRate"]
 
     def create_order(
         self,
-        symbol,
-        side,
-        type,
-        size,
-        limitFee=None,
-        price=None,
+        symbol: str,
+        buy_sell: str,
+        market_limit: str,
+        asset_size: float,
+        limitFeeRate=None,
+        price: float = None,
         accountId=None,
-        timeInForce="GOOD_TIL_CANCEL",
+        time_in_force=None,
         reduceOnly=False,
         triggerPrice=None,
         triggerPriceType=None,
@@ -63,19 +65,16 @@ class Apex(Exchange):
     ):
         """
         https://api-docs.pro.apex.exchange/#privateapi-post-creating-orders
-
-        Use this website to see all the params
         """
         return self.apex_ex.create_order(
             symbol=symbol,
-            side=side,
-            type=type,
-            size=size,
-            limitFeeRate=self.apex_ex.account["takerFeeRate"],
-            limitFee=limitFee,
+            side=buy_sell.upper(),
+            type=market_limit.upper(),
+            size=str(asset_size),
+            limitFeeRate=limitFeeRate,
             price=price,
             accountId=accountId,
-            timeInForce=timeInForce,
+            timeInForce=time_in_force,
             reduceOnly=reduceOnly,
             triggerPrice=triggerPrice,
             triggerPriceType=triggerPriceType,
@@ -86,6 +85,23 @@ class Apex(Exchange):
             isPositionTpsl=isPositionTpsl,
             signature=signature,
             sourceFlag=sourceFlag,
+        )
+
+    def create_entry_market_order(
+        self,
+        symbol: str,
+        buy_sell: str,
+        asset_size: float,
+    ):
+        price = self.apex_ex.get_worst_price(symbol=symbol, side=buy_sell.upper(), size="0.01")["data"]["worstPrice"]
+        return self.create_order(
+            symbol=symbol,
+            buy_sell=buy_sell,
+            market_limit="market",
+            asset_size=asset_size,
+            price=price,
+            limitFeeRate=self.market_free_rate,
+            time_in_force="IMMEDIATE_OR_CANCEL",
         )
 
     def get_candles(
@@ -128,7 +144,7 @@ class Apex(Exchange):
                     since_date_ms = last_candle_time_ms + 2000
             except Exception as e:
                 raise Exception(f"Apex get candles loop - > {e}")
-        
+
         candle_list = []
         keys = ["t", "o", "h", "l", "c"]
         for candle in apex_candles:
@@ -160,3 +176,15 @@ class Apex(Exchange):
 
     def get_latest_pnl_result(self, symbol: str):
         return float(self.get_closed_pnl(symbol=symbol)[0].get("totalPnl"))
+
+    def get_wallet_info_of_asset(self):
+        return self.apex_ex.get_account()
+
+    def account_data(self):
+        return self.apex_ex.get_account()
+
+    def get_equity_of_asset(self, **kwargs):
+        return float(self.apex_ex.get_account_balance()["data"]["totalEquityValue"])
+
+    def check_if_order_filled(self, **kwargs):
+        return float(self.apex_ex.get_account_balance()["data"]["totalEquityValue"])

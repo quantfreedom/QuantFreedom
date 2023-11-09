@@ -285,7 +285,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve User Data.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-user-data
+        https://api-docs.pro.apex.exchange/#privateapi-get-user-data
         :returns: Request results as dictionary.
         """
 
@@ -298,7 +298,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve User Data.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-user-data
+        https://api-docs.pro.apex.exchange/#privateapi-get-user-data
         :returns: Request results as dictionary.
         """
 
@@ -323,7 +323,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve User Account Data.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-user-account-data
+        https://api-docs.pro.apex.exchange/#privateapi-get-user-account-data
         :returns: Request results as dictionary.
         """
 
@@ -336,7 +336,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve User Account Data.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-user-account-data
+        https://api-docs.pro.apex.exchange/#privateapi-get-user-account-data
         :returns: Request results as dictionary.
         """
 
@@ -349,7 +349,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve User Account Data.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-user-account-data
+        https://api-docs.pro.apex.exchange/#privateapi-get-user-account-data
         :returns: Request results as dictionary.
         """
 
@@ -362,7 +362,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve User Deposit Data.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-user-deposit-data
+        https://api-docs.pro.apex.exchange/#privateapi-get-user-deposit-data
         :returns: Request results as dictionary.
         """
 
@@ -373,7 +373,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve User Deposit Data.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-user-deposit-data
+        https://api-docs.pro.apex.exchange/#privateapi-get-user-deposit-data
         :returns: Request results as dictionary.
         """
 
@@ -384,7 +384,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve User Withdrawal List.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-user-withdrawal-list
+        https://api-docs.pro.apex.exchange/#privateapi-get-user-withdrawal-list
         :returns: Request results as dictionary.
         """
 
@@ -395,7 +395,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve User Withdrawal List.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-user-withdrawal-list
+        https://api-docs.pro.apex.exchange/#privateapi-get-user-withdrawal-list
         :returns: Request results as dictionary.
         """
 
@@ -428,7 +428,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve Withdrawal & Transfer Limits.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-withdrawal-amp-transfer-limits
+        https://api-docs.pro.apex.exchange/#privateapi-get-withdrawal-amp-transfer-limits
         :returns: Request results as dictionary.
         """
 
@@ -439,7 +439,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve Withdrawal & Transfer Limits.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-withdrawal-amp-transfer-limits
+        https://api-docs.pro.apex.exchange/#privateapi-get-withdrawal-amp-transfer-limits
         :returns: Request results as dictionary.
         """
 
@@ -450,7 +450,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve Trade History.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-trade-history
+        https://api-docs.pro.apex.exchange/#privateapi-get-trade-history
         :returns: Request results as dictionary.
         """
 
@@ -461,7 +461,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve Trade History.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-trade-history
+        https://api-docs.pro.apex.exchange/#privateapi-get-trade-history
         :returns: Request results as dictionary.
         """
 
@@ -542,7 +542,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve Open Orders.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-open-orders
+        https://api-docs.pro.apex.exchange/#privateapi-get-open-orders
         :returns: Request results as dictionary.
         """
 
@@ -553,7 +553,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve Open Orders.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-open-orders
+        https://api-docs.pro.apex.exchange/#privateapi-get-open-orders
         :returns: Request results as dictionary.
         """
 
@@ -564,7 +564,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve All Order History.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-all-order-history
+        https://api-docs.pro.apex.exchange/#privateapi-get-all-order-history
         :returns: Request results as dictionary.
         """
 
@@ -575,7 +575,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve All Order History.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-all-order-history
+        https://api-docs.pro.apex.exchange/#privateapi-get-all-order-history
         :returns: Request results as dictionary.
         """
 
@@ -586,7 +586,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve Order ID.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-order-id
+        https://api-docs.pro.apex.exchange/#privateapi-get-order-id
         :returns: Request results as dictionary.
         """
 
@@ -597,7 +597,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve Order ID.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-order-id
+        https://api-docs.pro.apex.exchange/#privateapi-get-order-id
         :returns: Request results as dictionary.
         """
 
@@ -608,7 +608,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve Order ID.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-order-id
+        https://api-docs.pro.apex.exchange/#privateapi-get-order-id
         :returns: Request results as dictionary.
         """
 
@@ -619,7 +619,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve Order ID.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-order-id
+        https://api-docs.pro.apex.exchange/#privateapi-get-order-id
         :returns: Request results as dictionary.
         """
 
@@ -630,7 +630,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve Funding Rate.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-funding-rate
+        https://api-docs.pro.apex.exchange/#privateapi-get-funding-rate
         :returns: Request results as dictionary.
         """
 
@@ -641,7 +641,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve Funding Rate.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-funding-rate
+        https://api-docs.pro.apex.exchange/#privateapi-get-funding-rate
         :returns: Request results as dictionary.
         """
 
@@ -652,7 +652,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve Notification List.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-notification-list
+        https://api-docs.pro.apex.exchange/#privateapi-get-notification-list
         :returns: Request results as dictionary.
         """
 
@@ -674,7 +674,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve User Historial Profit and Loss.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-user-historial-profit-and-loss
+        https://api-docs.pro.apex.exchange/#privateapi-get-user-historial-profit-and-loss
         :returns: Request results as dictionary.
         """
 
@@ -685,7 +685,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve User Historial Profit and Loss.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-user-historial-profit-and-loss
+        https://api-docs.pro.apex.exchange/#privateapi-get-user-historial-profit-and-loss
         :returns: Request results as dictionary.
         """
 
@@ -696,7 +696,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve Yesterday's Profit & Loss.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-yesterday-39-s-profit-amp-loss
+        https://api-docs.pro.apex.exchange/#privateapi-get-yesterday-39-s-profit-amp-loss
         :returns: Request results as dictionary.
         """
 
@@ -707,7 +707,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve Yesterday's Profit & Loss.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-yesterday-39-s-profit-amp-loss
+        https://api-docs.pro.apex.exchange/#privateapi-get-yesterday-39-s-profit-amp-loss
         :returns: Request results as dictionary.
         """
 
@@ -718,7 +718,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve Historical Asset Value.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-historical-asset-value
+        https://api-docs.pro.apex.exchange/#privateapi-get-historical-asset-value
         :returns: Request results as dictionary.
         """
 
@@ -729,7 +729,7 @@ class HttpPrivate(HttpPublic):
         """ "
         GET Retrieve Historical Asset Value.
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-historical-asset-value
+        https://api-docs.pro.apex.exchange/#privateapi-get-historical-asset-value
         :returns: Request results as dictionary.
         """
 
@@ -762,7 +762,7 @@ class HttpPrivate(HttpPublic):
         """ "
         get market price from orderbook
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-worst-price
+        https://api-docs.pro.apex.exchange/#privateapi-get-worst-price
         :returns: Request results as dictionary.
         """
 
@@ -773,7 +773,7 @@ class HttpPrivate(HttpPublic):
         """ "
         get market price from orderbook
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-worst-price
+        https://api-docs.pro.apex.exchange/#privateapi-get-worst-price
         :returns: Request results as dictionary.
         """
 
@@ -784,7 +784,7 @@ class HttpPrivate(HttpPublic):
         """ "
         get market price from orderbook
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/?lang=zh-TW#privateapi-get-retrieve-user-account-balance
+        https://api-docs.pro.apex.exchange/?lang=zh-TW#privateapi-get-user-account-balance
         :returns: Request results as dictionary.
         """
 
@@ -795,7 +795,7 @@ class HttpPrivate(HttpPublic):
         """ "
         get market price from orderbook
         :param kwargs: See
-        https://api-docs.pro.apex.exchange/#privateapi-get-retrieve-worst-price
+        https://api-docs.pro.apex.exchange/#privateapi-get-worst-price
         :returns: Request results as dictionary.
         """
 

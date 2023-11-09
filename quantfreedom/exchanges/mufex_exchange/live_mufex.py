@@ -44,8 +44,6 @@ class LiveMufex(LiveExchange, Mufex):
             leverage_mode=leverage_mode,
         )
 
-    
-
     def check_long_hedge_mode_if_in_position(
         self,
     ):
@@ -56,7 +54,7 @@ class LiveMufex(LiveExchange, Mufex):
 
     def create_long_hedge_mode_entry_market_order(
         self,
-        asset_amount: float,
+        asset_size: float,
         time_in_force: str = "GoodTillCancel",
     ):
         params = {
@@ -64,7 +62,7 @@ class LiveMufex(LiveExchange, Mufex):
             "positionIdx": 1,
             "side": "Buy",
             "orderType": "Market",
-            "qty": str(asset_amount),
+            "qty": str(asset_size),
             "timeInForce": time_in_force,
             "orderLinkId": uuid4().hex,
         }
@@ -73,7 +71,7 @@ class LiveMufex(LiveExchange, Mufex):
 
     def create_long_hedge_mode_tp_limit_order(
         self,
-        asset_amount: float,
+        asset_size: float,
         tp_price: float,
         time_in_force: str = "PostOnly",
     ):
@@ -82,7 +80,7 @@ class LiveMufex(LiveExchange, Mufex):
             "side": "Sell",
             "positionIdx": 1,
             "orderType": "Limit",
-            "qty": str(asset_amount),
+            "qty": str(asset_size),
             "price": str(tp_price),
             "timeInForce": time_in_force,
             "reduceOnly": True,
@@ -93,7 +91,7 @@ class LiveMufex(LiveExchange, Mufex):
 
     def create_long_hedge_mode_sl_order(
         self,
-        asset_amount: float,
+        asset_size: float,
         trigger_price: float,
         time_in_force: str = "GoodTillCancel",
     ):
@@ -102,7 +100,7 @@ class LiveMufex(LiveExchange, Mufex):
             "side": "Sell",
             "positionIdx": 1,
             "orderType": "Market",
-            "qty": str(asset_amount),
+            "qty": str(asset_size),
             "timeInForce": time_in_force,
             "reduceOnly": True,
             "triggerPrice": str(trigger_price),

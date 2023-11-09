@@ -218,7 +218,7 @@ class LiveTrading:
                         send_verify_error = False
                         logger.info("Placing Entry Order")
                         entry_order_id = self.entry_order(
-                            asset_amount=self.order.entry_size_asset,
+                            asset_size=self.order.entry_size_asset,
                             entry_price=self.order.entry_price,
                         )
 
@@ -263,7 +263,7 @@ class LiveTrading:
 
                         logger.info(f"Submitting stop loss order")
                         sl_order_id = self.place_sl_order(
-                            asset_amount=self.ex_position_size_asset,
+                            asset_size=self.ex_position_size_asset,
                             trigger_price=self.order.sl_price,
                         )
                         logger.info(f"Submitted SL order -> [order_id={sl_order_id}]")
@@ -271,7 +271,7 @@ class LiveTrading:
                         sleep(0.5)
                         logger.info(f"Submitting take profit order")
                         tp_order_id = self.place_tp_order(
-                            asset_amount=self.ex_position_size_asset,
+                            asset_size=self.ex_position_size_asset,
                             tp_price=self.order.tp_price,
                         )
                         logger.info(f"Submitted TP order -> [order_id={tp_order_id}]")
@@ -358,7 +358,7 @@ class LiveTrading:
                                 if self.exchange.move_stop_order(
                                     symbol=self.symbol,
                                     order_id=sl_order_id,
-                                    asset_amount=self.ex_position_size_asset,
+                                    asset_size=self.ex_position_size_asset,
                                     new_price=sl_to_be_price,
                                 ):
                                     logger.info(f"Moved stop loss from {self.order.sl_price} to {sl_to_be_price}")
@@ -374,7 +374,7 @@ class LiveTrading:
                                 if self.exchange.move_stop_order(
                                     symbol=self.symbol,
                                     order_id=sl_order_id,
-                                    asset_amount=self.ex_position_size_asset,
+                                    asset_size=self.ex_position_size_asset,
                                     new_price=tsl_price,
                                 ):
                                     logger.info(f"Moved stop loss from {self.order.sl_price} to {tsl_price}")

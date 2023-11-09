@@ -3,6 +3,7 @@ import pandas as pd
 from logging import getLogger
 from quantfreedom.custom_logger import set_loggers
 from quantfreedom.helper_funcs import dos_cart_product, get_dos, get_to_the_upside_nb, log_dynamic_order_settings
+from quantfreedom.nb_funcs.nb_helper_funcs import order_records_to_df
 from quantfreedom.order_handler.order import OrderHandler
 from quantfreedom.plotting.plotting_base import plot_or_results
 from quantfreedom.strategies.strategy import Strategy
@@ -536,29 +537,7 @@ def or_backtest(
             except Exception as e:
                 logger.error(f"Exception hit in eval strat -> {e}")
                 pass
-    order_records_df = pd.DataFrame(order_records[:or_filled])
-    order_records_df.insert(4, "datetime", pd.to_datetime(order_records_df["timestamp"], unit="ms"))
-    order_records_df.replace(
-        {
-            "order_status": {
-                0: "HitMaxTrades",
-                1: "EntryFilled",
-                2: "StopLossFilled",
-                3: "TakeProfitFilled",
-                4: "LiquidationFilled",
-                5: "MovedSLToBE",
-                6: "MovedTSL",
-                7: "MaxEquityRisk",
-                8: "RiskToBig",
-                9: "CashUsedExceed",
-                10: "EntrySizeTooSmall",
-                11: "EntrySizeTooBig",
-                12: "PossibleLossTooBig",
-                13: "Nothing",
-            }
-        },
-        inplace=True,
-    )
+    order_records_df = order_records_to_df(order_records)
     if plot_results:
         plot_or_results(candles=candles, order_records_df=order_records_df)
     return order_records_df

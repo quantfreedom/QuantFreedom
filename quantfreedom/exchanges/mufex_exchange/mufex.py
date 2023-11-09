@@ -490,7 +490,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex adjust_order message = {response['message']} -> {e}")
 
-    def move_limit_order(self, symbol: str, order_id: str, new_price: float, asset_amount: float):
+    def move_limit_order(self, symbol: str, order_id: str, new_price: float, asset_size: float):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_replaceorder
         """
@@ -498,7 +498,7 @@ class Mufex(Exchange):
         params = {}
         params["symbol"] = symbol
         params["orderId"] = order_id
-        params["qty"] = str(asset_amount)
+        params["qty"] = str(asset_size)
         params["price"] = str(new_price)
         response = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
@@ -510,7 +510,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex move_limit_order message = {response['message']} -> {e}")
 
-    def move_stop_order(self, symbol: str, order_id: str, new_price: float, asset_amount: float):
+    def move_stop_order(self, symbol: str, order_id: str, new_price: float, asset_size: float):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_replaceorder
 
@@ -519,7 +519,7 @@ class Mufex(Exchange):
         params = {}
         params["symbol"] = symbol
         params["orderId"] = order_id
-        params["qty"] = str(asset_amount)
+        params["qty"] = str(asset_size)
         params["triggerPrice"] = str(new_price)
         response = self.__HTTP_post_request(end_point=end_point, params=params)
         try:

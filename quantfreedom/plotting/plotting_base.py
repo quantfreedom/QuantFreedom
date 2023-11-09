@@ -211,10 +211,10 @@ def plot_bollinger_bands(
 def plot_or_results(candles: np.array, order_records_df: pd.DataFrame):
     fig = make_subplots(
         cols=1,
-        rows=3,
+        rows=2,
         shared_xaxes=True,
-        subplot_titles=["Candles", "PnL Per Trade", "Cumulative Realized PnL"],
-        row_heights=[0.5, 0.25, 0.25],
+        subplot_titles=["Candles", "Cumulative Realized PnL"],
+        row_heights=[0.7, 0.3],
         vertical_spacing=0.1,
     )
 
@@ -229,8 +229,8 @@ def plot_or_results(candles: np.array, order_records_df: pd.DataFrame):
                 close=candles[:, 4],
                 name="Candles",
             ),
-            row=1,
             col=1,
+            row=1,
         )
     except:
         pass
@@ -247,8 +247,8 @@ def plot_or_results(candles: np.array, order_records_df: pd.DataFrame):
                 name="Entries",
                 marker=dict(size=10, symbol="circle", color="#00F6FF", line=dict(width=1, color="DarkSlateGrey")),
             ),
-            row=1,
             col=1,
+            row=1,
         )
     except:
         pass
@@ -262,8 +262,8 @@ def plot_or_results(candles: np.array, order_records_df: pd.DataFrame):
                 name="Stop Losses",
                 marker=dict(size=10, symbol="square", color="#FFCA00", line=dict(width=1, color="DarkSlateGrey")),
             ),
-            row=1,
             col=1,
+            row=1,
         )
     except:
         pass
@@ -277,8 +277,8 @@ def plot_or_results(candles: np.array, order_records_df: pd.DataFrame):
                 name="Take Profits",
                 marker=dict(size=10, symbol="triangle-up", color="#FF7B00", line=dict(width=1, color="DarkSlateGrey")),
             ),
-            row=1,
             col=1,
+            row=1,
         )
     except:
         pass
@@ -292,8 +292,8 @@ def plot_or_results(candles: np.array, order_records_df: pd.DataFrame):
                 name="Stop Loss Filled",
                 marker=dict(size=10, symbol="x", color="#FF00BB", line=dict(width=1, color="DarkSlateGrey")),
             ),
-            row=1,
             col=1,
+            row=1,
         )
     except:
         pass
@@ -307,8 +307,8 @@ def plot_or_results(candles: np.array, order_records_df: pd.DataFrame):
                 name="Take Profit Filled",
                 marker=dict(size=10, symbol="star", color="#14FF00", line=dict(width=1, color="DarkSlateGrey")),
             ),
-            row=1,
             col=1,
+            row=1,
         )
     except:
         pass
@@ -324,30 +324,17 @@ def plot_or_results(candles: np.array, order_records_df: pd.DataFrame):
                     size=10, symbol="diamond-cross", color="#F1FF00", line=dict(width=1, color="DarkSlateGrey")
                 ),
             ),
-            row=1,
             col=1,
+            row=1,
         )
     except:
         pass
     try:
         pnl_dt_df = order_records_df[~order_records_df["realized_pnl"].isna()]["datetime"]
-        pnl_df = order_records_df[~order_records_df["realized_pnl"].isna()]["realized_pnl"]
-        # PnL Per Trade
-        fig.add_trace(
-            go.Bar(
-                x=pnl_dt_df,
-                y=pnl_df,
-                name="PnL Per Trade",
-            ),
-            row=2,
-            col=1,
-        )
-    except:
-        pass
-    try:
         dt_list = pnl_dt_df.to_list()
         dt_list.insert(0, pd.to_datetime(candles[0, 0], unit="ms"))
 
+        pnl_df = order_records_df[~order_records_df["realized_pnl"].isna()]["realized_pnl"]
         pnl_list = pnl_df.to_list()
         pnl_list.insert(0, 0)
         cumulative_pnl = np.array(pnl_list).cumsum()
@@ -359,8 +346,8 @@ def plot_or_results(candles: np.array, order_records_df: pd.DataFrame):
                 name="Cumulative Realized PnL",
                 line_color="#3EA3FF",
             ),
-            row=3,
             col=1,
+            row=2,
         )
     except:
         pass
