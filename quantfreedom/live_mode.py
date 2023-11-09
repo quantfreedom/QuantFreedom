@@ -57,6 +57,7 @@ class LiveTrading:
         order: OrderHandler,
         strategy: Strategy,
         tp_order_type: OrderPlacementType,
+        long_or_short: LongOrShortType,
     ):
         self.order = order
         self.exchange = exchange
@@ -65,7 +66,7 @@ class LiveTrading:
         self.strategy = strategy
 
         if self.exchange.position_mode == PositionModeType.HedgeMode:
-            if self.exchange.long_or_short == LongOrShortType.Long:
+            if long_or_short == LongOrShortType.Long:
                 self.place_sl_order = self.exchange.create_long_hedge_mode_sl_order
                 self.get_position_info = self.exchange.get_long_hedge_mode_position_info
                 if entry_order_type == OrderPlacementType.Market:
@@ -77,7 +78,7 @@ class LiveTrading:
                     self.place_tp_order = self.exchange.create_long_hedge_mode_tp_limit_order
 
         self.ex_position_size_asset = float(self.get_position_info().get("size"))
-        self.order.equity = self.exchange.get_equity_of_asset(trading_in=self.exchange.trading_in)
+        self.order.equity = self.exchange(trading_in=self.exchange.trading_in)
 
     def run(self):
         latest_pnl = 0

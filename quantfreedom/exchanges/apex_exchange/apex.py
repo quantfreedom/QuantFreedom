@@ -2,7 +2,7 @@ from datetime import timedelta
 from quantfreedom.exchanges.apex_exchange.apex_github.http_private_stark_key_sign import HttpPrivateStark
 from quantfreedom.exchanges.apex_exchange.apex_github.http_public import HttpPublic
 from quantfreedom.exchanges.exchange import Exchange
-from time import time
+from time import sleep, time
 import numpy as np
 
 APEX_TIMEFRAMES = [1, 5, 15, 30, 60, 120, 240, 360, 720, "D", "W"]
@@ -23,8 +23,6 @@ class Apex(Exchange):
         """
         main docs page https://api-docs.pro.apex.exchange
         """
-        super().__init__(api_key, secret_key, use_test_net)
-
         if use_test_net:
             url_start = "https://testnet.pro.apex.exchange"
         else:
@@ -112,16 +110,53 @@ class Apex(Exchange):
             if since_date_ms is None:
                 since_date_ms = until_date_ms - candles_to_dl_ms - 5000  # 5000 is to sub 5 seconds
 
-        apex_data = self.apex_ex.klines(
-            symbol=symbol,
-            interval=ex_timeframe,
-            start=int(since_date_ms / 1000),
-            end=int(until_date_ms / 1000),
-        )
-        apex_candles = apex_data["data"][symbol]
+        apex_candles = []
+        while since_date_ms + timeframe_in_ms < until_date_ms:
+            try:
+                apex_data = self.apex_ex.klines(
+                    symbol=symbol,
+                    interval=ex_timeframe,
+                    start=int(since_date_ms / 1000),
+                    end=int(until_date_ms / 1000),
+                )
+                apex_candle_list = apex_data["data"][symbol]
+                last_candle_time_ms = apex_candle_list[-1]["t"]
+                if last_candle_time_ms == since_date_ms:
+                    sleep(0.2)
+                else:
+                    apex_candles.extend(apex_candle_list)
+                    since_date_ms = last_candle_time_ms + 2000
+            except Exception as e:
+                raise Exception(f"Apex get candles loop - > {e}")
+        
         candle_list = []
         keys = ["t", "o", "h", "l", "c"]
         for candle in apex_candles:
             candle_list.append([candle.get(key) for key in keys])
         candles_np = np.array(candle_list, dtype=np.float_)
         return candles_np
+
+    def get_closed_pnl(
+        self,
+        beginTimeInclusive: int = None,
+        endTimeExclusive: int = None,
+        pos_type: str = None,
+        symbol: str = None,
+        page: int = None,
+        limit: int = None,
+    ):
+        return (
+            self.apex_ex.historical_pnl(
+                beginTimeInclusive=beginTimeInclusive,
+                endTimeExclusive=endTimeExclusive,
+                type=pos_type,
+                symbol=symbol,
+                page=page,
+                limit=limit,
+            )
+            .get("data")
+            .get("historicalPnl")
+        )
+
+    def get_latest_pnl_result(self, symbol: str):
+        return float(self.get_closed_pnl(symbol=symbol)[0].get("totalPnl"))
