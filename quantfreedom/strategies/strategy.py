@@ -26,7 +26,7 @@ except NameError:
     app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
 
 bg_color = "#0b0b18"
-from quantfreedom.indicators.indicators import rsi_calc
+from quantfreedom.indicators.tv_indicators import rsi_rma_tv_calc
 
 from typing import NamedTuple
 
@@ -103,7 +103,7 @@ rsi_period={self.rsi_period}".strip()
     ):
         start = max(bar_index - self.starting_bar, 0)
         try:
-            self.rsi = rsi_calc(
+            self.rsi = rsi_rma_tv_calc(
                 source=candles[start : bar_index + 1, CandleBodyType.Close],
                 length=self.rsi_period,
             )
@@ -115,7 +115,7 @@ rsi_period={self.rsi_period}".strip()
 
     def set_live_trading_indicator(self, bar_index: int, candles: np.array):
         try:
-            self.rsi = rsi_calc(
+            self.rsi = rsi_rma_tv_calc(
                 source=candles[:, CandleBodyType.Close],
                 length=self.rsi_period,
             )

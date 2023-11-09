@@ -4,6 +4,7 @@ from logging import getLogger
 from quantfreedom.custom_logger import set_loggers
 from quantfreedom.helper_funcs import dos_cart_product, get_dos, get_to_the_upside_nb, log_dynamic_order_settings
 from quantfreedom.order_handler.order import OrderHandler
+from quantfreedom.plotting.plotting_base import plot_or_results
 from quantfreedom.strategies.strategy import Strategy
 from quantfreedom.enums import (
     BacktestSettings,
@@ -309,6 +310,7 @@ def or_backtest(
     strategy: Strategy,
     dos_index: int,
     ind_set_index: int,
+    plot_results: bool = False,
 ):
     if static_os.logger_bool == False:
         logger.disabled = True
@@ -557,4 +559,6 @@ def or_backtest(
         },
         inplace=True,
     )
+    if plot_results:
+        plot_or_results(candles=candles, order_records_df=order_records_df)
     return order_records_df

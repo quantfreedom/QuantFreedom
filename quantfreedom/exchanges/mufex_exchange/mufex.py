@@ -30,8 +30,8 @@ class Mufex(Exchange):
         Make sure you have your position mode set to hedge or else a lot of functions will not work.
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_switchpositionmode
         """
-        super().__init__(api_key, secret_key, use_test_net)
-
+        self.api_key = api_key
+        self.secret_key = secret_key
         if use_test_net:
             self.url_start = "https://api.testnet.mufex.finance"
         else:
