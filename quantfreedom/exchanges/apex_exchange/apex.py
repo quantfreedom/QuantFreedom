@@ -46,7 +46,7 @@ class Apex(Exchange):
         self,
         symbol: str,
         buy_sell: str,
-        market_limit: str,
+        order_type: str,
         asset_size: float,
         limitFeeRate=None,
         limitFee=None,
@@ -69,7 +69,7 @@ class Apex(Exchange):
         return self.apex_ex.create_order(
             symbol=symbol,
             side=buy_sell.upper(),
-            type=market_limit.upper(),
+            type=order_type.upper(),
             size=str(asset_size),
             limitFeeRate=limitFeeRate,
             limitFee=limitFee,
@@ -101,7 +101,7 @@ class Apex(Exchange):
             order_id = self.create_order(
                 symbol=symbol,
                 buy_sell=buy_sell,
-                market_limit="market",
+                order_type="market",
                 asset_size=asset_size,
                 price=price,
                 limitFeeRate=self.limitFeeRate,
@@ -122,7 +122,7 @@ class Apex(Exchange):
             response_data = self.create_order(
                 symbol=symbol,
                 buy_sell=buy_sell,
-                market_limit="limit",
+                order_type="limit",
                 asset_size=asset_size,
                 price=str(price),
                 limitFeeRate=self.limitFeeRate,
