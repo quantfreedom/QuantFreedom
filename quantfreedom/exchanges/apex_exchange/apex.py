@@ -40,8 +40,7 @@ class Apex(Exchange):
             )
             self.apex_ex.configs()
             self.apex_ex.get_account()
-        self.limit_free_rate = self.apex_ex.get_account()["data"]["makerFeeRate"]
-        self.market_free_rate = self.apex_ex.get_account()["data"]["takerFeeRate"]
+        self.limitFeeRate = self.apex_ex.get_account()["data"]["takerFeeRate"]
 
     def create_order(
         self,
@@ -50,6 +49,7 @@ class Apex(Exchange):
         market_limit: str,
         asset_size: float,
         limitFeeRate=None,
+        limitFee=None,
         price: float = None,
         accountId=None,
         time_in_force=None,
@@ -72,6 +72,7 @@ class Apex(Exchange):
             type=market_limit.upper(),
             size=str(asset_size),
             limitFeeRate=limitFeeRate,
+            limitFee=limitFee,
             price=price,
             accountId=accountId,
             timeInForce=time_in_force,
@@ -93,16 +94,44 @@ class Apex(Exchange):
         buy_sell: str,
         asset_size: float,
     ):
-        price = self.apex_ex.get_worst_price(symbol=symbol, side=buy_sell.upper(), size="0.01")["data"]["worstPrice"]
-        return self.create_order(
-            symbol=symbol,
-            buy_sell=buy_sell,
-            market_limit="market",
-            asset_size=asset_size,
-            price=price,
-            limitFeeRate=self.market_free_rate,
-            time_in_force="IMMEDIATE_OR_CANCEL",
-        )
+        try:
+            price = self.apex_ex.get_worst_price(symbol=symbol, side=buy_sell.upper(), size="0.01")["data"][
+                "worstPrice"
+            ]
+            order_id = self.create_order(
+                symbol=symbol,
+                buy_sell=buy_sell,
+                market_limit="market",
+                asset_size=asset_size,
+                price=price,
+                limitFeeRate=self.limitFeeRate,
+                time_in_force="IMMEDIATE_OR_CANCEL",
+            )["data"]["id"]
+            return order_id
+        except Exception as e:
+            raise Exception(f"Apex create_entry_market_order -> {e}")
+
+    def create_entry_limit_order(
+        self,
+        symbol: str,
+        buy_sell: str,
+        asset_size: float,
+        price: float,
+    ):
+        try:
+            response_data = self.create_order(
+                symbol=symbol,
+                buy_sell=buy_sell,
+                market_limit="limit",
+                asset_size=asset_size,
+                price=str(price),
+                limitFeeRate=self.limitFeeRate,
+                time_in_force="POST_ONLY",
+            )
+            order_id = response_data["data"]["id"]
+            return order_id
+        except Exception as e:
+            raise Exception(f"Apex create_entry_limit_order -> {e}")
 
     def get_candles(
         self,
@@ -143,7 +172,7 @@ class Apex(Exchange):
                     apex_candles.extend(apex_candle_list)
                     since_date_ms = last_candle_time_ms + 2000
             except Exception as e:
-                raise Exception(f"Apex get candles loop - > {e}")
+                raise Exception(f"Apex get_candles - > {e}")
 
         candle_list = []
         keys = ["t", "o", "h", "l", "c"]
@@ -186,5 +215,18 @@ class Apex(Exchange):
     def get_equity_of_asset(self, **kwargs):
         return float(self.apex_ex.get_account_balance()["data"]["totalEquityValue"])
 
-    def check_if_order_filled(self, **kwargs):
-        return float(self.apex_ex.get_account_balance()["data"]["totalEquityValue"])
+    def check_if_order_filled(self, order_id: str, **kwargs):
+        try:
+            if self.apex_ex.get_order(id=order_id)["data"]["status"] == "FILLED":
+                return True
+            else:
+                raise Exception
+        except Exception as e:
+            raise Exception(f"Apex check_if_order_filled -> {e}")
+
+    def cancel_all_open_order_per_symbol(self, symbol: str):
+        try:
+            self.apex_ex.delete_open_orders(symbol=symbol)["timeCost"]
+            return True
+        except Exception as e:
+            raise Exception(f"Apex cancel_all_open_order_per_symbol -> {e}")
