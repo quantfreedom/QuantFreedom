@@ -78,7 +78,7 @@ class LiveTrading:
                     self.place_tp_order = self.exchange.create_long_hedge_mode_tp_limit_order
 
         self.ex_position_size_asset = float(self.get_position_info().get("size"))
-        self.order.equity = self.exchange(trading_in=self.exchange.trading_in)
+        self.order.equity = self.exchange.get_equity_of_asset(trading_with=self.exchange.trading_with)
 
     def run(self):
         latest_pnl = 0
@@ -126,7 +126,9 @@ class LiveTrading:
                             logger.debug("we are not in a position updating order info")
                             self.order.position_size_usd = 0.0
                             self.order.average_entry = 0.0
-                            self.order.equity = self.exchange.get_equity_of_asset(trading_in=self.exchange.trading_in)
+                            self.order.equity = self.exchange.get_equity_of_asset(
+                                trading_with=self.exchange.trading_with
+                            )
                             self.order.available_balance = self.order.equity
                             self.order.possible_loss = 0.0
                             self.order.cash_used = 0.0
@@ -242,7 +244,7 @@ class LiveTrading:
                         self.__set_ex_position_size_asset()
                         if self.ex_position_size_asset > 0:
                             logger.info(f"We are in a pos and trying to cancel tp and sl")
-                            if self.exchange.cancel_all_open_order_per_symbol(symbol=self.symbol):
+                            if self.exchange.cancel_all_open_orders_per_symbol(symbol=self.symbol):
                                 logger.info(f"Canceled the orders")
                             else:
                                 logger.warning("Wasn't able to verify that the tp and sl were canceled")

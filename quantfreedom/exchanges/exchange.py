@@ -46,7 +46,7 @@ class Exchange:
     def get_open_order_by_order_id(self, **kwargs):
         pass
 
-    def cancel_all_open_order_per_symbol(self, **kwargs):
+    def cancel_all_open_orders_per_symbol(self, **kwargs):
         pass
 
     def get_wallet_info_of_asset(self, **kwargs):

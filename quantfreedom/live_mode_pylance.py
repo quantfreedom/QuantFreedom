@@ -116,7 +116,7 @@ class LiveTrading:
                     self.place_tp_order = self.exchange.create_long_hedge_mode_tp_limit_order
 
         self.ex_position_size_asset = float(self.get_position_info().get("size"))
-        self.order_equity = self.exchange.get_equity_of_asset(trading_in=self.exchange.trading_in)
+        self.order_equity = self.exchange.get_equity_of_asset(trading_with=self.exchange.trading_with)
 
         """
         #########################################
@@ -316,7 +316,9 @@ class LiveTrading:
                             self.logger[LoggerFuncType.Debug]("we are not in a position updating order info")
                             self.order_position_size_usd = 0.0
                             self.order_average_entry = 0.0
-                            self.order_equity = self.exchange.get_equity_of_asset(trading_in=self.exchange.trading_in)
+                            self.order_equity = self.exchange.get_equity_of_asset(
+                                trading_with=self.exchange.trading_with
+                            )
                             self.order_possible_loss = 0.0
 
                         self.order_sl_price = self.sl_calculator(
@@ -436,7 +438,7 @@ class LiveTrading:
                         self.__set_ex_position_size_asset()
                         if self.ex_position_size_asset > 0:
                             self.logger[LoggerFuncType.Info](f"We are in a pos and trying to cancle tp and sl")
-                            if self.exchange.cancel_all_open_order_per_symbol(symbol=self.symbol):
+                            if self.exchange.cancel_all_open_orders_per_symbol(symbol=self.symbol):
                                 self.logger[LoggerFuncType.Info](f"Canceled the orders")
                             else:
                                 self.logger[LoggerFuncType.Warning](

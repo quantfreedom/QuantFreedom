@@ -352,7 +352,6 @@ class HTTP:
             # Define parameters and log the request.
             if query is not None:
                 req_params = {k: v for k, v in query.items() if v is not None}
-
             else:
                 req_params = {}
 

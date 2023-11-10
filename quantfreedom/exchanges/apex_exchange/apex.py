@@ -224,9 +224,20 @@ class Apex(Exchange):
         except Exception as e:
             raise Exception(f"Apex check_if_order_filled -> {e}")
 
-    def cancel_all_open_order_per_symbol(self, symbol: str):
+    def cancel_all_open_orders_per_symbol(self, symbol: str):
         try:
-            self.apex_ex.delete_open_orders(symbol=symbol)["timeCost"]
-            return True
+            if self.apex_ex.delete_open_orders(symbol=symbol).get("code") is None:
+                return True
+            else:
+                raise Exception
         except Exception as e:
-            raise Exception(f"Apex cancel_all_open_order_per_symbol -> {e}")
+            raise Exception(f"Apex cancel_all_open_orders_per_symbol -> {e}")
+
+    def cancel_open_order(self, order_id: str):
+        try:
+            if self.apex_ex.delete_order(id=order_id).get("data") == order_id:
+                return True
+            else:
+                raise Exception
+        except Exception as e:
+            raise Exception(f"Apex cancel_open_order -> {e}")

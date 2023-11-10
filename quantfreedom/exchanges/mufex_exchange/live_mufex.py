@@ -1,7 +1,7 @@
 from time import sleep
 from uuid import uuid4
 import numpy as np
-from quantfreedom.enums import LeverageModeType, LongOrShortType, PositionModeType
+from quantfreedom.enums import LeverageModeType, LongOrShortType, PositionModeType, TriggerDirectionType
 from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES
 from quantfreedom.exchanges.live_exchange import LiveExchange
 from quantfreedom.exchanges.mufex_exchange.mufex import MUFEX_TIMEFRAMES, Mufex
@@ -14,16 +14,12 @@ class LiveMufex(LiveExchange, Mufex):
         secret_key: str,
         symbol: str,
         timeframe: str,
-        trading_in: str,
+        trading_with: str,
         use_test_net: bool,
-        long_or_short: LongOrShortType,
         candles_to_dl: int = None,
-        keep_volume_in_candles: bool = False,
         position_mode: PositionModeType = PositionModeType.HedgeMode,
         leverage_mode: LeverageModeType = LeverageModeType.Isolated,
-        category: str = "linear",
     ):
-        self.category = category
         self.timeframe = MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
 
         if position_mode == PositionModeType.HedgeMode:
@@ -47,7 +43,7 @@ class LiveMufex(LiveExchange, Mufex):
     def check_long_hedge_mode_if_in_position(
         self,
     ):
-        if float(self.get_symbol_position_info(symbol=self.symbol)[0]["entryPrice"]) > 0:
+        if float(self.get_position_info(symbol=self.symbol)[0]["entryPrice"]) > 0:
             return True
         else:
             return False
@@ -55,60 +51,48 @@ class LiveMufex(LiveExchange, Mufex):
     def create_long_hedge_mode_entry_market_order(
         self,
         asset_size: float,
-        time_in_force: str = "GoodTillCancel",
     ):
-        params = {
-            "symbol": self.symbol,
-            "positionIdx": 1,
-            "side": "Buy",
-            "orderType": "Market",
-            "qty": str(asset_size),
-            "timeInForce": time_in_force,
-            "orderLinkId": uuid4().hex,
-        }
-
-        return self.create_order(params=params)
+        return self.create_order(
+            symbol=self.symbol,
+            position_mode=1,
+            buy_sell="Buy",
+            order_type="Market",
+            asset_size=asset_size,
+            time_in_force="GoodTillCancel",
+        )
 
     def create_long_hedge_mode_tp_limit_order(
         self,
         asset_size: float,
         tp_price: float,
-        time_in_force: str = "PostOnly",
     ):
-        params = {
-            "symbol": self.symbol,
-            "side": "Sell",
-            "positionIdx": 1,
-            "orderType": "Limit",
-            "qty": str(asset_size),
-            "price": str(tp_price),
-            "timeInForce": time_in_force,
-            "reduceOnly": True,
-            "orderLinkId": uuid4().hex,
-        }
-
-        return self.create_order(params=params)
+        return self.create_order(
+            symbol=self.symbol,
+            position_mode=1,
+            buy_sell="Sell",
+            order_type="Limit",
+            asset_size=asset_size,
+            price=tp_price,
+            reduce_only=True,
+            time_in_force="PostOnly",
+        )
 
     def create_long_hedge_mode_sl_order(
         self,
         asset_size: float,
         trigger_price: float,
-        time_in_force: str = "GoodTillCancel",
     ):
-        params = {
-            "symbol": self.symbol,
-            "side": "Sell",
-            "positionIdx": 1,
-            "orderType": "Market",
-            "qty": str(asset_size),
-            "timeInForce": time_in_force,
-            "reduceOnly": True,
-            "triggerPrice": str(trigger_price),
-            "triggerDirection": 2,
-            "orderLinkId": uuid4().hex,
-        }
-
-        return self.create_order(params=params)
+        return self.create_order(
+            symbol=self.symbol,
+            position_mode=1,
+            buy_sell="Sell",
+            order_type="Market",
+            asset_size=asset_size,
+            triggerPrice=trigger_price,
+            reduce_only=True,
+            triggerDirection=TriggerDirectionType.Fall,
+            time_in_force="GoodTillCancel",
+        )
 
     def get_long_hedge_mode_position_info(self):
-        return self.get_symbol_position_info(symbol=self.symbol)[0]
+        return self.get_position_info(symbol=self.symbol)[0]

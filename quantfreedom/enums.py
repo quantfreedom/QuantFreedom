@@ -116,7 +116,9 @@ LongOrShortType = LongOrShortTypeT()
 
 class PositionModeTypeT(NamedTuple):
     OneWayMode: int = 0
-    HedgeMode: int = 1
+    BuySide: int = 1
+    SellSide: int = 2
+    HedgeMode: int = 3
 
 
 PositionModeType = PositionModeTypeT()

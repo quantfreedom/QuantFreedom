@@ -24,7 +24,7 @@ class LiveExchange(Exchange):
         secret_key: str,
         symbol: str,
         timeframe: str,
-        trading_in: str,
+        trading_with: str,
         use_test_net: bool,
         candles_to_dl: int = None,
         position_mode: PositionModeType = PositionModeType.HedgeMode,
@@ -35,7 +35,7 @@ class LiveExchange(Exchange):
         self.timeframe_in_ms = self.get_timeframe_in_ms(timeframe)
         self.symbol = symbol
         self.candles_to_dl = candles_to_dl * self.timeframe_in_ms
-        self.trading_in = trading_in
+        self.trading_with = trading_with
         self.position_mode = position_mode
         self.leverage_mode = leverage_mode
 
