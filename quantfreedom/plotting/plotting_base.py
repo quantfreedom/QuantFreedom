@@ -28,7 +28,7 @@ def plot_candles_1_ind_same_pane(
     candles: np.array,
     indicator: np.array,
     ind_name: str,
-    ind_color: str = "46, 145, 229",
+    ind_color: str = "#3EA3FF",
 ):
     datetimes = pd.to_datetime(candles[:, 0], unit="ms")
     fig = go.Figure(
@@ -45,11 +45,11 @@ def plot_candles_1_ind_same_pane(
                 x=datetimes,
                 y=indicator,
                 name=ind_name,
-                line_color=f"rgb({ind_color})",
+                line_color=ind_color,
             ),
         ]
     )
-    fig.update_layout(height=600, xaxis_rangeslider_visible=False)
+    fig.update_layout(height=800, xaxis_rangeslider_visible=False)
     fig.show()
 
 
@@ -57,7 +57,7 @@ def plot_candles_1_ind_dif_pane(
     candles: np.array,
     indicator: np.array,
     ind_name: str,
-    ind_color: str = "46, 145, 229",
+    ind_color: str = "#3EA3FF",
 ):
     datetimes = pd.to_datetime(candles[:, 0], unit="ms")
     fig = make_subplots(
@@ -85,7 +85,7 @@ def plot_candles_1_ind_dif_pane(
             x=datetimes,
             y=indicator,
             name=ind_name,
-            line_color=f"rgb({ind_color})",
+            line_color=ind_color,
         ),
         row=2,
         col=1,
@@ -98,13 +98,12 @@ def plot_candles_1_ind_dif_pane(
 def plot_rma(
     candles: np.array,
     indicator: np.array,
-    ind_name: str,
-    ind_color: str = "46, 145, 229",
+    ind_color: str = "#3EA3FF",
 ):
     return plot_candles_1_ind_same_pane(
         candles=candles,
         indicator=indicator,
-        ind_name=ind_name,
+        ind_name="RMA",
         ind_color=ind_color,
     )
 
@@ -112,13 +111,12 @@ def plot_rma(
 def plot_sma(
     candles: np.array,
     indicator: np.array,
-    ind_name: str,
-    ind_color: str = "46, 145, 229",
+    ind_color: str = "#3EA3FF",
 ):
     return plot_candles_1_ind_same_pane(
         candles=candles,
         indicator=indicator,
-        ind_name=ind_name,
+        ind_name="SMA",
         ind_color=ind_color,
     )
 
@@ -126,13 +124,12 @@ def plot_sma(
 def plot_ema(
     candles: np.array,
     indicator: np.array,
-    ind_name: str,
-    ind_color: str = "46, 145, 229",
+    ind_color: str = "#3EA3FF",
 ):
     return plot_candles_1_ind_same_pane(
         candles=candles,
         indicator=indicator,
-        ind_name=ind_name,
+        ind_name="EMA",
         ind_color=ind_color,
     )
 
@@ -140,13 +137,12 @@ def plot_ema(
 def plot_rsi(
     candles: np.array,
     indicator: np.array,
-    ind_name: str,
-    ind_color: str = "46, 145, 229",
+    ind_color: str = "#3EA3FF",
 ):
     return plot_candles_1_ind_dif_pane(
         candles=candles,
         indicator=indicator,
-        ind_name=ind_name,
+        ind_name="RSI",
         ind_color=ind_color,
     )
 
@@ -154,13 +150,12 @@ def plot_rsi(
 def plot_stdev(
     candles: np.array,
     indicator: np.array,
-    ind_name: str,
-    ind_color: str = "46, 145, 229",
+    ind_color: str = "#3EA3FF",
 ):
     return plot_candles_1_ind_dif_pane(
         candles=candles,
         indicator=indicator,
-        ind_name=ind_name,
+        ind_name="STDEV",
         ind_color=ind_color,
     )
 
@@ -169,7 +164,7 @@ def plot_bollinger_bands(
     candles: np.array,
     indicator: np.array,
     ul_rgb: str = "48, 123, 255",
-    basis_color: str = "255, 176, 0",
+    basis_color_rgb: str = "255, 176, 0",
 ):
     datetimes = pd.to_datetime(candles[:, 0], unit="ms")
     fig = go.Figure(
@@ -191,8 +186,8 @@ def plot_bollinger_bands(
             go.Scatter(
                 x=datetimes,
                 y=indicator[:, 1],
-                name="bb_sma",
-                line_color=f"rgb({basis_color})",
+                name="bb",
+                line_color=f"rgb({basis_color_rgb})",
             ),
             go.Candlestick(
                 x=datetimes,
@@ -204,7 +199,7 @@ def plot_bollinger_bands(
             ),
         ]
     )
-    fig.update_layout(height=600, xaxis_rangeslider_visible=False)
+    fig.update_layout(height=800, xaxis_rangeslider_visible=False)
     fig.show()
 
 
