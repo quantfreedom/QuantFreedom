@@ -258,7 +258,7 @@ class Mufex(Exchange):
         position_mode: PositionModeType,
         order_type: str,
         asset_size: float,
-        time_in_force: str,
+        time_in_force: str = "GoodTillCancel",
         price: float = None,
         triggerDirection: TriggerDirectionType = None,
         triggerPrice: str = None,

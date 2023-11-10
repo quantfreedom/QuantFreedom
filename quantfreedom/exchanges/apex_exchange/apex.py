@@ -40,7 +40,7 @@ class Apex(Exchange):
             )
             self.apex_ex.configs()
             self.apex_ex.get_account()
-        self.limitFeeRate = self.apex_ex.get_account()["data"]["takerFeeRate"]
+            self.limitFeeRate = self.apex_ex.get_account()["data"]["takerFeeRate"]
 
     def create_order(
         self,
@@ -52,7 +52,7 @@ class Apex(Exchange):
         limitFee=None,
         price: float = None,
         accountId=None,
-        time_in_force=None,
+        time_in_force: str = "GOOD_TIL_CANCEL",
         reduceOnly=False,
         triggerPrice=None,
         triggerPriceType=None,
@@ -95,18 +95,18 @@ class Apex(Exchange):
         asset_size: float,
     ):
         try:
-            price = self.apex_ex.get_worst_price(symbol=symbol, side=buy_sell.upper(), size="0.01")["data"][
+            price = self.apex_ex.get_worst_price(symbol=symbol, side=buy_sell.upper(), size="0.1")["data"][
                 "worstPrice"
             ]
-            order_id = self.create_order(
+            response_data = self.create_order(
                 symbol=symbol,
                 buy_sell=buy_sell,
                 order_type="market",
                 asset_size=asset_size,
                 price=price,
                 limitFeeRate=self.limitFeeRate,
-                time_in_force="IMMEDIATE_OR_CANCEL",
-            )["data"]["id"]
+            )
+            order_id = response_data["data"]["id"]
             return order_id
         except Exception as e:
             raise Exception(f"Apex create_entry_market_order -> {e}")
