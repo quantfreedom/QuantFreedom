@@ -108,6 +108,19 @@ def plot_rma(
     )
 
 
+def plot_wma(
+    candles: np.array,
+    indicator: np.array,
+    ind_color: str = "#3EA3FF",
+):
+    return plot_candles_1_ind_same_pane(
+        candles=candles,
+        indicator=indicator,
+        ind_name="WMA",
+        ind_color=ind_color,
+    )
+
+
 def plot_sma(
     candles: np.array,
     indicator: np.array,
@@ -177,7 +190,7 @@ def plot_bollinger_bands(
             ),
             go.Scatter(
                 x=datetimes,
-                y=indicator[:, 0],
+                y=indicator[:, 1],
                 name="upper",
                 line_color=f"rgb({ul_rgb})",
                 fillcolor=f"rgba({ul_rgb}, 0.07)",
@@ -185,8 +198,8 @@ def plot_bollinger_bands(
             ),
             go.Scatter(
                 x=datetimes,
-                y=indicator[:, 1],
-                name="bb",
+                y=indicator[:, 0],
+                name="basis",
                 line_color=f"rgb({basis_color_rgb})",
             ),
             go.Candlestick(
@@ -200,6 +213,72 @@ def plot_bollinger_bands(
         ]
     )
     fig.update_layout(height=800, xaxis_rangeslider_visible=False)
+    fig.show()
+
+
+def plot_macd(
+    candles: np.array,
+    indicator: np.array,
+    ul_rgb: str = "48, 123, 255",
+    basis_color_rgb: str = "255, 176, 0",
+):
+    datetimes = pd.to_datetime(candles[:, 0], unit="ms")
+    fig = make_subplots(
+        cols=1,
+        rows=2,
+        shared_xaxes=True,
+        subplot_titles=["Candles", "MACD"],
+        row_heights=[0.7, 0.3],
+        vertical_spacing=0.1,
+    )
+    # Candlestick chart for pricing
+    fig.append_trace(
+        go.Candlestick(
+            x=datetimes,
+            open=candles[:, 1],
+            high=candles[:, 2],
+            low=candles[:, 3],
+            close=candles[:, 4],
+            name="Candles",
+        ),
+        col=1,
+        row=1,
+    )
+    histogram = indicator[:, 0]
+    ind_shift = np.roll(histogram, 1)
+    ind_shift[0] = np.nan
+    colors = np.where(
+        (histogram >= 0),
+        np.where(ind_shift < histogram, "#26A69A", "#B2DFDB"),
+        np.where(ind_shift < histogram, "#FFCDD2", "#FF5252"),
+    )
+    fig.append_trace(
+        go.Bar(
+            x=datetimes,
+            y=histogram,
+            name="histogram",
+            marker_color=colors,
+        ),
+        row=2,
+        col=1,
+    )
+    fig.append_trace(
+        go.Scatter(
+            x=datetimes,
+            y=indicator[:, 1],
+            name="macd",
+            line_color="#2962FF",
+        ),
+        row=2,
+        col=1,
+    )
+    fig.append_trace(
+        go.Scatter(x=datetimes, y=indicator[:, 2], name="signal", line_color="#FF6D00"),
+        row=2,
+        col=1,
+    )
+    # Update options and show plot
+    fig.update_layout(height=1000, xaxis_rangeslider_visible=False)
     fig.show()
 
 

@@ -1,3 +1,4 @@
+from time import sleep
 import numpy as np
 from quantfreedom.exchanges.exchange import Exchange
 from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.um_futures import UMFutures
@@ -98,12 +99,23 @@ class BinanceUSDM(Exchange):
             if since_date_ms is None:
                 since_date_ms = until_date_ms - candles_to_dl_ms - 5000  # 5000 is to sub 5 seconds
 
-        return np.array(
-            self.binance_ex.klines(
-                symbol=symbol,
-                interval=ex_timeframe,
-                startTime=since_date_ms,
-                endTime=until_date_ms,
-            ),
-            dtype=np.float_,
-        )[:, :5]
+        b_candles = []
+        while since_date_ms + timeframe_in_ms < until_date_ms:
+            try:
+                b_data = self.binance_ex.klines(
+                    symbol=symbol,
+                    interval=ex_timeframe,
+                    startTime=since_date_ms,
+                    endTime=until_date_ms,
+                    limit=1500,
+                )
+                last_candle_time_ms = b_data[-1][0]
+                if last_candle_time_ms == since_date_ms:
+                    sleep(0.2)
+                else:
+                    b_candles.extend(b_data)
+                    since_date_ms = last_candle_time_ms + 2000
+            except Exception as e:
+                raise Exception(f"Apex get_candles - > {e}")
+        candles_np = np.array(b_candles, dtype=np.float_)[:, :5]
+        return candles_np
