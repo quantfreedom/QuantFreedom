@@ -94,10 +94,11 @@ class BinanceUSDM(Exchange):
                 until_date_ms = self.get_current_time_ms() - timeframe_in_ms
                 since_date_ms = until_date_ms - candles_to_dl_ms
             else:
-                until_date_ms = since_date_ms + candles_to_dl_ms - 5000  # 5000 is to add 5 seconds
+                until_date_ms = since_date_ms + candles_to_dl_ms - 5000  # 5000 is to sub 5 seconds
         else:
             if since_date_ms is None:
-                since_date_ms = until_date_ms - candles_to_dl_ms - 5000  # 5000 is to sub 5 seconds
+                since_date_ms = until_date_ms - candles_to_dl_ms
+                until_date_ms -= 5000
 
         b_candles = []
         while since_date_ms + timeframe_in_ms < until_date_ms:
