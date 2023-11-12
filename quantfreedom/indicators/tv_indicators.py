@@ -9,16 +9,40 @@ def sma_tv_calc(
     """
     Simple moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.sma
     """
-    len_adder = source.size - new_source.size
     new_source = source[~np.isnan(source)]
 
-    arr = np.cumsum(new_source, dtype=np.float_)
-    arr[length:] = (arr[length:] - arr[:-length]) / length
-
     sma = np.full_like(source, np.nan)
-    sma[len_adder + length :] = arr[length:]
+
+    len_adder = source.size - new_source.size
+    len_minus_one = length - 1
+
+    for i in range(len_minus_one, new_source.size):
+        sma[i + len_adder] = new_source[i - len_minus_one : i + 1].mean()
 
     return sma
+
+
+def wma_tv_calc(
+    source: np.array,
+    length: int,
+):
+    """
+    https://www.tradingview.com/pine-script-reference/v5/#fun_ta.wma
+    """
+    new_source = source[~np.isnan(source)]
+
+    weight = np.flip((length - np.arange(0, length)) * length)
+    norm = weight.sum()
+
+    wma = np.full_like(source, np.nan)
+
+    len_adder = source.size - new_source.size
+    len_minus_one = length - 1
+
+    for i in range(len_minus_one, new_source.size):
+        the_sum = (new_source[i - len_minus_one : i + 1] * weight).sum()
+        wma[i + len_adder] = the_sum / norm
+    return wma
 
 
 def ema_tv_calc(
@@ -30,14 +54,16 @@ def ema_tv_calc(
     """
     alpha = 2 / (length + 1)
 
-    arr = source[~np.isnan(source)]
-    len_adder = max(source.size - arr.size, length)
+    new_source = source[~np.isnan(source)]
+    len_adder = source.size - new_source.size
 
+    len_minus_one = length - 1
     ema = np.full_like(source, np.nan)
-    ema[len_adder] = source[len_adder]
+    ema[len_minus_one + len_adder] = source[len_minus_one + len_adder]
 
-    for i in range(len_adder + 1, ema.size):
-        ema[i] = alpha * source[i] + (1 - alpha) * ema[i - 1]
+    for i in range(length, new_source.size):
+        index = len_adder + i
+        ema[index] = alpha * new_source[i] + (1 - alpha) * ema[index - 1]
 
     return ema
 
@@ -51,14 +77,16 @@ def rma_tv_calc(
     """
     alpha = 1 / length
 
-    arr = source[~np.isnan(source)]
-    len_adder = max(source.size - arr.size, length)
+    new_source = source[~np.isnan(source)]
+    len_adder = source.size - new_source.size
 
+    len_minus_one = length - 1
     rma = np.full_like(source, np.nan)
-    rma[len_adder] = sma_tv_calc(source=source, length=len_adder)[len_adder]
+    rma[len_minus_one + len_adder] = new_source[:length].mean()
 
-    for i in range(len_adder + 1, rma.size):
-        rma[i] = alpha * source[i] + (1 - alpha) * rma[i - 1]
+    for i in range(length, new_source.size):
+        index = len_adder + i
+        rma[index] = alpha * new_source[i] + (1 - alpha) * rma[index - 1]
 
     return rma
 
@@ -69,38 +97,24 @@ def rma_tv_calc_2(source_1: np.array, source_2: np.array, length: int):
     """
     alpha = 1 / length
 
-    arr = source_1[~np.isnan(source_1)]
-    len_adder = max(source_1.size - arr.size, length)
+    new_source_1 = source_1[~np.isnan(source_1)]
+    new_source_2 = source_2[~np.isnan(source_2)]
+
+    len_adder = source_1.size - new_source_1.size
+    len_minus_one = length - 1
 
     rma_1 = np.full_like(source_1, np.nan)
     rma_2 = np.full_like(source_2, np.nan)
 
-    rma_1[len_adder] = sma_tv_calc(source=source_1, length=len_adder)[len_adder]
-    rma_2[len_adder] = sma_tv_calc(source=source_2, length=len_adder)[len_adder]
+    rma_1[len_minus_one + len_adder] = new_source_1[:length].mean()
+    rma_2[len_minus_one + len_adder] = new_source_2[:length].mean()
 
-    for i in range(len_adder + 1, rma_1.size):
-        rma_1[i] = alpha * source_1[i] + (1 - alpha) * rma_1[i - 1]
-        rma_2[i] = alpha * source_2[i] + (1 - alpha) * rma_2[i - 1]
+    for i in range(length, new_source_1.size):
+        index = len_adder + i
+        rma_1[index] = alpha * new_source_1[i] + (1 - alpha) * rma_1[index - 1]
+        rma_2[index] = alpha * new_source_2[i] + (1 - alpha) * rma_2[index - 1]
 
     return rma_1, rma_2
-
-
-def wma_tv_calc(
-    source: np.array,
-    length: int,
-):
-    arr = source[~np.isnan(source)]
-    len_adder = max(source.size - arr.size, length)
-
-    weight = np.flip((length - np.arange(0, length)) * length)
-    norm = weight.sum()
-    wma = np.full_like(source, np.nan)
-
-    looper = len_adder - 1
-    for i in range(len_adder - 1, source.size):
-        the_sum = (source[i - looper : i + 1] * weight).sum()
-        wma[i] = the_sum / norm
-    return wma
 
 
 def stdev_tv_calc(
@@ -110,15 +124,16 @@ def stdev_tv_calc(
     """
     Standard deviation https://www.tradingview.com/pine-script-reference/v5/#fun_ta.stdev
     """
-    arr = source[~np.isnan(source)]
-    len_adder = max(source.size - arr.size, length)
+    new_source = source[~np.isnan(source)]
+    len_adder = source.size - new_source.size
 
-    avg = sma_tv_calc(source=source, length=len_adder)
+    avg = sma_tv_calc(source=source, length=length)
 
     sum_square_dev = np.full_like(avg, np.nan)
-    looper = len_adder - 1
-    for i in range(avg.size - 1, looper, -1):
-        res = source[i - looper : i + 1] + -avg[i]
+    len_minus_one = length - 1
+    
+    for i in range(avg.size - 1, len_minus_one, -1):
+        res = source[i - len_minus_one : i + 1] + -avg[i]
         res_2 = np.where(np.absolute(res) <= 1e-10, 0, res)
         sum = np.where((np.absolute(res_2) < 1e-4) & (np.absolute(res_2) > 1e-10), 1e-5, res_2)
         sum_square_dev[i] = (sum * sum).sum()
@@ -201,8 +216,14 @@ def rsi_tv_calc(
 
     gains = np.where(pchgs > 0, pchgs, 0)
     losses = np.where(pchgs < 0, -(pchgs), 0)
+    gains[0] = np.nan
+    losses[0] = np.nan
 
-    rma_gains, rma_losses = rma_tv_calc_2(length=length, source_1=gains, source_2=losses)
+    rma_gains, rma_losses = rma_tv_calc_2(
+        source_1=gains,
+        source_2=losses,
+        length=length,
+    )
 
     rs = rma_gains / rma_losses
 
