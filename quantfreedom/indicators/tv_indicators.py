@@ -7,7 +7,7 @@ def sma_tv(
     length: int = 14,
 ):
     """
-    Simple moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.sma
+    Simple Moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.sma
     """
     new_source = source[~np.isnan(source)]
 
@@ -27,7 +27,7 @@ def wma_tv(
     length: int = 14,
 ):
     """
-    https://www.tradingview.com/pine-script-reference/v5/#fun_ta.wma
+    Weighted Moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.wma
     """
     new_source = source[~np.isnan(source)]
 
@@ -50,7 +50,7 @@ def ema_tv(
     length: int = 14,
 ):
     """
-    Exponential moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.ema
+    Exponential Moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.ema
     """
     alpha = 2 / (length + 1)
 
@@ -73,7 +73,7 @@ def rma_tv(
     length: int = 14,
 ):
     """
-    Relative strength index Moving Average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma
+    Relative strength index Moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma
     """
     alpha = 1 / length
 
@@ -93,7 +93,7 @@ def rma_tv(
 
 def rma_tv_2(source_1: np.array, source_2: np.array, length: int = 14):
     """
-    Relative strength index moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma
+    Relative strength index Moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma
     """
     alpha = 1 / length
 
@@ -235,6 +235,10 @@ def supertrend_tv(
     atr_length: int = 10,
     factor: int = 3,
 ):
+    """
+    return super trend, direction
+    Super Trend https://www.tradingview.com/pine-script-reference/v5/#fun_ta.supertrend
+    """
     atr = atr_tv(candles=candles, length=atr_length)
     source = (candles[:, 2] + candles[:, 3]) / 2
     close = candles[:, 4]
@@ -252,26 +256,25 @@ def supertrend_tv(
         current_close = close[i]
 
         prev_close = close[i - 1]
-        prev_super_trend = super_trend[i - 1]
-
-        # Upper Band
-        prev_upper_band = upper_band
-        upper_band = current_source + factor * current_atr
-
-        if not (upper_band < prev_upper_band or prev_close > prev_upper_band):
-            upper_band = prev_upper_band
 
         # Lower band
         prev_lower_band = lower_band
         lower_band = current_source - factor * current_atr
 
-        if not (lower_band > prev_lower_band or prev_close < prev_lower_band):
+        if lower_band <= prev_lower_band and prev_close >= prev_lower_band:
             lower_band = prev_lower_band
+
+        # Upper Band
+        prev_upper_band = upper_band
+        upper_band = current_source + factor * current_atr
+
+        if upper_band >= prev_upper_band and prev_close <= prev_upper_band:
+            upper_band = prev_upper_band
 
         direction[i] = -1
         super_trend[i] = lower_band
 
-        if prev_super_trend == prev_upper_band:
+        if super_trend[i - 1] == prev_upper_band:
             if current_close <= upper_band:
                 direction[i] = 1
                 super_trend[i] = upper_band

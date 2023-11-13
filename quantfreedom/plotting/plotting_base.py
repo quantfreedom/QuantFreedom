@@ -24,39 +24,6 @@ except NameError:
 bg_color = "#0b0b18"
 
 
-def plot_supertrend(
-    candles: np.array,
-    super_trend: np.array,
-):
-    datetimes = pd.to_datetime(candles[:, 0], unit="ms")
-    lower = np.where(super_trend[:, 1] < 0, super_trend[:, 0], np.nan)
-    upper = np.where(super_trend[:, 1] > 0, super_trend[:, 0], np.nan)
-    fig = go.Figure(
-        data=[
-            go.Candlestick(
-                x=datetimes,
-                open=candles[:, 1],
-                high=candles[:, 2],
-                low=candles[:, 3],
-                close=candles[:, 4],
-                name="Candles",
-            ),
-            go.Scatter(
-                x=datetimes,
-                y=upper,
-                name="Upper Band",
-            ),
-            go.Scatter(
-                x=datetimes,
-                y=lower,
-                name="Lower Band",
-            ),
-        ]
-    )
-    fig.update_layout(height=800, xaxis_rangeslider_visible=False)
-    fig.show()
-
-
 def plot_candles_1_ind_same_pane(
     candles: np.array,
     indicator: np.array,
@@ -124,6 +91,39 @@ def plot_candles_1_ind_dif_pane(
         col=1,
     )
 
+    fig.update_layout(height=800, xaxis_rangeslider_visible=False)
+    fig.show()
+
+
+def plot_supertrend(
+    candles: np.array,
+    indicator: np.array,
+):
+    datetimes = pd.to_datetime(candles[:, 0], unit="ms")
+    lower = np.where(indicator[:, 1] < 0, indicator[:, 0], np.nan)
+    upper = np.where(indicator[:, 1] > 0, indicator[:, 0], np.nan)
+    fig = go.Figure(
+        data=[
+            go.Candlestick(
+                x=datetimes,
+                open=candles[:, 1],
+                high=candles[:, 2],
+                low=candles[:, 3],
+                close=candles[:, 4],
+                name="Candles",
+            ),
+            go.Scatter(
+                x=datetimes,
+                y=upper,
+                name="Upper Band",
+            ),
+            go.Scatter(
+                x=datetimes,
+                y=lower,
+                name="Lower Band",
+            ),
+        ]
+    )
     fig.update_layout(height=800, xaxis_rangeslider_visible=False)
     fig.show()
 
@@ -252,8 +252,6 @@ def plot_bollinger_bands(
 def plot_macd(
     candles: np.array,
     indicator: np.array,
-    ul_rgb: str = "48, 123, 255",
-    basis_color_rgb: str = "255, 176, 0",
 ):
     datetimes = pd.to_datetime(candles[:, 0], unit="ms")
     fig = make_subplots(
@@ -261,7 +259,7 @@ def plot_macd(
         rows=2,
         shared_xaxes=True,
         subplot_titles=["Candles", "MACD"],
-        row_heights=[0.7, 0.3],
+        row_heights=[0.6, 0.4],
         vertical_spacing=0.1,
     )
     # Candlestick chart for pricing
@@ -311,7 +309,7 @@ def plot_macd(
         col=1,
     )
     # Update options and show plot
-    fig.update_layout(height=1000, xaxis_rangeslider_visible=False)
+    fig.update_layout(height=800, xaxis_rangeslider_visible=False)
     fig.show()
 
 
