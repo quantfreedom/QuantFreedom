@@ -24,6 +24,34 @@ except NameError:
 bg_color = "#0b0b18"
 
 
+def plot_supertrend(
+    candles: np.array,
+    super_trend: np.array,
+    direction: np.array = None,
+):
+    datetimes = pd.to_datetime(candles[:, 0], unit="ms")
+    fig = go.Figure(
+        data=[
+            go.Candlestick(
+                x=datetimes,
+                open=candles[:, 1],
+                high=candles[:, 2],
+                low=candles[:, 3],
+                close=candles[:, 4],
+                name="Candles",
+            ),
+            go.Scatter(
+                x=datetimes,
+                y=super_trend,
+                name="SuperTrend",
+                # line_color=ind_color,
+            ),
+        ]
+    )
+    fig.update_layout(height=800, xaxis_rangeslider_visible=False)
+    fig.show()
+
+
 def plot_candles_1_ind_same_pane(
     candles: np.array,
     indicator: np.array,

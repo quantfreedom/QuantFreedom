@@ -2,9 +2,9 @@ from typing import Callable
 import numpy as np
 
 
-def sma_tv_calc(
+def sma_tv(
     source: np.array,
-    length: int,
+    length: int = 14,
 ):
     """
     Simple moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.sma
@@ -22,9 +22,9 @@ def sma_tv_calc(
     return sma
 
 
-def wma_tv_calc(
+def wma_tv(
     source: np.array,
-    length: int,
+    length: int = 14,
 ):
     """
     https://www.tradingview.com/pine-script-reference/v5/#fun_ta.wma
@@ -45,9 +45,9 @@ def wma_tv_calc(
     return wma
 
 
-def ema_tv_calc(
+def ema_tv(
     source: np.array,
-    length: int,
+    length: int = 14,
 ):
     """
     Exponential moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.ema
@@ -68,9 +68,9 @@ def ema_tv_calc(
     return ema
 
 
-def rma_tv_calc(
+def rma_tv(
     source: np.array,
-    length: int,
+    length: int = 14,
 ):
     """
     Relative strength index Moving Average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma
@@ -91,7 +91,7 @@ def rma_tv_calc(
     return rma
 
 
-def rma_tv_calc_2(source_1: np.array, source_2: np.array, length: int):
+def rma_tv_2(source_1: np.array, source_2: np.array, length: int = 14):
     """
     Relative strength index moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma
     """
@@ -117,14 +117,14 @@ def rma_tv_calc_2(source_1: np.array, source_2: np.array, length: int):
     return rma_1, rma_2
 
 
-def stdev_tv_calc(
+def stdev_tv(
     source: np.array,
-    length: np.array,
+    length: int = 4,
 ):
     """
     Standard deviation https://www.tradingview.com/pine-script-reference/v5/#fun_ta.stdev
     """
-    avg = sma_tv_calc(source=source, length=length)
+    avg = sma_tv(source=source, length=length)
 
     sum_square_dev = np.full_like(avg, np.nan)
 
@@ -140,13 +140,13 @@ def stdev_tv_calc(
     return final
 
 
-def macd_tv_calc(
+def macd_tv(
     source: np.array,
     fast_length: int = 12,
     slow_length: int = 26,
     signal_smoothing: int = 9,
-    oscillator_type: Callable = ema_tv_calc,
-    signal_ma_type: Callable = ema_tv_calc,
+    oscillator_type: Callable = ema_tv,
+    signal_ma_type: Callable = ema_tv,
 ):
     """
     return order = histogram, macd, signal
@@ -161,49 +161,51 @@ def macd_tv_calc(
     return final_macd
 
 
-def bb_tv_calc(
+def bb_tv(
     source: np.array,
-    length: int,
-    multi: float,
-    basis_ma_type: Callable = sma_tv_calc,
+    length: int = 20,
+    multi: float = 2,
+    basis_ma_type: Callable = sma_tv,
 ):
     """
     returns basis, upper, lower
     Bollinger bands https://www.tradingview.com/pine-script-reference/v5/#fun_ta.bb
     """
     basis = basis_ma_type(source=source, length=length)
-    dev = multi * stdev_tv_calc(source=source, length=length)
+    dev = multi * stdev_tv(source=source, length=length)
     upper = basis + dev
     lower = basis - dev
     bb = np.array([basis, upper, lower]).T
     return bb
 
 
-def atr_tv_calc(
+def atr_tv(
     candles: np.array,
-    length: int,
-    smoothing_type: Callable = rma_tv_calc,
+    length: int = 14,
+    smoothing_type: Callable = rma_tv,
 ):
     """
     Average true range smoothing https://www.tradingview.com/pine-script-reference/v5/#fun_ta.atr
     """
     high = candles[:, 2]
     low = candles[:, 3]
-    close_shift = np.roll(candles[:, 4], 1)
+    prev_close = np.roll(candles[:, 4], 1)
+    prev_close[0] = np.nan
     tr = np.maximum(
         np.maximum(
             high - low,
-            np.absolute(high - close_shift),
+            np.absolute(high - prev_close),
         ),
-        np.absolute(low - close_shift),
+        np.absolute(low - prev_close),
     )
+    tr[0] = np.nan
     atr = smoothing_type(source=tr, length=length)
     return atr
 
 
-def rsi_tv_calc(
+def rsi_tv(
     source: np.array,
-    length: int,
+    length: int = 14,
 ):
     """
     Relative strength index https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rsi
@@ -217,7 +219,7 @@ def rsi_tv_calc(
     gains[0] = np.nan
     losses[0] = np.nan
 
-    rma_gains, rma_losses = rma_tv_calc_2(
+    rma_gains, rma_losses = rma_tv_2(
         source_1=gains,
         source_2=losses,
         length=length,
@@ -227,3 +229,54 @@ def rsi_tv_calc(
 
     rsi = 100 - (100 / (1 + rs))
     return rsi
+
+
+def supertrend_tv(
+    candles: np.array,
+    atr_length: int = 10,
+    factor: int = 3,
+):
+    atr = atr_tv(candles=candles, length=atr_length)
+    source = (candles[:, 2] + candles[:, 3]) / 2
+    close = candles[:, 4]
+    super_trend = np.full_like(close, np.nan)
+    direction = np.full_like(close, np.nan)
+
+    upper_band = source[atr_length] + factor * atr[atr_length]
+    lower_band = source[atr_length] - factor * atr[atr_length]
+    super_trend[atr_length] = upper_band
+    direction[atr_length] = 1
+
+    for i in range(atr_length + 1, candles.shape[0]):
+        current_source = source[i]
+        current_atr = atr[i]
+        current_close = close[i]
+
+        prev_close = close[i - 1]
+        prev_super_trend = super_trend[i - 1]
+
+        prev_upper_band = upper_band
+        upper_band = current_source + factor * current_atr
+
+        if upper_band >= prev_upper_band or prev_close <= prev_upper_band:
+            upper_band = prev_upper_band
+
+        prev_lower_band = lower_band
+        lower_band = current_source + factor * current_atr
+
+        if lower_band <= prev_lower_band or prev_close >= prev_lower_band:
+            lower_band = prev_lower_band
+
+        direction[i] = 1
+        super_trend[i] = upper_band
+
+        if prev_super_trend == prev_upper_band:
+            if current_close > upper_band:
+                direction[i] = -1
+                super_trend[i] = lower_band
+        else:
+            if current_close > lower_band:
+                direction[i] = -1
+                super_trend[i] = lower_band
+
+    return super_trend, direction

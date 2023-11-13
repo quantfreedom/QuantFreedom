@@ -4,6 +4,7 @@ import pandas as pd
 from logging import getLogger
 from quantfreedom.enums import AccountState, DynamicOrderSettings, DynamicOrderSettingsArrays, OrderResult
 from quantfreedom.exchanges.apex_exchange.apex import Apex
+from quantfreedom.exchanges.binance_exchange.binance_us import BinanceUS
 from quantfreedom.exchanges.binance_exchange.binance_usdm import BINANCE_USDM_TIMEFRAMES, BinanceUSDM
 from quantfreedom.exchanges.exchange import Exchange
 from quantfreedom.exchanges.mufex_exchange.mufex import Mufex
@@ -21,12 +22,21 @@ def dl_ex_candles(
 ):
     """
     exchange param
+        binance us = binance_us | default candles to dl is 1500
         binance futures = binance_usdm | default candles to dl is 1500
         apex = apex | default candles to dl is 200
         mufex = mufex | default candles to dl is 1500
     """
     if exchange.lower() == "binance_usdm":
         return BinanceUSDM(use_test_net=False).get_candles(
+            symbol=symbol,
+            timeframe=timeframe,
+            since_date_ms=since_date_ms,
+            until_date_ms=until_date_ms,
+            candles_to_dl=1500 if candles_to_dl is None else candles_to_dl,
+        )
+    elif exchange.lower() == "binance_us":
+        return BinanceUS().get_candles(
             symbol=symbol,
             timeframe=timeframe,
             since_date_ms=since_date_ms,
