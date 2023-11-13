@@ -198,7 +198,6 @@ def atr_tv(
         ),
         np.absolute(low - prev_close),
     )
-    tr[0] = np.nan
     atr = smoothing_type(source=tr, length=length)
     return atr
 
@@ -255,28 +254,30 @@ def supertrend_tv(
         prev_close = close[i - 1]
         prev_super_trend = super_trend[i - 1]
 
+        # Upper Band
         prev_upper_band = upper_band
         upper_band = current_source + factor * current_atr
 
-        if upper_band >= prev_upper_band or prev_close <= prev_upper_band:
+        if not (upper_band < prev_upper_band or prev_close > prev_upper_band):
             upper_band = prev_upper_band
 
+        # Lower band
         prev_lower_band = lower_band
-        lower_band = current_source + factor * current_atr
+        lower_band = current_source - factor * current_atr
 
-        if lower_band <= prev_lower_band or prev_close >= prev_lower_band:
+        if not (lower_band > prev_lower_band or prev_close < prev_lower_band):
             lower_band = prev_lower_band
 
-        direction[i] = 1
-        super_trend[i] = upper_band
+        direction[i] = -1
+        super_trend[i] = lower_band
 
         if prev_super_trend == prev_upper_band:
-            if current_close > upper_band:
-                direction[i] = -1
-                super_trend[i] = lower_band
+            if current_close <= upper_band:
+                direction[i] = 1
+                super_trend[i] = upper_band
         else:
-            if current_close > lower_band:
-                direction[i] = -1
-                super_trend[i] = lower_band
-
-    return super_trend, direction
+            if current_close < lower_band:
+                direction[i] = 1
+                super_trend[i] = upper_band
+    final = np.array([super_trend, direction]).T
+    return final

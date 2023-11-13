@@ -27,9 +27,10 @@ bg_color = "#0b0b18"
 def plot_supertrend(
     candles: np.array,
     super_trend: np.array,
-    direction: np.array = None,
 ):
     datetimes = pd.to_datetime(candles[:, 0], unit="ms")
+    lower = np.where(super_trend[:, 1] < 0, super_trend[:, 0], np.nan)
+    upper = np.where(super_trend[:, 1] > 0, super_trend[:, 0], np.nan)
     fig = go.Figure(
         data=[
             go.Candlestick(
@@ -42,9 +43,13 @@ def plot_supertrend(
             ),
             go.Scatter(
                 x=datetimes,
-                y=super_trend,
-                name="SuperTrend",
-                # line_color=ind_color,
+                y=upper,
+                name="Upper Band",
+            ),
+            go.Scatter(
+                x=datetimes,
+                y=lower,
+                name="Lower Band",
             ),
         ]
     )
