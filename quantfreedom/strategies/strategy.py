@@ -1,5 +1,10 @@
 from datetime import datetime
 from logging import getLogger
+from quantfreedom.indicators.tv_indicators import rsi_tv
+
+from typing import NamedTuple
+
+from quantfreedom.enums import CandleBodyType, CandleProcessingType
 import os
 import numpy as np
 import pandas as pd
@@ -26,16 +31,11 @@ except NameError:
     app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
 
 bg_color = "#0b0b18"
-from quantfreedom.indicators.tv_indicators import rsi_rma_tv_calc
-
-from typing import NamedTuple
-
-from quantfreedom.enums import CandleBodyType, CandleProcessingType, LoggerFuncType, StringerFuncType
 
 
 class IndicatorSettingsArrays(NamedTuple):
     rsi_is_below: np.array
-    rsi_period: np.array
+    rsi_length: np.array
 
 
 def create_ind_cart_product(ind_set_arrays: IndicatorSettingsArrays):
@@ -58,7 +58,7 @@ def create_ind_cart_product(ind_set_arrays: IndicatorSettingsArrays):
 
     return IndicatorSettingsArrays(
         rsi_is_below=out.T[0],
-        rsi_period=out.T[1].astype(np.int_),
+        rsi_length=out.T[1].astype(np.int_),
     )
 
 
@@ -67,67 +67,59 @@ class Strategy:
 
     def __init__(
         self,
-        candle_processing_type: CandleProcessingType,
         rsi_is_below: np.array,
-        rsi_period: np.array,
+        rsi_length: np.array,
     ) -> None:
         logger.debug("Creating Strategy class init")
 
         ind_set_arrays = IndicatorSettingsArrays(
             rsi_is_below=rsi_is_below,
-            rsi_period=rsi_period,
+            rsi_length=rsi_length,
         )
         self.indicator_settings_arrays = create_ind_cart_product(ind_set_arrays=ind_set_arrays)
 
-        if candle_processing_type == CandleProcessingType.Backtest:
-            self.set_indicator = self.set_backtesting_indicator
-        elif candle_processing_type == CandleProcessingType.LiveTrading:
-            self.set_indicator = self.set_live_trading_indicator
+    def set_entries_exits_array(
+        self,
+        candles: np.array,
+        ind_set_index: int,
+    ):
+        try:
+            rsi_is_below = self.indicator_settings_arrays.rsi_is_below[ind_set_index]
+            rsi_length = self.indicator_settings_arrays.rsi_length[ind_set_index]
+            rsi = rsi_tv(
+                source=candles[:, CandleBodyType.Close],
+                length=rsi_length,
+            )
+            rsi = np.around(rsi, 2)
+            logger.info(f"Created RSI rsi_is_below= {rsi_is_below} rsi_length= {rsi_length}")
+
+            self.strategy_entries = np.where(rsi < rsi_is_below, True, False)
+            self.strategy_exits = np.full_like(rsi, np.nan)
+
+        except Exception as e:
+            logger.info(f"Exception set_backtesting_indicator -> {e}")
+            raise Exception(f"Exception set_backtesting_indicator -> {e}")
 
     def set_ind_settings(self, ind_set_index: int):
         self.rsi_is_below = self.indicator_settings_arrays.rsi_is_below[ind_set_index]
-        self.rsi_period = self.indicator_settings_arrays.rsi_period[ind_set_index]
+        self.rsi_length = self.indicator_settings_arrays.rsi_length[ind_set_index]
         logger.debug("Set Indicator Settings")
 
-    def log_indicator_settings(self):
-        logger.info(
-            f"Indicator Settings\n\
-rsi_is_below={self.rsi_is_below}\n\
-rsi_period={self.rsi_period}".strip()
-        )
-
-    def set_backtesting_indicator(
-        self,
-        bar_index: int,
-        candles: np.array,
-    ):
-        start = max(bar_index - self.starting_bar, 0)
+    def set_indicator(self, closes: np.array):
         try:
-            self.rsi = rsi_rma_tv_calc(
-                source=candles[start : bar_index + 1, CandleBodyType.Close],
-                length=self.rsi_period,
+            self.rsi = rsi_tv(
+                source=closes,
+                length=self.rsi_length,
             )
-            self.rsi = np.around(self.rsi, 3)
-            logger.info(f"Created RSI rsi_is_below= {self.rsi_is_below} rsi_period= {self.rsi_period}")
+            self.rsi = np.around(self.rsi, 2)
+            logger.info(f"Created RSI rsi_is_below= {self.rsi_is_below} rsi_length= {self.rsi_length}")
         except Exception as e:
-            logger.info(f"Exception creating RSI -> {e}")
-            raise Exception(f"Exception creating RSI -> {e}")
+            logger.info(f"Exception set_live_trading_indicator -> {e}")
+            raise Exception(f"Exception set_live_trading_indicator -> {e}")
 
-    def set_live_trading_indicator(self, bar_index: int, candles: np.array):
+    def live_evaluate(self, candles: np.array):
         try:
-            self.rsi = rsi_rma_tv_calc(
-                source=candles[:, CandleBodyType.Close],
-                length=self.rsi_period,
-            )
-            self.rsi = np.around(self.rsi, 3)
-            logger.info(f"Created RSI rsi_is_below= {self.rsi_is_below} rsi_period= {self.rsi_period}")
-        except Exception as e:
-            logger.info(f"Exception creating rsi -> {e}")
-            raise Exception(f"Exception creating rsi -> {e}")
-
-    def evaluate(self, bar_index: int, candles: np.array):
-        try:
-            self.set_indicator(bar_index=bar_index, candles=candles)
+            self.set_indicator(closes=candles[:, CandleBodyType.Close])
             if self.rsi[-1] < self.rsi_is_below:
                 logger.info("\n\n")
                 logger.info(f"Entry time!!! rsi= {self.rsi[-1]} < rsi_is_below= {self.rsi_is_below}")
@@ -138,7 +130,7 @@ rsi_period={self.rsi_period}".strip()
         except Exception as e:
             raise Exception(f"Exception evalutating strat -> {e}")
 
-    def get_strategy_plot_filename(self, candles):
+    def get_strategy_plot_filename(self, candles: np.array):
         logger.debug("Getting entry plot file")
         last_20 = self.rsi[-20:]
         last_20_datetimes = pd.to_datetime(candles[-20:, CandleBodyType.Timestamp], unit="ms")
@@ -147,7 +139,7 @@ rsi_period={self.rsi_period}".strip()
         fig.add_scatter(
             x=last_20_datetimes,
             y=last_20,
-            name=f"Liq Price",
+            name="RSI",
         )
         fig.update_layout(xaxis_rangeslider_visible=False)
         fig.show()

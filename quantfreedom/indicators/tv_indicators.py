@@ -211,10 +211,10 @@ def rsi_tv(
     """
     prices_shift = np.roll(source, 1)
     prices_shift[0] = np.nan
-    pchgs = (source - prices_shift) / prices_shift
+    change = source - prices_shift
 
-    gains = np.where(pchgs > 0, pchgs, 0)
-    losses = np.where(pchgs < 0, -(pchgs), 0)
+    gains = np.where(change > 0, change, 0)
+    losses = np.where(change < 0, -(change), 0)
     gains[0] = np.nan
     losses[0] = np.nan
 

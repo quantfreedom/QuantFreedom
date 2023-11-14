@@ -220,7 +220,7 @@ class AccountState(NamedTuple):
 
 
 class BacktestSettings(NamedTuple):
-    array_size: int = 1000
+    array_size: int = 10000
     gains_pct_filter: float = -np.inf
     total_trade_filter: int = -1
     upside_filter: float = -np.inf
@@ -229,7 +229,6 @@ class BacktestSettings(NamedTuple):
 class DynamicOrderSettingsArrays(NamedTuple):
     max_equity_risk_pct: np.array
     max_trades: np.array
-    num_candles: np.array
     risk_account_pct_size: np.array
     risk_reward: np.array
     sl_based_on_add_pct: np.array
@@ -246,7 +245,6 @@ class DynamicOrderSettingsArrays(NamedTuple):
 class DynamicOrderSettings(NamedTuple):
     max_equity_risk_pct: float
     max_trades: int
-    num_candles: int
     risk_account_pct_size: float
     risk_reward: float
     sl_based_on_add_pct: float
@@ -301,6 +299,7 @@ class StaticOrderSettings(NamedTuple):
     pg_min_max_sl_bcb: int
     sl_strategy_type: int
     sl_to_be_bool: bool
+    starting_bar: int
     starting_equity: float
     tp_fee_type: int
     tp_strategy_type: int
