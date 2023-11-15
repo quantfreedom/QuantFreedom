@@ -114,7 +114,6 @@ def get_dos(
     return DynamicOrderSettings(
         max_equity_risk_pct=dos_cart_arrays.max_equity_risk_pct[dos_index],
         max_trades=dos_cart_arrays.max_trades[dos_index],
-        num_candles=dos_cart_arrays.num_candles[dos_index],
         risk_account_pct_size=dos_cart_arrays.risk_account_pct_size[dos_index],
         risk_reward=dos_cart_arrays.risk_reward[dos_index],
         sl_based_on_add_pct=dos_cart_arrays.sl_based_on_add_pct[dos_index],
@@ -150,18 +149,17 @@ def dos_cart_product(dos_arrays: DynamicOrderSettingsArrays):
     return DynamicOrderSettingsArrays(
         max_equity_risk_pct=out.T[0] / 100,
         max_trades=out.T[1].astype(np.int_),
-        num_candles=out.T[2].astype(np.int_),
-        risk_account_pct_size=out.T[3] / 100,
-        risk_reward=out.T[4],
-        sl_based_on_add_pct=out.T[5] / 100,
-        sl_based_on_lookback=out.T[6].astype(np.int_),
-        sl_bcb_type=out.T[7].astype(np.int_),
-        sl_to_be_cb_type=out.T[8].astype(np.int_),
-        sl_to_be_when_pct=out.T[9] / 100,
-        static_leverage=out.T[10],
-        trail_sl_bcb_type=out.T[11].astype(np.int_),
-        trail_sl_by_pct=out.T[12] / 100,
-        trail_sl_when_pct=out.T[13] / 100,
+        risk_account_pct_size=out.T[2] / 100,
+        risk_reward=out.T[3],
+        sl_based_on_add_pct=out.T[4] / 100,
+        sl_based_on_lookback=out.T[5].astype(np.int_),
+        sl_bcb_type=out.T[6].astype(np.int_),
+        sl_to_be_cb_type=out.T[7].astype(np.int_),
+        sl_to_be_when_pct=out.T[8] / 100,
+        static_leverage=out.T[9],
+        trail_sl_bcb_type=out.T[10].astype(np.int_),
+        trail_sl_by_pct=out.T[11] / 100,
+        trail_sl_when_pct=out.T[12] / 100,
     )
 
 
@@ -209,12 +207,14 @@ def fill_order_records(
     return or_index + 1
 
 
-def log_dynamic_order_settings(dynamic_order_settings: DynamicOrderSettingsArrays):
+def log_dynamic_order_settings(
+    dynamic_order_settings: DynamicOrderSettingsArrays,
+    dos_index: int,
+):
     logger.info(
-        f"Set Dynamic Order Settings\n\
+        f"Dynamic Order settings index= {dos_index}\n\
 max_equity_risk_pct={round(dynamic_order_settings.max_equity_risk_pct * 100, 3)}\n\
 max_trades={dynamic_order_settings.max_trades}\n\
-num_candles={dynamic_order_settings.num_candles}\n\
 risk_account_pct_size={round(dynamic_order_settings.risk_account_pct_size * 100, 3)}\n\
 risk_reward={dynamic_order_settings.risk_reward}\n\
 sl_based_on_add_pct={round(dynamic_order_settings.sl_based_on_add_pct * 100, 3)}\n\

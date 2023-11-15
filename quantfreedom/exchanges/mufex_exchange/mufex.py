@@ -60,6 +60,7 @@ class Mufex(Exchange):
             "MF-ACCESS-SIGN-TYPE": "2",
             "MF-ACCESS-TIMESTAMP": timestamp,
             "MF-ACCESS-RECV-WINDOW": "5000",
+            "X-Referer": "A6JVVHCXZ",
             "Content-Type": "application/json",
         }
 

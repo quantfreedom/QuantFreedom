@@ -76,24 +76,21 @@ def run_df_backtest(
     result_records_filled = 0
 
     for ind_set_index in range(total_indicator_settings):
-        strategy.set_ind_settings(
+        strategy.set_entries_exits_array(
+            candles=candles,
             ind_set_index=ind_set_index,
         )
 
         for dos_index in range(total_order_settings):
-            logger.info(f"Indicator settings index= {ind_set_index}")
-            strategy.log_indicator_settings()
-
-            logger.info(f"Dynamic Order settings index= {dos_index}")
+            strategy.log_indicator_settings(ind_set_index=ind_set_index)
             dynamic_order_settings = get_dos(
                 dos_cart_arrays=dos_cart_arrays,
                 dos_index=dos_index,
             )
-            log_dynamic_order_settings(dynamic_order_settings=dynamic_order_settings)
-
-            starting_bar = dynamic_order_settings.num_candles - 1
-            strategy.starting_bar = starting_bar
-            logger.debug(f"Starting Bar= {starting_bar}")
+            log_dynamic_order_settings(
+                dynamic_order_settings=dynamic_order_settings,
+                dos_index=dos_index,
+            )
 
             pnl_array = np.full(shape=round(total_bars / 3), fill_value=np.nan)
             filled_pnl_counter = 0
@@ -104,7 +101,7 @@ def run_df_backtest(
 
             logger.debug("Set order variables, class dos and pnl array")
 
-            for bar_index in range(starting_bar, total_bars - 1):
+            for bar_index in range(static_os.starting_bar - 1, total_bars):
                 logger.info("\n\n")
                 timestamp = pd.to_datetime(candles[bar_index, CandleBodyType.Timestamp], unit="ms")
                 logger.info(
@@ -159,7 +156,7 @@ def run_df_backtest(
                     logger.debug("Not in a pos so not checking SL Liq or TP")
 
                 logger.debug("strategy evaluate")
-                if strategy.evaluate(bar_index=bar_index, candles=candles):
+                if strategy.entries_strat[bar_index]:
                     try:
                         logger.debug("calculate_stop_loss")
                         sl_price = order.calculate_stop_loss(
@@ -330,29 +327,30 @@ def or_backtest(
         exchange_settings=exchange_settings,
     )
 
-    strategy.set_ind_settings(ind_set_index=ind_set_index)
-    logger.info(f"Indicator settings index= {ind_set_index}")
-    strategy.log_indicator_settings()
+    strategy.set_entries_exits_array(
+        candles=candles,
+        ind_set_index=ind_set_index,
+    )
+    strategy.log_indicator_settings(ind_set_index=ind_set_index)
 
-    logger.info(f"Dynamic Order settings index= {dos_index}")
-    dynamic_order_settings = get_dos(dos_cart_arrays=dos_cart_arrays, dos_index=dos_index)
-    log_dynamic_order_settings(dynamic_order_settings=dynamic_order_settings)
-
-    starting_bar = dynamic_order_settings.num_candles - 1
-    strategy.starting_bar = starting_bar
-    logger.debug(f"Starting Bar= {starting_bar}")
+    dynamic_order_settings = get_dos(
+        dos_cart_arrays=dos_cart_arrays,
+        dos_index=dos_index,
+    )
+    log_dynamic_order_settings(
+        dynamic_order_settings=dynamic_order_settings,
+        dos_index=dos_arrays,
+    )
 
     order.update_class_dos(dynamic_order_settings=dynamic_order_settings)
     order.set_order_variables(equity=starting_equity)
-
-    logger.debug("Set order variables, class dos and pnl array")
 
     total_bars = candles.shape[0]
 
     or_filled = 0
     order_records = np.empty(shape=int(total_bars / 3), dtype=or_dt)
 
-    for bar_index in range(starting_bar, total_bars - 1):
+    for bar_index in range(static_os.starting_bar - 1, total_bars):
         logger.info("\n\n")
         pd_timestamp = pd.to_datetime(candles[bar_index, CandleBodyType.Timestamp], unit="ms")
         logger.info(f"ind_idx= {ind_set_index} dos_idx= {dos_index} bar_idx= {bar_index} timestamp= {pd_timestamp}")
@@ -439,7 +437,7 @@ def or_backtest(
             logger.debug("Not in a pos so not checking SL Liq or TP")
 
         logger.debug("strategy evaluate")
-        if strategy.evaluate(bar_index=bar_index, candles=candles):
+        if strategy.entries_strat[bar_index]:
             try:
                 logger.debug("calculate_stop_loss")
                 sl_price = order.calculate_stop_loss(
@@ -537,7 +535,7 @@ def or_backtest(
             except Exception as e:
                 logger.error(f"Exception hit in eval strat -> {e}")
                 pass
-    order_records_df = order_records_to_df(order_records)
+    order_records_df = order_records_to_df(order_records[:or_filled])
     if plot_results:
         plot_or_results(candles=candles, order_records_df=order_records_df)
     return order_records_df

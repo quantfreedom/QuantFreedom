@@ -84,22 +84,28 @@ class Strategy:
         ind_set_index: int,
     ):
         try:
-            rsi_is_below = self.indicator_settings_arrays.rsi_is_below[ind_set_index]
-            rsi_length = self.indicator_settings_arrays.rsi_length[ind_set_index]
+            self.rsi_is_below = self.indicator_settings_arrays.rsi_is_below[ind_set_index]
+            self.rsi_length = self.indicator_settings_arrays.rsi_length[ind_set_index]
             rsi = rsi_tv(
                 source=candles[:, CandleBodyType.Close],
-                length=rsi_length,
+                length=self.rsi_length,
             )
             rsi = np.around(rsi, 2)
-            logger.info(f"Created RSI rsi_is_below= {rsi_is_below} rsi_length= {rsi_length}")
+            logger.info(f"Created RSI rsi_is_below= {self.rsi_is_below} rsi_length= {self.rsi_length}")
 
-            self.strategy_entries = np.where(rsi < rsi_is_below, True, False)
-            self.strategy_exits = np.full_like(rsi, np.nan)
+            self.entries_strat = np.where(rsi < self.rsi_is_below, True, False)
+            self.exits_strat = np.full_like(rsi, np.nan)
 
         except Exception as e:
             logger.info(f"Exception set_backtesting_indicator -> {e}")
             raise Exception(f"Exception set_backtesting_indicator -> {e}")
 
+    def log_indicator_settings(self, ind_set_index: int):
+        logger.info(
+        f"Indicator Settings Index= {ind_set_index}\n\
+rsi_length= {self.rsi_length}\n\
+rsi_is_below= {self.rsi_is_below}")
+         
     def set_ind_settings(self, ind_set_index: int):
         self.rsi_is_below = self.indicator_settings_arrays.rsi_is_below[ind_set_index]
         self.rsi_length = self.indicator_settings_arrays.rsi_length[ind_set_index]
