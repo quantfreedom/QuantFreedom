@@ -55,7 +55,7 @@ class Exchange:
     def check_if_order_filled(self, **kwargs):
         pass
 
-    def set_leverage_value(self, **kwargs):
+    def set_leverage(self, **kwargs):
         pass
 
     def check_if_order_canceled(self, **kwargs):

@@ -274,7 +274,6 @@ class OrderHandler:
             equity=equity,
             average_entry=average_entry,
             entry_price=entry_price,
-            in_position=position_size_asset > 0,
             position_size_asset=position_size_asset,
             position_size_usd=position_size_usd,
             possible_loss=possible_loss,

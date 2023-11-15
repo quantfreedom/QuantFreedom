@@ -253,7 +253,7 @@ class LiveTrading:
 
                         # set the levergae
                         logger.info("Setting leverage")
-                        if self.exchange.set_leverage_value(
+                        if self.exchange.set_leverage(
                             symbol=self.symbol,
                             leverage=self.order.leverage,
                         ):
@@ -307,7 +307,7 @@ class LiveTrading:
                                 symbol=self.symbol,
                                 order_id=entry_order_id,
                             )
-                            leverage_changed = self.exchange.set_leverage_value(
+                            leverage_changed = self.exchange.set_leverage(
                                 symbol=self.symbol,
                                 leverage=self.order.leverage,
                             )

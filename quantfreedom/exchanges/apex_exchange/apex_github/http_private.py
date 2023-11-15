@@ -766,7 +766,7 @@ class HttpPrivate(HttpPublic):
         :returns: Request results as dictionary.
         """
 
-        path = URL_SUFFIX + "/v1/get-worst-price"
+        path = URL_SUFFIX + "/v2/get-worst-price"
         return self._get(endpoint=path, params=kwargs)
 
     def get_order_by_client_id(self, **kwargs):

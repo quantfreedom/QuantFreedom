@@ -74,6 +74,13 @@ class BinanceUSDM(Exchange):
             recvWindow=recvWindow,
         )
 
+    def get_position_info(
+        self,
+        symbol: str,
+    ):
+        response = self.binance_ex.get_position_risk(symbol=symbol)
+        return response
+
     def get_candles(
         self,
         symbol: str,

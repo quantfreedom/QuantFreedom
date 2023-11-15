@@ -38,8 +38,8 @@ class Apex(Exchange):
                 stark_public_key_y_coordinate=stark_key_y,
                 api_key_credentials={"key": api_key, "secret": secret_key, "passphrase": passphrase},
             )
-            self.apex_ex.configs()
-            self.apex_ex.get_account()
+            self.apex_ex.configs_v2()
+            self.apex_ex.get_account_v2()
             self.limitFeeRate = self.apex_ex.get_account()["data"]["takerFeeRate"]
 
     def create_order(
@@ -66,7 +66,7 @@ class Apex(Exchange):
         """
         https://api-docs.pro.apex.exchange/#privateapi-post-creating-orders
         """
-        return self.apex_ex.create_order(
+        return self.apex_ex.create_order_v2(
             symbol=symbol,
             side=buy_sell.upper(),
             type=order_type.upper(),
@@ -95,9 +95,7 @@ class Apex(Exchange):
         asset_size: float,
     ):
         try:
-            price = self.apex_ex.get_worst_price(symbol=symbol, side=buy_sell.upper(), size="0.1")["data"][
-                "worstPrice"
-            ]
+            price = self.apex_ex.get_worst_price(symbol=symbol, side=buy_sell.upper(), size="0.1")["data"]["worstPrice"]
             response_data = self.create_order(
                 symbol=symbol,
                 buy_sell=buy_sell,
@@ -141,6 +139,7 @@ class Apex(Exchange):
         until_date_ms: int = None,
         candles_to_dl: int = 200,
     ):
+        symbol = symbol.replace("-", "")
         ex_timeframe = self.get_exchange_timeframe(ex_timeframes=APEX_TIMEFRAMES, timeframe=timeframe)
         timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
         candles_to_dl_ms = candles_to_dl * timeframe_in_ms
@@ -242,3 +241,19 @@ class Apex(Exchange):
                 raise Exception
         except Exception as e:
             raise Exception(f"Apex cancel_open_order -> {e}")
+
+    def set_leverage(self, symbol: str, leverage: float):
+        """
+        https://api-docs.pro.apex.exchange/#privateapi-post-sets-the-initial-margin-rate-of-a-contract
+        """
+        new_leverage = round(leverage, 2)
+        initialMarginRate = str(round(1 / new_leverage, 5))
+
+        response = self.apex_ex.set_initial_margin_rate_v2(symbol=symbol, initialMarginRate=initialMarginRate)
+        try:
+            if type(response.get("timeCost")) == int:
+                return True
+            else:
+                return False
+        except Exception as e:
+            raise Exception(f"Apex set_leverage -> {e}")

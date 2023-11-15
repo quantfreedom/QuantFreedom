@@ -587,7 +587,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex: set_position_mode= {response['message']} -> {e}")
 
-    def set_leverage_value(self, symbol: str, leverage: float):
+    def set_leverage(self, symbol: str, leverage: float):
         """
         No link yet
         """
@@ -605,7 +605,7 @@ class Mufex(Exchange):
             else:
                 raise Exception
         except Exception as e:
-            raise Exception(f"Mufex set_leverage_value = Data or List is empty {response['message']} -> {e}")
+            raise Exception(f"Mufex set_leverage = Data or List is empty {response['message']} -> {e}")
 
     def set_leverage_mode(self, symbol: str, leverage_mode: LeverageModeType, leverage: int = 5):
         """
