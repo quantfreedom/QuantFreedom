@@ -24,24 +24,20 @@ def sma_tv(
 
 def wma_tv(
     source: np.array,
-    length: int = 14,
+    length: int = 9,
 ):
     """
     Weighted Moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.wma
     """
-    new_source = source[~np.isnan(source)]
-
     weight = np.flip((length - np.arange(0, length)) * length)
     norm = weight.sum()
 
     wma = np.full_like(source, np.nan)
-
-    len_adder = source.size - new_source.size
     len_minus_one = length - 1
 
-    for i in range(len_minus_one, new_source.size):
-        the_sum = (new_source[i - len_minus_one : i + 1] * weight).sum()
-        wma[i + len_adder] = the_sum / norm
+    for index in range(len_minus_one, source.size):
+        the_sum = (source[index - len_minus_one : index + 1] * weight).sum()
+        wma[index] = the_sum / norm
     return wma
 
 
@@ -54,16 +50,14 @@ def ema_tv(
     """
     alpha = 2 / (length + 1)
 
-    new_source = source[~np.isnan(source)]
-    len_adder = source.size - new_source.size
+    len_adder = source.size - source[~np.isnan(source)].size
+    starting_index = len_adder + length
 
-    len_minus_one = length - 1
     ema = np.full_like(source, np.nan)
-    ema[len_minus_one + len_adder] = source[len_minus_one + len_adder]
+    ema[starting_index - 1] = source[starting_index - 1]
 
-    for i in range(length, new_source.size):
-        index = len_adder + i
-        ema[index] = alpha * new_source[i] + (1 - alpha) * ema[index - 1]
+    for index in range(starting_index, source.size):
+        ema[index] = alpha * source[index] + (1 - alpha) * ema[index - 1]
 
     return ema
 

@@ -48,8 +48,7 @@ class Bybit(Exchange):
 
     def __HTTP_post_request(self, end_point: str, params: dict):
         str_timestamp = str(int(time() * 1000))
-        new_params = self.remove_none_from_params(params=params)
-        params_as_dict_string = self.get_params_as_dict_string(params=new_params)
+        params_as_dict_string = self.get_params_as_dict_string(params=params)
         signature = self.__gen_signature(str_timestamp=str_timestamp, params_as_string=params_as_dict_string)
         headers = {
             "X-BAPI-API-KEY": self.api_key,
@@ -74,8 +73,7 @@ class Bybit(Exchange):
 
     def __HTTP_get_request(self, end_point: str, params: dict):
         str_timestamp = str(int(time() * 1000))
-        new_params = self.remove_none_from_params(params=params)
-        params_as_path = self.get_params_as_path(params=new_params)
+        params_as_path = self.get_params_as_path(params=params)
         signature = self.__gen_signature(str_timestamp=str_timestamp, params_as_string=params_as_path)
         headers = {
             "X-BAPI-API-KEY": self.api_key,
@@ -88,9 +86,8 @@ class Bybit(Exchange):
 
         try:
             response = get(
-                url=self.url_start + end_point,
+                url=self.url_start + end_point + "?" + params_as_path,
                 headers=headers,
-                params=new_params,
             )
             response_json = response.json()
             return response_json
