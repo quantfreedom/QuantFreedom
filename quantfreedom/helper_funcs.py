@@ -121,7 +121,6 @@ def get_dos(
         sl_bcb_type=dos_cart_arrays.sl_bcb_type[dos_index],
         sl_to_be_cb_type=dos_cart_arrays.sl_to_be_cb_type[dos_index],
         sl_to_be_when_pct=dos_cart_arrays.sl_to_be_when_pct[dos_index],
-        static_leverage=dos_cart_arrays.static_leverage[dos_index],
         trail_sl_bcb_type=dos_cart_arrays.trail_sl_bcb_type[dos_index],
         trail_sl_by_pct=dos_cart_arrays.trail_sl_by_pct[dos_index],
         trail_sl_when_pct=dos_cart_arrays.trail_sl_when_pct[dos_index],
@@ -156,10 +155,9 @@ def dos_cart_product(dos_arrays: DynamicOrderSettingsArrays):
         sl_bcb_type=out.T[6].astype(np.int_),
         sl_to_be_cb_type=out.T[7].astype(np.int_),
         sl_to_be_when_pct=out.T[8] / 100,
-        static_leverage=out.T[9],
-        trail_sl_bcb_type=out.T[10].astype(np.int_),
-        trail_sl_by_pct=out.T[11] / 100,
-        trail_sl_when_pct=out.T[12] / 100,
+        trail_sl_bcb_type=out.T[9].astype(np.int_),
+        trail_sl_by_pct=out.T[10] / 100,
+        trail_sl_when_pct=out.T[11] / 100,
     )
 
 

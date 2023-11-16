@@ -106,14 +106,6 @@ class OrderStatusT(NamedTuple):
 OrderStatus = OrderStatusT()
 
 
-class LongOrShortTypeT(NamedTuple):
-    Long: int = 0
-    Short: int = 1
-
-
-LongOrShortType = LongOrShortTypeT()
-
-
 class PositionModeTypeT(NamedTuple):
     OneWayMode: int = 0
     BuySide: int = 1
@@ -236,7 +228,6 @@ class DynamicOrderSettingsArrays(NamedTuple):
     sl_bcb_type: np.array
     sl_to_be_cb_type: np.array
     sl_to_be_when_pct: np.array
-    static_leverage: np.array
     trail_sl_bcb_type: np.array
     trail_sl_by_pct: np.array
     trail_sl_when_pct: np.array
@@ -252,7 +243,6 @@ class DynamicOrderSettings(NamedTuple):
     sl_bcb_type: int
     sl_to_be_cb_type: int
     sl_to_be_when_pct: float
-    static_leverage: float
     trail_sl_bcb_type: int
     trail_sl_by_pct: float
     trail_sl_when_pct: float
@@ -295,16 +285,17 @@ class StaticOrderSettings(NamedTuple):
     increase_position_type: int
     leverage_strategy_type: int
     logger_bool: bool
-    long_or_short: int
+    long_or_short: str
     pg_min_max_sl_bcb: int
     sl_strategy_type: int
     sl_to_be_bool: bool
     starting_bar: int
     starting_equity: float
-    tp_fee_type: int
+    static_leverage: float
+    tp_fee_type: str
     tp_strategy_type: int
     trail_sl_bool: bool
-    z_or_e_type: int
+    z_or_e_type: str
 
 
 class RejectedOrder(Exception):

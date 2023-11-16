@@ -773,3 +773,28 @@ class Mufex(Exchange):
             price_tick_step=price_tick_step,
             leverage_tick_step=leverage_tick_step,
         )
+
+    def get_balance(self):
+        endpoint = "/private/v1/account/balance"
+        params = {}
+        try:
+            response = self.__HTTP_get_request(end_point=endpoint, params=params)
+            ret = response.json()
+
+            code = ret["code"]
+            if code != 0:
+                return ret["message"] + f"error code {code}"
+
+            equity = ret["data"]["list"][0]["equity"]
+            balance = ret["data"]["list"][0]["walletBalance"]
+
+            return {"equity": equity, "balance": balance}
+
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+            response_content = e.response.text if e.response else "No content"
+            status_code = e.response.status_code if e.response else "No status code"
+            print(f"HTTP Response Content: {response_content}")
+            print(f"HTTP Status Code: {status_code}")
+
+            return {"message": str(e)}
