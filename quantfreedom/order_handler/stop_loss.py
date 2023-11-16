@@ -53,9 +53,9 @@ class StopLoss:
         if sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
             self.sl_calculator = self.sl_based_on_candle_body
             self.checker_sl_hit = self.check_sl_hit
-            if pg_min_max_sl_bcb == PriceGetterType.Min:
+            if pg_min_max_sl_bcb == "min":
                 self.sl_bcb_price_getter = self.min_price_getter
-            elif pg_min_max_sl_bcb == PriceGetterType.Max:
+            elif pg_min_max_sl_bcb == "max":
                 self.sl_bcb_price_getter = self.max_price_getter
         else:
             self.sl_calculator = self.pass_func
@@ -65,9 +65,9 @@ class StopLoss:
         if sl_to_be_bool:
             self.checker_sl_to_be = self.check_move_sl_to_be
             # setting up stop loss be zero or entry
-            if z_or_e_type == ZeroOrEntryType.ZeroLoss:
+            if z_or_e_type == "zero":
                 self.zero_or_entry_calc = self.sl_to_zero
-            elif z_or_e_type == ZeroOrEntryType.AverageEntry:
+            elif z_or_e_type == "entry":
                 self.zero_or_entry_calc = self.sl_to_entry
         else:
             # self.checker_sl_to_be = long_cm_sl_to_be_pass
@@ -128,8 +128,8 @@ class StopLoss:
     def num_less_than_num(self, num_1: float, num_2: float):
         return num_1 < num_2
 
-    # Main Functions 
-    
+    # Main Functions
+
     def sl_to_zero(self, average_entry: float):
         sl_price = self.sl_to_zero_price(average_entry=average_entry)
         sl_price = round_size_by_tick_step(

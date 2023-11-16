@@ -1,7 +1,7 @@
 import numpy as np
 from logging import getLogger
 from quantfreedom.helper_funcs import round_size_by_tick_step
-from quantfreedom.enums import CandleBodyType, DecreasePosition, LongOrShortType, OrderStatus, TakeProfitStrategyType
+from quantfreedom.enums import CandleBodyType, DecreasePosition, OrderStatus, TakeProfitStrategyType
 
 logger = getLogger("info")
 
@@ -11,11 +11,11 @@ class TakeProfit:
 
     def __init__(
         self,
+        long_short: str,
         market_fee_pct: float,
         price_tick_step: float,
         tp_fee_pct: float,
         tp_strategy_type: TakeProfitStrategyType,
-        long_short: str,
     ):
         self.market_fee_pct = market_fee_pct
         self.price_tick_step = price_tick_step

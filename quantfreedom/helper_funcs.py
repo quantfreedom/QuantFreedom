@@ -220,7 +220,6 @@ sl_based_on_lookback={dynamic_order_settings.sl_based_on_lookback}\n\
 sl_bcb_type={dynamic_order_settings.sl_bcb_type}\n\
 sl_to_be_cb_type={dynamic_order_settings.sl_to_be_cb_type}\n\
 sl_to_be_when_pct={round(dynamic_order_settings.sl_to_be_when_pct * 100, 3)}\n\
-static_leverage={dynamic_order_settings.static_leverage}\n\
 trail_sl_bcb_type={dynamic_order_settings.trail_sl_bcb_type}\n\
 trail_sl_by_pct={round(dynamic_order_settings.trail_sl_by_pct * 100, 3)}\n\
 trail_sl_when_pct={round(dynamic_order_settings.trail_sl_when_pct * 100, 3)}"

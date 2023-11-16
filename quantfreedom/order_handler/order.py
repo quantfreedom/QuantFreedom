@@ -25,6 +25,7 @@ class OrderHandler:
     ) -> None:
         # Decrease Position
         self.obj_stop_loss = StopLoss(
+            long_short=static_os.long_or_short,
             market_fee_pct=exchange_settings.market_fee_pct,
             pg_min_max_sl_bcb=static_os.pg_min_max_sl_bcb,
             price_tick_step=exchange_settings.price_tick_step,
@@ -32,27 +33,27 @@ class OrderHandler:
             sl_to_be_bool=static_os.sl_to_be_bool,
             trail_sl_bool=static_os.trail_sl_bool,
             z_or_e_type=static_os.z_or_e_type,
-            long_short=static_os.long_or_short,
         )
         self.obj_inc_pos = IncreasePosition(
             asset_tick_step=exchange_settings.asset_tick_step,
             increase_position_type=static_os.increase_position_type,
+            long_short=static_os.long_or_short,
             market_fee_pct=exchange_settings.market_fee_pct,
             max_asset_size=exchange_settings.max_asset_size,
             min_asset_size=exchange_settings.min_asset_size,
             price_tick_step=exchange_settings.price_tick_step,
             sl_strategy_type=static_os.sl_strategy_type,
-            long_short=static_os.long_or_short,
         )
         self.obj_leverage = Leverage(
             leverage_strategy_type=static_os.leverage_strategy_type,
             leverage_tick_step=exchange_settings.leverage_tick_step,
+            long_short=static_os.long_or_short,
             market_fee_pct=exchange_settings.market_fee_pct,
             max_leverage=exchange_settings.max_leverage,
             min_leverage=exchange_settings.min_leverage,
             mmr_pct=exchange_settings.mmr_pct,
             price_tick_step=exchange_settings.price_tick_step,
-            long_short=static_os.long_or_short,
+            static_leverage=static_os.static_leverage,
         )
 
         if static_os.tp_fee_type == "market":
@@ -61,11 +62,11 @@ class OrderHandler:
             tp_fee_pct = exchange_settings.limit_fee_pct
 
         self.obj_take_profit = TakeProfit(
+            long_short=static_os.long_or_short,
             market_fee_pct=exchange_settings.market_fee_pct,
             price_tick_step=exchange_settings.price_tick_step,
             tp_fee_pct=tp_fee_pct,
             tp_strategy_type=static_os.tp_strategy_type,
-            long_short=static_os.long_or_short,
         )
 
     def pass_func(self, **kwargs):
