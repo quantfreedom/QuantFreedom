@@ -107,7 +107,7 @@ class Leverage:
 
         if cash_used > og_available_balance:
             logger.warning("Cash used bigger than available balance")
-            raise Exception
+            raise Exception("Cash used bigger than available balance")
         else:
             available_balance = round(og_available_balance - cash_used, 3)
             cash_used = round(og_cash_used + cash_used, 3)
@@ -175,7 +175,7 @@ class Leverage:
         sl_price: float,
     ):
         # the .001 is to add .001 buffer
-        return average_entry / ((sl_price * sl_price * 0.001) - average_entry + (self.mmr_pct * average_entry))
+        return -average_entry / ((sl_price + sl_price * 0.001) - average_entry + (self.mmr_pct * average_entry))
 
     def dynamic_lev(
         self,

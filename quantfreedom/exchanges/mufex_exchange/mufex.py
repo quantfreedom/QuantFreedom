@@ -52,7 +52,7 @@ class Mufex(Exchange):
 
     def __HTTP_post_request(self, end_point, params):
         timestamp = str(int(time() * 1000))
-        params_as_dict_string = self.__get_params_as_json_string(params=params)
+        params_as_dict_string = self.get_params_as_dict_string(params=params)
         signature = self.__gen_signature(timestamp=timestamp, params_as_string=params_as_dict_string)
         headers = {
             "MF-ACCESS-API-KEY": self.api_key,
@@ -65,7 +65,7 @@ class Mufex(Exchange):
         }
 
         try:
-            response = post(
+            response: dict = post(
                 url=self.url_start + end_point,
                 headers=headers,
                 data=params_as_dict_string,
@@ -77,7 +77,7 @@ class Mufex(Exchange):
 
     def __HTTP_get_request(self, end_point, params):
         timestamp = str(int(time() * 1000))
-        params_as_path = self.__get_params_as_string(params=params)
+        params_as_path = self.get_params_as_path(params=params)
         signature = self.__gen_signature(timestamp=timestamp, params_as_string=params_as_path)
         headers = {
             "MF-ACCESS-API-KEY": self.api_key,
@@ -89,7 +89,7 @@ class Mufex(Exchange):
         }
 
         try:
-            response = get(
+            response: dict = get(
                 url=self.url_start + end_point + "?" + params_as_path,
                 headers=headers,
             )
@@ -102,15 +102,6 @@ class Mufex(Exchange):
         param_str = timestamp + self.api_key + "5000" + params_as_string
         hash = hmac.new(bytes(self.secret_key, "utf-8"), param_str.encode("utf-8"), hashlib.sha256)
         return hash.hexdigest()
-
-    def __get_params_as_json_string(self, params):
-        new_params = {k: v for k, v in params.items() if v is not None}
-        params_as_dict_string = str(json.dumps(new_params))
-        return params_as_dict_string
-
-    def __get_params_as_string(self, params):
-        params_string = "&".join("{key}={value}".format(key=x[0], value=x[1]) for x in params if x[1] is not None)
-        return params_string
 
     """
     ###################################################################
@@ -163,7 +154,7 @@ class Mufex(Exchange):
         # start_time = self.get_current_time_sec()
         while params["start"] + timeframe_in_ms < until_date_ms:
             try:
-                response = get(url=self.url_start + end_point, params=params).json()
+                response: dict = get(url=self.url_start + end_point, params=params).json()
                 new_candles = response["data"]["list"]
                 last_candle_time_ms = int(new_candles[-1][0])
                 if last_candle_time_ms == params["start"]:
@@ -177,9 +168,6 @@ class Mufex(Exchange):
                 raise Exception(f"Mufex get_candles_df {response.get('message')} - > {e}")
 
         candles_np = np.array(candles_list, dtype=np.float_)[:, :-2]
-        # time_it_took_in_seconds = self.get_current_time_sec() - start_time
-        # td = str(timedelta(seconds=time_it_took_in_seconds)).split(":")
-        # print(f"It took {td[1]} mins and {td[2]} seconds to download {len(candles_list)} candles")
 
         return candles_np
 
@@ -199,7 +187,7 @@ class Mufex(Exchange):
         params["limit"] = limit
         params["startTime"] = since_date_ms
         params["endTime"] = until_date_ms
-        response = self.__HTTP_get_request(end_point=end_point, params=params)
+        response: dict = self.__HTTP_get_request(end_point=end_point, params=params)
         try:
             response["data"]["list"][0]
             data_list = response["data"]["list"]
@@ -223,8 +211,8 @@ class Mufex(Exchange):
         params["category"] = category
         params["symbol"] = symbol
         try:
-            new_params = {k: v for k, v in params.items() if v is not None}
-            response = get(url=self.url_start + end_point, params=new_params).json()
+            new_params = self.remove_none_from_dict(params=params)
+            response: dict = get(url=self.url_start + end_point, params=new_params).json()
             response["data"]["list"][0]
             data_list = response["data"]["list"]
             return data_list
@@ -240,7 +228,8 @@ class Mufex(Exchange):
         params["category"] = category
         params["symbol"] = symbol
         try:
-            response = get(url=self.url_start + end_point, params=params).json()
+            new_params = self.remove_none_from_dict(params=params)
+            response: dict = get(url=self.url_start + end_point, params=new_params).json()
             data_list = response["data"]["list"][0]
 
             return data_list
@@ -301,7 +290,8 @@ class Mufex(Exchange):
         params["stopLoss"] = str(stopLoss) if stopLoss else stopLoss
         params["reduceOnly"] = reduce_only
         params["closeOnTrigger"] = closeOnTrigger
-        response = self.__HTTP_post_request(end_point=end_point, params=params)
+
+        response: dict = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
             order_id = response["data"]["orderId"]
             return order_id
@@ -315,7 +305,7 @@ class Mufex(Exchange):
         end_point = "/private/v1/account/trade-fee"
         params = {}
         params["symbol"] = symbol
-        response = self.__HTTP_get_request(end_point=end_point, params=params)
+        response: dict = self.__HTTP_get_request(end_point=end_point, params=params)
         try:
             data_list = response["data"]["list"][0]
             return data_list
@@ -329,7 +319,7 @@ class Mufex(Exchange):
         end_point = "/private/v1/account/trade-fee"
         params = {}
         params["symbol"] = symbol
-        response = self.__HTTP_get_request(end_point=end_point, params=params)
+        response: dict = self.__HTTP_get_request(end_point=end_point, params=params)
         try:
             data_list = response["data"]["list"][0]
             return data_list
@@ -358,7 +348,7 @@ class Mufex(Exchange):
         params["orderLinkId"] = custom_order_id
         params["orderStatus"] = orderStatus
         params["orderFilter"] = orderFilter
-        response = self.__HTTP_get_request(end_point=end_point, params=params)
+        response: dict = self.__HTTP_get_request(end_point=end_point, params=params)
         try:
             data_list = response["data"]["list"]
             data_list[0]  # try this to see if anything is in here
@@ -392,7 +382,7 @@ class Mufex(Exchange):
         params["orderId"] = order_id
         params["orderLinkId"] = custom_order_id
         params["orderFilter"] = orderFilter
-        response = self.__HTTP_get_request(end_point=end_point, params=params)
+        response: dict = self.__HTTP_get_request(end_point=end_point, params=params)
         try:
             response["data"]["list"][0]
             data_list = response["data"]["list"]
@@ -427,7 +417,7 @@ class Mufex(Exchange):
         params["orderId"] = order_id
         params["startTime"] = since_date_ms
         params["endTime"] = until_date_ms
-        response = self.__HTTP_get_request(end_point=end_point, params=params)
+        response: dict = self.__HTTP_get_request(end_point=end_point, params=params)
         try:
             response["data"]["list"][0]
             data_list = response["data"]["list"]
@@ -453,7 +443,7 @@ class Mufex(Exchange):
         params["symbol"] = symbol
         params["limit"] = limit
         params["settleCoin"] = settleCoin
-        response = self.__HTTP_get_request(end_point=end_point, params=params)
+        response: dict = self.__HTTP_get_request(end_point=end_point, params=params)
         try:
             response["data"]["list"][0]
             data_list = response["data"]["list"]
@@ -478,7 +468,7 @@ class Mufex(Exchange):
             "orderLinkId": custom_order_id,
         }
         try:
-            response = self.__HTTP_post_request(end_point=end_point, params=params)
+            response: dict = self.__HTTP_post_request(end_point=end_point, params=params)
             response_order_id = response.get("data").get("orderId")
             if response_order_id == order_id or response["message"] == "OK":
                 return True
@@ -496,7 +486,7 @@ class Mufex(Exchange):
             "symbol": symbol,
         }
         try:
-            response = self.__HTTP_post_request(end_point=end_point, params=params)
+            response: dict = self.__HTTP_post_request(end_point=end_point, params=params)
             if response["message"] == "OK":
                 return True
             else:
@@ -512,7 +502,7 @@ class Mufex(Exchange):
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_placeorder
         """
         end_point = "/private/v1/trade/replace"
-        response = self.__HTTP_post_request(end_point=end_point, params=params)
+        response: dict = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
             response_order_id = response.get("data").get("orderId")
             if response_order_id == params["orderId"] or response["message"] == "OK":
@@ -546,7 +536,7 @@ class Mufex(Exchange):
         params = {
             "coin": trading_with,
         }
-        response = self.__HTTP_get_request(end_point=end_point, params=params)
+        response: dict = self.__HTTP_get_request(end_point=end_point, params=params)
         try:
             data_list = response["data"]["list"]
             data_list[0]
@@ -572,7 +562,7 @@ class Mufex(Exchange):
             "mode": position_mode,
             "coin": trading_with,
         }
-        response = self.__HTTP_post_request(end_point=end_point, params=params)
+        response: dict = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
             if response["message"] in ["OK", "position mode not modified"]:
                 return True
@@ -592,7 +582,7 @@ class Mufex(Exchange):
             "buyLeverage": leverage_str,
             "sellLeverage": leverage_str,
         }
-        response = self.__HTTP_post_request(end_point=end_point, params=params)
+        response: dict = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
             if response["message"] in ["OK", "leverage not modified"]:
                 return True
@@ -614,7 +604,7 @@ class Mufex(Exchange):
             "buyLeverage": leverage_str,
             "sellLeverage": leverage_str,
         }
-        response = self.__HTTP_post_request(end_point=end_point, params=params)
+        response: dict = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
             if response["message"] in ["OK", "Isolated not modified"]:
                 return True
@@ -624,7 +614,7 @@ class Mufex(Exchange):
             raise Exception(f"Mufex set_leverage_mode = Data or List is empty {response['message']} -> {e}")
 
     def check_if_order_filled(self, symbol: str, order_id: str):
-        response = self.get_filled_orders(symbol=symbol, order_id=order_id)
+        response: dict = self.get_filled_orders(symbol=symbol, order_id=order_id)
         try:
             if response["message"] == "OK":
                 return True
@@ -638,7 +628,7 @@ class Mufex(Exchange):
             raise Exception(f"Mufex check_if_order_filled{response['message']} -> {e}")
 
     def check_if_order_canceled(self, symbol: str, order_id: str):
-        response = self.get_order_history(symbol=symbol, order_id=order_id)
+        response: dict = self.get_order_history(symbol=symbol, order_id=order_id)
         try:
             if response["message"] == "OK":
                 return True
@@ -652,7 +642,7 @@ class Mufex(Exchange):
             raise Exception(f"Mufex check_if_order_canceled= {response['message']} -> {e}")
 
     def check_if_order_open(self, symbol: str, order_id: str):
-        response = self.get_open_orders(symbol=symbol, order_id=order_id)
+        response: dict = self.get_open_orders(symbol=symbol, order_id=order_id)
         try:
             if response["message"] == "OK":
                 return True
@@ -772,7 +762,7 @@ class Mufex(Exchange):
         endpoint = "/private/v1/account/balance"
         params = {}
         try:
-            response = self.__HTTP_get_request(end_point=endpoint, params=params)
+            response: dict = self.__HTTP_get_request(end_point=endpoint, params=params)
             ret = response.json()
 
             code = ret["code"]

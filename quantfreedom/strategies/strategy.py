@@ -35,6 +35,7 @@ bg_color = "#0b0b18"
 
 class IndicatorSettingsArrays(NamedTuple):
     rsi_is_below: np.array
+    rsi_is_above: np.array
     rsi_length: np.array
 
 
@@ -58,7 +59,8 @@ def create_ind_cart_product(ind_set_arrays: IndicatorSettingsArrays):
 
     return IndicatorSettingsArrays(
         rsi_is_below=out.T[0],
-        rsi_length=out.T[1].astype(np.int_),
+        rsi_is_above=out.T[1],
+        rsi_length=out.T[2].astype(np.int_),
     )
 
 
@@ -68,18 +70,86 @@ class Strategy:
     def __init__(
         self,
         long_short: str,
-        rsi_is_below: np.array,
         rsi_length: np.array,
+        rsi_is_below: np.array = np.array([0]),
+        rsi_is_above: np.array = np.array([0]),
     ) -> None:
         logger.debug("Creating Strategy class init")
         self.long_short = long_short
         ind_set_arrays = IndicatorSettingsArrays(
             rsi_is_below=rsi_is_below,
+            rsi_is_above=rsi_is_above,
             rsi_length=rsi_length,
         )
         self.indicator_settings_arrays = create_ind_cart_product(ind_set_arrays=ind_set_arrays)
 
-    def set_entries_exits_array(
+        if long_short == "long":
+            self.set_entries_exits_array = self.long_set_entries_exits_array
+            self.log_indicator_settings = self.long_log_indicator_settings
+            self.entry_message = self.long_entry_message
+        else:
+            self.set_entries_exits_array = self.short_set_entries_exits_array
+            self.log_indicator_settings = self.short_log_indicator_settings
+            self.entry_message = self.short_entry_message
+
+    """
+    #######################################################
+    #######################################################
+    #######################################################
+    ##################      short    ######################
+    ##################      short    ######################
+    ##################      short    ######################
+    #######################################################
+    #######################################################
+    #######################################################
+    """
+
+    def short_set_entries_exits_array(
+        self,
+        candles: np.array,
+        ind_set_index: int,
+    ):
+        try:
+            self.rsi_is_above = self.indicator_settings_arrays.rsi_is_above[ind_set_index]
+            self.rsi_length = self.indicator_settings_arrays.rsi_length[ind_set_index]
+            rsi = rsi_tv(
+                source=candles[:, CandleBodyType.Close],
+                length=self.rsi_length,
+            )
+            self.rsi = np.around(rsi, 2)
+            logger.info(f"Created RSI rsi_is_above= {self.rsi_is_above} rsi_length= {self.rsi_length}")
+
+            self.entries_strat = np.where(self.rsi > self.rsi_is_above, True, False)
+            self.exits_strat = np.full_like(self.rsi, np.nan)
+
+        except Exception as e:
+            logger.info(f"Exception short_set_entries_exits_array -> {e}")
+            raise Exception(f"Exception short_set_entries_exits_array -> {e}")
+
+    def short_log_indicator_settings(self, ind_set_index: int):
+        logger.info(
+            f"Indicator Settings Index= {ind_set_index}\
+            \nrsi_length= {self.rsi_length}\
+            \nrsi_is_above= {self.rsi_is_above}"
+        )
+
+    def short_entry_message(self, bar_index: int):
+        logger.info("\n\n")
+        logger.info(f"Entry time!!! rsi= {self.rsi[bar_index]} < rsi_is_above= {self.rsi_is_above}")
+
+    """
+    #######################################################
+    #######################################################
+    #######################################################
+    ##################      Long     ######################
+    ##################      Long     ######################
+    ##################      Long     ######################
+    #######################################################
+    #######################################################
+    #######################################################
+    """
+
+    def long_set_entries_exits_array(
         self,
         candles: np.array,
         ind_set_index: int,
@@ -98,26 +168,33 @@ class Strategy:
             self.exits_strat = np.full_like(self.rsi, np.nan)
 
         except Exception as e:
-            logger.info(f"Exception set_backtesting_indicator -> {e}")
-            raise Exception(f"Exception set_backtesting_indicator -> {e}")
+            logger.info(f"Exception long_set_entries_exits_array -> {e}")
+            raise Exception(f"Exception long_set_entries_exits_array -> {e}")
 
-    def log_indicator_settings(self, ind_set_index: int):
+    def long_log_indicator_settings(self, ind_set_index: int):
         logger.info(
-            f"Indicator Settings Index= {ind_set_index}\n\
-rsi_length= {self.rsi_length}\n\
-rsi_is_below= {self.rsi_is_below}"
+            f"Indicator Settings Index= {ind_set_index}\
+            \nrsi_length= {self.rsi_length}\
+            \nrsi_is_below= {self.rsi_is_below}"
         )
 
-    def entry_message(self, bar_index: int):
+    def long_entry_message(self, bar_index: int):
         logger.info("\n\n")
         logger.info(f"Entry time!!! rsi= {self.rsi[bar_index]} < rsi_is_below= {self.rsi_is_below}")
 
-    def set_ind_settings(self, ind_set_index: int):
-        self.rsi_is_below = self.indicator_settings_arrays.rsi_is_below[ind_set_index]
-        self.rsi_length = self.indicator_settings_arrays.rsi_length[ind_set_index]
-        logger.debug("Set Indicator Settings")
+    """
+    #######################################################
+    #######################################################
+    #######################################################
+    ##################      Live     ######################
+    ##################      Live     ######################
+    ##################      Live     ######################
+    #######################################################
+    #######################################################
+    #######################################################
+    """
 
-    def set_indicator(self, closes: np.array):
+    def live_set_indicator(self, closes: np.array):
         try:
             self.rsi = rsi_tv(
                 source=closes,
@@ -131,7 +208,7 @@ rsi_is_below= {self.rsi_is_below}"
 
     def live_evaluate(self, candles: np.array):
         try:
-            self.set_indicator(closes=candles[:, CandleBodyType.Close])
+            self.live_set_indicator(closes=candles[:, CandleBodyType.Close])
             if self.rsi[-1] < self.rsi_is_below:
                 logger.info("\n\n")
                 logger.info(f"Entry time!!! rsi= {self.rsi[-1]} < rsi_is_below= {self.rsi_is_below}")
@@ -141,6 +218,18 @@ rsi_is_below= {self.rsi_is_below}"
                 return False
         except Exception as e:
             raise Exception(f"Exception evalutating strat -> {e}")
+
+    """
+    #######################################################
+    #######################################################
+    #######################################################
+    ##################      Plot     ######################
+    ##################      Plot     ######################
+    ##################      Plot     ######################
+    #######################################################
+    #######################################################
+    #######################################################
+    """
 
     def get_strategy_plot_filename(self, candles: np.array):
         logger.debug("Getting entry plot file")

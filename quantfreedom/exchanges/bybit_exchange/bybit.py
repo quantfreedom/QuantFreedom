@@ -22,18 +22,17 @@ class Bybit(Exchange):
         secret_key: str = None,
     ):
         """
-        main docs page https://www.mufex.finance/apidocs/derivatives/contract/index.html
-
-        Make sure you have your position mode set to hedge or else a lot of functions will not work.
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_switchpositionmode
+        main docs page https://bybit-exchange.github.io/docs/v5/intro
         """
-        self.api_key = api_key
-        self.secret_key = secret_key
+        if api_key:
+            self.api_key = api_key
+            self.secret_key = secret_key
+            self.bybit_ex = HTTP(testnet=use_test_net, api_key=api_key, api_secret=secret_key)
+
         if use_test_net:
             self.url_start = "https://api-testnet.bybit.com"
         else:
             self.url_start = "https://api.bybit.com"
-        self.bybit_ex = HTTP(testnet=use_test_net, api_key=api_key, api_secret=secret_key)
 
     """
     ################################################################
@@ -85,7 +84,6 @@ class Bybit(Exchange):
             "X-BAPI-TIMESTAMP": str_timestamp,
             "X-BAPI-RECV-WINDOW": "5000",
             "Content-Type": "application/json",
-            "referer": "Rx000377",
         }
 
         try:
@@ -232,6 +230,7 @@ class Bybit(Exchange):
         params["stopLoss"] = str(stopLoss) if stopLoss else stopLoss
         params["reduceOnly"] = reduce_only
         params["closeOnTrigger"] = closeOnTrigger
+
         response = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
             order_id = response["result"]["orderId"]

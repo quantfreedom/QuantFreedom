@@ -101,11 +101,15 @@ class Exchange:
         except Exception as e:
             raise Exception(f"Use one of these timeframes - {UNIVERSAL_TIMEFRAMES} -> {e}")
 
-    def remove_none_from_params(self, params: dict):
-        return {k: v for k, v in params.items() if v is not None}
+    def remove_none_from_dict(self, params: dict):
+        new_params = {k: v for k, v in params.items() if v is not None}
+        return new_params
 
     def get_params_as_dict_string(self, params: dict):
-        return str(json.dumps(params))
+        new_params = self.remove_none_from_dict(params=params)
+        dict_string = str(json.dumps(new_params))
+        return dict_string
 
     def get_params_as_path(self, params: dict):
-        return "&".join("{key}={value}".format(key=x[0], value=x[1]) for x in params)
+        params_as_path = "&".join("{key}={value}".format(key=k, value=v) for k, v in params.items() if v is not None)
+        return params_as_path
