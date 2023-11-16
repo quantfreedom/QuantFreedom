@@ -133,6 +133,7 @@ class Leverage:
         cash_borrowed: float,
         cash_used: float,
         position_size_asset: float,
+        position_size_usd: float,
         sl_price: float,
     ):
         (
@@ -144,6 +145,7 @@ class Leverage:
         ) = self.calc_liq_price(
             leverage=self.static_leverage,
             position_size_asset=position_size_asset,
+            position_size_usd=position_size_usd,
             average_entry=average_entry,
             og_cash_used=cash_used,
             og_available_balance=available_balance,
@@ -182,6 +184,7 @@ class Leverage:
         cash_borrowed: float,
         cash_used: float,
         position_size_asset: float,
+        position_size_usd: float,
         sl_price: float,
     ):
         leverage = self.calc_dynamic_lev(average_entry=average_entry, sl_price=sl_price)
@@ -210,6 +213,7 @@ class Leverage:
             og_available_balance=available_balance,
             og_cash_borrowed=cash_borrowed,
             position_size_asset=position_size_asset,
+            position_size_usd=position_size_usd,
         )
         return (
             available_balance,
@@ -252,6 +256,3 @@ class Leverage:
         else:
             logger.debug("No hit on liq price")
             pass
-
-
-

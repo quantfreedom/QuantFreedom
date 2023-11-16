@@ -306,7 +306,8 @@ sl_pct= {round(sl_pct*100, 3)}"
         average_entry: float,
         cash_borrowed: float,
         cash_used: float,
-        entry_size_usd: float,
+        position_size_asset: float,
+        position_size_usd: float,
         sl_price: float,
     ):
         (
@@ -320,7 +321,8 @@ sl_pct= {round(sl_pct*100, 3)}"
             average_entry=average_entry,
             cash_borrowed=cash_borrowed,
             cash_used=cash_used,
-            entry_size_usd=entry_size_usd,
+            position_size_asset=position_size_asset,
+            position_size_usd=position_size_asset,
             sl_price=sl_price,
         )
         logger.info(
@@ -365,6 +367,7 @@ liq_price= {liq_price}"
         self,
         exit_fee_pct: float,
         exit_price: float,
+        equity: float,
         market_fee_pct: float,
         order_status: OrderStatus,
     ):

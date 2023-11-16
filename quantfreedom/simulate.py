@@ -139,6 +139,8 @@ def run_df_backtest(
                             exit_fee_pct=e.exit_fee_pct,
                             exit_price=e.exit_price,
                             order_status=e.order_status,
+                            market_fee_pct=exchange_settings.market_fee_pct,
+                            equity=order.equity,
                         )
 
                         pnl_array[filled_pnl_counter] = realized_pnl
@@ -198,7 +200,8 @@ def run_df_backtest(
                             average_entry=average_entry,
                             cash_borrowed=order.cash_borrowed,
                             cash_used=order.cash_used,
-                            entry_size_usd=entry_size_usd,
+                            position_size_asset=position_size_asset,
+                            position_size_usd=position_size_usd,
                             sl_price=sl_price,
                         )
 
@@ -243,7 +246,7 @@ def run_df_backtest(
                         pass
                     except Exception as e:
                         logger.error(f"Exception hit in eval strat -> {e}")
-                        pass
+                        raise Exception(f"Exception hit in eval strat -> {e}")
 
             # Checking if gains
             gains_pct = round(((order.equity - starting_equity) / starting_equity) * 100, 3)
