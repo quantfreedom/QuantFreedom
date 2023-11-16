@@ -21,11 +21,17 @@ class OrderHandler:
     def __init__(
         self,
         static_os: StaticOrderSettings,
+        long_short: str,
         exchange_settings: ExchangeSettings,
     ) -> None:
         # Decrease Position
+        if long_short == "long":
+            self.pnl_calc = self.long_pnl_calc
+        else:
+            self.pnl_calc = self.short_pnl_calc
+
         self.obj_stop_loss = StopLoss(
-            long_short=static_os.long_or_short,
+            long_short=long_short,
             market_fee_pct=exchange_settings.market_fee_pct,
             pg_min_max_sl_bcb=static_os.pg_min_max_sl_bcb,
             price_tick_step=exchange_settings.price_tick_step,
@@ -37,7 +43,7 @@ class OrderHandler:
         self.obj_inc_pos = IncreasePosition(
             asset_tick_step=exchange_settings.asset_tick_step,
             increase_position_type=static_os.increase_position_type,
-            long_short=static_os.long_or_short,
+            long_short=long_short,
             market_fee_pct=exchange_settings.market_fee_pct,
             max_asset_size=exchange_settings.max_asset_size,
             min_asset_size=exchange_settings.min_asset_size,
@@ -47,7 +53,7 @@ class OrderHandler:
         self.obj_leverage = Leverage(
             leverage_strategy_type=static_os.leverage_strategy_type,
             leverage_tick_step=exchange_settings.leverage_tick_step,
-            long_short=static_os.long_or_short,
+            long_short=long_short,
             market_fee_pct=exchange_settings.market_fee_pct,
             max_leverage=exchange_settings.max_leverage,
             min_leverage=exchange_settings.min_leverage,
@@ -62,7 +68,7 @@ class OrderHandler:
             tp_fee_pct = exchange_settings.limit_fee_pct
 
         self.obj_take_profit = TakeProfit(
-            long_short=static_os.long_or_short,
+            long_short=long_short,
             market_fee_pct=exchange_settings.market_fee_pct,
             price_tick_step=exchange_settings.price_tick_step,
             tp_fee_pct=tp_fee_pct,
@@ -242,7 +248,7 @@ class OrderHandler:
             bar_index=bar_index,
             candles=candles,
         )
-        logger.info(f"sl price= {sl_price}")
+        logger.info(f"\nsl price= {sl_price}")
         return sl_price
 
     def calculate_increase_posotion(
@@ -277,16 +283,16 @@ class OrderHandler:
             total_trades=total_trades,
         )
         logger.info(
-            f"\n\
-average_entry= {average_entry}\n\
-entry_price= {entry_price}\n\
-entry_size_asset= {entry_size_asset}\n\
-entry_size_usd= {entry_size_usd}\n\
-position_size_asset= {position_size_asset}\n\
-position_size_usd= {position_size_usd}\n\
-possible_loss= {possible_loss}\n\
-total_trades= {total_trades}\n\
-sl_pct= {round(sl_pct*100, 3)}"
+            f"\
+            \naverage_entry= {average_entry}\
+            \nentry_price= {entry_price}\
+            \nentry_size_asset= {entry_size_asset}\
+            \nentry_size_usd= {entry_size_usd}\
+            \nposition_size_asset= {position_size_asset}\
+            \nposition_size_usd= {position_size_usd}\
+            \npossible_loss= {possible_loss}\
+            \ntotal_trades= {total_trades}\
+            \nsl_pct= {round(sl_pct*100, 3)}"
         )
         return (
             average_entry,
@@ -326,12 +332,12 @@ sl_pct= {round(sl_pct*100, 3)}"
             sl_price=sl_price,
         )
         logger.info(
-            f"\n\
-available_balance= {available_balance}\n\
-cash_borrowed= {cash_borrowed}\n\
-cash_used= {cash_used}\n\
-leverage= {leverage}\n\
-liq_price= {liq_price}"
+            f"\
+            \navailable_balance= {available_balance}\
+            \ncash_borrowed= {cash_borrowed}\
+            \ncash_used= {cash_used}\
+            \nleverage= {leverage}\
+            \nliq_price= {liq_price}"
         )
         return (
             available_balance,
@@ -356,12 +362,22 @@ liq_price= {liq_price}"
             position_size_usd=position_size_usd,
             possible_loss=possible_loss,
         )
-        logger.info(f"tp_price= {tp_price} tp_pct= {round(tp_pct * 100, 3)}")
+        logger.info(
+            f"\
+            \ntp_price= {tp_price}\
+            \ntp_pct= {round(tp_pct * 100, 3)}"
+        )
         return (
             can_move_sl_to_be,
             tp_price,
             tp_pct,
         )
+
+    def long_pnl_calc(self, exit_price: float):
+        return round((exit_price - self.average_entry) * self.position_size_asset, 3)  # math checked
+
+    def short_pnl_calc(self, exit_price: float):
+        return round((self.average_entry - exit_price) * self.position_size_asset, 3)  # math checked
 
     def calculate_decrease_position(
         self,
@@ -371,7 +387,7 @@ liq_price= {liq_price}"
         market_fee_pct: float,
         order_status: OrderStatus,
     ):
-        pnl = round(self.position_size_asset * abs(exit_price - self.average_entry), 3)  # math checked
+        pnl = self.pnl_calc(exit_price=exit_price)  # math checked
         logger.debug(f"pnl= {pnl}")
 
         fee_open = round(self.position_size_asset * self.average_entry * market_fee_pct, 3)  # math checked
@@ -390,11 +406,11 @@ liq_price= {liq_price}"
         logger.debug(f"equity= {equity}")
 
         logger.info(
-            f"\n\
-equity= {equity}\n\
-fees_paid= {fees_paid}\n\
-order_status= {OrderStatus._fields[order_status]}\n\
-realized_pnl= {realized_pnl}"
+            f"\
+            \nequity= {equity}\
+            \nfees_paid= {fees_paid}\
+            \norder_status= {OrderStatus._fields[order_status]}\
+            \nrealized_pnl= {realized_pnl}"
         )
         return (
             equity,

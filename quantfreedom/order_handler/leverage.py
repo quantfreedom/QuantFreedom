@@ -100,8 +100,8 @@ class Leverage:
         logger.debug(
             f"\ninitial_margin= {round(initial_margin, 3)}\
             \nfee_to_open= {round(fee_to_open, 3)}\
-            \bankruptcy_fee= {round(bankruptcy_fee, 3)}\
-            \fee to close= {round(fee_to_close, 3)}\
+            \nbankruptcy_fee= {round(bankruptcy_fee, 3)}\
+            \nfee to close= {round(fee_to_close, 3)}\
             \ncash_used= {round(cash_used, 3)}"
         )
 

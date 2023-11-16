@@ -285,7 +285,6 @@ class StaticOrderSettings(NamedTuple):
     increase_position_type: int
     leverage_strategy_type: int
     logger_bool: bool
-    long_or_short: str
     pg_min_max_sl_bcb: int
     sl_strategy_type: int
     sl_to_be_bool: bool

@@ -16,14 +16,14 @@ class IncreasePosition:
 
     def __init__(
         self,
-        min_asset_size: float,
-        price_tick_step: float,
-        max_asset_size: float,
         asset_tick_step: float,
-        market_fee_pct: float,
-        sl_strategy_type: StopLossStrategyType,
         increase_position_type: IncreasePositionType,
         long_short: str,
+        market_fee_pct: float,
+        max_asset_size: float,
+        min_asset_size: float,
+        price_tick_step: float,
+        sl_strategy_type: StopLossStrategyType,
     ) -> None:
         self.min_asset_size = min_asset_size
         self.asset_tick_step = asset_tick_step
@@ -73,12 +73,12 @@ class IncreasePosition:
         """
         Check if Possible loss is bigger than risk account percent size
         """
-        possible_loss = round(possible_loss + equity * self.risk_account_pct_size, 0)
+        possible_loss = int(possible_loss - equity * self.risk_account_pct_size)
         logger.debug(f"possible_loss= {possible_loss}")
 
-        max_equity_risk = round(equity * self.max_equity_risk_pct)
+        max_equity_risk = -int(equity * self.max_equity_risk_pct)
         logger.debug(f"max_equity_risk= {max_equity_risk}")
-        if possible_loss > max_equity_risk:
+        if possible_loss < max_equity_risk:
             logger.warning(f"PL too big possible_loss= {possible_loss} max risk= {max_equity_risk}")
             raise RejectedOrder
 
@@ -100,11 +100,11 @@ class IncreasePosition:
         """
         Checking the total trades is bigger than max trades
         """
-        pnl = position_size_asset * abs((sl_price - average_entry))  # math checked
+        pnl = -abs(average_entry - sl_price) * position_size_asset  # math checked
         fee_open = position_size_asset * average_entry * self.market_fee_pct  # math checked
         fee_close = position_size_asset * sl_price * self.market_fee_pct  # math checked
         fees_paid = fee_open + fee_close  # math checked
-        possible_loss = round(-(pnl - fees_paid), 3)
+        possible_loss = int(pnl - fees_paid)
 
         logger.debug(f"possible_loss= {possible_loss}")
 
@@ -253,7 +253,7 @@ class IncreasePosition:
         average_entry: float,
         position_size_usd: float,
     ):
-        # math https://www.symbolab.com/solver/simplify-calculator/solve%20for%20u%2C%20%5Cleft(%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%5Cleft(n%20-%20%5Cleft(%5Cfrac%7B%5Cleft(p%2Bu%5Cright)%7D%7B%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%7D%5Cright)%5Cright)%5Cright)-%20%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%5Cleft(%5Cfrac%7B%5Cleft(p%2Bu%5Cright)%7D%7B%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%7D%5Cright)%5Ccdot%20m%5Cright)%20-%20%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%20n%5Ccdot%20m%5Cright)%20%5Cright)%3Df?or=input
+        # math https://www.symbolab.com/solver/simplify-calculator/solve%20for%20u%2C%20%5Cleft(%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%5Cleft(n%20-%20%5Cleft(%5Cfrac%7B%5Cleft(p%2Bu%5Cright)%7D%7B%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%7D%5Cright)%5Cright)%5Cright)-%20%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%5Cleft(%5Cfrac%7B%5Cleft(p%2Bu%5Cright)%7D%7B%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%7D%5Cright)%5Ccdot%20m%5Cright)%20-%20%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%20n%5Ccdot%20m%5Cright)%20%5Cright)%3D-f?or=input
 
         return round(
             -(
@@ -279,7 +279,7 @@ class IncreasePosition:
         entry_price: float,
     ):
         return round(
-            -possible_loss
+            possible_loss
             / (sl_price / entry_price - 1 - self.market_fee_pct - sl_price * self.market_fee_pct / entry_price),
             3,
         )
@@ -318,7 +318,7 @@ class IncreasePosition:
         entry_price: float,
     ):
         return round(
-            -possible_loss
+            possible_loss
             / (1 - sl_price / entry_price - self.market_fee_pct - sl_price * self.market_fee_pct / entry_price),
             3,
         )
@@ -407,7 +407,7 @@ class IncreasePosition:
         )
         logger.debug(f"average_entry= {average_entry}")
 
-        sl_pct = round((average_entry - sl_price) / average_entry, 3)
+        sl_pct = round(abs(average_entry - sl_price) / average_entry, 3)
         logger.debug(f"sl_pct= {round(sl_pct * 100, 3)}")
         return (
             average_entry,
@@ -447,7 +447,7 @@ class IncreasePosition:
 
         average_entry = entry_price
 
-        sl_pct = round((average_entry - sl_price) / average_entry, 3)
+        sl_pct = round(abs(average_entry - sl_price) / average_entry, 3)
         logger.debug(f"sl_pct= {round(sl_pct * 100, 3)}")
         return (
             average_entry,

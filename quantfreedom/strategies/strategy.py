@@ -67,11 +67,12 @@ class Strategy:
 
     def __init__(
         self,
+        long_short: str,
         rsi_is_below: np.array,
         rsi_length: np.array,
     ) -> None:
         logger.debug("Creating Strategy class init")
-
+        self.long_short = long_short
         ind_set_arrays = IndicatorSettingsArrays(
             rsi_is_below=rsi_is_below,
             rsi_length=rsi_length,
@@ -90,11 +91,11 @@ class Strategy:
                 source=candles[:, CandleBodyType.Close],
                 length=self.rsi_length,
             )
-            rsi = np.around(rsi, 2)
+            self.rsi = np.around(rsi, 2)
             logger.info(f"Created RSI rsi_is_below= {self.rsi_is_below} rsi_length= {self.rsi_length}")
 
-            self.entries_strat = np.where(rsi < self.rsi_is_below, True, False)
-            self.exits_strat = np.full_like(rsi, np.nan)
+            self.entries_strat = np.where(self.rsi < self.rsi_is_below, True, False)
+            self.exits_strat = np.full_like(self.rsi, np.nan)
 
         except Exception as e:
             logger.info(f"Exception set_backtesting_indicator -> {e}")
@@ -102,10 +103,15 @@ class Strategy:
 
     def log_indicator_settings(self, ind_set_index: int):
         logger.info(
-        f"Indicator Settings Index= {ind_set_index}\n\
+            f"Indicator Settings Index= {ind_set_index}\n\
 rsi_length= {self.rsi_length}\n\
-rsi_is_below= {self.rsi_is_below}")
-         
+rsi_is_below= {self.rsi_is_below}"
+        )
+
+    def entry_message(self, bar_index: int):
+        logger.info("\n\n")
+        logger.info(f"Entry time!!! rsi= {self.rsi[bar_index]} < rsi_is_below= {self.rsi_is_below}")
+
     def set_ind_settings(self, ind_set_index: int):
         self.rsi_is_below = self.indicator_settings_arrays.rsi_is_below[ind_set_index]
         self.rsi_length = self.indicator_settings_arrays.rsi_length[ind_set_index]

@@ -74,8 +74,8 @@ class TakeProfit:
         position_size_usd: float,
         possible_loss: float,
     ):
-        profit = possible_loss * self.risk_reward
-        logger.debug(f"profit= {profit}")
+        profit = -possible_loss * self.risk_reward
+        logger.debug(f"possible profit= {profit}")
         tp_price = self.get_tp_price(
             average_entry=average_entry,
             position_size_usd=position_size_usd,
@@ -104,7 +104,7 @@ class TakeProfit:
         tp_price: float,
     ):
         if self.get_check_tp_candle_price(current_candle=current_candle, tp_price=tp_price):
-            logger.debug("TP Hit")
+            logger.debug(f"TP Hit tp_price= {tp_price}")
             raise DecreasePosition(
                 exit_fee_pct=self.tp_fee_pct,
                 exit_price=tp_price,

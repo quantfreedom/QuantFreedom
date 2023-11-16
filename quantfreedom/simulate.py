@@ -43,7 +43,11 @@ def run_df_backtest(
         dos_arrays=dos_arrays,
     )
 
-    order = OrderHandler(static_os=static_os, exchange_settings=exchange_settings)
+    order = OrderHandler(
+        long_short=strategy.long_short,
+        static_os=static_os,
+        exchange_settings=exchange_settings,
+    )
 
     # Creating Settings Vars
     total_order_settings = dos_cart_arrays[0].size
@@ -159,6 +163,7 @@ def run_df_backtest(
 
                 logger.debug("strategy evaluate")
                 if strategy.entries_strat[bar_index]:
+                    strategy.entry_message(bar_index=bar_index)
                     try:
                         logger.debug("calculate_stop_loss")
                         sl_price = order.calculate_stop_loss(
@@ -253,13 +258,13 @@ def run_df_backtest(
             wins_and_losses_array = pnl_array[~np.isnan(pnl_array)]
             total_trades_closed = wins_and_losses_array.size
             logger.info(
-                f"Results from backtest\n\
-ind_set_index={ind_set_index}\n\
-dos_index={dos_index}\n\
-Starting eq={starting_equity}\n\
-Ending eq={order.equity}\n\
-Gains pct={gains_pct}\n\
-Total_trades={total_trades_closed}"
+                f"Results from backtest\
+                \nind_set_index={ind_set_index}\
+                \ndos_index={dos_index}\
+                \nStarting eq={starting_equity}\
+                \nEnding eq={order.equity}\
+                \nGains pct={gains_pct}\
+                \ntotal_trades={total_trades_closed}"
             )
             if total_trades_closed > 0 and gains_pct > backtest_settings.gains_pct_filter:
                 if wins_and_losses_array.size > backtest_settings.total_trade_filter:
@@ -328,6 +333,7 @@ def or_backtest(
     order = OrderHandler(
         static_os=static_os,
         exchange_settings=exchange_settings,
+        long_short=strategy.long_short,
     )
 
     strategy.set_entries_exits_array(
@@ -413,6 +419,8 @@ def or_backtest(
                     exit_fee_pct=e.exit_fee_pct,
                     exit_price=e.exit_price,
                     order_status=e.order_status,
+                    market_fee_pct=exchange_settings.market_fee_pct,
+                    equity=order.equity,
                 )
                 logger.debug(f"Filling or for decrease postiion {OrderStatus._fields[e.order_status]}")
                 order.fill_or_exit_move(
@@ -441,6 +449,7 @@ def or_backtest(
 
         logger.debug("strategy evaluate")
         if strategy.entries_strat[bar_index]:
+            strategy.entry_message(bar_index=bar_index)
             try:
                 logger.debug("calculate_stop_loss")
                 sl_price = order.calculate_stop_loss(
@@ -482,7 +491,8 @@ def or_backtest(
                     average_entry=average_entry,
                     cash_borrowed=order.cash_borrowed,
                     cash_used=order.cash_used,
-                    entry_size_usd=entry_size_usd,
+                    position_size_usd=position_size_usd,
+                    position_size_asset=position_size_asset,
                     sl_price=sl_price,
                 )
 
@@ -536,8 +546,11 @@ def or_backtest(
             except RejectedOrder:
                 pass
             except Exception as e:
-                logger.error(f"Exception hit in eval strat -> {e}")
-                pass
+                if bar_index + 1 >= candles.shape[0]:
+                    pass
+                else:
+                    logger.error(f"Exception hit in eval strat -> {e}")
+                    raise Exception(f"Exception hit in eval strat -> {e}")
     order_records_df = order_records_to_df(order_records[:or_filled])
     if plot_results:
         plot_or_results(candles=candles, order_records_df=order_records_df)

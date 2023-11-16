@@ -135,12 +135,6 @@ class Mufex(Exchange):
     ):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
-
-        timeframe: "1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w", "m"
-
-        returning dict is [start, open, high, low, close, volume, turnover]
-
-        use link to see all Request Parameters
         """
         ex_timeframe = self.get_exchange_timeframe(ex_timeframes=MUFEX_TIMEFRAMES, timeframe=timeframe)
         timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
@@ -166,7 +160,7 @@ class Mufex(Exchange):
             "start": since_date_ms,
             "end": until_date_ms,
         }
-        start_time = self.get_current_time_sec()
+        # start_time = self.get_current_time_sec()
         while params["start"] + timeframe_in_ms < until_date_ms:
             try:
                 response = get(url=self.url_start + end_point, params=params).json()

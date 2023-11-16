@@ -114,7 +114,7 @@ class StopLoss:
     ):
         logger.debug("Starting")
         candle_high = current_candle[CandleBodyType.High]
-        logger.debug(f"candle_low= {candle_high}")
+        logger.debug(f"candle_high= {candle_high}")
         return sl_price < candle_high
 
     def short_sl_price_calc(self, candle_body: float, add_pct: float):
@@ -152,7 +152,7 @@ class StopLoss:
         """
         # lb will be bar index if sl isn't based on lookback because look back will be 0
         lookback = max(bar_index - self.sl_based_on_lookback, 0)
-        logger.debug(f"lookback= {lookback}")
+        logger.debug(f"lookback to index= {lookback}")
 
         candle_body = self.sl_bcb_price_getter(
             bar_index=bar_index,
@@ -183,7 +183,7 @@ class StopLoss:
             current_candle=current_candle,
             sl_price=sl_price,
         ):
-            logger.debug("Stop loss hit")
+            logger.debug(f"Stop loss hit sl_price= {sl_price}")
             raise DecreasePosition(
                 exit_fee_pct=self.market_fee_pct,
                 exit_price=sl_price,
@@ -208,7 +208,7 @@ class StopLoss:
             # Stop Loss to break even
             candle_body = current_candle[self.sl_to_be_cb_type]
             pct_from_ae = abs(candle_body - average_entry) / average_entry
-            logger.debug("pct_from_ae= {round(pct_from_ae * 100, 3)}")
+            logger.debug(f"pct_from_ae= {round(pct_from_ae * 100, 3)}")
             move_sl_bool = self.move_sl_bool(pct_from_ae=pct_from_ae)
             if move_sl_bool:
                 old_sl = sl_price

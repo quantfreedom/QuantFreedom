@@ -1,3 +1,4 @@
+import json
 import pandas as pd
 import numpy as np
 
@@ -99,3 +100,12 @@ class Exchange:
             return ex_timeframes[UNIVERSAL_TIMEFRAMES.index(timeframe)]
         except Exception as e:
             raise Exception(f"Use one of these timeframes - {UNIVERSAL_TIMEFRAMES} -> {e}")
+
+    def remove_none_from_params(self, params: dict):
+        return {k: v for k, v in params.items() if v is not None}
+
+    def get_params_as_dict_string(self, params: dict):
+        return str(json.dumps(params))
+
+    def get_params_as_path(self, params: dict):
+        return "&".join("{key}={value}".format(key=x[0], value=x[1]) for x in params)
