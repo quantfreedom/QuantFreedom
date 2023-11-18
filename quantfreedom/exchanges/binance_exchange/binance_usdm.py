@@ -51,7 +51,7 @@ class BinanceUSDM(Exchange):
         """
         https://binance-docs.github.io/apidocs/futures/en/#new-order-trade
         """
-        return self.binance_ex.new_order(
+        data = self.binance_ex.new_order(
             symbol=symbol,
             side=side,
             positionSide=positionSide,
@@ -73,6 +73,8 @@ class BinanceUSDM(Exchange):
             goodTillDate=goodTillDate,
             recvWindow=recvWindow,
         )
+        order_id = data["orderId"]
+        return order_id
 
     def get_position_info(
         self,

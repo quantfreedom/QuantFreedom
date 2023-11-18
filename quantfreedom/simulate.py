@@ -271,13 +271,13 @@ def run_df_backtest(
                     wins_and_losses_array_no_be = wins_and_losses_array[
                         (wins_and_losses_array < -0.009) | (wins_and_losses_array > 0.009)
                     ]
-                    to_the_upside = get_to_the_upside_nb(
+                    qf_score = get_to_the_upside_nb(
                         gains_pct=gains_pct,
                         wins_and_losses_array_no_be=wins_and_losses_array_no_be,
                     )
 
                     # Checking to the upside filter
-                    if to_the_upside > backtest_settings.upside_filter:
+                    if qf_score > backtest_settings.upside_filter:
                         win_loss = np.where(wins_and_losses_array_no_be < 0, 0, 1)
                         wins = np.count_nonzero(win_loss)
                         losses = win_loss.size - wins
@@ -295,7 +295,7 @@ def run_df_backtest(
                         record["losses"] = losses
                         record["gains_pct"] = gains_pct
                         record["win_rate"] = win_rate
-                        record["to_the_upside"] = to_the_upside
+                        record["qf_score"] = qf_score
                         record["fees_paid"] = round(total_fees_paid, 3)
                         record["total_pnl"] = total_pnl
                         record["ending_eq"] = order.equity

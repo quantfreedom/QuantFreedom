@@ -2,26 +2,6 @@ from typing import Callable
 import numpy as np
 
 
-def sma_tv(
-    source: np.array,
-    length: int,
-):
-    """
-    Simple Moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.sma
-    """
-    new_source = source[~np.isnan(source)]
-
-    sma = np.full_like(source, np.nan)
-
-    len_adder = source.size - new_source.size
-    len_minus_one = length - 1
-
-    for i in range(len_minus_one, new_source.size):
-        sma[i + len_adder] = new_source[i - len_minus_one : i + 1].mean()
-
-    return sma
-
-
 def wma_tv(
     source: np.array,
     length: int,
@@ -41,6 +21,22 @@ def wma_tv(
     return wma
 
 
+def sma_tv(
+    source: np.array,
+    length: int,
+):
+    """
+    Simple Moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.sma
+    """
+    sma = np.full_like(source, np.nan)
+    len_minus_one = source[np.isnan(source)].size + length - 1
+
+    for i in range(len_minus_one, source.size):
+        sma[i] = source[i - len_minus_one : i + 1].mean()
+
+    return sma
+
+
 def ema_tv(
     source: np.array,
     length: int,
@@ -50,8 +46,7 @@ def ema_tv(
     """
     alpha = 2 / (length + 1)
 
-    len_adder = source.size - source[~np.isnan(source)].size
-    starting_index = len_adder + length
+    starting_index = [np.isnan(source)].size + length
 
     ema = np.full_like(source, np.nan)
     ema[starting_index - 1] = source[starting_index - 1]
@@ -122,17 +117,24 @@ def stdev_tv(
     """
     Standard deviation https://www.tradingview.com/pine-script-reference/v5/#fun_ta.stdev
     """
-    avg = sma_tv(source=source, length=length)
+    avg = -sma_tv(source=source, length=length)
 
     sum_square_dev = np.full_like(avg, np.nan)
 
     len_minus_one = length - 1
 
     for i in range(avg.size - 1, len_minus_one, -1):
-        res = source[i - len_minus_one : i + 1] + -avg[i]
-        res_2 = np.where(np.absolute(res) <= 1e-10, 0, res)
-        sum = np.where((np.absolute(res_2) < 1e-4) & (np.absolute(res_2) > 1e-10), 1e-5, res_2)
-        sum_square_dev[i] = (sum * sum).sum()
+        res = np.absolute(source[i - len_minus_one : i + 1] + avg[i])
+        res_2 = np.where(
+            res <= 1e-10,
+            0,
+            np.where(
+                (res <= 1e-4) & (res > 1e-10),
+                1e-5,
+                res,
+            ),
+        )
+        sum_square_dev[i] = (res_2 * res_2).sum()
 
     final = np.sqrt(sum_square_dev / length)
     return final

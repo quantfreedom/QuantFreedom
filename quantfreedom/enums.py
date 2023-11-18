@@ -405,7 +405,7 @@ strat_df_array_dt = np.dtype(
         ("losses", np.int_),
         ("gains_pct", np.float_),
         ("win_rate", np.float_),
-        ("to_the_upside", np.float_),
+        ("qf_score", np.float_),
         ("fees_paid", np.float_),
         ("total_pnl", np.float_),
         ("ending_eq", np.float_),

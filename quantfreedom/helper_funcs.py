@@ -100,11 +100,11 @@ def get_to_the_upside_nb(
 
     yp_ym_s = np.power(yp_ym, 2)
 
-    to_the_upside = yp_ym_s.sum() / y_ym_s.sum()
+    qf_score = yp_ym_s.sum() / y_ym_s.sum()
 
     if gains_pct <= 0:
-        to_the_upside = -(to_the_upside)
-    return round(to_the_upside, 3)
+        qf_score = -(qf_score)
+    return round(qf_score, 3)
 
 
 def get_dos(

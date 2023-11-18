@@ -28,7 +28,7 @@ def plot_candles_1_ind_same_pane(
     candles: np.array,
     indicator: np.array,
     ind_name: str,
-    ind_color: str = "#3EA3FF",
+    ind_color: str = "yellow",
 ):
     datetimes = pd.to_datetime(candles[:, 0], unit="ms")
     fig = go.Figure(
@@ -57,7 +57,7 @@ def plot_candles_1_ind_dif_pane(
     candles: np.array,
     indicator: np.array,
     ind_name: str,
-    ind_color: str = "#3EA3FF",
+    ind_color: str = "yellow",
 ):
     datetimes = pd.to_datetime(candles[:, 0], unit="ms")
     fig = make_subplots(
@@ -77,8 +77,8 @@ def plot_candles_1_ind_dif_pane(
             close=candles[:, 4],
             name="Candles",
         ),
-        row=1,
         col=1,
+        row=1,
     )
     fig.add_trace(
         go.Scatter(
@@ -87,8 +87,8 @@ def plot_candles_1_ind_dif_pane(
             name=ind_name,
             line_color=ind_color,
         ),
-        row=2,
         col=1,
+        row=2,
     )
 
     fig.update_layout(height=800, xaxis_rangeslider_visible=False)
@@ -131,7 +131,7 @@ def plot_supertrend(
 def plot_rma(
     candles: np.array,
     indicator: np.array,
-    ind_color: str = "#3EA3FF",
+    ind_color: str = "yellow",
 ):
     return plot_candles_1_ind_same_pane(
         candles=candles,
@@ -144,7 +144,7 @@ def plot_rma(
 def plot_wma(
     candles: np.array,
     indicator: np.array,
-    ind_color: str = "#3EA3FF",
+    ind_color: str = "yellow",
 ):
     return plot_candles_1_ind_same_pane(
         candles=candles,
@@ -157,7 +157,7 @@ def plot_wma(
 def plot_sma(
     candles: np.array,
     indicator: np.array,
-    ind_color: str = "#3EA3FF",
+    ind_color: str = "yellow",
 ):
     return plot_candles_1_ind_same_pane(
         candles=candles,
@@ -170,7 +170,7 @@ def plot_sma(
 def plot_ema(
     candles: np.array,
     indicator: np.array,
-    ind_color: str = "#3EA3FF",
+    ind_color: str = "yellow",
 ):
     return plot_candles_1_ind_same_pane(
         candles=candles,
@@ -183,7 +183,7 @@ def plot_ema(
 def plot_rsi(
     candles: np.array,
     indicator: np.array,
-    ind_color: str = "#3EA3FF",
+    ind_color: str = "red",
 ):
     return plot_candles_1_ind_dif_pane(
         candles=candles,
@@ -196,7 +196,7 @@ def plot_rsi(
 def plot_stdev(
     candles: np.array,
     indicator: np.array,
-    ind_color: str = "#3EA3FF",
+    ind_color: str = "yellow",
 ):
     return plot_candles_1_ind_dif_pane(
         candles=candles,
