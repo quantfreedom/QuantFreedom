@@ -328,7 +328,7 @@ class OrderHandler:
             cash_borrowed=cash_borrowed,
             cash_used=cash_used,
             position_size_asset=position_size_asset,
-            position_size_usd=position_size_asset,
+            position_size_usd=position_size_usd,
             sl_price=sl_price,
         )
         logger.info(

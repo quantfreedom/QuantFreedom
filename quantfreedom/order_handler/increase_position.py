@@ -317,7 +317,7 @@ class IncreasePosition:
         sl_price: float,
         entry_price: float,
     ):
-        return round(
+        return -round(
             entry_price
             * possible_loss
             / (-entry_price + sl_price + entry_price * self.market_fee_pct + sl_price * self.market_fee_pct),

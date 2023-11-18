@@ -1,6 +1,6 @@
 import numpy as np
 from logging import getLogger
-from quantfreedom.enums import CandleBodyType, DecreasePosition, LeverageStrategyType, OrderStatus
+from quantfreedom.enums import CandleBodyType, DecreasePosition, LeverageStrategyType, OrderStatus, RejectedOrder
 from quantfreedom.helper_funcs import round_size_by_tick_step
 
 logger = getLogger("info")
@@ -30,12 +30,12 @@ class Leverage:
         if long_short == "long":
             self.calc_dynamic_lev = self.long_calc_dynamic_lev
             self.get_liq_price = self.long_get_liq_price
-            self.get_bankruptcy_fee = self.long_get_bankruptcy_fee
+            self.get_bankruptcy_price = self.long_get_bankruptcy_price
             self.liq_hit_bool = self.long_liq_hit_bool
         else:
             self.calc_dynamic_lev = self.short_calc_dynamic_lev
             self.get_liq_price = self.short_get_liq_price
-            self.get_bankruptcy_fee = self.short_get_bankruptcy_fee
+            self.get_bankruptcy_price = self.short_get_bankruptcy_price
             self.liq_hit_bool = self.short_liq_hit_bool
 
         if leverage_strategy_type == LeverageStrategyType.Dynamic:
@@ -45,18 +45,20 @@ class Leverage:
 
         self.checker_liq_hit = self.check_liq_hit
 
-    def long_get_bankruptcy_fee(
+    def long_get_bankruptcy_price(
         self,
         average_entry: float,
         leverage: float,
     ):
+        # https://www.bybithelp.com/en-US/s/article/Order-Cost-USDT-Contract
         return average_entry * (leverage - 1) / leverage
 
-    def short_get_bankruptcy_fee(
+    def short_get_bankruptcy_price(
         self,
         average_entry: float,
         leverage: float,
     ):
+        # https://www.bybithelp.com/en-US/s/article/Order-Cost-USDT-Contract
         return average_entry * (leverage + 1) / leverage
 
     def long_get_liq_price(
@@ -92,22 +94,23 @@ class Leverage:
 
         initial_margin = (position_size_asset * average_entry) / leverage
         fee_to_open = position_size_asset * average_entry * self.market_fee_pct  # math checked
-        bankruptcy_fee = self.get_bankruptcy_fee(average_entry=average_entry, leverage=leverage)
-        fee_to_close = position_size_asset * bankruptcy_fee * self.market_fee_pct
+        bankruptcy_price = self.get_bankruptcy_price(average_entry=average_entry, leverage=leverage)
+        fee_to_close = position_size_asset * bankruptcy_price * self.market_fee_pct
 
         cash_used = initial_margin + fee_to_open + fee_to_close  # math checked
 
         logger.debug(
             f"\ninitial_margin= {round(initial_margin, 3)}\
             \nfee_to_open= {round(fee_to_open, 3)}\
-            \nbankruptcy_fee= {round(bankruptcy_fee, 3)}\
+            \nbankruptcy_price= {round(bankruptcy_price, 3)}\
             \nfee to close= {round(fee_to_close, 3)}\
-            \ncash_used= {round(cash_used, 3)}"
+            \ncash_used= {round(cash_used, 3)}\
+            \nog_available_balance= {og_available_balance}"
         )
 
         if cash_used > og_available_balance:
-            logger.warning("Cash used bigger than available balance")
-            raise Exception("Cash used bigger than available balance")
+            logger.warning("Cash used bigger than available balance AKA position size too big")
+            raise RejectedOrder
         else:
             available_balance = round(og_available_balance - cash_used, 3)
             cash_used = round(og_cash_used + cash_used, 3)
@@ -175,7 +178,7 @@ class Leverage:
         sl_price: float,
     ):
         # the .001 is to add .001 buffer
-        return -average_entry / ((sl_price + sl_price * 0.001) - average_entry + (self.mmr_pct * average_entry))
+        return average_entry / ((sl_price + sl_price * 0.001) - average_entry + (self.mmr_pct * average_entry))
 
     def dynamic_lev(
         self,
@@ -196,7 +199,7 @@ class Leverage:
             logger.warning(f"Lev too high Lev= {leverage} Max Lev= {self.max_leverage}")
             leverage = self.max_leverage
         elif leverage < self.min_leverage:
-            logger.warning(f"Lev too high Lev= {leverage} Max Lev= {self.max_leverage}")
+            logger.warning(f"Lev too low Lev= {leverage} Min Lev= {self.min_leverage}")
             leverage = 1
         else:
             logger.debug(f"Leverage= {leverage}")

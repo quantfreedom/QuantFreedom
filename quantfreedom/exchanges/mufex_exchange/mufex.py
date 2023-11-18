@@ -158,6 +158,7 @@ class Mufex(Exchange):
                 new_candles = response["data"]["list"]
                 last_candle_time_ms = int(new_candles[-1][0])
                 if last_candle_time_ms == params["start"]:
+                    print("sleeping .2 seconds")
                     sleep(0.2)
                 else:
                     candles_list.extend(new_candles)
@@ -165,7 +166,11 @@ class Mufex(Exchange):
                     params["start"] = last_candle_time_ms + 2000
 
             except Exception as e:
-                raise Exception(f"Mufex get_candles_df {response.get('message')} - > {e}")
+                if response.get("error_msg") == "404 Route Not Found":
+                    print("404 Route Not Found")
+                    sleep(0.5)
+                else:
+                    raise Exception(f"Mufex get_candles {response.get('message')} - > {e}")
 
         candles_np = np.array(candles_list, dtype=np.float_)[:, :-2]
 
@@ -217,7 +222,11 @@ class Mufex(Exchange):
             data_list = response["data"]["list"]
             return data_list
         except Exception as e:
-            raise Exception(f"Mufex get_all_symbols_info = Data or List is empty {response['message']} -> {e}")
+            if response.get("error_msg") == "404 Route Not Found":
+                print("404 Route Not Found")
+                sleep(0.5)
+            else:
+                raise Exception(f"Mufex get_all_symbols_info = Data or List is empty {response['message']} -> {e}")
 
     def get_risk_limit_info(self, symbol: str, category: str = "linear"):
         """
@@ -234,7 +243,11 @@ class Mufex(Exchange):
 
             return data_list
         except Exception as e:
-            raise Exception(f"Mufex get_risk_limit_info = Data or List is empty {response['message']} -> {e}")
+            if response.get("error_msg") == "404 Route Not Found":
+                print("404 Route Not Found")
+                sleep(0.5)
+            else:
+                raise Exception(f"Mufex get_risk_limit_info = Data or List is empty {response['message']} -> {e}")
 
     def create_order(
         self,
