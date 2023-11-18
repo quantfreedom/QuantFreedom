@@ -34,9 +34,11 @@ class IncreasePosition:
         if long_short == "long":
             self.entry_calc_p = self.long_entry_size_p
             self.entry_calc_np = self.long_entry_size_np
-        else:
+        elif long_short.lower() == " short":
             self.entry_calc_p = self.short_entry_size_p
             self.entry_calc_np = self.short_entry_size_np
+        else:
+            raise Exception("long or short are the only options for long_short")
 
         if sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
             if increase_position_type == IncreasePositionType.RiskPctAccountEntrySize:

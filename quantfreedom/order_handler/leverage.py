@@ -11,13 +11,13 @@ class Leverage:
         self,
         leverage_strategy_type: LeverageStrategyType,
         leverage_tick_step: float,
+        long_short: str,
         market_fee_pct: float,
         max_leverage: float,
         min_leverage: float,
         mmr_pct: float,
         price_tick_step: float,
         static_leverage: float,
-        long_short: str,
     ):
         self.min_leverage = min_leverage
         self.price_tick_step = price_tick_step
@@ -32,11 +32,13 @@ class Leverage:
             self.get_liq_price = self.long_get_liq_price
             self.get_bankruptcy_price = self.long_get_bankruptcy_price
             self.liq_hit_bool = self.long_liq_hit_bool
-        else:
+        elif long_short.lower() == " short":
             self.calc_dynamic_lev = self.short_calc_dynamic_lev
             self.get_liq_price = self.short_get_liq_price
             self.get_bankruptcy_price = self.short_get_bankruptcy_price
             self.liq_hit_bool = self.short_liq_hit_bool
+        else:
+            raise Exception("long or short are the only options for long_short")
 
         if leverage_strategy_type == LeverageStrategyType.Dynamic:
             self.lev_calculator = self.dynamic_lev

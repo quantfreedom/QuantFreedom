@@ -20,15 +20,17 @@ class OrderHandler:
 
     def __init__(
         self,
-        static_os: StaticOrderSettings,
-        long_short: str,
         exchange_settings: ExchangeSettings,
+        long_short: str,
+        static_os: StaticOrderSettings,
     ) -> None:
         # Decrease Position
-        if long_short == "long":
+        if long_short.lower() == "long":
             self.pnl_calc = self.long_pnl_calc
-        else:
+        elif long_short.lower() == " short":
             self.pnl_calc = self.short_pnl_calc
+        else:
+            raise Exception("long or short are the only options for long_short")
 
         self.obj_stop_loss = StopLoss(
             long_short=long_short,
@@ -62,10 +64,12 @@ class OrderHandler:
             static_leverage=static_os.static_leverage,
         )
 
-        if static_os.tp_fee_type == "market":
+        if static_os.tp_fee_type.lower() == "market":
             tp_fee_pct = exchange_settings.market_fee_pct
-        else:
+        elif static_os.tp_fee_type.lower() == 'limit':
             tp_fee_pct = exchange_settings.limit_fee_pct
+        else:
+            raise Exception("market or limit are the only options for tp_fee_type")
 
         self.obj_take_profit = TakeProfit(
             long_short=long_short,

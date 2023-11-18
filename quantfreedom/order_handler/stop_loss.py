@@ -26,6 +26,7 @@ class StopLoss:
 
     def __init__(
         self,
+        long_short: str,
         market_fee_pct: float,
         pg_min_max_sl_bcb: str,
         price_tick_step: float,
@@ -33,30 +34,33 @@ class StopLoss:
         sl_to_be_bool: bool,
         trail_sl_bool: bool,
         z_or_e_type: str,
-        long_short: str,
     ) -> None:
         self.market_fee_pct = market_fee_pct
         self.price_tick_step = price_tick_step
 
-        if long_short == "long":
+        if long_short.lower() == "long":
             self.sl_to_zero_price = self.long_sl_to_zero_price
             self.get_sl_hit = self.long_sl_hit_bool
             self.move_sl_bool = self.num_greater_than_num
             self.sl_price_calc = self.long_sl_price_calc
-        else:
+        elif long_short.lower() == "short":
             self.sl_to_zero_price = self.short_sl_to_zero_price
             self.get_sl_hit = self.short_sl_hit_bool
             self.move_sl_bool = self.num_less_than_num
             self.sl_price_calc = self.short_sl_price_calc
+        else:
+            raise Exception("long or short are the only options for long_short")
 
         # stop loss calulator
         if sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
             self.sl_calculator = self.sl_based_on_candle_body
             self.checker_sl_hit = self.check_sl_hit
-            if pg_min_max_sl_bcb == "min":
+            if pg_min_max_sl_bcb.lower() == "min":
                 self.sl_bcb_price_getter = self.min_price_getter
-            elif pg_min_max_sl_bcb == "max":
+            elif pg_min_max_sl_bcb.lower() == "max":
                 self.sl_bcb_price_getter = self.max_price_getter
+            else:
+                raise Exception("min or max are the only options for pg_min_max_sl_bcb")
         else:
             self.sl_calculator = self.pass_func
             self.checker_sl_hit = self.pass_func
@@ -65,13 +69,13 @@ class StopLoss:
         if sl_to_be_bool:
             self.checker_sl_to_be = self.check_move_sl_to_be
             # setting up stop loss be zero or entry
-            if z_or_e_type == "zero":
+            if z_or_e_type.lower() == "zero":
                 self.zero_or_entry_calc = self.sl_to_zero
-            elif z_or_e_type == "entry":
+            elif z_or_e_type.lower() == "entry":
                 self.zero_or_entry_calc = self.sl_to_entry
+            else:
+                raise Exception("zero or entry are the only options for z_or_e_type")
         else:
-            # self.checker_sl_to_be = long_cm_sl_to_be_pass
-            # self.zero_or_entry_calc = sl_to_z_e_pass
             self.checker_sl_to_be = self.pass_func
             self.zero_or_entry_calc = self.pass_func
 
@@ -79,7 +83,6 @@ class StopLoss:
         if trail_sl_bool:
             self.checker_tsl = self.check_move_tsl
         else:
-            # self.checker_tsl = long_cm_tsl_pass
             self.checker_tsl = self.pass_func
 
     # Long Functions

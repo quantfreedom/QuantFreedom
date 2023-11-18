@@ -21,12 +21,14 @@ class TakeProfit:
         self.price_tick_step = price_tick_step
         self.tp_fee_pct = tp_fee_pct
 
-        if long_short == "long":
+        if long_short.lower() == "long":
             self.get_tp_price = self.long_tp_price
             self.get_check_tp_candle_price = self.long_c_tp_candle
-        else:
+        elif long_short.lower() == "short":
             self.get_tp_price = self.short_tp_price
             self.get_check_tp_candle_price = self.short_c_tp_candle
+        else:
+            raise Exception("long or short are the only options for long_short")
 
         if tp_strategy_type == TakeProfitStrategyType.RiskReward:
             self.tp_calculator = self.tp_rr
