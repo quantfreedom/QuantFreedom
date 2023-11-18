@@ -136,7 +136,7 @@ class Bybit(Exchange):
         else:
             if since_date_ms is None:
                 since_date_ms = until_date_ms - candles_to_dl_ms
-                until_date_ms -= 5000
+            until_date_ms -= 5000
 
         candles_list = []
         end_point = "/v5/market/kline"
@@ -146,7 +146,7 @@ class Bybit(Exchange):
             "interval": ex_timeframe,
             "start": since_date_ms,
             "end": until_date_ms,
-            "limit": 5,
+            "limit": 1000,
         }
 
         while params["end"] - timeframe_in_ms > since_date_ms:

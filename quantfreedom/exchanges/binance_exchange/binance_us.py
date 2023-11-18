@@ -34,7 +34,7 @@ class BinanceUS(Exchange):
         else:
             if since_date_ms is None:
                 since_date_ms = until_date_ms - candles_to_dl_ms
-                until_date_ms -= 5000
+            until_date_ms -= 5000
 
         b_candles = []
         params = {

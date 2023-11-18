@@ -153,7 +153,7 @@ class Apex(Exchange):
         else:
             if since_date_ms is None:
                 since_date_ms = until_date_ms - candles_to_dl_ms
-                until_date_ms -= 5000
+            until_date_ms -= 5000
 
         apex_candles = []
         while since_date_ms + timeframe_in_ms < until_date_ms:
@@ -163,6 +163,7 @@ class Apex(Exchange):
                     interval=ex_timeframe,
                     start=int(since_date_ms / 1000),
                     end=int(until_date_ms / 1000),
+                    limit=200,
                 )
                 apex_candle_list = apex_data["data"][symbol]
                 last_candle_time_ms = apex_candle_list[-1]["t"]

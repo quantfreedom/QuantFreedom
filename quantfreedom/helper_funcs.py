@@ -82,12 +82,12 @@ def get_to_the_upside_nb(
     ym = y.mean()
 
     y_ym = y - ym
-    if y_ym.all() == 0:
+    if (y_ym == 0).all():
         y_ym = np.array([1.0])
     y_ym_s = np.power(y_ym, 2)
 
     x_xm = x - xm
-    if x_xm.all() == 0:
+    if (x_xm == 0).all():
         x_xm = np.array([1.0])
     x_xm_s = np.power(x_xm, 2)
 

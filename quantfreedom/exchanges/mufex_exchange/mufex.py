@@ -140,7 +140,7 @@ class Mufex(Exchange):
         else:
             if since_date_ms is None:
                 since_date_ms = until_date_ms - candles_to_dl_ms
-                until_date_ms -= 5000
+            until_date_ms -= 5000
 
         candles_list = []
         end_point = "/public/v1/market/kline"
@@ -150,6 +150,7 @@ class Mufex(Exchange):
             "interval": ex_timeframe,
             "start": since_date_ms,
             "end": until_date_ms,
+            "limit": 1500,
         }
         # start_time = self.get_current_time_sec()
         while params["start"] + timeframe_in_ms < until_date_ms:
@@ -166,11 +167,7 @@ class Mufex(Exchange):
                     params["start"] = last_candle_time_ms + 2000
 
             except Exception as e:
-                if response.get("error_msg") == "404 Route Not Found":
-                    print("404 Route Not Found")
-                    sleep(0.5)
-                else:
-                    raise Exception(f"Mufex get_candles {response.get('message')} - > {e}")
+                raise Exception(f"Mufex get_candles {response.get('message')} - > {e}")
 
         candles_np = np.array(candles_list, dtype=np.float_)[:, :-2]
 
