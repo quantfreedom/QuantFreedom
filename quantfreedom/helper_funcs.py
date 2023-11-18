@@ -210,17 +210,17 @@ def log_dynamic_order_settings(
     dos_index: int,
 ):
     logger.info(
-        f"Dynamic Order settings index= {dos_index}\n\
-max_equity_risk_pct={round(dynamic_order_settings.max_equity_risk_pct * 100, 3)}\n\
-max_trades={dynamic_order_settings.max_trades}\n\
-risk_account_pct_size={round(dynamic_order_settings.risk_account_pct_size * 100, 3)}\n\
-risk_reward={dynamic_order_settings.risk_reward}\n\
-sl_based_on_add_pct={round(dynamic_order_settings.sl_based_on_add_pct * 100, 3)}\n\
-sl_based_on_lookback={dynamic_order_settings.sl_based_on_lookback}\n\
-sl_bcb_type={dynamic_order_settings.sl_bcb_type}\n\
-sl_to_be_cb_type={dynamic_order_settings.sl_to_be_cb_type}\n\
-sl_to_be_when_pct={round(dynamic_order_settings.sl_to_be_when_pct * 100, 3)}\n\
-trail_sl_bcb_type={dynamic_order_settings.trail_sl_bcb_type}\n\
-trail_sl_by_pct={round(dynamic_order_settings.trail_sl_by_pct * 100, 3)}\n\
-trail_sl_when_pct={round(dynamic_order_settings.trail_sl_when_pct * 100, 3)}"
+        f"Dynamic Order settings index= {dos_index}\
+        \nmax_equity_risk_pct={round(dynamic_order_settings.max_equity_risk_pct * 100, 3)}\
+        \nmax_trades={dynamic_order_settings.max_trades}\
+        \nrisk_account_pct_size={round(dynamic_order_settings.risk_account_pct_size * 100, 3)}\
+        \nrisk_reward={dynamic_order_settings.risk_reward}\
+        \nsl_based_on_add_pct={round(dynamic_order_settings.sl_based_on_add_pct * 100, 3)}\
+        \nsl_based_on_lookback={dynamic_order_settings.sl_based_on_lookback}\
+        \nsl_bcb_type={dynamic_order_settings.sl_bcb_type}\
+        \nsl_to_be_cb_type={dynamic_order_settings.sl_to_be_cb_type}\
+        \nsl_to_be_when_pct={round(dynamic_order_settings.sl_to_be_when_pct * 100, 3)}\
+        \ntrail_sl_bcb_type={dynamic_order_settings.trail_sl_bcb_type}\
+        \ntrail_sl_by_pct={round(dynamic_order_settings.trail_sl_by_pct * 100, 3)}\
+        \ntrail_sl_when_pct={round(dynamic_order_settings.trail_sl_when_pct * 100, 3)}"
     )

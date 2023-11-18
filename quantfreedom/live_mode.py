@@ -481,35 +481,35 @@ class LiveTrading:
         self.__set_ex_possible_loss()
         self.__set_ex_possible_profit()
 
-        message = f"An order was placed successfully\n\
-[ex_candle_closing_price={self.candles[-1,CandleBodyType.Close]}]\n\
-[entry_price={self.order.entry_price}]\n\
-[ex_entry_price={self.ex_entry_price}]\n\
-[Entry slippage={self.entry_slippage}]\n\n\
-[average_entry={self.order.average_entry}]\n\
-[ex_average_entry={self.ex_average_entry}]\n\
-[Average Entry slippage={self.avg_entry_slippage}]\n\n\
-[position_size_usd={self.order.position_size_usd}]\n\
-[ex_position_size_usd={self.ex_position_size_usd}]\n\n\
-[entry_size_usd={self.order.entry_size_usd}]\n\
-[ex_entry_size_usd={self.ex_entry_size_usd}]\n\n\
-[leverage={self.order.leverage}]\n\
-[ex_leverage={self.ex_leverage}]\n\n\
-[liq price={self.order.liq_price}]\n\
-[ex_liq price={self.ex_liq_price}]\n\
-[ex_liq_pct={self.ex_liq_pct}]\n\n\
-[candle low={self.candles[-1,CandleBodyType.Low]}]\n\
-[stop_loss_price={self.order.sl_price}]\n\
-[ex_stop_loss_price={self.ex_sl_price}]\n\n\
-[sl_pct={round(self.order.sl_pct * 100, 3)}]\n\
-[ex_sl_pct={self.ex_sl_pct}]\n\n\
-[take_profit_price={self.order.tp_price}]\n\
-[ex_take_profit_price={self.ex_tp_price}]\n\n\
-[tp_pct={round(self.order.tp_pct * 100, 3)}]\n\
-[ex_tp_pct={self.ex_tp_pct}]\n\n\
-[possible loss={self.order.possible_loss}]\n\
-[ex_possible loss={self.ex_possible_loss}]\n\
-[ex_possible profit={self.ex_possible_profit}]\n"
+        message = f"An order was placed successfully\
+            \n[ex_candle_closing_price={self.candles[-1,CandleBodyType.Close]}]\
+            \n[entry_price={self.order.entry_price}]\
+            \n[ex_entry_price={self.ex_entry_price}]\
+            \n[Entry slippage={self.entry_slippage}]\
+            \n[average_entry={self.order.average_entry}]\
+            \n[ex_average_entry={self.ex_average_entry}]\
+            \n[Average Entry slippage={self.avg_entry_slippage}]\
+            \n[position_size_usd={self.order.position_size_usd}]\
+            \n[ex_position_size_usd={self.ex_position_size_usd}]\
+            \n[entry_size_usd={self.order.entry_size_usd}]\
+            \n[ex_entry_size_usd={self.ex_entry_size_usd}]\
+            \n[leverage={self.order.leverage}]\
+            \n[ex_leverage={self.ex_leverage}]\
+            \n[liq price={self.order.liq_price}]\
+            \n[ex_liq price={self.ex_liq_price}]\
+            \n[ex_liq_pct={self.ex_liq_pct}]\
+            \n[candle low={self.candles[-1,CandleBodyType.Low]}]\
+            \n[stop_loss_price={self.order.sl_price}]\
+            \n[ex_stop_loss_price={self.ex_sl_price}]\
+            \n[sl_pct={round(self.order.sl_pct * 100, 3)}]\
+            \n[ex_sl_pct={self.ex_sl_pct}]\
+            \n[take_profit_price={self.order.tp_price}]\
+            \n[ex_take_profit_price={self.ex_tp_price}]\
+            \n[tp_pct={round(self.order.tp_pct * 100, 3)}]\
+            \n[ex_tp_pct={self.ex_tp_pct}]\
+            \n[possible loss={self.order.possible_loss}]\
+            \n[ex_possible loss={self.ex_possible_loss}]\
+            \n[ex_possible profit={self.ex_possible_profit}]"
         return message
 
     def __get_entry_plot_filename(self):

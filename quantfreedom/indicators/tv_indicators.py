@@ -4,7 +4,7 @@ import numpy as np
 
 def sma_tv(
     source: np.array,
-    length: int = 14,
+    length: int,
 ):
     """
     Simple Moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.sma
@@ -24,7 +24,7 @@ def sma_tv(
 
 def wma_tv(
     source: np.array,
-    length: int = 9,
+    length: int,
 ):
     """
     Weighted Moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.wma
@@ -43,7 +43,7 @@ def wma_tv(
 
 def ema_tv(
     source: np.array,
-    length: int = 14,
+    length: int,
 ):
     """
     Exponential Moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.ema
@@ -64,7 +64,7 @@ def ema_tv(
 
 def rma_tv(
     source: np.array,
-    length: int = 14,
+    length: int,
 ):
     """
     Relative strength index Moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma
@@ -85,7 +85,11 @@ def rma_tv(
     return rma
 
 
-def rma_tv_2(source_1: np.array, source_2: np.array, length: int = 14):
+def rma_tv_2(
+    source_1: np.array,
+    source_2: np.array,
+    length: int,
+):
     """
     Relative strength index Moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma
     """
@@ -113,7 +117,7 @@ def rma_tv_2(source_1: np.array, source_2: np.array, length: int = 14):
 
 def stdev_tv(
     source: np.array,
-    length: int = 4,
+    length: int,
 ):
     """
     Standard deviation https://www.tradingview.com/pine-script-reference/v5/#fun_ta.stdev
@@ -136,9 +140,9 @@ def stdev_tv(
 
 def macd_tv(
     source: np.array,
-    fast_length: int = 12,
-    slow_length: int = 26,
-    signal_smoothing: int = 9,
+    fast_length: int,
+    slow_length: int,
+    signal_smoothing: int,
     oscillator_type: Callable = ema_tv,
     signal_ma_type: Callable = ema_tv,
 ):
@@ -157,8 +161,8 @@ def macd_tv(
 
 def bb_tv(
     source: np.array,
-    length: int = 20,
-    multi: float = 2,
+    length: int,
+    multi: float,
     basis_ma_type: Callable = sma_tv,
 ):
     """
@@ -175,7 +179,7 @@ def bb_tv(
 
 def atr_tv(
     candles: np.array,
-    length: int = 14,
+    length: int,
     smoothing_type: Callable = rma_tv,
 ):
     """
@@ -198,7 +202,7 @@ def atr_tv(
 
 def rsi_tv(
     source: np.array,
-    length: int = 14,
+    length: int,
 ):
     """
     Relative strength index https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rsi
@@ -226,8 +230,8 @@ def rsi_tv(
 
 def supertrend_tv(
     candles: np.array,
-    atr_length: int = 10,
-    factor: int = 3,
+    atr_length: int,
+    factor: int,
 ):
     """
     return super trend, direction
