@@ -132,7 +132,6 @@ class StopLoss:
         return num_1 < num_2
 
     # Main Functions
-
     def sl_to_zero(self, average_entry: float):
         sl_price = self.sl_to_zero_price(average_entry=average_entry)
         sl_price = round_size_by_tick_step(
@@ -212,7 +211,7 @@ class StopLoss:
             candle_body = current_candle[self.sl_to_be_cb_type]
             pct_from_ae = abs(candle_body - average_entry) / average_entry
             logger.debug(f"pct_from_ae= {round(pct_from_ae * 100, 3)}")
-            move_sl_bool = self.move_sl_bool(pct_from_ae=pct_from_ae)
+            move_sl_bool = self.move_sl_bool(num_1=pct_from_ae, num_2=self.sl_to_be_when_pct)
             if move_sl_bool:
                 old_sl = sl_price
                 sl_price = self.zero_or_entry_calc(average_entry=average_entry)
@@ -248,7 +247,7 @@ class StopLoss:
             )
             logger.debug(f"temp sl= {temp_sl_price}")
             if self.move_sl_bool(num_1=temp_sl_price, num_2=sl_price):
-                sl_pct = round(abs(average_entry - sl_price) / average_entry, 3)
+                sl_pct = round(abs(average_entry - temp_sl_price) / average_entry, 3)
                 logger.debug(f"Moving tsl new sl= {temp_sl_price} > old sl= {sl_price} sl_pct= {round(sl_pct*100, 3)}")
                 return temp_sl_price, sl_pct
             else:

@@ -2,6 +2,12 @@ from typing import Callable
 import numpy as np
 
 
+def vwap_tv(
+    candles: np.array,
+):
+    pass
+
+
 def wma_tv(
     source: np.array,
     length: int,
