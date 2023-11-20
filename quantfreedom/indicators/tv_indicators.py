@@ -46,7 +46,7 @@ def ema_tv(
     """
     alpha = 2 / (length + 1)
 
-    starting_index = [np.isnan(source)].size + length
+    starting_index = source[np.isnan(source)].size + length
 
     ema = np.full_like(source, np.nan)
     ema[starting_index - 1] = source[starting_index - 1]
