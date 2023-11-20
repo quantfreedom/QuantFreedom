@@ -78,7 +78,7 @@ def dl_ex_candles(
 
 
 def candles_to_df(candles: np.array):
-    candles_df = pd.DataFrame(candles, columns=["timestamp", "open", "high", "low", "close"])
+    candles_df = pd.DataFrame(candles, columns=["timestamp", "open", "high", "low", "close", "volume"])
     candles_df["timestamp"] = candles_df["timestamp"].astype(dtype=np.int64)
     candles_df.set_index(pd.to_datetime(candles_df["timestamp"], unit="ms"), inplace=True)
     candles_df.index.rename("datetime", inplace=True)
