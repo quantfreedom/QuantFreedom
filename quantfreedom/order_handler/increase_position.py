@@ -44,7 +44,7 @@ class IncreasePosition:
             if increase_position_type == IncreasePositionType.RiskPctAccountEntrySize:
                 self.inc_pos_calculator = self.rpa_slbcb
             elif increase_position_type == IncreasePositionType.SmalletEntrySizeAsset:
-                self.inc_pos_calculator = self.min_amount_pc
+                self.inc_pos_calculator = self.min_asset_amount
 
     def c_too_b_s(
         self,
@@ -121,7 +121,7 @@ class IncreasePosition:
         )
         return possible_loss, total_trades
 
-    def min_amount_pc(
+    def min_asset_amount(
         self,
         equity: float,
         average_entry: float,
