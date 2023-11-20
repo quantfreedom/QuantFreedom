@@ -308,22 +308,24 @@ def vwap_tv(
     typical_price = (high + low + close) / 3
     tp_x_vol = typical_price * volume
 
-    # there are 86400000 ms in a day ... so if it is the start of the day then the remainder should be 0
-    nan_array = np.where(timestamps % 86400000 == 0, np.nan, 0)
+    day_in_ms = 86400000
+    nan_array = np.where(timestamps % day_in_ms == 0, np.nan, 0)
 
     nan_indexes = np.isnan(nan_array).nonzero()[0]  # returns tuple for some reason
     cum_vol = np.full_like(close, np.nan)
     cum_tp = np.full_like(close, np.nan)
 
-    if nan_indexes.any():
+    try:
         cum_vol[: nan_indexes[0]] = volume[: nan_indexes[0]].cumsum()
         cum_tp[: nan_indexes[0]] = tp_x_vol[: nan_indexes[0]].cumsum()
+
         for i in range(nan_indexes.size - 1):
             cum_vol[nan_indexes[i] : nan_indexes[i + 1]] = volume[nan_indexes[i] : nan_indexes[i + 1]].cumsum()
             cum_tp[nan_indexes[i] : nan_indexes[i + 1]] = tp_x_vol[nan_indexes[i] : nan_indexes[i + 1]].cumsum()
+
         cum_vol[nan_indexes[-1] :] = volume[nan_indexes[-1] :].cumsum()
         cum_tp[nan_indexes[-1] :] = tp_x_vol[nan_indexes[-1] :].cumsum()
-    else:
+    except Exception:
         raise Exception("You need to have enough data to where you have at least one start of the day")
 
     vwap = cum_tp / cum_vol
@@ -337,17 +339,22 @@ def squeeze_momentum_lazybear_tv(
     multi_bb: int,
     multi_kc: int,
 ):
+    """
+    Returns = sqz_hist, sqz_on, no_sqz
+
+    https://www.tradingview.com/script/nqQ1DT5a-Squeeze-Momentum-Indicator-LazyBear/
+    """
     high = candles[:, 2]
     low = candles[:, 3]
     close = candles[:, 4]
 
     s_min_ma_hl = np.full_like(close, np.nan)
-    linereg = np.full_like(close, np.nan)
+    sqz_hist = np.full_like(close, np.nan)
 
     x = np.arange(0, length_kc)
     A = np.vstack([x, np.ones(len(x))]).T
 
-    basis_bb, upper_bb, lower_bb = bb_tv(
+    _, upper_bb, lower_bb = bb_tv(
         source=close,
         length=length_bb,
         multi=multi_bb,
@@ -363,8 +370,7 @@ def squeeze_momentum_lazybear_tv(
     upper_kc = ma + true_range_ma * multi_kc
     lower_kc = ma - true_range_ma * multi_kc
     sqz_on = np.where((lower_bb > lower_kc) & (upper_bb < upper_kc), True, False)
-    sqz_off = np.where((lower_bb < lower_kc) & (upper_bb > upper_kc), True, False)
-    no_sqz = np.where((sqz_on == False) & (sqz_off == False), True, False)
+    no_sqz = np.where((lower_bb == lower_kc) & (upper_bb == upper_kc), True, False)
 
     length_kc_m_1 = length_kc - 1
     for i in range(length_kc_m_1, close.size):
@@ -374,5 +380,5 @@ def squeeze_momentum_lazybear_tv(
         ma_hl_avg = (hl_avg + ma[i]) / 2
         s_min_ma_hl[i] = close[i] - ma_hl_avg
         m, b = np.linalg.lstsq(A, s_min_ma_hl[i - length_kc_m_1 : i + 1], rcond=None)[0]
-        linereg[i] = b + m * (length_kc_m_1)
-    return linereg
+        sqz_hist[i] = b + m * (length_kc_m_1)
+    return sqz_hist, sqz_on, no_sqz
