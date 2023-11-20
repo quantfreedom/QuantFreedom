@@ -133,6 +133,8 @@ def plot_vwap(
     indicator: np.array,
     ind_color: str = "yellow",
 ):
+    ind_shift = np.roll(indicator, 1)
+    ind_shift[0] = np.nan
     return plot_candles_1_ind_same_pane(
         candles=candles,
         indicator=indicator,
@@ -292,7 +294,7 @@ def plot_macd(
     ind_shift = np.roll(histogram, 1)
     ind_shift[0] = np.nan
     colors = np.where(
-        (histogram >= 0),
+        histogram >= 0,
         np.where(ind_shift < histogram, "#26A69A", "#B2DFDB"),
         np.where(ind_shift < histogram, "#FFCDD2", "#FF5252"),
     )
@@ -318,6 +320,54 @@ def plot_macd(
     )
     fig.append_trace(
         go.Scatter(x=datetimes, y=indicator[:, 2], name="signal", line_color="#FF6D00"),
+        row=2,
+        col=1,
+    )
+    # Update options and show plot
+    fig.update_layout(height=800, xaxis_rangeslider_visible=False)
+    fig.show()
+
+
+def plot_squeeze_mom_lazybear(
+    candles: np.array,
+    indicator: np.array,
+):
+    datetimes = pd.to_datetime(candles[:, 0], unit="ms")
+    fig = make_subplots(
+        cols=1,
+        rows=2,
+        shared_xaxes=True,
+        subplot_titles=["Candles", "Squeeze LazyBear"],
+        row_heights=[0.6, 0.4],
+        vertical_spacing=0.1,
+    )
+    # Candlestick chart for pricing
+    fig.append_trace(
+        go.Candlestick(
+            x=datetimes,
+            open=candles[:, 1],
+            high=candles[:, 2],
+            low=candles[:, 3],
+            close=candles[:, 4],
+            name="Candles",
+        ),
+        col=1,
+        row=1,
+    )
+    ind_shift = np.roll(indicator, 1)
+    ind_shift[0] = np.nan
+    colors = np.where(
+        (indicator >= 0),
+        np.where(ind_shift < indicator, "#00E676", "#4CAF50"),
+        np.where(ind_shift < indicator, "#FF5252", "#880E4F"),
+    )
+    fig.append_trace(
+        go.Bar(
+            x=datetimes,
+            y=indicator,
+            name="Squeeze LazyBear",
+            marker_color=colors,
+        ),
         row=2,
         col=1,
     )

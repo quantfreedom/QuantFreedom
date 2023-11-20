@@ -2,43 +2,6 @@ from typing import Callable
 import numpy as np
 
 
-def vwap_tv(
-    candles: np.array,
-):
-    """
-    https://blog.quantinsti.com/vwap-strategy/
-    """
-    timestamps = candles[:, 0]
-    high = candles[:, 2]
-    low = candles[:, 3]
-    close = candles[:, 4]
-    volume = candles[:, 5]
-
-    typical_price = (high + low + close) / 3
-    tp_x_vol = typical_price * volume
-
-    # there are 86400000 ms in a day ... so if it is the start of the day then the remainder should be 0
-    nan_array = np.where(timestamps % 86400000 == 0, np.nan, 0)
-
-    nan_indexes = np.isnan(nan_array).nonzero()[0]  # returns tuple for some reason
-    cum_vol = np.full_like(close, np.nan)
-    cum_tp = np.full_like(close, np.nan)
-
-    if nan_indexes.any():
-        cum_vol[: nan_indexes[0]] = volume[: nan_indexes[0]].cumsum()
-        cum_tp[: nan_indexes[0]] = tp_x_vol[: nan_indexes[0]].cumsum()
-        for i in range(nan_indexes.size - 1):
-            cum_vol[nan_indexes[i] : nan_indexes[i + 1]] = volume[nan_indexes[i] : nan_indexes[i + 1]].cumsum()
-            cum_tp[nan_indexes[i] : nan_indexes[i + 1]] = tp_x_vol[nan_indexes[i] : nan_indexes[i + 1]].cumsum()
-        cum_vol[nan_indexes[-1] :] = volume[nan_indexes[-1] :].cumsum()
-        cum_tp[nan_indexes[-1] :] = tp_x_vol[nan_indexes[-1] :].cumsum()
-    else:
-        raise Exception("You need to have enough data to where you have at least one start of the day")
-
-    vwap = cum_tp / cum_vol
-    return vwap
-
-
 def wma_tv(
     source: np.array,
     length: int,
@@ -330,45 +293,86 @@ def supertrend_tv(
     return super_trend, direction
 
 
+def vwap_tv(
+    candles: np.array,
+):
+    """
+    https://blog.quantinsti.com/vwap-strategy/
+    """
+    timestamps = candles[:, 0]
+    high = candles[:, 2]
+    low = candles[:, 3]
+    close = candles[:, 4]
+    volume = candles[:, 5]
+
+    typical_price = (high + low + close) / 3
+    tp_x_vol = typical_price * volume
+
+    # there are 86400000 ms in a day ... so if it is the start of the day then the remainder should be 0
+    nan_array = np.where(timestamps % 86400000 == 0, np.nan, 0)
+
+    nan_indexes = np.isnan(nan_array).nonzero()[0]  # returns tuple for some reason
+    cum_vol = np.full_like(close, np.nan)
+    cum_tp = np.full_like(close, np.nan)
+
+    if nan_indexes.any():
+        cum_vol[: nan_indexes[0]] = volume[: nan_indexes[0]].cumsum()
+        cum_tp[: nan_indexes[0]] = tp_x_vol[: nan_indexes[0]].cumsum()
+        for i in range(nan_indexes.size - 1):
+            cum_vol[nan_indexes[i] : nan_indexes[i + 1]] = volume[nan_indexes[i] : nan_indexes[i + 1]].cumsum()
+            cum_tp[nan_indexes[i] : nan_indexes[i + 1]] = tp_x_vol[nan_indexes[i] : nan_indexes[i + 1]].cumsum()
+        cum_vol[nan_indexes[-1] :] = volume[nan_indexes[-1] :].cumsum()
+        cum_tp[nan_indexes[-1] :] = tp_x_vol[nan_indexes[-1] :].cumsum()
+    else:
+        raise Exception("You need to have enough data to where you have at least one start of the day")
+
+    vwap = cum_tp / cum_vol
+    return vwap
+
+
 def squeeze_momentum_lazybear_tv(
     candles: np.array,
     length_bb: int,
-    multi_bb: int,
     length_kc: int,
+    multi_bb: int,
     multi_kc: int,
 ):
     high = candles[:, 2]
     low = candles[:, 3]
     close = candles[:, 4]
-    avg = np.full_like(close, np.nan)
+
+    s_min_ma_hl = np.full_like(close, np.nan)
     linereg = np.full_like(close, np.nan)
-
-    basis_bb, upper_bb, lower_bb = bb_tv(
-        source=candles,
-        length=length_bb,
-        multi=multi_bb,
-    )
-
-    ma = sma_tv(close, length=length_kc)
-    true_range_ma = sma_tv(
-        true_range_tv(candles=candles),
-        length=length_kc,
-    )
-    A = np.vstack([close, np.full_like(close, length_kc)])
-    upper_kc = ma + true_range_ma * multi_kc
-    lower_kc = ma - true_range_ma * multi_kc
-    sqz_on = np.where((lower_bb > lower_kc) & (upper_bb < upper_kc), True, False)
-    sqz_off = np.where((lower_bb < lower_kc) & (upper_bb > upper_kc), True, False)
-    no_sqz = np.where((sqz_on == False) and (sqz_off == False), True, False)
 
     x = np.arange(0, length_kc)
     A = np.vstack([x, np.ones(len(x))]).T
 
-    for i in range(close.size, length_kc - 1, -1):
-        highest = high[i - length_kc : i].max()
-        lowest = low[i - length_kc : i].min()
+    basis_bb, upper_bb, lower_bb = bb_tv(
+        source=close,
+        length=length_bb,
+        multi=multi_bb,
+    )
+
+    true_range_ma = sma_tv(
+        true_range_tv(candles=candles),
+        length=length_kc,
+    )
+
+    ma = sma_tv(close, length=length_kc)
+
+    upper_kc = ma + true_range_ma * multi_kc
+    lower_kc = ma - true_range_ma * multi_kc
+    sqz_on = np.where((lower_bb > lower_kc) & (upper_bb < upper_kc), True, False)
+    sqz_off = np.where((lower_bb < lower_kc) & (upper_bb > upper_kc), True, False)
+    no_sqz = np.where((sqz_on == False) & (sqz_off == False), True, False)
+
+    length_kc_m_1 = length_kc - 1
+    for i in range(length_kc_m_1, close.size):
+        highest = high[i - length_kc_m_1 : i + 1].max()
+        lowest = low[i - length_kc_m_1 : i + 1].min()
         hl_avg = (highest + lowest) / 2
-        avg = (hl_avg + ma[i]) / 2
-        y = close[-(i - length_kc) :] - avg
-        m, b = np.linalg.lstsq(A, y, rcond=None)[0]
-        linereg[i] = b + m * (length_kc - 1)
+        ma_hl_avg = (hl_avg + ma[i]) / 2
+        s_min_ma_hl[i] = close[i] - ma_hl_avg
+        m, b = np.linalg.lstsq(A, s_min_ma_hl[i - length_kc_m_1 : i + 1], rcond=None)[0]
+        linereg[i] = b + m * (length_kc_m_1)
+    return linereg
