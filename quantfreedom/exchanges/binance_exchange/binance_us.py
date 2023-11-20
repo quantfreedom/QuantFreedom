@@ -19,7 +19,7 @@ class BinanceUS(Exchange):
         candles_to_dl: int = 1500,
     ):
         """
-        https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data
+        https://docs.binance.us/#get-candlestick-data
         """
         ex_timeframe = self.get_exchange_timeframe(ex_timeframes=BINANCE_USDM_TIMEFRAMES, timeframe=timeframe)
         timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
@@ -56,5 +56,5 @@ class BinanceUS(Exchange):
                     params["startTime"] = last_candle_time_ms + 2000
             except Exception as e:
                 raise Exception(f"get_busdm_candles -> {e}")
-        candles_np = np.array(b_candles, dtype=np.float_)[:, :5]
+        candles_np = np.array(b_candles, dtype=np.float_)[:, :6]
         return candles_np

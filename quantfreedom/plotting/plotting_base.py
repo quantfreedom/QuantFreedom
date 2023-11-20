@@ -128,6 +128,19 @@ def plot_supertrend(
     fig.show()
 
 
+def plot_vwap(
+    candles: np.array,
+    indicator: np.array,
+    ind_color: str = "yellow",
+):
+    return plot_candles_1_ind_same_pane(
+        candles=candles,
+        indicator=indicator,
+        ind_name="VWAP",
+        ind_color=ind_color,
+    )
+
+
 def plot_rma(
     candles: np.array,
     indicator: np.array,

@@ -165,7 +165,7 @@ class Bybit(Exchange):
             except Exception as e:
                 raise Exception(f"Bybit get_candles {response.get('message')} - > {e}")
 
-        candles_np = np.flip(np.array(candles_list, dtype=np.float_)[:, :-2], axis=0)
+        candles_np = np.flip(np.array(candles_list, dtype=np.float_)[:, :-1], axis=0)
 
         return candles_np
 

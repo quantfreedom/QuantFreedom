@@ -176,7 +176,7 @@ class Apex(Exchange):
                 raise Exception(f"Apex get_candles - > {e}")
 
         candle_list = []
-        keys = ["t", "o", "h", "l", "c"]
+        keys = ["t", "o", "h", "l", "c", "v"]
         for candle in apex_candles:
             candle_list.append([candle.get(key) for key in keys])
         candles_np = np.array(candle_list, dtype=np.float_)

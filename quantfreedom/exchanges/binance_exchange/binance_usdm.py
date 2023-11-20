@@ -127,5 +127,5 @@ class BinanceUSDM(Exchange):
                     since_date_ms = last_candle_time_ms + 2000
             except Exception as e:
                 raise Exception(f"Apex get_candles - > {e}")
-        candles_np = np.array(b_candles, dtype=np.float_)[:, :5]
+        candles_np = np.array(b_candles, dtype=np.float_)[:, :6]
         return candles_np

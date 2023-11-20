@@ -169,7 +169,7 @@ class Mufex(Exchange):
             except Exception as e:
                 raise Exception(f"Mufex get_candles {response.get('message')} - > {e}")
 
-        candles_np = np.array(candles_list, dtype=np.float_)[:, :-2]
+        candles_np = np.array(candles_list, dtype=np.float_)[:, :-1]
 
         return candles_np
 
