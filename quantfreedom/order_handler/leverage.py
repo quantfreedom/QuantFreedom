@@ -27,12 +27,12 @@ class Leverage:
         self.market_fee_pct = market_fee_pct
         self.static_leverage = static_leverage
 
-        if long_short == "long":
+        if long_short.lower() == "long":
             self.calc_dynamic_lev = self.long_calc_dynamic_lev
             self.get_liq_price = self.long_get_liq_price
             self.get_bankruptcy_price = self.long_get_bankruptcy_price
             self.liq_hit_bool = self.long_liq_hit_bool
-        elif long_short.lower() == " short":
+        elif long_short.lower() == "short":
             self.calc_dynamic_lev = self.short_calc_dynamic_lev
             self.get_liq_price = self.short_get_liq_price
             self.get_bankruptcy_price = self.short_get_bankruptcy_price
@@ -40,12 +40,9 @@ class Leverage:
         else:
             raise Exception("long or short are the only options for long_short")
 
+        self.checker_liq_hit = self.check_liq_hit
         if leverage_strategy_type == LeverageStrategyType.Dynamic:
             self.lev_calculator = self.dynamic_lev
-        else:
-            self.lev_calculator = self.calc_liq_price
-
-        self.checker_liq_hit = self.check_liq_hit
 
     def long_get_bankruptcy_price(
         self,
@@ -171,16 +168,20 @@ class Leverage:
         average_entry: float,
         sl_price: float,
     ):
+        # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001067&language=en_US
+        # https://www.symbolab.com/solver/simplify-calculator/solve%20for%20l%2C%20e%5Ccdot%5Cleft(1-%5Cfrac%7B1%7D%7Bl%7D%2Bm%5Cright)%3Ds-s%5Ccdot%20p?or=input
         # the .001 is to add .001 buffer
-        return -average_entry / ((sl_price - sl_price * 0.001) - average_entry - (self.mmr_pct * average_entry))
+        return average_entry / (-sl_price + sl_price * 0.001 + average_entry + average_entry * self.mmr_pct)
 
     def short_calc_dynamic_lev(
         self,
         average_entry: float,
         sl_price: float,
     ):
+        # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001067&language=en_US
+        # https://www.symbolab.com/solver/simplify-calculator/solve%20for%20l%2C%20e%5Ccdot%5Cleft(1%2B%5Cfrac%7B1%7D%7Bl%7D-m%5Cright)%3Ds%2Bs%5Ccdot%20p?or=input
         # the .001 is to add .001 buffer
-        return average_entry / ((sl_price + sl_price * 0.001) - average_entry + (self.mmr_pct * average_entry))
+        return average_entry / (sl_price + sl_price * 0.001 - average_entry + average_entry * self.mmr_pct)
 
     def dynamic_lev(
         self,

@@ -47,7 +47,11 @@ class TakeProfit:
         ) / (position_size_usd * (1 + self.tp_fee_pct))
         return tp_price
 
-    def short_c_tp_candle(self, current_candle: np.array, tp_price: float):
+    def short_c_tp_candle(
+        self,
+        current_candle: np.array,
+        tp_price: float,
+    ):
         candle_low = current_candle[CandleBodyType.Low]
         logger.debug(f"candle_high= {candle_low}")
         return tp_price > candle_low
@@ -65,7 +69,11 @@ class TakeProfit:
         ) / (position_size_usd * (1 - self.tp_fee_pct))
         return tp_price
 
-    def long_c_tp_candle(self, tp_price: float, current_candle: np.array):
+    def long_c_tp_candle(
+        self,
+        current_candle: np.array,
+        tp_price: float,
+    ):
         candle_high = current_candle[CandleBodyType.High]
         logger.debug(f"candle_high= {candle_high}")
         return tp_price < candle_high

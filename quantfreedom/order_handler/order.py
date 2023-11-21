@@ -27,7 +27,7 @@ class OrderHandler:
         # Decrease Position
         if long_short.lower() == "long":
             self.pnl_calc = self.long_pnl_calc
-        elif long_short.lower() == " short":
+        elif long_short.lower() == "short":
             self.pnl_calc = self.short_pnl_calc
         else:
             raise Exception("long or short are the only options for long_short")
@@ -66,7 +66,7 @@ class OrderHandler:
 
         if static_os.tp_fee_type.lower() == "market":
             tp_fee_pct = exchange_settings.market_fee_pct
-        elif static_os.tp_fee_type.lower() == 'limit':
+        elif static_os.tp_fee_type.lower() == "limit":
             tp_fee_pct = exchange_settings.limit_fee_pct
         else:
             raise Exception("market or limit are the only options for tp_fee_type")

@@ -34,7 +34,7 @@ class IncreasePosition:
         if long_short == "long":
             self.entry_calc_p = self.long_entry_size_p
             self.entry_calc_np = self.long_entry_size_np
-        elif long_short.lower() == " short":
+        elif long_short.lower() == "short":
             self.entry_calc_p = self.short_entry_size_p
             self.entry_calc_np = self.short_entry_size_np
         else:
