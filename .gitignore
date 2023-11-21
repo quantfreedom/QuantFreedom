@@ -1,21 +1,22 @@
 my_stuff/
-logs/
-docs/
 nb_funcs/
 tests/
+*.todo
+*.csv
+*.h5
+
+logs/
+docs/
 .ipynb_checkpoints
 .vscode
 .idea
 .mypy_cache
 .pytest_cache
+.mustache
 dist
 quantfreedom.egg-info
 numba_cache
-*.todo
 thinking.txt
-.mustache
-*.csv
-*.h5
 
 
 # Byte-compiled / optimized / DLL files
