@@ -282,14 +282,13 @@ class OrderResult(NamedTuple):
 
 
 class StaticOrderSettings(NamedTuple):
+    candle_group_size: int
     increase_position_type: int
     leverage_strategy_type: int
     logger_bool: bool
-    num_candles: int
     pg_min_max_sl_bcb: str
     sl_strategy_type: int
     sl_to_be_bool: bool
-    starting_bar: int
     starting_equity: float
     static_leverage: float
     tp_fee_type: str
@@ -357,7 +356,7 @@ order_settings_array_dt = np.dtype(
         ("trail_sl_bcb_type", np.int_),
         ("trail_sl_by_pct", np.float_),
         ("trail_sl_when_pct", np.float_),
-        ("num_candles", np.int_),
+        ("candle_group_size", np.int_),
         ("entry_size_asset", np.float_),
         ("max_trades", np.int_),
     ],

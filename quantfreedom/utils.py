@@ -1,14 +1,15 @@
-from logging import getLogger
-import os
+from typing import NamedTuple
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 
 from pathlib import Path
-import plotly.graph_objects as go
 from IPython.paths import get_ipython_cache_dir
 
 
-def delete_dir(p):
+def delete_dir(
+    p: Path,
+):
     """
     Delete info in directory
 
@@ -40,7 +41,7 @@ def clear_cache():
 
 
 def pretty_qf(
-    object: tuple,
+    object: NamedTuple,
 ):
     """
     Prints named tuples in a pretty way like

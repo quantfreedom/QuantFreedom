@@ -1,10 +1,4 @@
 my_stuff/
-nb_funcs/
-tests/
-*.todo
-*.csv
-*.h5
-
 logs/
 docs/
 .ipynb_checkpoints
@@ -13,6 +7,8 @@ docs/
 .mypy_cache
 .pytest_cache
 .mustache
+*.csv
+*.h5
 dist
 quantfreedom.egg-info
 numba_cache

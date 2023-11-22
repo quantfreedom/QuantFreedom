@@ -1,0 +1,59 @@
+Update Backtester:
+  ☐ bring the evalute back to real backtesting style
+  ☐ qf_score liniear regression using numpy maybe https://numpy.org/doc/stable/reference/generated/numpy.linalg.lstsq.html
+
+Numba Updates:
+  ☐ update numba with tv indicators
+  ☐ update numba simulate
+
+Videos:
+  ✔ WMA video on func and plot @done(23-11-18 08:34)
+  ✔ STDEV video on func and plot @done(23-11-19 14:22)
+  ☐ RMA video on func and plot
+  ☐ RSI video on func and plot
+  ☐ True Range video on func and plot
+  ☐ ATR video on func and plot
+  ☐ SMA video on func and plot
+  ☐ EMA video on func and plot
+  ☐ VWAP video on func and plot
+  ☐ MACD video on func and plot
+  ☐ BB video on func and plot ... fix plotting because of new return
+  ☐ Super Trend video on func and plot ... fix plotting because of new return
+  ☐ squeeze lazybear video on func and plot ... put crosses on lazybear plot
+
+Archive:
+  ✔ fix strategy to work with backtest @done(23-11-14 17:19)
+  ✔ fix dynamic order settings @done(23-11-14 17:19)
+  ✔ fix run_df_backtest to work with new strategy, dynamic, and starting bar @done(23-11-14 17:19)
+  ✔ fix or_backtest to work with new strategy, dynamic, and starting bar @done(23-11-14 17:19)
+  ✔ plot for wma @done(23-11-13 10:07)
+  ✔ add supertrend @done(23-11-13 10:06)
+  ✔ plot for supertrend @done(23-11-13 10:06)
+  ✔ add macd @done(23-11-13 07:05)
+  ✔ plot for macd @done(23-11-13 10:06)
+  ✔ fix len adder sma @done(23-11-11 17:39)
+  ✔ fix len adder ema @done(23-11-11 17:39)
+  ✔ fix len adder rma @done(23-11-11 17:39)
+  ✔ fix len adder rma2 @done(23-11-11 17:39)
+  ✔ fix len adder wma @done(23-11-11 17:39)
+  ✔ video on how to plot candlesticks @done(23-11-12 08:07)
+  ✔ add wma @done(23-11-10 17:07)
+  ✔ video for plot for rma @done(23-11-10 17:06)
+  ✔ fix mufex to be able to send None values as params @done(23-11-10 08:20)
+  ✔ fix live mufex @done(23-11-10 08:20)
+  ✔ create result plot @done(23-11-09 08:21)
+  ✔ plot for rma @done(23-11-09 06:20)
+  ✔ plot for rsi @done(23-11-09 06:20)
+  ✔ plot for sma @done(23-11-09 06:20)
+  ✔ plot for ema @done(23-11-09 06:20)
+  ✔ plot for atr @done(23-11-09 06:20)
+  ✔ plot for stdev @done(23-11-09 06:20)
+  ✔ plot for bollingerbands @done(23-11-09 06:20)
+  ✔ change mufex to be able to download candles with no api keys @done(23-11-08 14:21)
+  ✔ make a function that turns np candles to pandas df @done(23-11-08 14:22)
+  ✔ download binance candles @done(23-11-08 10:58)
+  ✔ download apex candles @done(23-11-08 10:58)
+  ✔ set video to go live today @done(23-11-08 06:50)
+  ✔ set video to go live tomorrow @done(23-11-08 06:50)
+  ✔ get binance to work with placing trade on testnet @done(23-11-08 06:50)
+  ✔ create bollineger bands @done(23-11-08 06:50)
