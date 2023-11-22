@@ -337,7 +337,7 @@ def nb_run_df_backtest(
 
             logger[LoggerFuncType.Info]("nb_simulate.py - nb_run_backtest() - Starting Bar=" + str(candle_group_size))
 
-            account_state: AccountState = AccountState(
+            account_state = AccountState(
                 # where we are at
                 ind_set_index=-1,
                 dos_index=-1,
@@ -353,7 +353,7 @@ def nb_run_df_backtest(
                 realized_pnl=0.0,
                 total_trades=0,
             )
-            order_result: OrderResult = OrderResult(
+            order_result = OrderResult(
                 average_entry=0.0,
                 can_move_sl_to_be=False,
                 entry_price=0.0,
