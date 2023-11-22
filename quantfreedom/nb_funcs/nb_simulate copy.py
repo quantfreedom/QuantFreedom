@@ -1,64 +1,53 @@
 import numpy as np
-from numba import njit, typed, types
 import pandas as pd
-
-from quantfreedom.enums import *
+from quantfreedom.enums import (
+    BacktestSettings,
+    DynamicOrderSettingsArrays,
+    ExchangeSettings,
+    StaticOrderSettings,
+    StaticOrderSettings,
+    OrderStatus,
+    DecreasePosition,
+    StopLossStrategyType,
+    LeverageStrategyType,
+    IncreasePositionType,
+    TakeProfitStrategyType,
+    strat_df_array_dt,
+)
+from numba import njit, typed, types
 from quantfreedom.helper_funcs import dos_cart_product
 from quantfreedom.nb_funcs.nb_custom_logger import *
-
-from quantfreedom.nb_funcs.nb_order_handler.nb_decrease_position import nb_decrease_position
-from quantfreedom.nb_funcs.nb_order_handler.nb_increase_position import (
-    AccExOther,
-    OrderInfo,
-    nb_long_min_amount,
-    nb_long_rpa_slbcb,
-)
-from quantfreedom.nb_funcs.nb_order_handler.nb_take_profit import nb_long_c_tp_hit_regular, nb_long_tp_rr
-from quantfreedom.nb_funcs.nb_order_handler.nb_leverage import (
-    nb_long_check_liq_hit,
-    nb_long_dynamic_lev,
-    nb_long_static_lev,
-)
-from quantfreedom.nb_funcs.nb_helper_funcs import (
-    nb_float_to_str,
-    nb_get_dos,
-    nb_get_to_the_upside_nb,
-    nb_max_price_getter,
-    nb_min_price_getter,
-    nb_sl_to_entry,
-    nb_sl_to_z_e_pass,
-    nb_long_sl_to_zero,
-)
-from quantfreedom.nb_funcs.nb_order_handler.nb_stop_loss import (
-    nb_long_c_sl_hit,
-    nb_long_cm_sl_to_be,
-    nb_long_cm_sl_to_be_pass,
-    nb_long_cm_tsl,
-    nb_long_cm_tsl_pass,
-    nb_long_sl_bcb,
-    nb_move_stop_loss,
-    nb_move_stop_loss_pass,
-)
+from quantfreedom.nb_funcs.nb_helper_funcs import nb_float_to_str, nb_get_dos, nb_get_qf_score
+from quantfreedom.nb_funcs.nb_order_handler.nb_decrease_position import *
+from quantfreedom.nb_funcs.nb_order_handler.nb_increase_position import *
+from quantfreedom.nb_funcs.nb_order_handler.nb_leverage import *
+from quantfreedom.nb_funcs.nb_order_handler.nb_stop_loss import *
+from quantfreedom.nb_funcs.nb_order_handler.nb_take_profit import *
 
 
 def nb_sim_df_backtest(
     backtest_settings: BacktestSettings,
     candles: np.array,
     dos_arrays: DynamicOrderSettingsArrays,
-    evaluate,
     exchange_settings: ExchangeSettings,
-    get_current_ind_settings,
-    get_ind_set_str,
-    get_total_ind_settings,
-    ind_creator,
-    nb_logger_type: NBLoggerType,
-    starting_equity: float,
-    static_os: StaticOrderSettings,
     long_short: str,
+    nb_strat_get_current_ind_settings: Callable,
+    nb_strat_get_total_ind_settings: Callable,
+    nb_strat_get_ind_set_str: Callable,
+    nb_strat_ind_creator: Callable,
+    nb_strat_evaluate: Callable,
+    static_os: StaticOrderSettings,
 ):
     dos_cart_arrays = dos_cart_product(
         dos_arrays=dos_arrays,
     )
+
+    # Creating Settings Vars
+    total_order_settings = dos_cart_arrays[0].size
+
+    total_indicator_settings = nb_strat_get_total_ind_settings()
+
+    total_bars = candles.shape[0]
     """
     #########################################
     #########################################
@@ -71,183 +60,34 @@ def nb_sim_df_backtest(
     #########################################
     """
     log_func_type = types.void(types.unicode_type)
-    log_func_list = typed.List.empty_list(log_func_type.as_type())
+    logger = typed.List.empty_list(log_func_type.as_type())
 
     str_func_type = types.unicode_type(types.float64)
-    str_func_list = typed.List.empty_list(str_func_type.as_type())
+    stringer = typed.List.empty_list(str_func_type.as_type())
 
-    if nb_logger_type == NBLoggerType.Print:
-        log_func_list.append(nb_log_debug)
-        log_func_list.append(nb_log_info)
-        log_func_list.append(nb_log_warning)
-        log_func_list.append(nb_log_error)
+    if static_os.logger_bool:
+        logger.append(nb_log_debug)
+        logger.append(nb_log_info)
+        logger.append(nb_log_warning)
+        logger.append(nb_log_error)
 
-        str_func_list.append(nb_float_to_str)
-        str_func_list.append(nb_log_datetime)
-        str_func_list.append(nb_candle_body_str)
-        str_func_list.append(nb_z_or_e_str)
-        str_func_list.append(nb_os_to_str)
-
-    elif nb_logger_type == NBLoggerType.Pass:
-        log_func_list.append(nb_logger_pass)
-        log_func_list.append(nb_logger_pass)
-        log_func_list.append(nb_logger_pass)
-        log_func_list.append(nb_logger_pass)
-
-        str_func_list.append(nb_stringer_pass)
-        str_func_list.append(nb_stringer_pass)
-        str_func_list.append(nb_stringer_pass)
-        str_func_list.append(nb_stringer_pass)
-        str_func_list.append(nb_stringer_pass)
+        stringer.append(nb_float_to_str)
+        stringer.append(nb_log_datetime)
+        stringer.append(nb_candle_body_str)
+        stringer.append(nb_z_or_e_str)
+        stringer.append(nb_os_to_str)
 
     else:
-        raise Exception("You need to select the correct logger type")
-    """
-    #########################################
-    #########################################
-    #########################################
-                    Trading
-                    Trading
-                    Trading
-    #########################################
-    #########################################
-    #########################################
-    """
-    if long_short.lower() == "long":
-        # Decrease Position
-        dec_pos_calculator = nb_decrease_position
+        logger.append(nb_logger_pass)
+        logger.append(nb_logger_pass)
+        logger.append(nb_logger_pass)
+        logger.append(nb_logger_pass)
 
-        """
-        #########################################
-        #########################################
-        #########################################
-                        Stop Loss
-                        Stop Loss
-                        Stop Loss
-        #########################################
-        #########################################
-        #########################################
-        """
-
-        # stop loss calulator
-        if static_os.sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
-            sl_calculator = nb_long_sl_bcb
-            checker_sl_hit = nb_long_c_sl_hit
-            if static_os.pg_min_max_sl_bcb == PriceGetterType.Min:
-                sl_bcb_price_getter = nb_min_price_getter
-            elif static_os.pg_min_max_sl_bcb == PriceGetterType.Max:
-                sl_bcb_price_getter = nb_max_price_getter
-
-        # SL break even
-        if static_os.sl_to_be_bool:
-            checker_sl_to_be = nb_long_cm_sl_to_be
-            # setting up stop loss be zero or entry
-            if static_os.z_or_e_type == ZeroOrEntryType.ZeroLoss:
-                zero_or_entry_calc = nb_long_sl_to_zero
-            elif static_os.z_or_e_type == ZeroOrEntryType.AverageEntry:
-                zero_or_entry_calc = nb_sl_to_entry
-        else:
-            checker_sl_to_be = nb_long_cm_sl_to_be_pass
-            zero_or_entry_calc = nb_sl_to_z_e_pass
-
-        # Trailing stop loss
-        if static_os.trail_sl_bool:
-            checker_tsl = nb_long_cm_tsl
-        else:
-            checker_tsl = nb_long_cm_tsl_pass
-
-        if static_os.trail_sl_bool or static_os.sl_to_be_bool:
-            sl_mover = nb_move_stop_loss
-        else:
-            sl_mover = nb_move_stop_loss_pass
-
-        """
-        #########################################
-        #########################################
-        #########################################
-                    Increase position
-                    Increase position
-                    Increase position
-        #########################################
-        #########################################
-        #########################################
-        """
-
-        if static_os.sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
-            if static_os.increase_position_type == IncreasePositionType.RiskPctAccountEntrySize:
-                inc_pos_calculator = nb_long_rpa_slbcb
-
-            elif static_os.increase_position_type == IncreasePositionType.SmalletEntrySizeAsset:
-                inc_pos_calculator = nb_long_min_amount
-
-        """
-        #########################################
-        #########################################
-        #########################################
-                        Leverage
-                        Leverage
-                        Leverage
-        #########################################
-        #########################################
-        #########################################
-        """
-
-        if static_os.leverage_strategy_type == LeverageStrategyType.Dynamic:
-            lev_calculator = nb_long_dynamic_lev
-        else:
-            lev_calculator = nb_long_static_lev
-
-        checker_liq_hit = nb_long_check_liq_hit
-        """
-        #########################################
-        #########################################
-        #########################################
-                        Take Profit
-                        Take Profit
-                        Take Profit
-        #########################################
-        #########################################
-        #########################################
-        """
-
-        if static_os.tp_strategy_type == TakeProfitStrategyType.RiskReward:
-            tp_calculator = nb_long_tp_rr
-            checker_tp_hit = nb_long_c_tp_hit_regular
-        elif static_os.tp_strategy_type == TakeProfitStrategyType.Provided:
-            pass
-    """
-    #########################################
-    #########################################
-    #########################################
-                Other Settings
-                Other Settings
-                Other Settings
-    #########################################
-    #########################################
-    #########################################
-    """
-
-    if static_os.tp_fee_type == TakeProfitFeeType.Market:
-        exit_fee_pct = exchange_settings.market_fee_pct
-    else:
-        exit_fee_pct = exchange_settings.limit_fee_pct
-    """
-    #########################################
-    #########################################
-    #########################################
-                End User Setup
-                End User Setup
-                End User Setup
-    #########################################
-    #########################################
-    #########################################
-    """
-    # Creating Settings Vars
-    total_order_settings = dos_cart_arrays[0].size
-
-    total_indicator_settings = get_total_ind_settings()
-
-    total_bars = candles.shape[0]
+        stringer.append(nb_stringer_pass)
+        stringer.append(nb_stringer_pass)
+        stringer.append(nb_stringer_pass)
+        stringer.append(nb_stringer_pass)
+        stringer.append(nb_stringer_pass)
 
     # logger.infoing out total numbers of things
     print("Starting the backtest now ... and also here are some stats for your backtest.\n")
@@ -260,32 +100,19 @@ def nb_sim_df_backtest(
     strategy_result_records = nb_run_df_backtest(
         backtest_settings=backtest_settings,
         candles=candles,
-        checker_liq_hit=checker_liq_hit,
-        checker_sl_hit=checker_sl_hit,
-        checker_sl_to_be=checker_sl_to_be,
-        checker_tp_hit=checker_tp_hit,
-        checker_tsl=checker_tsl,
-        dec_pos_calculator=dec_pos_calculator,
         dos_cart_arrays=dos_cart_arrays,
-        evaluate=evaluate,
         exchange_settings=exchange_settings,
-        exit_fee_pct=exit_fee_pct,
-        get_current_ind_settings=get_current_ind_settings,
-        get_ind_set_str=get_ind_set_str,
-        inc_pos_calculator=inc_pos_calculator,
-        ind_creator=ind_creator,
-        lev_calculator=lev_calculator,
-        logger=log_func_list,
-        sl_bcb_price_getter=sl_bcb_price_getter,
-        sl_calculator=sl_calculator,
-        sl_mover=sl_mover,
-        starting_equity=starting_equity,
-        stringer=str_func_list,
+        logger=logger,
+        long_short=long_short,
+        nb_strat_evaluate=nb_strat_evaluate,
+        nb_strat_get_current_ind_settings=nb_strat_get_current_ind_settings,
+        nb_strat_get_ind_set_str=nb_strat_get_ind_set_str,
+        nb_strat_ind_creator=nb_strat_ind_creator,
+        static_os=static_os,
+        stringer=stringer,
         total_bars=total_bars,
         total_indicator_settings=total_indicator_settings,
         total_order_settings=total_order_settings,
-        tp_calculator=tp_calculator,
-        zero_or_entry_calc=zero_or_entry_calc,
     )
     return pd.DataFrame(strategy_result_records)
 
@@ -294,34 +121,153 @@ def nb_sim_df_backtest(
 def nb_run_df_backtest(
     backtest_settings: BacktestSettings,
     candles: np.array,
-    checker_liq_hit,
-    checker_sl_hit,
-    checker_sl_to_be,
-    checker_tp_hit,
-    checker_tsl,
-    dec_pos_calculator,
     dos_cart_arrays: DynamicOrderSettingsArrays,
-    evaluate,
     exchange_settings: ExchangeSettings,
-    exit_fee_pct: float,
-    get_current_ind_settings,
-    get_ind_set_str,
-    inc_pos_calculator,
-    ind_creator,
-    lev_calculator,
-    logger,
-    sl_bcb_price_getter,
-    sl_calculator,
-    sl_mover,
-    starting_equity: float,
-    stringer,
+    logger: list,
+    long_short: str,
+    nb_strat_get_current_ind_settings: Callable,
+    nb_strat_get_ind_set_str: Callable,
+    nb_strat_ind_creator: Callable,
+    nb_strat_evaluate: Callable,
+    static_os: StaticOrderSettings,
+    stringer: list,
     total_bars: int,
     total_indicator_settings: int,
     total_order_settings: int,
-    tp_calculator,
-    zero_or_entry_calc,
-    sl_price_calc
 ):
+    """
+    #########################################
+    #########################################
+    #########################################
+                    Trading
+                    Trading
+                    Trading
+    #########################################
+    #########################################
+    #########################################
+    """
+    if long_short == "long":
+        # stop loss
+        nb_sl_hit_bool = nb_long_sl_hit_bool
+        nb_move_sl_bool = nb_num_greater_than_num
+        nb_sl_price_calc = nb_long_sl_price_calc
+
+        # increase position
+        nb_entry_calc_p = nb_long_entry_size_p
+        nb_entry_calc_np = nb_long_entry_size_np
+
+        # leverage
+        nb_calc_dynamic_lev = nb_long_calc_dynamic_lev
+        nb_get_liq_price = nb_long_get_liq_price
+        nb_get_bankruptcy_price = nb_long_get_bankruptcy_price
+        nb_liq_hit_bool = nb_long_liq_hit_bool
+
+        # Take Profit
+        nb_get_tp_price = nb_long_tp_price
+        nb_tp_hit_bool = nb_long_tp_hit_bool
+
+        # Decrease position
+        nb_pnl_calc = nb_long_pnl_calc
+
+    elif long_short == "short":
+        # stop loss
+        nb_sl_hit_bool = nb_short_sl_hit_bool
+        nb_move_sl_bool = nb_num_less_than_num
+        nb_sl_price_calc = nb_short_sl_price_calc
+
+        # increase position
+        nb_entry_calc_p = nb_short_entry_size_p
+        nb_entry_calc_np = nb_short_entry_size_np
+
+        # leverage
+        nb_calc_dynamic_lev = nb_short_calc_dynamic_lev
+        nb_get_liq_price = nb_short_get_liq_price
+        nb_get_bankruptcy_price = nb_short_get_bankruptcy_price
+        nb_liq_hit_bool = nb_short_liq_hit_bool
+
+        # take profit
+        nb_get_tp_price = nb_short_tp_price
+        nb_tp_hit_bool = nb_short_tp_hit_bool
+
+        # Decrease position
+        nb_pnl_calc = nb_short_pnl_calc
+
+    """
+    #########################################
+    #########################################
+    #########################################
+                    Stop Loss
+                    Stop Loss
+                    Stop Loss
+    #########################################
+    #########################################
+    #########################################
+    """
+
+    # stop loss
+    if static_os.sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
+        nb_sl_calculator = nb_sl_based_on_candle_body
+        nb_checker_sl_hit = nb_check_sl_hit
+        if static_os.pg_min_max_sl_bcb == "min":
+            nb_sl_bcb_price_getter = nb_min_price_getter
+        elif static_os.pg_min_max_sl_bcb == "max":
+            nb_sl_bcb_price_getter = nb_max_price_getter
+        else:
+            raise Exception("min or max are the only options for pg_min_max_sl_bcb")
+    else:
+        nb_sl_calculator = nb_sl_calculator_pass
+        nb_checker_sl_hit = nb_check_sl_hit_pass
+        nb_sl_bcb_price_getter = nb_price_getter_pass
+
+    # SL break even
+    if static_os.sl_to_be_bool:
+        nb_checker_sl_to_be = nb_check_move_sl_to_be
+        # setting up stop loss be zero or entry
+        if static_os.z_or_e_type == "entry":
+            nb_zero_or_entry_calc = nb_sl_to_entry
+        if static_os.z_or_e_type == "zero":
+            if long_short == "long":
+                nb_zero_or_entry_calc = nb_long_sl_to_zero
+            elif long_short == "short":
+                nb_zero_or_entry_calc = nb_short_sl_to_zero
+        else:
+            raise Exception("zero or entry are the only options for z_or_e_type")
+    else:
+        nb_checker_sl_to_be = nb_cm_sl_to_be_pass
+        nb_zero_or_entry_calc = nb_sl_to_z_e_pass
+
+    # Trailing stop loss
+    if static_os.trail_sl_bool:
+        nb_checker_tsl = nb_check_move_tsl
+    else:
+        nb_checker_tsl = nb_cm_tsl_pass
+
+    if static_os.trail_sl_bool or static_os.sl_to_be_bool:
+        nb_sl_mover = nb_move_stop_loss
+    else:
+        nb_sl_mover = nb_move_stop_loss_pass
+
+    # Increase Position
+    if static_os.sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
+        if static_os.increase_position_type == IncreasePositionType.RiskPctAccountEntrySize:
+            nb_inc_pos_calculator = nb_rpa_slbcb
+        elif static_os.increase_position_type == IncreasePositionType.SmalletEntrySizeAsset:
+            nb_inc_pos_calculator = nb_min_asset_amount
+
+    # Leverage
+    if static_os.leverage_strategy_type == LeverageStrategyType.Dynamic:
+        nb_lev_calculator = nb_dynamic_lev
+
+    # Take Profit
+    if static_os.tp_strategy_type == TakeProfitStrategyType.RiskReward:
+        nb_tp_calculator = nb_tp_rr
+        nb_checker_tp_hit = nb_c_tp_hit_regular
+
+    if static_os.tp_fee_type == "market":
+        exit_fee_pct = exchange_settings.market_fee_pct
+    else:
+        exit_fee_pct = exchange_settings.limit_fee_pct
+
     market_fee_pct = exchange_settings.market_fee_pct
     leverage_tick_step = exchange_settings.leverage_tick_step
     price_tick_step = exchange_settings.price_tick_step
@@ -332,6 +278,9 @@ def nb_run_df_backtest(
     min_leverage = exchange_settings.min_leverage
     mmr_pct = exchange_settings.mmr_pct
 
+    starting_equity = static_os.starting_equity
+    candle_group_size = static_os.candle_group_size - 1
+
     strategy_result_records = np.empty(
         backtest_settings.array_size,
         dtype=strat_df_array_dt,
@@ -339,7 +288,7 @@ def nb_run_df_backtest(
     result_records_filled = 0
 
     for ind_set_index in range(total_indicator_settings):
-        indicator_settings = get_current_ind_settings(
+        indicator_settings = nb_strat_get_current_ind_settings(
             ind_set_index=ind_set_index,
             logger=logger,
         )
@@ -348,7 +297,9 @@ def nb_run_df_backtest(
             logger[LoggerFuncType.Info](
                 "nb_simulate.py - nb_run_backtest() - Indicator settings index=" + str(ind_set_index)
             )
-            logger[LoggerFuncType.Info](get_ind_set_str(indicator_settings=indicator_settings, stringer=stringer))
+            logger[LoggerFuncType.Info](
+                nb_strat_get_ind_set_str(indicator_settings=indicator_settings, stringer=stringer)
+            )
             dynamic_order_settings = nb_get_dos(
                 dos_cart_arrays=dos_cart_arrays,
                 dos_index=dos_index,
@@ -362,8 +313,6 @@ def nb_run_df_backtest(
                 + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.max_equity_risk_pct * 100, 3))
                 + "\nmax_trades= "
                 + str(dynamic_order_settings.max_trades)
-                + "\nnum_candles= "
-                + str(dynamic_order_settings.num_candles)
                 + "\nrisk_account_pct_size= "
                 + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.risk_account_pct_size * 100, 3))
                 + "\nrisk_reward= "
@@ -378,8 +327,6 @@ def nb_run_df_backtest(
                 + stringer[StringerFuncType.candle_body_str](dynamic_order_settings.sl_to_be_cb_type)
                 + "\nsl_to_be_when_pct= "
                 + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.sl_to_be_when_pct * 100, 3))
-                + "\nstatic_leverage= "
-                + stringer[StringerFuncType.float_to_str](dynamic_order_settings.static_leverage)
                 + "\ntrail_sl_bcb_type= "
                 + stringer[StringerFuncType.candle_body_str](dynamic_order_settings.trail_sl_bcb_type)
                 + "\ntrail_sl_by_pct= "
@@ -388,10 +335,9 @@ def nb_run_df_backtest(
                 + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_when_pct * 100, 3))
             )
 
-            starting_bar = dynamic_order_settings.num_candles - 1
-            logger[LoggerFuncType.Info]("nb_simulate.py - nb_run_backtest() - Starting Bar=" + str(starting_bar))
+            logger[LoggerFuncType.Info]("nb_simulate.py - nb_run_backtest() - Starting Bar=" + str(candle_group_size))
 
-            account_state = AccountState(
+            account_state: AccountState = AccountState(
                 # where we are at
                 ind_set_index=-1,
                 dos_index=-1,
@@ -407,7 +353,7 @@ def nb_run_df_backtest(
                 realized_pnl=0.0,
                 total_trades=0,
             )
-            order_result = OrderResult(
+            order_result: OrderResult = OrderResult(
                 average_entry=0.0,
                 can_move_sl_to_be=False,
                 entry_price=0.0,
@@ -432,7 +378,7 @@ def nb_run_df_backtest(
             logger[LoggerFuncType.Info](
                 "nb_simulate.py - nb_run_backtest() - account state order results pnl array all set to default"
             )
-            for bar_index in range(starting_bar, total_bars):
+            for bar_index in range(candle_group_size, total_bars):
                 logger[LoggerFuncType.Info]("\n\n")
                 logger[LoggerFuncType.Info](
                     (
@@ -451,18 +397,16 @@ def nb_run_df_backtest(
                     try:
                         # checking if sl hit
                         logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - check_stop_loss_hit")
-                        sl_hit_bool = checker_sl_hit(
+                        sl_hit_bool = nb_checker_sl_hit(
                             current_candle=candles[bar_index, :],
-                            sl_price=order_result.sl_price,
                             logger=logger,
+                            nb_sl_hit_bool=nb_sl_hit_bool,
+                            sl_price=order_result.sl_price,
                             stringer=stringer,
                         )
                         if sl_hit_bool:
                             logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - decrease_position")
-                            (
-                                account_state,
-                                order_result,
-                            ) = dec_pos_calculator(
+                            account_state, order_result = nb_decrease_position(
                                 average_entry=order_result.average_entry,
                                 bar_index=bar_index,
                                 dos_index=dos_index,
@@ -472,6 +416,7 @@ def nb_run_df_backtest(
                                 ind_set_index=ind_set_index,
                                 logger=logger,
                                 market_fee_pct=market_fee_pct,
+                                nb_pnl_calc=nb_pnl_calc,
                                 order_status=OrderStatus.StopLossFilled,
                                 position_size_asset=order_result.position_size_asset,
                                 stringer=stringer,
@@ -484,18 +429,16 @@ def nb_run_df_backtest(
 
                         # checking if liq hit
                         logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - check_liq_hit")
-                        liq_hit_bool = checker_liq_hit(
+                        liq_hit_bool = nb_check_liq_hit(
                             current_candle=candles[bar_index, :],
-                            liq_price=order_result.liq_price,
                             logger=logger,
+                            nb_liq_hit_bool=nb_liq_hit_bool,
+                            liq_price=order_result.liq_price,
                             stringer=stringer,
                         )
                         if liq_hit_bool:
                             logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - decrease_position")
-                            (
-                                account_state,
-                                order_result,
-                            ) = dec_pos_calculator(
+                            account_state, order_result = nb_decrease_position(
                                 average_entry=order_result.average_entry,
                                 bar_index=bar_index,
                                 dos_index=dos_index,
@@ -505,6 +448,7 @@ def nb_run_df_backtest(
                                 ind_set_index=ind_set_index,
                                 logger=logger,
                                 market_fee_pct=market_fee_pct,
+                                nb_pnl_calc=nb_pnl_calc,
                                 order_status=OrderStatus.LiquidationFilled,
                                 position_size_asset=order_result.position_size_asset,
                                 stringer=stringer,
@@ -517,18 +461,16 @@ def nb_run_df_backtest(
 
                         # checking if tp hit
                         logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - check_tp_hit")
-                        tp_hit_bool = checker_tp_hit(
+                        tp_hit_bool = nb_checker_tp_hit(
                             current_candle=candles[bar_index, :],
-                            tp_price=order_result.tp_price,
                             logger=logger,
+                            nb_tp_hit_bool=nb_tp_hit_bool,
+                            tp_price=order_result.tp_price,
                             stringer=stringer,
                         )
                         if tp_hit_bool:
                             logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - decrease_position")
-                            (
-                                account_state,
-                                order_result,
-                            ) = dec_pos_calculator(
+                            account_state, order_result = nb_decrease_position(
                                 average_entry=order_result.average_entry,
                                 bar_index=bar_index,
                                 dos_index=dos_index,
@@ -538,6 +480,7 @@ def nb_run_df_backtest(
                                 ind_set_index=ind_set_index,
                                 logger=logger,
                                 market_fee_pct=market_fee_pct,
+                                nb_pnl_calc=nb_pnl_calc,
                                 order_status=OrderStatus.TakeProfitFilled,
                                 position_size_asset=order_result.position_size_asset,
                                 stringer=stringer,
@@ -551,32 +494,33 @@ def nb_run_df_backtest(
                         # checking to move stop loss
 
                         logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - check_move_stop_loss_to_be")
-                        temp_sl = checker_sl_to_be(
+                        temp_sl, temp_sl_pct = nb_checker_sl_to_be(
                             average_entry=order_result.average_entry,
                             can_move_sl_to_be=order_result.can_move_sl_to_be,
-                            candle_body_type=dynamic_order_settings.sl_to_be_cb_type,
                             current_candle=candles[bar_index, :],
                             logger=logger,
                             market_fee_pct=market_fee_pct,
+                            nb_move_sl_bool=nb_move_sl_bool,
+                            nb_zero_or_entry_calc=nb_zero_or_entry_calc,
                             price_tick_step=price_tick_step,
                             sl_price=order_result.sl_price,
+                            sl_to_be_cb_type=dynamic_order_settings.sl_to_be_cb_type,
                             sl_to_be_when_pct=dynamic_order_settings.sl_to_be_when_pct,
                             stringer=stringer,
-                            zero_or_entry_calc=zero_or_entry_calc,
                         )
                         if temp_sl > 0:
                             logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - move_stop_loss")
-                            account_state, order_result = sl_mover(
+                            account_state, order_result = nb_sl_mover(
                                 account_state=account_state,
                                 bar_index=bar_index,
                                 can_move_sl_to_be=False,
-                                dos_index=dos_index,
-                                stringer=stringer,
-                                ind_set_index=ind_set_index,
+                                dos_index=0,
+                                ind_set_index=0,
                                 logger=logger,
                                 order_result=order_result,
                                 order_status=OrderStatus.MovedSLToBE,
                                 sl_price=temp_sl,
+                                sl_pct=temp_sl_pct,
                                 timestamp=int(candles[bar_index, CandleBodyType.Timestamp]),
                             )
 
@@ -585,20 +529,22 @@ def nb_run_df_backtest(
                         logger[LoggerFuncType.Debug](
                             "nb_simulate.py - nb_run_backtest() - check_move_trailing_stop_loss"
                         )
-                        temp_tsl = checker_tsl(
+                        temp_tsl, temp_tsl_pct = nb_checker_tsl(
                             average_entry=order_result.average_entry,
-                            candle_body_type=dynamic_order_settings.trail_sl_bcb_type,
                             current_candle=candles[bar_index, :],
                             logger=logger,
+                            nb_move_sl_bool=nb_move_sl_bool,
+                            nb_sl_price_calc=nb_sl_price_calc,
                             price_tick_step=price_tick_step,
                             sl_price=order_result.sl_price,
                             stringer=stringer,
+                            trail_sl_bcb_type=dynamic_order_settings.trail_sl_bcb_type,
                             trail_sl_by_pct=dynamic_order_settings.trail_sl_by_pct,
                             trail_sl_when_pct=dynamic_order_settings.trail_sl_when_pct,
                         )
                         if temp_tsl > 0:
                             logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - move_stop_loss")
-                            account_state, order_result = sl_mover(
+                            account_state, order_result = nb_sl_mover(
                                 account_state=account_state,
                                 bar_index=bar_index,
                                 can_move_sl_to_be=False,
@@ -608,7 +554,7 @@ def nb_run_df_backtest(
                                 order_result=order_result,
                                 order_status=OrderStatus.MovedTSL,
                                 sl_price=temp_tsl,
-                                stringer=stringer,
+                                sl_pct=temp_tsl_pct,
                                 timestamp=int(candles[bar_index, CandleBodyType.Timestamp]),
                             )
                     # except Exception as e:
@@ -624,28 +570,28 @@ def nb_run_df_backtest(
                         "nb_simulate.py - nb_run_backtest() - Not in a pos so not checking SL Liq or TP"
                     )
                 logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - strategy evaluate")
-                eval_bool = evaluate(
+                eval_bool = nb_strat_evaluate(
                     bar_index=bar_index,
-                    starting_bar=starting_bar,
+                    candle_group_size=candle_group_size,
                     candles=candles,
                     indicator_settings=indicator_settings,
-                    ind_creator=ind_creator,
+                    nb_strat_ind_creator=nb_strat_ind_creator,
                     logger=logger,
                     stringer=stringer,
                 )
                 if eval_bool:
                     try:
                         logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - calculate_stop_loss")
-                        sl_price = sl_calculator(
-                            bar_index=60,
+                        sl_price = nb_sl_calculator(
+                            bar_index=bar_index,
                             candles=candles,
                             logger=logger,
+                            nb_sl_bcb_price_getter=nb_sl_bcb_price_getter,
+                            nb_sl_price_calc=nb_sl_price_calc,
                             price_tick_step=price_tick_step,
                             sl_based_on_add_pct=dynamic_order_settings.sl_based_on_add_pct,
                             sl_based_on_lookback=dynamic_order_settings.sl_based_on_lookback,
-                            sl_bcb_price_getter=sl_bcb_price_getter,
                             sl_bcb_type=CandleBodyType.High,
-                            sl_price_calc=sl_price_calc,
                             stringer=stringer,
                         )
 
@@ -660,9 +606,9 @@ def nb_run_df_backtest(
                             possible_loss,
                             total_trades,
                             sl_pct,
-                        ) = inc_pos_calculator(
+                        ) = nb_inc_pos_calculator(
                             acc_ex_other=AccExOther(
-                                account_state_equity=account_state.equity,
+                                equity=account_state.equity,
                                 asset_tick_step=asset_tick_step,
                                 market_fee_pct=market_fee_pct,
                                 max_asset_size=max_asset_size,
@@ -684,6 +630,8 @@ def nb_run_df_backtest(
                             ),
                             logger=logger,
                             stringer=stringer,
+                            nb_entry_calc_p=nb_entry_calc_p,
+                            nb_entry_calc_np=nb_entry_calc_np,
                         )
 
                         logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - calculate_leverage")
@@ -693,21 +641,30 @@ def nb_run_df_backtest(
                             cash_used,
                             leverage,
                             liq_price,
-                        ) = lev_calculator(
-                            available_balance=account_state.available_balance,
-                            average_entry=average_entry,
-                            cash_borrowed=account_state.cash_borrowed,
-                            cash_used=account_state.cash_used,
-                            entry_size_usd=entry_size_usd,
-                            max_leverage=max_leverage,
-                            min_leverage=min_leverage,
-                            stringer=stringer,
-                            mmr_pct=mmr_pct,
-                            sl_price=sl_price,
-                            static_leverage=dynamic_order_settings.static_leverage,
-                            leverage_tick_step=leverage_tick_step,
-                            price_tick_step=price_tick_step,
+                        ) = nb_lev_calculator(
+                            lev_acc_ex_other=LevAccExOther(
+                                available_balance=account_state.available_balance,
+                                cash_borrowed=account_state.cash_borrowed,
+                                cash_used=account_state.cash_used,
+                                leverage_tick_step=leverage_tick_step,
+                                market_fee_pct=market_fee_pct,
+                                max_leverage=max_leverage,
+                                min_leverage=min_leverage,
+                                mmr_pct=mmr_pct,
+                                price_tick_step=price_tick_step,
+                            ),
+                            lev_order_info=LevOrderInfo(
+                                average_entry=average_entry,
+                                position_size_asset=position_size_asset,
+                                position_size_usd=position_size_usd,
+                                sl_price=sl_price,
+                                static_leverage=static_os.static_leverage,
+                            ),
                             logger=logger,
+                            nb_calc_dynamic_lev=nb_calc_dynamic_lev,
+                            nb_get_bankruptcy_price=nb_get_bankruptcy_price,
+                            nb_get_liq_price=nb_get_liq_price,
+                            stringer=stringer,
                         )
 
                         logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - calculate_take_profit")
@@ -715,16 +672,17 @@ def nb_run_df_backtest(
                             can_move_sl_to_be,
                             tp_price,
                             tp_pct,
-                        ) = tp_calculator(
+                        ) = nb_tp_calculator(
                             average_entry=average_entry,
+                            logger=logger,
                             market_fee_pct=market_fee_pct,
+                            nb_get_tp_price=nb_get_tp_price,
                             position_size_usd=position_size_usd,
                             possible_loss=possible_loss,
                             price_tick_step=price_tick_step,
                             risk_reward=dynamic_order_settings.risk_reward,
-                            tp_fee_pct=exit_fee_pct,
                             stringer=stringer,
-                            logger=logger,
+                            tp_fee_pct=exit_fee_pct,
                         )
 
                         logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - Recorded Trade")
@@ -763,9 +721,7 @@ def nb_run_df_backtest(
                         )
                         logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - Account State OrderResult")
                     # except Exception as e:
-                    #     logger[LoggerFuncType.Debug](
-                    #         f"nb_simulate.py - nb_run_backtest() - Exception hit in eval strat -> {e}"
-                    #     )
+                    #     print(f"nb_simulate.py - nb_run_backtest() - Exception hit in eval strat -> {e}")
                     #     pass
                     except Exception:
                         logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - Exception hit in eval strat")
@@ -795,7 +751,7 @@ def nb_run_df_backtest(
                     wins_and_losses_array_no_be = wins_and_losses_array[
                         (wins_and_losses_array < -0.009) | (wins_and_losses_array > 0.009)
                     ]
-                    qf_score = nb_get_to_the_upside_nb(
+                    qf_score = nb_get_qf_score(
                         gains_pct=gains_pct,
                         wins_and_losses_array_no_be=wins_and_losses_array_no_be,
                     )
