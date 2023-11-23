@@ -69,7 +69,7 @@ def rma_tv(
     new_length = source.size - source[~np.isnan(source)].size + length
 
     rma = np.full_like(source, np.nan)
-    rma[new_length - 1] = source[max(new_length - length - 1, 0) : new_length].mean()
+    rma[new_length - 1] = source[new_length - length : new_length].mean()
 
     for i in range(new_length, source.size):
         rma[i] = alpha * source[i] + (1 - alpha) * rma[i - 1]

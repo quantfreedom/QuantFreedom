@@ -28,10 +28,11 @@ def run_df_backtest(
     candles: np.array,
     dos_arrays: DynamicOrderSettingsArrays,
     exchange_settings: ExchangeSettings,
+    logger_bool: bool,
     static_os: StaticOrderSettings,
     strategy: Strategy,
 ):
-    if static_os.logger_bool == False:
+    if logger_bool == False:
         logger.disabled = True
     else:
         logger.disabled = False
@@ -314,13 +315,14 @@ def or_backtest(
     candles: np.array,
     dos_arrays: DynamicOrderSettingsArrays,
     exchange_settings: ExchangeSettings,
+    logger_bool: bool,
     static_os: StaticOrderSettings,
     strategy: Strategy,
     dos_index: int,
     ind_set_index: int,
     plot_results: bool = False,
 ):
-    if static_os.logger_bool == False:
+    if logger_bool == False:
         logger.disabled = True
     else:
         logger.disabled = False

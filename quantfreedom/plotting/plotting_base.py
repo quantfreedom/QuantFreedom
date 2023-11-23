@@ -207,6 +207,18 @@ def plot_rsi(
         ind_color=ind_color,
     )
 
+def plot_atr(
+    candles: np.array,
+    indicator: np.array,
+    ind_color: str = "red",
+):
+    return plot_candles_1_ind_dif_pane(
+        candles=candles,
+        indicator=indicator,
+        ind_name="ATR",
+        ind_color=ind_color,
+    )
+
 
 def plot_stdev(
     candles: np.array,

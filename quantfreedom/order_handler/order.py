@@ -137,7 +137,7 @@ class OrderHandler:
         order_records["leverage"] = np.nan
         order_records["liq_price"] = np.nan
         order_records["order_status"] = order_status
-        order_records["possible_loss"] = np.nan
+        order_records["possible_loss"] = 0
         order_records["total_trades"] = 0
         order_records["entry_size_asset"] = np.nan
         order_records["entry_size_usd"] = np.nan
