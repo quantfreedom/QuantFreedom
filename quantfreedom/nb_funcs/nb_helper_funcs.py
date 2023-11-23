@@ -2,7 +2,7 @@ import numpy as np
 from numba import njit
 import pandas as pd
 
-from quantfreedom.enums import AccountState, DynamicOrderSettings, DynamicOrderSettingsArrays, OrderResult
+from quantfreedom.enums import AccountState, DynamicOrderSettings, DynamicOrderSettingsArrays, OrderResult, OrderStatus
 from numba.cpython.unicode import _empty_string, _set_code_point, PY_UNICODE_1BYTE_KIND
 
 DIGITS_START = 48
@@ -69,6 +69,46 @@ def nb_get_dos(
         trail_sl_by_pct=dos_cart_arrays.trail_sl_by_pct[dos_index],
         trail_sl_when_pct=dos_cart_arrays.trail_sl_when_pct[dos_index],
     )
+
+
+@njit(cache=True)
+def nb_create_ao(
+    starting_equity: float,
+):
+    account_state = AccountState(
+        # where we are at
+        ind_set_index=-1,
+        dos_index=-1,
+        bar_index=-1,
+        timestamp=-1,
+        # account info
+        available_balance=starting_equity,
+        cash_borrowed=0.0,
+        cash_used=0.0,
+        equity=starting_equity,
+        fees_paid=0.0,
+        possible_loss=0,
+        realized_pnl=0.0,
+        total_trades=0,
+    )
+    order_result = OrderResult(
+        average_entry=0.0,
+        can_move_sl_to_be=False,
+        entry_price=0.0,
+        entry_size_asset=0.0,
+        entry_size_usd=0.0,
+        exit_price=0.0,
+        leverage=1.0,
+        liq_price=0.0,
+        order_status=OrderStatus.Nothing,
+        position_size_asset=0.0,
+        position_size_usd=0.0,
+        sl_pct=0.0,
+        sl_price=0.0,
+        tp_pct=0.0,
+        tp_price=0.0,
+    )
+    return account_state, order_result
 
 
 @njit(cache=True)
