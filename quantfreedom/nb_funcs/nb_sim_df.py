@@ -20,6 +20,7 @@ from quantfreedom.nb_funcs.nb_order_handler.nb_decrease_position import nb_decre
 from quantfreedom.nb_funcs.nb_order_handler.nb_increase_position import AccExOther, OrderInfo
 from quantfreedom.nb_funcs.nb_order_handler.nb_leverage import LevOrderInfo, nb_check_liq_hit, LevAccExOther
 
+
 @njit(cache=True)
 def nb_run_df_backtest(
     backtest_settings: BacktestSettings,
@@ -472,6 +473,8 @@ def nb_run_df_backtest(
                     #     print(f"nb_simulate.py - nb_run_backtest() - Exception hit in eval strat -> {e}")
                     #     pass
                     except Exception:
+                        if bar_index + 1 >= candles.shape[0]:
+                            pass
                         logger("nb_simulate.py - nb_run_backtest() - Exception hit in eval strat")
                         pass
             # Checking if gains

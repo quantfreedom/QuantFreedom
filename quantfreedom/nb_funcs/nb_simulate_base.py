@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from numba import typed, types
+
 from quantfreedom.enums import (
     BacktestSettings,
     DynamicOrderSettingsArrays,
@@ -12,16 +13,17 @@ from quantfreedom.enums import (
     TakeProfitStrategyType,
 )
 from quantfreedom.helper_funcs import dos_cart_product
-from quantfreedom.nb_funcs.nb_helper_funcs import nb_float_to_str, get_data_for_plotting, order_records_to_df
 from quantfreedom.nb_funcs.nb_custom_logger import *
+from quantfreedom.nb_funcs.nb_helper_funcs import get_data_for_plotting, nb_float_to_str, order_records_to_df
 from quantfreedom.nb_funcs.nb_order_handler.nb_decrease_position import *
 from quantfreedom.nb_funcs.nb_order_handler.nb_increase_position import *
 from quantfreedom.nb_funcs.nb_order_handler.nb_leverage import *
 from quantfreedom.nb_funcs.nb_order_handler.nb_stop_loss import *
 from quantfreedom.nb_funcs.nb_order_handler.nb_take_profit import *
-from quantfreedom.nb_funcs.nb_sim_or import nb_run_or_backtest
 from quantfreedom.nb_funcs.nb_sim_df import nb_run_df_backtest
+from quantfreedom.nb_funcs.nb_sim_or import nb_run_or_backtest
 from quantfreedom.plotting.plotting_base import plot_or_results
+from quantfreedom.utils import pretty_qf
 
 
 def nb_sim_backtest(
@@ -219,14 +221,9 @@ def nb_sim_backtest(
 
     # logger.infoing out total numbers of things
     print("Starting the backtest now ... and also here are some stats for your backtest.\n")
-    print(f"Total indicator settings to test: {total_indicator_settings:,}")
-    print(f"Total order settings to test: {total_order_settings:,}")
-    print(f"Total combinations of settings to test: {total_indicator_settings * total_order_settings:,}")
-    print(f"Total candles: {total_bars:,}")
-    print(f"Total candles to test: {total_indicator_settings * total_order_settings * total_bars:,}")
 
     if ind_set_index is not None and dos_index is not None:
-        order_records = nb_run_or_backtest(
+        order_records, indicator_settings, dynamic_order_settings = nb_run_or_backtest(
             candles=candles,
             dos_cart_arrays=dos_cart_arrays,
             dos_index=dos_index,
@@ -264,12 +261,19 @@ def nb_sim_backtest(
             static_os=static_os,
             stringer=stringer,
         )
+        pretty_qf(indicator_settings)
+        pretty_qf(dynamic_order_settings)
         order_records_df = order_records_to_df(order_records)
         data = get_data_for_plotting(order_records_df, candles)
         if plot_results:
             plot_or_results(candles=candles, order_records_df=order_records_df)
         return order_records_df, data
     elif ind_set_index is None and dos_index is None:
+        print(f"Total indicator settings to test: {total_indicator_settings:,}")
+        print(f"Total order settings to test: {total_order_settings:,}")
+        print(f"Total combinations of settings to test: {total_indicator_settings * total_order_settings:,}")
+        print(f"Total candles: {total_bars:,}")
+        print(f"Total candles to test: {total_indicator_settings * total_order_settings * total_bars:,}")
         strategy_result_records = nb_run_df_backtest(
             backtest_settings=backtest_settings,
             candles=candles,
