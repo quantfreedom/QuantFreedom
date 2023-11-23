@@ -50,8 +50,8 @@ def nb_long_get_liq_price(
 def nb_long_liq_hit_bool(
     current_candle: np.array,
     liq_price: float,
-    logger: list,
-    stringer: list,
+    logger,
+    stringer,
 ):
     candle_low = current_candle[CandleBodyType.Low]
     logger[LoggerFuncType.Debug]("candle_low= " + stringer[StringerFuncType.float_to_str](candle_low))
@@ -106,8 +106,8 @@ def nb_short_get_liq_price(
 def nb_short_liq_hit_bool(
     current_candle: np.array,
     liq_price: float,
-    logger: list,
-    stringer: list,
+    logger,
+    stringer,
 ):
     candle_high = current_candle[CandleBodyType.High]
     logger[LoggerFuncType.Debug]("candle_high= " + stringer[StringerFuncType.float_to_str](candle_high))
@@ -118,18 +118,18 @@ def nb_short_liq_hit_bool(
 def nb_calc_liq_price(
     average_entry: float,
     leverage: float,
-    logger: list,
+    logger,
     market_fee_pct: float,
     mmr_pct: float,
-    nb_get_bankruptcy_price: Callable,
-    nb_get_liq_price: Callable,
+    nb_get_bankruptcy_price,
+    nb_get_liq_price,
     og_available_balance: float,
     og_cash_borrowed: float,
     og_cash_used: float,
     position_size_asset: float,
     position_size_usd: float,
     price_tick_step: float,
-    stringer: list,
+    stringer,
 ):
     # Getting Order Cost
     # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001064&language=en_US
@@ -197,11 +197,11 @@ def nb_calc_liq_price(
 def nb_static_lev(
     lev_acc_ex_other: LevAccExOther,
     lev_order_info: LevOrderInfo,
-    logger: list,
-    nb_calc_dynamic_lev: Callable,
-    nb_get_bankruptcy_price: Callable,
-    nb_get_liq_price: Callable,
-    stringer: list,
+    logger,
+    nb_calc_dynamic_lev,
+    nb_get_bankruptcy_price,
+    nb_get_liq_price,
+    stringer,
 ):
     (
         available_balance,
@@ -242,11 +242,11 @@ def nb_static_lev(
 def nb_dynamic_lev(
     lev_acc_ex_other: LevAccExOther,
     lev_order_info: LevOrderInfo,
-    logger: list,
-    nb_calc_dynamic_lev: Callable,
-    nb_get_bankruptcy_price: Callable,
-    nb_get_liq_price: Callable,
-    stringer: list,
+    logger,
+    nb_calc_dynamic_lev,
+    nb_get_bankruptcy_price,
+    nb_get_liq_price,
+    stringer,
 ):
     leverage = nb_calc_dynamic_lev(
         average_entry=lev_order_info.average_entry,
@@ -274,7 +274,7 @@ def nb_dynamic_lev(
             + " Min Lev= "
             + stringer[StringerFuncType.float_to_str](lev_acc_ex_other.min_leverage)
         )
-        leverage = 1
+        leverage = 1.0
     else:
         logger[LoggerFuncType.Debug](
             "nb_leverage.py - nb_calculate_leverage() -"
@@ -316,9 +316,9 @@ def nb_dynamic_lev(
 def nb_check_liq_hit(
     current_candle: np.array,
     liq_price: float,
-    logger: list,
-    nb_liq_hit_bool: Callable,
-    stringer: list,
+    logger,
+    nb_liq_hit_bool,
+    stringer,
 ):
     candle_low = current_candle[CandleBodyType.Low]
     logger[LoggerFuncType.Debug](

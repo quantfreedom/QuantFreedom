@@ -58,7 +58,7 @@ def nb_strat_bt_create_ind(
     candles: np.array,
     candle_group_size: int,
     indicator_settings: IndicatorSettings,
-    logger: list,
+    logger,
 ):
     start = max(bar_index - candle_group_size, 0)
     try:
@@ -103,7 +103,7 @@ def nb_strat_get_total_ind_settings():
 @njit(cache=True)
 def nb_strat_get_current_ind_settings(
     ind_set_index: int,
-    logger: list,
+    logger,
 ):
     indicator_settings = IndicatorSettings(
         rsi_is_below=ind_set_arrays.rsi_is_below[ind_set_index],
@@ -116,7 +116,7 @@ def nb_strat_get_current_ind_settings(
 @njit(cache=True)
 def nb_strat_get_ind_set_str(
     indicator_settings: IndicatorSettings,
-    stringer: list,
+    stringer,
 ):
     msg = (
         "nb_strategy.py - nb_strat_get_ind_set_str() - "
@@ -134,9 +134,9 @@ def nb_strat_long_evaluate(
     candles: np.array,
     candle_group_size: int,
     indicator_settings: IndicatorSettings,
-    logger: list,
-    nb_strat_ind_creator: Callable,
-    stringer: list,
+    logger,
+    nb_strat_ind_creator,
+    stringer,
 ):
     rsi = nb_strat_ind_creator(
         bar_index=bar_index,

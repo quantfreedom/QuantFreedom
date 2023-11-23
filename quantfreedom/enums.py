@@ -282,7 +282,7 @@ class OrderResult(NamedTuple):
 
 
 class StaticOrderSettings(NamedTuple):
-    candle_group_size: int
+    starting_bar: int
     increase_position_type: int
     leverage_strategy_type: int
     logger_bool: bool

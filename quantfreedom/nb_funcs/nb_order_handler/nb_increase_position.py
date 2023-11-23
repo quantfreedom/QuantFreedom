@@ -111,10 +111,10 @@ def nb_short_entry_size_np(
 @njit(cache=True)
 def nb_c_too_b_s(
     entry_size_asset: float,
-    logger: list,
+    logger,
     max_asset_size: float,
     min_asset_size: float,
-    stringer: list,
+    stringer,
 ):
     """
     Check if the asset size is too big or too small
@@ -148,7 +148,7 @@ def nb_c_too_b_s(
 @njit(cache=True)
 def nb_c_pl_ra_ps(
     equity: float,
-    logger: list,
+    logger,
     max_equity_risk_pct: float,
     possible_loss: float,
     risk_account_pct_size: float,
@@ -191,13 +191,13 @@ def nb_c_pl_ra_ps(
 @njit(cache=True)
 def nb_c_total_trades(
     average_entry: float,
-    logger: list,
+    logger,
     market_fee_pct: float,
     max_trades: int,
     position_size_asset: float,
     possible_loss: float,
     sl_price: float,
-    stringer: list,
+    stringer,
     total_trades: int,
 ):
     """
@@ -238,11 +238,11 @@ def nb_c_total_trades(
 @njit(cache=True)
 def nb_rpa_slbcb(
     acc_ex_other: AccExOther,
-    logger: list,
-    nb_entry_calc_np: Callable,
-    nb_entry_calc_p: Callable,
+    logger,
+    nb_entry_calc_np,
+    nb_entry_calc_p,
     order_info: OrderInfo,
-    stringer: list,
+    stringer,
 ):
     """
     Risking percent of your account while also having your stop loss based open high low or close of a candle
@@ -270,10 +270,10 @@ def nb_rpa_slbcb(
 @njit(cache=True)
 def nb_rpa_slbcb_p(
     acc_ex_other: AccExOther,
-    logger: list,
-    nb_entry_calc_p: Callable,
+    logger,
+    nb_entry_calc_p,
     order_info: OrderInfo,
-    stringer: list,
+    stringer,
 ):
     equity = acc_ex_other.equity
     asset_tick_step = acc_ex_other.asset_tick_step
@@ -404,10 +404,10 @@ def nb_rpa_slbcb_p(
 @njit(cache=True)
 def nb_rpa_slbcb_np(
     acc_ex_other: AccExOther,
-    logger: list,
-    nb_entry_calc_np: Callable,
+    logger,
+    nb_entry_calc_np,
     order_info: OrderInfo,
-    stringer: list,
+    stringer,
 ):
     equity = acc_ex_other.equity
     asset_tick_step = acc_ex_other.asset_tick_step
@@ -505,11 +505,11 @@ def nb_rpa_slbcb_np(
 @njit(cache=True)
 def nb_min_asset_amount(
     acc_ex_other: AccExOther,
-    logger: list,
-    nb_entry_calc_np: Callable,
-    nb_entry_calc_p: Callable,
+    logger,
+    nb_entry_calc_np,
+    nb_entry_calc_p,
     order_info: OrderInfo,
-    stringer: list,
+    stringer,
 ):
     """
     Setting your position size to the min amount the exchange will allow
@@ -536,9 +536,9 @@ def nb_min_asset_amount(
 @njit(cache=True)
 def nb_min_amount_p(
     acc_ex_other: AccExOther,
-    logger: list,
+    logger,
     order_info: OrderInfo,
-    stringer: list,
+    stringer,
 ):
     market_fee_pct = acc_ex_other.market_fee_pct
     max_asset_size = acc_ex_other.max_asset_size
@@ -641,9 +641,9 @@ def nb_min_amount_p(
 @njit(cache=True)
 def nb_min_amount_np(
     acc_ex_other: AccExOther,
-    logger: list,
+    logger,
     order_info: OrderInfo,
-    stringer: list,
+    stringer,
 ):
     market_fee_pct = acc_ex_other.market_fee_pct
     max_asset_size = acc_ex_other.max_asset_size

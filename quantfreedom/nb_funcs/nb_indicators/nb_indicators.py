@@ -154,8 +154,8 @@ def nb_macd_tv(
     fast_length: int,
     slow_length: int,
     signal_smoothing: int,
-    oscillator_type: Callable = nb_ema_tv,
-    signal_ma_type: Callable = nb_ema_tv,
+    oscillator_type=nb_ema_tv,
+    signal_ma_type=nb_ema_tv,
 ):
     """
     return order = histogram, macd, signal
@@ -175,7 +175,7 @@ def nb_bb_tv(
     source: np.array,
     length: int,
     multi: float,
-    basis_ma_type: Callable = nb_sma_tv,
+    basis_ma_type=nb_sma_tv,
 ):
     """
     returns basis, upper, lower
@@ -214,7 +214,7 @@ def nb_true_range_tv(
 def nb_atr_tv(
     candles: np.array,
     length: int,
-    smoothing_type: Callable = nb_rma_tv,
+    smoothing_type=nb_rma_tv,
 ):
     """
     Average true range smoothing https://www.tradingview.com/pine-script-reference/v5/#fun_ta.atr

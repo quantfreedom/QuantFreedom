@@ -1,15 +1,11 @@
 Update Backtester:
   ☐ bring the evalute back to real backtesting style
-  ☐ qf_score liniear regression using numpy maybe https://numpy.org/doc/stable/reference/generated/numpy.linalg.lstsq.html
 
 Numba Updates:
   ☐ update numba with tv indicators
   ☐ update numba simulate
 
 Videos:
-  ✔ WMA video on func and plot @done(23-11-18 08:34)
-  ✔ STDEV video on func and plot @done(23-11-19 14:22)
-  ☐ RMA video on func and plot
   ☐ RSI video on func and plot
   ☐ True Range video on func and plot
   ☐ ATR video on func and plot
@@ -22,6 +18,9 @@ Videos:
   ☐ squeeze lazybear video on func and plot ... put crosses on lazybear plot
 
 Archive:
+  ✔ RMA video on func and plot @done(23-11-22 13:00)
+  ✔ WMA video on func and plot @done(23-11-18 08:34)
+  ✔ STDEV video on func and plot @done(23-11-19 14:22)
   ✔ fix strategy to work with backtest @done(23-11-14 17:19)
   ✔ fix dynamic order settings @done(23-11-14 17:19)
   ✔ fix run_df_backtest to work with new strategy, dynamic, and starting bar @done(23-11-14 17:19)

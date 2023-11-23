@@ -157,7 +157,8 @@ def run_df_backtest(
 
                     except Exception as e:
                         logger.error(f"Exception checking sl liq tp and move -> {e}")
-                        raise Exception(f"Exception checking sl liq tp  and move -> {e}")
+                        # raise Exception(f"Exception checking sl liq tp  and move -> {e}")
+                        pass
                 else:
                     logger.debug("Not in a pos so not checking SL Liq or TP")
 
@@ -251,7 +252,8 @@ def run_df_backtest(
                         pass
                     except Exception as e:
                         logger.error(f"Exception hit in eval strat -> {e}")
-                        raise Exception(f"Exception hit in eval strat -> {e}")
+                        # raise Exception(f"Exception hit in eval strat -> {e}")
+                        pass
 
             # Checking if gains
             gains_pct = round(((order.equity - starting_equity) / starting_equity) * 100, 3)

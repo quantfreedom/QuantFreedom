@@ -31,14 +31,14 @@ def nb_sl_to_entry(
 def nb_sl_based_on_candle_body(
     bar_index: int,
     candles: np.array,
-    logger: list,
-    nb_sl_bcb_price_getter: Callable,
-    nb_sl_price_calc: Callable,
+    logger,
+    nb_sl_bcb_price_getter,
+    nb_sl_price_calc,
     price_tick_step: float,
     sl_based_on_add_pct: float,
     sl_based_on_lookback: int,
     sl_bcb_type: CandleBodyType,
-    stringer: list,
+    stringer,
 ):
     """
     Long Stop Loss Based on Candle Body Calculator
@@ -74,10 +74,10 @@ def nb_sl_based_on_candle_body(
 @njit(cache=True)
 def nb_check_sl_hit(
     current_candle: np.array,
-    logger: list,
-    nb_sl_hit_bool: Callable,
+    logger,
+    nb_sl_hit_bool,
     sl_price: float,
-    stringer: list,
+    stringer,
 ):
     logger[LoggerFuncType.Debug]("nb_stop_loss.py - c_sl_hit() - Starting")
     if nb_sl_hit_bool(
@@ -98,15 +98,15 @@ def nb_check_move_sl_to_be(
     average_entry: float,
     can_move_sl_to_be: bool,
     current_candle: np.array,
-    logger: list,
+    logger,
     market_fee_pct: float,
-    nb_move_sl_bool: Callable,
-    nb_zero_or_entry_calc: Callable,
+    nb_move_sl_bool,
+    nb_zero_or_entry_calc,
     price_tick_step: float,
     sl_price: float,
     sl_to_be_cb_type: CandleBodyType,
     sl_to_be_when_pct: float,
-    stringer: list,
+    stringer,
 ):
     """
     Checking to see if we move the stop loss to break even
@@ -156,7 +156,7 @@ def nb_move_stop_loss(
     can_move_sl_to_be: bool,
     dos_index: int,
     ind_set_index: int,
-    logger: list,
+    logger,
     order_result: OrderResult,
     order_status: int,
     sl_pct: float,
@@ -206,12 +206,12 @@ def nb_move_stop_loss(
 def nb_check_move_tsl(
     average_entry: float,
     current_candle: np.array,
-    logger: list,
-    nb_move_sl_bool: Callable,
-    nb_sl_price_calc: Callable,
+    logger,
+    nb_move_sl_bool,
+    nb_sl_price_calc,
     price_tick_step: float,
     sl_price: float,
-    stringer: list,
+    stringer,
     trail_sl_bcb_type: CandleBodyType,
     trail_sl_by_pct: float,
     trail_sl_when_pct: float,
@@ -313,9 +313,9 @@ def nb_num_greater_than_num(
 @njit(cache=True)
 def nb_long_sl_hit_bool(
     current_candle: np.array,
-    logger: list,
+    logger,
     sl_price: float,
-    stringer: list,
+    stringer,
 ):
     candle_low = current_candle[CandleBodyType.Low]
     logger[LoggerFuncType.Debug](
@@ -361,9 +361,9 @@ def nb_short_sl_to_zero(
 @njit(cache=True)
 def nb_short_sl_hit_bool(
     current_candle: np.array,
-    logger: list,
+    logger,
     sl_price: float,
-    stringer: list,
+    stringer,
 ):
     candle_high = current_candle[CandleBodyType.High]
     logger[LoggerFuncType.Debug](
@@ -441,15 +441,15 @@ def nb_cm_sl_to_be_pass(
     average_entry: float,
     can_move_sl_to_be: bool,
     current_candle: np.array,
-    logger: list,
+    logger,
     market_fee_pct: float,
-    nb_move_sl_bool: Callable,
-    nb_zero_or_entry_calc: Callable,
+    nb_move_sl_bool,
+    nb_zero_or_entry_calc,
     price_tick_step: float,
     sl_price: float,
     sl_to_be_cb_type: CandleBodyType,
     sl_to_be_when_pct: float,
-    stringer: list,
+    stringer,
 ):
     """
     Long stop loss to break even pass
@@ -461,12 +461,12 @@ def nb_cm_sl_to_be_pass(
 def nb_cm_tsl_pass(
     average_entry: float,
     current_candle: np.array,
-    logger: list,
-    nb_move_sl_bool: Callable,
-    nb_sl_price_calc: Callable,
+    logger,
+    nb_move_sl_bool,
+    nb_sl_price_calc,
     price_tick_step: float,
     sl_price: float,
-    stringer: list,
+    stringer,
     trail_sl_bcb_type: CandleBodyType,
     trail_sl_by_pct: float,
     trail_sl_when_pct: float,
@@ -481,7 +481,7 @@ def nb_move_stop_loss_pass(
     can_move_sl_to_be: bool,
     dos_index: int,
     ind_set_index: int,
-    logger: list,
+    logger,
     order_result: OrderResult,
     order_status: int,
     sl_pct: float,
@@ -495,14 +495,14 @@ def nb_move_stop_loss_pass(
 def nb_sl_calculator_pass(
     bar_index: int,
     candles: np.array,
-    logger: list,
-    nb_sl_bcb_price_getter: Callable,
-    nb_sl_price_calc: Callable,
+    logger,
+    nb_sl_bcb_price_getter,
+    nb_sl_price_calc,
     price_tick_step: float,
     sl_based_on_add_pct: float,
     sl_based_on_lookback: int,
     sl_bcb_type: CandleBodyType,
-    stringer: list,
+    stringer,
 ):
     pass
 
@@ -510,10 +510,10 @@ def nb_sl_calculator_pass(
 @njit(cache=True)
 def nb_check_sl_hit_pass(
     current_candle: np.array,
-    logger: list,
-    nb_sl_hit_bool: Callable,
+    logger,
+    nb_sl_hit_bool,
     sl_price: float,
-    stringer: list,
+    stringer,
 ):
     pass
 

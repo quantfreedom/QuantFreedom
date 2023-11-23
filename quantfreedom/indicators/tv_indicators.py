@@ -66,16 +66,13 @@ def rma_tv(
     """
     alpha = 1 / length
 
-    new_source = source[~np.isnan(source)]
-    len_adder = source.size - new_source.size
+    new_length = source.size - source[~np.isnan(source)].size + length
 
-    len_minus_one = length - 1
     rma = np.full_like(source, np.nan)
-    rma[len_minus_one + len_adder] = new_source[:length].mean()
+    rma[new_length - 1] = source[max(new_length - length - 1, 0) : new_length].mean()
 
-    for i in range(length, new_source.size):
-        index = len_adder + i
-        rma[index] = alpha * new_source[i] + (1 - alpha) * rma[index - 1]
+    for i in range(new_length, source.size):
+        rma[i] = alpha * source[i] + (1 - alpha) * rma[i - 1]
 
     return rma
 
@@ -90,22 +87,17 @@ def rma_tv_2(
     """
     alpha = 1 / length
 
-    new_source_1 = source_1[~np.isnan(source_1)]
-    new_source_2 = source_2[~np.isnan(source_2)]
-
-    len_adder = source_1.size - new_source_1.size
-    len_minus_one = length - 1
+    new_length = source_1.size - source_1[~np.isnan(source_1)].size + length
 
     rma_1 = np.full_like(source_1, np.nan)
-    rma_2 = np.full_like(source_2, np.nan)
+    rma_2 = np.full_like(rma_1, np.nan)
 
-    rma_1[len_minus_one + len_adder] = new_source_1[:length].mean()
-    rma_2[len_minus_one + len_adder] = new_source_2[:length].mean()
+    rma_1[new_length - 1] = source_1[new_length - length : new_length].mean()
+    rma_2[new_length - 1] = source_2[new_length - length : new_length].mean()
 
-    for i in range(length, new_source_1.size):
-        index = len_adder + i
-        rma_1[index] = alpha * new_source_1[i] + (1 - alpha) * rma_1[index - 1]
-        rma_2[index] = alpha * new_source_2[i] + (1 - alpha) * rma_2[index - 1]
+    for i in range(new_length, source_1.size):
+        rma_1[i] = alpha * source_1[i] + (1 - alpha) * rma_1[i - 1]
+        rma_2[i] = alpha * source_2[i] + (1 - alpha) * rma_2[i - 1]
 
     return rma_1, rma_2
 

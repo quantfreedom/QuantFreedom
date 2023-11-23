@@ -27,8 +27,8 @@ def nb_short_tp_price(
 @njit(cache=True)
 def nb_short_tp_hit_bool(
     current_candle: np.array,
-    logger: list,
-    stringer: list,
+    logger,
+    stringer,
     tp_price: float,
 ):
     candle_low = current_candle[CandleBodyType.Low]
@@ -60,8 +60,8 @@ def nb_long_tp_price(
 @njit(cache=True)
 def nb_long_tp_hit_bool(
     current_candle: np.array,
-    logger: list,
-    stringer: list,
+    logger,
+    stringer,
     tp_price: float,
 ):
     candle_high = current_candle[CandleBodyType.High]
@@ -75,14 +75,14 @@ def nb_long_tp_hit_bool(
 @njit(cache=True)
 def nb_tp_rr(
     average_entry: float,
-    logger: list,
+    logger,
     market_fee_pct: float,
-    nb_get_tp_price: Callable,
+    nb_get_tp_price,
     position_size_usd: float,
     possible_loss: float,
     price_tick_step: float,
     risk_reward: float,
-    stringer: list,
+    stringer,
     tp_fee_pct: float,
 ):
     profit = -possible_loss * risk_reward
@@ -121,9 +121,9 @@ def nb_tp_rr(
 @njit(cache=True)
 def nb_c_tp_hit_regular(
     current_candle: np.array,
-    logger: list,
-    nb_tp_hit_bool: Callable,
-    stringer: list,
+    logger,
+    nb_tp_hit_bool,
+    stringer,
     tp_price: float,
 ):
     if nb_tp_hit_bool(
@@ -142,9 +142,9 @@ def nb_c_tp_hit_regular(
 @njit(cache=True)
 def nb_c_tp_hit_provided(
     current_candle: np.array,
-    logger: list,
-    nb_tp_hit_bool: Callable,
-    stringer: list,
+    logger,
+    nb_tp_hit_bool,
+    stringer,
     tp_price: float,
 ):
     if not np.isnan(tp_price):

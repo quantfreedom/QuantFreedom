@@ -31,12 +31,12 @@ def nb_decrease_position(
     exit_fee_pct: float,
     exit_price: float,
     ind_set_index: int,
-    logger: list,
+    logger,
     market_fee_pct: float,
-    nb_pnl_calc: Callable,
+    nb_pnl_calc,
     order_status: int,
     position_size_asset: float,
-    stringer: list,
+    stringer,
     timestamp: int,
 ) -> tuple[AccountState, OrderResult]:
     pnl = nb_pnl_calc(
