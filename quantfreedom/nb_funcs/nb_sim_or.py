@@ -487,8 +487,8 @@ def nb_run_or_backtest(
             #     print(f"nb_simulate.py - nb_run_backtest() - Exception hit in eval strat -> {e}")
             #     pass
             except Exception:
-                if bar_index + 1 >= candles.shape[0]:
+                if bar_index + 2000 >= candles.shape[0]:
                     print("hellooooooooooooooooo")
                 logger("nb_simulate.py - nb_run_backtest() - Exception hit in eval strat")
                 pass
-    return order_records[:or_index], indicator_settings, dynamic_order_settings
+    return order_records[:or_index], indicator_settings, dynamic_order_settings, or_index

@@ -223,7 +223,7 @@ def nb_sim_backtest(
     print("Starting the backtest now ... and also here are some stats for your backtest.\n")
 
     if ind_set_index is not None and dos_index is not None:
-        order_records, indicator_settings, dynamic_order_settings = nb_run_or_backtest(
+        order_records, indicator_settings, dynamic_order_settings, or_index = nb_run_or_backtest(
             candles=candles,
             dos_cart_arrays=dos_cart_arrays,
             dos_index=dos_index,
@@ -267,7 +267,7 @@ def nb_sim_backtest(
         data = get_data_for_plotting(order_records_df, candles)
         if plot_results:
             plot_or_results(candles=candles, order_records_df=order_records_df)
-        return order_records_df, data
+        return order_records_df, data, or_index
     elif ind_set_index is None and dos_index is None:
         print(f"Total indicator settings to test: {total_indicator_settings:,}")
         print(f"Total order settings to test: {total_order_settings:,}")
