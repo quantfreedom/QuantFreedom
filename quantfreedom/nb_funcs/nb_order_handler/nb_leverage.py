@@ -54,7 +54,7 @@ def nb_long_liq_hit_bool(
     stringer,
 ):
     candle_low = current_candle[CandleBodyType.Low]
-    logger[LoggerFuncType.Debug]("candle_low= " + stringer[StringerFuncType.float_to_str](candle_low))
+    logger("nb_leverage.py - nb_check_liq_hit() - candle_low= " + stringer[StringerFuncType.float_to_str](candle_low))
     return liq_price > candle_low
 
 
@@ -110,7 +110,7 @@ def nb_short_liq_hit_bool(
     stringer,
 ):
     candle_high = current_candle[CandleBodyType.High]
-    logger[LoggerFuncType.Debug]("candle_high= " + stringer[StringerFuncType.float_to_str](candle_high))
+    logger("nb_leverage.py - nb_short_liq_hit_bool() - candle_high= " + stringer[StringerFuncType.float_to_str](candle_high))
     return liq_price < candle_high
 
 
@@ -142,7 +142,7 @@ def nb_calc_liq_price(
     fee_to_close = position_size_asset * bankruptcy_price * market_fee_pct
 
     cash_used = initial_margin + fee_to_open + fee_to_close  # math checked
-    logger[LoggerFuncType.Debug](
+    logger(
         "nb_leverage.py - nb_calc_liq_price() -"
         + "\ninitial_margin= "
         + stringer[StringerFuncType.float_to_str](round(initial_margin, 3))
@@ -155,7 +155,7 @@ def nb_calc_liq_price(
     )
 
     if cash_used > og_available_balance:
-        logger[LoggerFuncType.Warning]("nb_leverage.py - nb_calc_liq_price() - Cash used bigger than available balance")
+        logger("nb_leverage.py - nb_calc_liq_price() - Cash used bigger than available balance")
         raise Exception
     else:
         # liq formula
@@ -173,7 +173,7 @@ def nb_calc_liq_price(
             exchange_num=price_tick_step,
             user_num=liq_price,
         )
-        logger[LoggerFuncType.Debug](
+        logger(
             "nb_leverage.py - nb_calc_liq_price() -"
             + "\navailable_balance= "
             + stringer[StringerFuncType.float_to_str](available_balance)
@@ -225,7 +225,7 @@ def nb_static_lev(
         stringer=stringer,
     )
     leverage = lev_order_info.static_leverage
-    logger[LoggerFuncType.Debug](
+    logger(
         "nb_leverage.py - nb_calculate_leverage() - Lev set to static lev= "
         + stringer[StringerFuncType.float_to_str](leverage)
     )
@@ -258,7 +258,7 @@ def nb_dynamic_lev(
         user_num=leverage,
     )
     if leverage > lev_acc_ex_other.max_leverage:
-        logger[LoggerFuncType.Debug](
+        logger(
             "nb_leverage.py - nb_calculate_leverage() - Lev too high"
             + " Old Lev= "
             + stringer[StringerFuncType.float_to_str](leverage)
@@ -267,7 +267,7 @@ def nb_dynamic_lev(
         )
         leverage = lev_acc_ex_other.max_leverage
     elif leverage < lev_acc_ex_other.min_leverage:
-        logger[LoggerFuncType.Debug](
+        logger(
             "nb_leverage.py - nb_calculate_leverage() - Lev too low"
             + " Old Lev= "
             + stringer[StringerFuncType.float_to_str](leverage)
@@ -276,7 +276,7 @@ def nb_dynamic_lev(
         )
         leverage = 1.0
     else:
-        logger[LoggerFuncType.Debug](
+        logger(
             "nb_leverage.py - nb_calculate_leverage() -"
             + " Leverage= "
             + stringer[StringerFuncType.float_to_str](leverage)
@@ -321,17 +321,14 @@ def nb_check_liq_hit(
     stringer,
 ):
     candle_low = current_candle[CandleBodyType.Low]
-    logger[LoggerFuncType.Debug](
-        "nb_leverage.py - nb_check_liq_hit() - candle_low= " + stringer[StringerFuncType.float_to_str](candle_low)
-    )
     if nb_liq_hit_bool(
         current_candle=current_candle,
         logger=logger,
         liq_price=liq_price,
         stringer=stringer,
     ):
-        logger[LoggerFuncType.Debug]("nb_leverage.py - nb_check_liq_hit() - Liq Hit")
+        logger("nb_leverage.py - nb_check_liq_hit() - Liq Hit")
         return True
     else:
-        logger[LoggerFuncType.Debug]("nb_leverage.py - nb_check_liq_hit() - No hit on liq price")
+        logger("nb_leverage.py - nb_check_liq_hit() - No hit on liq price")
         return False

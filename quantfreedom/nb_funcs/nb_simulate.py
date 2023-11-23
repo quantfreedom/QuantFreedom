@@ -41,7 +41,7 @@ def nb_create_ao(
         cash_used=0.0,
         equity=starting_equity,
         fees_paid=0.0,
-        possible_loss=0.0,
+        possible_loss=0,
         realized_pnl=0.0,
         total_trades=0,
     )
@@ -71,11 +71,11 @@ def nb_sim_df_backtest(
     dos_arrays: DynamicOrderSettingsArrays,
     exchange_settings: ExchangeSettings,
     long_short: str,
-    nb_strat_get_current_ind_settings,
-    nb_strat_get_total_ind_settings,
-    nb_strat_get_ind_set_str,
-    nb_strat_ind_creator,
     nb_strat_evaluate,
+    nb_strat_get_current_ind_settings,
+    nb_strat_get_ind_set_str,
+    nb_strat_get_total_ind_settings,
+    nb_strat_ind_creator,
     static_os: StaticOrderSettings,
 ):
     dos_cart_arrays = dos_cart_product(
@@ -99,17 +99,12 @@ def nb_sim_df_backtest(
     #########################################
     #########################################
     """
-    log_func_type = types.void(types.unicode_type)
-    logger = typed.List.empty_list(log_func_type.as_type())
 
     str_func_type = types.unicode_type(types.float64)
-    stringer = typed.List.empty_list(str_func_type.as_type())
+    stringer: list = typed.List.empty_list(str_func_type.as_type())
 
     if static_os.logger_bool:
-        logger.append(nb_log_debug)
-        logger.append(nb_log_info)
-        logger.append(nb_log_warning)
-        logger.append(nb_log_error)
+        logger = nb_logger
 
         stringer.append(nb_float_to_str)
         stringer.append(nb_log_datetime)
@@ -118,10 +113,7 @@ def nb_sim_df_backtest(
         stringer.append(nb_os_to_str)
 
     else:
-        logger.append(nb_logger_pass)
-        logger.append(nb_logger_pass)
-        logger.append(nb_logger_pass)
-        logger.append(nb_logger_pass)
+        logger = nb_logger_pass
 
         stringer.append(nb_stringer_pass)
         stringer.append(nb_stringer_pass)
@@ -129,52 +121,6 @@ def nb_sim_df_backtest(
         stringer.append(nb_stringer_pass)
         stringer.append(nb_stringer_pass)
 
-    # logger.infoing out total numbers of things
-    print("Starting the backtest now ... and also here are some stats for your backtest.\n")
-    print(f"Total indicator settings to test: {total_indicator_settings:,}")
-    print(f"Total order settings to test: {total_order_settings:,}")
-    print(f"Total combinations of settings to test: {total_indicator_settings * total_order_settings:,}")
-    print(f"Total candles: {total_bars:,}")
-    print(f"Total candles to test: {total_indicator_settings * total_order_settings * total_bars:,}")
-
-    strategy_result_records = nb_run_df_backtest(
-        backtest_settings=backtest_settings,
-        candles=candles,
-        dos_cart_arrays=dos_cart_arrays,
-        exchange_settings=exchange_settings,
-        logger=logger,
-        long_short=long_short,
-        nb_strat_evaluate=nb_strat_evaluate,
-        nb_strat_get_current_ind_settings=nb_strat_get_current_ind_settings,
-        nb_strat_get_ind_set_str=nb_strat_get_ind_set_str,
-        nb_strat_ind_creator=nb_strat_ind_creator,
-        static_os=static_os,
-        stringer=stringer,
-        total_bars=total_bars,
-        total_indicator_settings=total_indicator_settings,
-        total_order_settings=total_order_settings,
-    )
-    return pd.DataFrame(strategy_result_records)
-
-
-@njit(cache=True)
-def nb_run_df_backtest(
-    backtest_settings: BacktestSettings,
-    candles: np.array,
-    dos_cart_arrays: DynamicOrderSettingsArrays,
-    exchange_settings: ExchangeSettings,
-    logger,
-    long_short: str,
-    nb_strat_get_current_ind_settings,
-    nb_strat_get_ind_set_str,
-    nb_strat_ind_creator,
-    nb_strat_evaluate,
-    static_os: StaticOrderSettings,
-    stringer,
-    total_bars: int,
-    total_indicator_settings: int,
-    total_order_settings: int,
-):
     """
     #########################################
     #########################################
@@ -308,6 +254,98 @@ def nb_run_df_backtest(
     else:
         exit_fee_pct = exchange_settings.limit_fee_pct
 
+    # logger.infoing out total numbers of things
+    print("Starting the backtest now ... and also here are some stats for your backtest.\n")
+    print(f"Total indicator settings to test: {total_indicator_settings:,}")
+    print(f"Total order settings to test: {total_order_settings:,}")
+    print(f"Total combinations of settings to test: {total_indicator_settings * total_order_settings:,}")
+    print(f"Total candles: {total_bars:,}")
+    print(f"Total candles to test: {total_indicator_settings * total_order_settings * total_bars:,}")
+
+    strategy_result_records = nb_run_df_backtest(
+        backtest_settings=backtest_settings,
+        candles=candles,
+        dos_cart_arrays=dos_cart_arrays,
+        exchange_settings=exchange_settings,
+        exit_fee_pct=exit_fee_pct,
+        logger=logger,
+        nb_calc_dynamic_lev=nb_calc_dynamic_lev,
+        nb_checker_sl_hit=nb_checker_sl_hit,
+        nb_checker_sl_to_be=nb_checker_sl_to_be,
+        nb_checker_tp_hit=nb_checker_tp_hit,
+        nb_checker_tsl=nb_checker_tsl,
+        nb_entry_calc_np=nb_entry_calc_np,
+        nb_entry_calc_p=nb_entry_calc_p,
+        nb_get_bankruptcy_price=nb_get_bankruptcy_price,
+        nb_get_liq_price=nb_get_liq_price,
+        nb_get_tp_price=nb_get_tp_price,
+        nb_inc_pos_calculator=nb_inc_pos_calculator,
+        nb_lev_calculator=nb_lev_calculator,
+        nb_liq_hit_bool=nb_liq_hit_bool,
+        nb_move_sl_bool=nb_move_sl_bool,
+        nb_pnl_calc=nb_pnl_calc,
+        nb_sl_bcb_price_getter=nb_sl_bcb_price_getter,
+        nb_sl_calculator=nb_sl_calculator,
+        nb_sl_hit_bool=nb_sl_hit_bool,
+        nb_sl_mover=nb_sl_mover,
+        nb_sl_price_calc=nb_sl_price_calc,
+        nb_strat_evaluate=nb_strat_evaluate,
+        nb_strat_get_current_ind_settings=nb_strat_get_current_ind_settings,
+        nb_strat_get_ind_set_str=nb_strat_get_ind_set_str,
+        nb_strat_ind_creator=nb_strat_ind_creator,
+        nb_tp_calculator=nb_tp_calculator,
+        nb_tp_hit_bool=nb_tp_hit_bool,
+        nb_zero_or_entry_calc=nb_zero_or_entry_calc,
+        static_os=static_os,
+        stringer=stringer,
+        total_bars=total_bars,
+        total_indicator_settings=total_indicator_settings,
+        total_order_settings=total_order_settings,
+    )
+    return pd.DataFrame(strategy_result_records)
+
+
+@njit(cache=True)
+def nb_run_df_backtest(
+    backtest_settings: BacktestSettings,
+    candles: np.array,
+    dos_cart_arrays: DynamicOrderSettingsArrays,
+    exchange_settings: ExchangeSettings,
+    exit_fee_pct: float,
+    logger: Callable,
+    nb_calc_dynamic_lev: Callable,
+    nb_checker_sl_hit: Callable,
+    nb_checker_sl_to_be: Callable,
+    nb_checker_tp_hit: Callable,
+    nb_checker_tsl: Callable,
+    nb_entry_calc_np: Callable,
+    nb_entry_calc_p: Callable,
+    nb_get_bankruptcy_price: Callable,
+    nb_get_liq_price: Callable,
+    nb_get_tp_price: Callable,
+    nb_inc_pos_calculator: Callable,
+    nb_lev_calculator: Callable,
+    nb_liq_hit_bool: Callable,
+    nb_move_sl_bool: Callable,
+    nb_pnl_calc: Callable,
+    nb_sl_bcb_price_getter: Callable,
+    nb_sl_calculator: Callable,
+    nb_sl_hit_bool: Callable,
+    nb_sl_mover: Callable,
+    nb_sl_price_calc: Callable,
+    nb_strat_evaluate: Callable,
+    nb_strat_get_current_ind_settings: Callable,
+    nb_strat_get_ind_set_str: Callable,
+    nb_strat_ind_creator: Callable,
+    nb_tp_calculator: Callable,
+    nb_tp_hit_bool: Callable,
+    nb_zero_or_entry_calc: Callable,
+    static_os: StaticOrderSettings,
+    stringer: list,
+    total_bars: int,
+    total_indicator_settings: int,
+    total_order_settings: int,
+):
     market_fee_pct = exchange_settings.market_fee_pct
     leverage_tick_step = exchange_settings.leverage_tick_step
     price_tick_step = exchange_settings.price_tick_step
@@ -331,20 +369,14 @@ def nb_run_df_backtest(
         )
 
         for dos_index in range(total_order_settings):
-            logger[LoggerFuncType.Info](
-                "nb_simulate.py - nb_run_backtest() - Indicator settings index=" + str(ind_set_index)
-            )
-            logger[LoggerFuncType.Info](
-                nb_strat_get_ind_set_str(indicator_settings=indicator_settings, stringer=stringer)
-            )
+            logger("nb_simulate.py - nb_run_backtest() - Indicator settings index=" + str(ind_set_index))
+            logger(nb_strat_get_ind_set_str(indicator_settings=indicator_settings, stringer=stringer))
             dynamic_order_settings = nb_get_dos(
                 dos_cart_arrays=dos_cart_arrays,
                 dos_index=dos_index,
             )
-            logger[LoggerFuncType.Info](
-                "nb_simulate.py - nb_run_backtest() - Dynamic Order settings index=" + str(dos_index)
-            )
-            logger[LoggerFuncType.Info](
+            logger("nb_simulate.py - nb_run_backtest() - Dynamic Order settings index=" + str(dos_index))
+            logger(
                 "nb_simulate.py - nb_run_backtest() - Created Dynamic Order Settings"
                 + "\nmax_equity_risk_pct= "
                 + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.max_equity_risk_pct * 100, 3))
@@ -372,11 +404,9 @@ def nb_run_df_backtest(
                 + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_when_pct * 100, 3))
             )
 
-            logger[LoggerFuncType.Info](
-                "nb_simulate.py - nb_run_backtest() - Starting Bar=" + str(static_os.starting_bar)
-            )
+            logger("nb_simulate.py - nb_run_backtest() - Starting Bar=" + str(static_os.starting_bar))
 
-            new_account_state, order_result = nb_create_ao(
+            account_state, order_result = nb_create_ao(
                 starting_equity=static_os.starting_equity,
             )
 
@@ -384,12 +414,10 @@ def nb_run_df_backtest(
             filled_pnl_counter = 0
 
             total_fees_paid = 0
-            logger[LoggerFuncType.Info](
-                "nb_simulate.py - nb_run_backtest() - account state order results pnl array all set to default"
-            )
+            logger("nb_simulate.py - nb_run_backtest() - account state order results pnl array all set to default")
             for bar_index in range(static_os.starting_bar - 1, total_bars):
-                logger[LoggerFuncType.Info]("\n\n")
-                logger[LoggerFuncType.Info](
+                logger("\n\n")
+                logger(
                     (
                         "nb_simulate.py - nb_run_backtest() - ind_idx="
                         + str(ind_set_index)
@@ -405,7 +433,7 @@ def nb_run_df_backtest(
                 if order_result.position_size_usd > 0:
                     try:
                         # checking if sl hit
-                        logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - check_stop_loss_hit")
+                        logger("nb_simulate.py - nb_run_backtest() - check_stop_loss_hit")
                         sl_hit_bool = nb_checker_sl_hit(
                             current_candle=candles[bar_index, :],
                             logger=logger,
@@ -414,12 +442,12 @@ def nb_run_df_backtest(
                             stringer=stringer,
                         )
                         if sl_hit_bool:
-                            logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - decrease_position")
-                            new_account_state, order_result = nb_decrease_position(
+                            logger("nb_simulate.py - nb_run_backtest() - decrease_position")
+                            account_state, order_result = nb_decrease_position(
                                 average_entry=order_result.average_entry,
                                 bar_index=bar_index,
                                 dos_index=dos_index,
-                                equity=new_account_state.equity,
+                                equity=account_state.equity,
                                 exit_fee_pct=market_fee_pct,
                                 exit_price=order_result.sl_price,
                                 ind_set_index=ind_set_index,
@@ -431,27 +459,27 @@ def nb_run_df_backtest(
                                 stringer=stringer,
                                 timestamp=int(candles[bar_index, CandleBodyType.Timestamp]),
                             )
-                            pnl_array[filled_pnl_counter] = new_account_state.realized_pnl
+                            pnl_array[filled_pnl_counter] = account_state.realized_pnl
                             filled_pnl_counter += 1
-                            total_fees_paid += new_account_state.fees_paid
+                            total_fees_paid += account_state.fees_paid
                             raise DecreasePosition
 
                         # checking if liq hit
-                        logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - check_liq_hit")
-                        new_liq_hit_bool = nb_check_liq_hit(
+                        logger("nb_simulate.py - nb_run_backtest() - check_liq_hit")
+                        liq_hit_bool = nb_check_liq_hit(
                             current_candle=candles[bar_index, :],
                             logger=logger,
                             nb_liq_hit_bool=nb_liq_hit_bool,
                             liq_price=order_result.liq_price,
                             stringer=stringer,
                         )
-                        if new_liq_hit_bool:
-                            logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - decrease_position")
-                            new_account_state, order_result = nb_decrease_position(
+                        if liq_hit_bool:
+                            logger("nb_simulate.py - nb_run_backtest() - decrease_position")
+                            account_state, order_result = nb_decrease_position(
                                 average_entry=order_result.average_entry,
                                 bar_index=bar_index,
                                 dos_index=dos_index,
-                                equity=new_account_state.equity,
+                                equity=account_state.equity,
                                 exit_fee_pct=market_fee_pct,
                                 exit_price=order_result.liq_price,
                                 ind_set_index=ind_set_index,
@@ -463,27 +491,27 @@ def nb_run_df_backtest(
                                 stringer=stringer,
                                 timestamp=int(candles[bar_index, CandleBodyType.Timestamp]),
                             )
-                            pnl_array[filled_pnl_counter] = new_account_state.realized_pnl
+                            pnl_array[filled_pnl_counter] = account_state.realized_pnl
                             filled_pnl_counter += 1
-                            total_fees_paid += new_account_state.fees_paid
+                            total_fees_paid += account_state.fees_paid
                             raise DecreasePosition
 
                         # checking if tp hit
-                        logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - check_tp_hit")
-                        new_tp_hit_bool = nb_checker_tp_hit(
+                        logger("nb_simulate.py - nb_run_backtest() - check_tp_hit")
+                        tp_hit_bool = nb_checker_tp_hit(
                             current_candle=candles[bar_index, :],
                             logger=logger,
                             nb_tp_hit_bool=nb_tp_hit_bool,
                             tp_price=order_result.tp_price,
                             stringer=stringer,
                         )
-                        if new_tp_hit_bool:
-                            logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - decrease_position")
-                            new_account_state, order_result = nb_decrease_position(
+                        if tp_hit_bool:
+                            logger("nb_simulate.py - nb_run_backtest() - decrease_position")
+                            account_state, order_result = nb_decrease_position(
                                 average_entry=order_result.average_entry,
                                 bar_index=bar_index,
                                 dos_index=dos_index,
-                                equity=new_account_state.equity,
+                                equity=account_state.equity,
                                 exit_fee_pct=exit_fee_pct,
                                 exit_price=order_result.tp_price,
                                 ind_set_index=ind_set_index,
@@ -495,14 +523,14 @@ def nb_run_df_backtest(
                                 stringer=stringer,
                                 timestamp=int(candles[bar_index, CandleBodyType.Timestamp]),
                             )
-                            pnl_array[filled_pnl_counter] = new_account_state.realized_pnl
+                            pnl_array[filled_pnl_counter] = account_state.realized_pnl
                             filled_pnl_counter += 1
-                            total_fees_paid += new_account_state.fees_paid
+                            total_fees_paid += account_state.fees_paid
                             raise DecreasePosition
 
                         # checking to move stop loss
 
-                        logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - check_move_stop_loss_to_be")
+                        logger("nb_simulate.py - nb_run_backtest() - check_move_stop_loss_to_be")
                         temp_sl, temp_sl_pct = nb_checker_sl_to_be(
                             average_entry=order_result.average_entry,
                             can_move_sl_to_be=order_result.can_move_sl_to_be,
@@ -518,9 +546,9 @@ def nb_run_df_backtest(
                             stringer=stringer,
                         )
                         if temp_sl > 0:
-                            logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - move_stop_loss")
-                            new_account_state, order_result = nb_sl_mover(
-                                account_state=new_account_state,
+                            logger("nb_simulate.py - nb_run_backtest() - move_stop_loss")
+                            account_state, order_result = nb_sl_mover(
+                                account_state=account_state,
                                 bar_index=bar_index,
                                 can_move_sl_to_be=False,
                                 dos_index=0,
@@ -535,9 +563,7 @@ def nb_run_df_backtest(
 
                         # Checking to move trailing stop loss
 
-                        logger[LoggerFuncType.Debug](
-                            "nb_simulate.py - nb_run_backtest() - check_move_trailing_stop_loss"
-                        )
+                        logger("nb_simulate.py - nb_run_backtest() - check_move_trailing_stop_loss")
                         temp_tsl, temp_tsl_pct = nb_checker_tsl(
                             average_entry=order_result.average_entry,
                             current_candle=candles[bar_index, :],
@@ -552,9 +578,9 @@ def nb_run_df_backtest(
                             trail_sl_when_pct=dynamic_order_settings.trail_sl_when_pct,
                         )
                         if temp_tsl > 0:
-                            logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - move_stop_loss")
-                            new_account_state, order_result = nb_sl_mover(
-                                account_state=new_account_state,
+                            logger("nb_simulate.py - nb_run_backtest() - move_stop_loss")
+                            account_state, order_result = nb_sl_mover(
+                                account_state=account_state,
                                 bar_index=bar_index,
                                 can_move_sl_to_be=False,
                                 dos_index=dos_index,
@@ -567,18 +593,16 @@ def nb_run_df_backtest(
                                 timestamp=int(candles[bar_index, CandleBodyType.Timestamp]),
                             )
                     # except Exception as e:
-                    #     logger[LoggerFuncType.Debug](
+                    #     logger(
                     #         f"nb_simulate.py - nb_run_backtest() - Checking hit Exception -> {e}"
                     #     )
                     #     pass
                     except Exception:
-                        logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - Checking hit Exception")
+                        logger("nb_simulate.py - nb_run_backtest() - Checking hit Exception")
                         pass
                 else:
-                    logger[LoggerFuncType.Debug](
-                        "nb_simulate.py - nb_run_backtest() - Not in a pos so not checking SL Liq or TP"
-                    )
-                logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - strategy evaluate")
+                    logger("nb_simulate.py - nb_run_backtest() - Not in a pos so not checking SL Liq or TP")
+                logger("nb_simulate.py - nb_run_backtest() - strategy evaluate")
                 eval_bool = nb_strat_evaluate(
                     bar_index=bar_index,
                     candle_group_size=static_os.starting_bar,
@@ -590,8 +614,8 @@ def nb_run_df_backtest(
                 )
                 if eval_bool:
                     try:
-                        logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - calculate_stop_loss")
-                        new_sl_price = nb_sl_calculator(
+                        logger("nb_simulate.py - nb_run_backtest() - calculate_stop_loss")
+                        sl_price = nb_sl_calculator(
                             bar_index=bar_index,
                             candles=candles,
                             logger=logger,
@@ -604,27 +628,27 @@ def nb_run_df_backtest(
                             stringer=stringer,
                         )
 
-                        logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - calculate_increase_posotion")
+                        logger("nb_simulate.py - nb_run_backtest() - calculate_increase_posotion")
                         (
-                            new_average_entry,
-                            new_entry_price,
-                            new_entry_size_asset,
-                            new_entry_size_usd,
-                            new_position_size_asset,
-                            new_position_size_usd,
-                            new_possible_loss,
-                            new_total_trades,
-                            new_sl_pct,
+                            average_entry,
+                            entry_price,
+                            entry_size_asset,
+                            entry_size_usd,
+                            position_size_asset,
+                            position_size_usd,
+                            possible_loss,
+                            total_trades,
+                            sl_pct,
                         ) = nb_inc_pos_calculator(
                             acc_ex_other=AccExOther(
-                                equity=new_account_state.equity,
+                                equity=account_state.equity,
                                 asset_tick_step=asset_tick_step,
                                 market_fee_pct=market_fee_pct,
                                 max_asset_size=max_asset_size,
                                 min_asset_size=min_asset_size,
-                                possible_loss=new_account_state.possible_loss,
+                                possible_loss=account_state.possible_loss,
                                 price_tick_step=price_tick_step,
-                                total_trades=new_account_state.total_trades,
+                                total_trades=account_state.total_trades,
                             ),
                             order_info=OrderInfo(
                                 average_entry=order_result.average_entry,
@@ -635,7 +659,7 @@ def nb_run_df_backtest(
                                 position_size_asset=order_result.position_size_asset,
                                 position_size_usd=order_result.position_size_usd,
                                 risk_account_pct_size=dynamic_order_settings.risk_account_pct_size,
-                                sl_price=new_sl_price,
+                                sl_price=sl_price,
                             ),
                             logger=logger,
                             stringer=stringer,
@@ -643,18 +667,18 @@ def nb_run_df_backtest(
                             nb_entry_calc_np=nb_entry_calc_np,
                         )
 
-                        logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - calculate_leverage")
+                        logger("nb_simulate.py - nb_run_backtest() - calculate_leverage")
                         (
-                            new_available_balance,
-                            new_cash_borrowed,
-                            new_cash_used,
-                            new_leverage,
-                            new_liq_price,
+                            available_balance,
+                            cash_borrowed,
+                            cash_used,
+                            leverage,
+                            liq_price,
                         ) = nb_lev_calculator(
                             lev_acc_ex_other=LevAccExOther(
-                                available_balance=new_account_state.available_balance,
-                                cash_borrowed=new_account_state.cash_borrowed,
-                                cash_used=new_account_state.cash_used,
+                                available_balance=account_state.available_balance,
+                                cash_borrowed=account_state.cash_borrowed,
+                                cash_used=account_state.cash_used,
                                 leverage_tick_step=leverage_tick_step,
                                 market_fee_pct=market_fee_pct,
                                 max_leverage=max_leverage,
@@ -663,10 +687,10 @@ def nb_run_df_backtest(
                                 price_tick_step=price_tick_step,
                             ),
                             lev_order_info=LevOrderInfo(
-                                average_entry=new_average_entry,
-                                position_size_asset=new_position_size_asset,
-                                position_size_usd=new_position_size_usd,
-                                sl_price=new_sl_price,
+                                average_entry=average_entry,
+                                position_size_asset=position_size_asset,
+                                position_size_usd=position_size_usd,
+                                sl_price=sl_price,
                                 static_leverage=static_os.static_leverage,
                             ),
                             logger=logger,
@@ -676,72 +700,70 @@ def nb_run_df_backtest(
                             stringer=stringer,
                         )
 
-                        logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - calculate_take_profit")
+                        logger("nb_simulate.py - nb_run_backtest() - calculate_take_profit")
                         (
-                            new_can_move_sl_to_be,
-                            new_tp_price,
-                            new_tp_pct,
+                            can_move_sl_to_be,
+                            tp_price,
+                            tp_pct,
                         ) = nb_tp_calculator(
-                            average_entry=new_average_entry,
+                            average_entry=average_entry,
                             logger=logger,
                             market_fee_pct=market_fee_pct,
                             nb_get_tp_price=nb_get_tp_price,
-                            position_size_usd=new_position_size_usd,
-                            possible_loss=new_possible_loss,
+                            position_size_usd=position_size_usd,
+                            possible_loss=possible_loss,
                             price_tick_step=price_tick_step,
                             risk_reward=dynamic_order_settings.risk_reward,
                             stringer=stringer,
                             tp_fee_pct=exit_fee_pct,
                         )
 
-                        logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - Recorded Trade")
-                        new_account_state = AccountState(
+                        logger("nb_simulate.py - nb_run_backtest() - Recorded Trade")
+                        account_state = AccountState(
                             # where we are at
                             ind_set_index=ind_set_index,
                             dos_index=dos_index,
                             bar_index=bar_index + 1,  # put plus 1 because we need to place entry on next bar
                             timestamp=int(candles[bar_index + 1, CandleBodyType.Timestamp]),
                             # account info
-                            available_balance=new_available_balance,
-                            cash_borrowed=new_cash_borrowed,
-                            cash_used=new_cash_used,
-                            equity=new_account_state.equity,
+                            available_balance=available_balance,
+                            cash_borrowed=cash_borrowed,
+                            cash_used=cash_used,
+                            equity=account_state.equity,
                             fees_paid=0.0,
-                            possible_loss=new_possible_loss,
+                            possible_loss=possible_loss,
                             realized_pnl=0.0,
-                            total_trades=new_total_trades,
+                            total_trades=total_trades,
                         )
                         order_result = OrderResult(
-                            average_entry=new_average_entry,
-                            can_move_sl_to_be=new_can_move_sl_to_be,
-                            entry_price=new_entry_price,
-                            entry_size_asset=new_entry_size_asset,
-                            entry_size_usd=new_entry_size_usd,
+                            average_entry=average_entry,
+                            can_move_sl_to_be=can_move_sl_to_be,
+                            entry_price=entry_price,
+                            entry_size_asset=entry_size_asset,
+                            entry_size_usd=entry_size_usd,
                             exit_price=0.0,
-                            leverage=new_leverage,
-                            liq_price=new_liq_price,
+                            leverage=leverage,
+                            liq_price=liq_price,
                             order_status=OrderStatus.EntryFilled,
-                            position_size_asset=new_position_size_asset,
-                            position_size_usd=new_position_size_usd,
-                            sl_pct=new_sl_pct,
-                            sl_price=new_sl_price,
-                            tp_pct=new_tp_pct,
-                            tp_price=new_tp_price,
+                            position_size_asset=position_size_asset,
+                            position_size_usd=position_size_usd,
+                            sl_pct=sl_pct,
+                            sl_price=sl_price,
+                            tp_pct=tp_pct,
+                            tp_price=tp_price,
                         )
-                        logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - Account State OrderResult")
+                        logger("nb_simulate.py - nb_run_backtest() - Account State OrderResult")
                     # except Exception as e:
                     #     print(f"nb_simulate.py - nb_run_backtest() - Exception hit in eval strat -> {e}")
                     #     pass
                     except Exception:
-                        logger[LoggerFuncType.Debug]("nb_simulate.py - nb_run_backtest() - Exception hit in eval strat")
+                        logger("nb_simulate.py - nb_run_backtest() - Exception hit in eval strat")
                         pass
-            # Checking if gains
-            gains_pct = round(
-                ((new_account_state.equity - static_os.starting_equity) / static_os.starting_equity) * 100, 3
-            )
+            # # Checking if gains
+            gains_pct = round(((account_state.equity - static_os.starting_equity) / static_os.starting_equity) * 100, 3)
             wins_and_losses_array = pnl_array[~np.isnan(pnl_array)]
             total_trades_closed = wins_and_losses_array.size
-            logger[LoggerFuncType.Info](
+            logger(
                 "nb_simulate.py - nb_run_backtest() - Results from backtest\n"
                 + "\nind_set_index= "
                 + str(ind_set_index)
@@ -750,7 +772,7 @@ def nb_run_df_backtest(
                 + "\nStarting eq= "
                 + stringer[StringerFuncType.float_to_str](static_os.starting_equity)
                 + "\nEnding eq= "
-                + stringer[StringerFuncType.float_to_str](new_account_state.equity)
+                + stringer[StringerFuncType.float_to_str](account_state.equity)
                 + "\nGains pct= "
                 + stringer[StringerFuncType.float_to_str](gains_pct)
                 + "\nTotal_trades= "
@@ -787,10 +809,10 @@ def nb_run_df_backtest(
                         strategy_result_records[result_records_filled]["qf_score"] = qf_score
                         strategy_result_records[result_records_filled]["fees_paid"] = round(total_fees_paid, 3)
                         strategy_result_records[result_records_filled]["total_pnl"] = total_pnl
-                        strategy_result_records[result_records_filled]["ending_eq"] = new_account_state.equity
+                        strategy_result_records[result_records_filled]["ending_eq"] = account_state.equity
 
                         result_records_filled += 1
-            logger[LoggerFuncType.Info](
+            logger(
                 "Starting New Loop\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
             )
     return strategy_result_records[:result_records_filled]

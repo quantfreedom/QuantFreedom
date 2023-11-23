@@ -18,7 +18,7 @@ class IndicatorSettings(NamedTuple):
 
 
 ind_set_arrays = IndicatorSettingsArrays(
-    rsi_is_below=np.array([100]),
+    rsi_is_below=np.array([70]),
     rsi_period=np.array([14]),
 )
 
@@ -58,7 +58,7 @@ def nb_strat_bt_create_ind(
     candles: np.array,
     candle_group_size: int,
     indicator_settings: IndicatorSettings,
-    logger,
+    logger: Callable,
 ):
     start = max(bar_index - candle_group_size, 0)
     try:
@@ -67,20 +67,20 @@ def nb_strat_bt_create_ind(
             length=indicator_settings.rsi_period,
         )
         rsi = np.around(rsi, 3)
-        logger[LoggerFuncType.Info]("nb_strategy.py - nb_strat_bt_create_ind() - Created RSI")
+        logger("nb_strategy.py - nb_strat_bt_create_ind() - Created RSI")
         return rsi
     except Exception:
-        logger[LoggerFuncType.Info]("nb_strategy.py - nb_strat_bt_create_ind() - Exception creating RSI")
+        logger("nb_strategy.py - nb_strat_bt_create_ind() - Exception creating RSI")
         raise Exception
 
 
 @njit(cache=True)
 def nb_strat_liv_create_ind(
-    bar_index,
-    candle_group_size,
-    candles,
+    bar_index: int,
+    candle_group_size: int,
+    candles: int,
     indicator_settings: IndicatorSettings,
-    logger,
+    logger: Callable,
 ):
     try:
         rsi = nb_rsi_tv(
@@ -88,10 +88,10 @@ def nb_strat_liv_create_ind(
             length=indicator_settings.rsi_period,
         )
         rsi = np.around(rsi, 3)
-        logger[LoggerFuncType.Info]("nb_strategy.py - nb_strat_liv_create_ind() - Created RSI")
+        logger("nb_strategy.py - nb_strat_liv_create_ind() - Created RSI")
         return rsi
     except Exception:
-        logger[LoggerFuncType.Info]("nb_strategy.py - nb_strat_liv_create_ind() - Exception creating rsi")
+        logger("nb_strategy.py - nb_strat_liv_create_ind() - Exception creating rsi")
         raise Exception
 
 
@@ -103,20 +103,20 @@ def nb_strat_get_total_ind_settings():
 @njit(cache=True)
 def nb_strat_get_current_ind_settings(
     ind_set_index: int,
-    logger,
+    logger: Callable,
 ):
     indicator_settings = IndicatorSettings(
         rsi_is_below=ind_set_arrays.rsi_is_below[ind_set_index],
         rsi_period=ind_set_arrays.rsi_period[ind_set_index],
     )
-    logger[LoggerFuncType.Info]("nb_strategy.py - nb_get_current_ind_settings() - Created indicator settings")
+    logger("nb_strategy.py - nb_get_current_ind_settings() - Created indicator settings")
     return indicator_settings
 
 
 @njit(cache=True)
 def nb_strat_get_ind_set_str(
     indicator_settings: IndicatorSettings,
-    stringer,
+    stringer: list,
 ):
     msg = (
         "nb_strategy.py - nb_strat_get_ind_set_str() - "
@@ -134,9 +134,9 @@ def nb_strat_long_evaluate(
     candles: np.array,
     candle_group_size: int,
     indicator_settings: IndicatorSettings,
-    logger,
-    nb_strat_ind_creator,
-    stringer,
+    logger: Callable,
+    nb_strat_ind_creator: Callable,
+    stringer: list,
 ):
     rsi = nb_strat_ind_creator(
         bar_index=bar_index,
@@ -150,8 +150,8 @@ def nb_strat_long_evaluate(
         rsi_is_below = indicator_settings.rsi_is_below
 
         if current_rsi < rsi_is_below:
-            logger[LoggerFuncType.Info]("\n\n")
-            logger[LoggerFuncType.Info](
+            logger("\n\n")
+            logger(
                 "nb_strategy.py - nb_evaluate() - Entry time!!! "
                 + "current rsi= "
                 + stringer[StringerFuncType.float_to_str](current_rsi)
@@ -161,7 +161,7 @@ def nb_strat_long_evaluate(
 
             return True
         else:
-            logger[LoggerFuncType.Info](
+            logger(
                 "nb_strategy.py - nb_evaluate() - No entry "
                 + "current rsi= "
                 + stringer[StringerFuncType.float_to_str](current_rsi)

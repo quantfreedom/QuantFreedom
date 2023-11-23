@@ -32,7 +32,7 @@ def nb_short_tp_hit_bool(
     tp_price: float,
 ):
     candle_low = current_candle[CandleBodyType.Low]
-    logger[LoggerFuncType.Debug](
+    logger(
         "nb_take_profit.py - nb_short_c_tp_candle() - candle_low= "
         + stringer[StringerFuncType.float_to_str](candle_low)
     )
@@ -65,7 +65,7 @@ def nb_long_tp_hit_bool(
     tp_price: float,
 ):
     candle_high = current_candle[CandleBodyType.High]
-    logger[LoggerFuncType.Debug](
+    logger(
         "nb_take_profit.py - nb_long_c_tp_candle() - candle_high= "
         + stringer[StringerFuncType.float_to_str](candle_high)
     )
@@ -86,9 +86,7 @@ def nb_tp_rr(
     tp_fee_pct: float,
 ):
     profit = -possible_loss * risk_reward
-    logger[LoggerFuncType.Debug](
-        "nb_take_profit.py - nb_tp_rr() - profit= " + stringer[StringerFuncType.float_to_str](profit)
-    )
+    logger("nb_take_profit.py - nb_tp_rr() - profit= " + stringer[StringerFuncType.float_to_str](profit))
     tp_price = nb_get_tp_price(
         average_entry=average_entry,
         market_fee_pct=market_fee_pct,
@@ -101,16 +99,14 @@ def nb_tp_rr(
         exchange_num=price_tick_step,
         user_num=tp_price,
     )
-    logger[LoggerFuncType.Debug](
-        "nb_take_profit.py - nb_tp_rr() - tp_price= " + stringer[StringerFuncType.float_to_str](tp_price)
-    )
+    logger("nb_take_profit.py - nb_tp_rr() - tp_price= " + stringer[StringerFuncType.float_to_str](tp_price))
 
     tp_pct = round(abs(tp_price - average_entry) / average_entry, 3)
-    logger[LoggerFuncType.Debug](
+    logger(
         "nb_take_profit.py - nb_tp_rr() - tp_pct= " + stringer[StringerFuncType.float_to_str](round(tp_pct * 100, 3))
     )
     can_move_sl_to_be = True
-    logger[LoggerFuncType.Debug]("nb_take_profit.py - nb_tp_rr() - can_move_sl_to_be= True")
+    logger("nb_take_profit.py - nb_tp_rr() - can_move_sl_to_be= True")
     return (
         can_move_sl_to_be,
         tp_price,
@@ -132,10 +128,10 @@ def nb_c_tp_hit_regular(
         stringer=stringer,
         tp_price=tp_price,
     ):
-        logger[LoggerFuncType.Debug]("nb_take_profit.py - nb_c_tp_hit_regular() - TP Hit")
+        logger("nb_take_profit.py - nb_c_tp_hit_regular() - TP Hit")
         return True
     else:
-        logger[LoggerFuncType.Debug]("nb_take_profit.py - nb_c_tp_hit_regular() - No Tp Hit")
+        logger("nb_take_profit.py - nb_c_tp_hit_regular() - No Tp Hit")
         return False
 
 
@@ -148,11 +144,11 @@ def nb_c_tp_hit_provided(
     tp_price: float,
 ):
     if not np.isnan(tp_price):
-        logger[LoggerFuncType.Debug](
+        logger(
             "nb_take_profit.py - nb_c_tp_hit_provided() - Tp Hit Exit Price= "
             + stringer[StringerFuncType.float_to_str](tp_price)
         )
         return True
     else:
-        logger[LoggerFuncType.Debug]("nb_take_profit.py - nb_c_tp_hit_provided() - No Tp Hit")
+        logger("nb_take_profit.py - nb_c_tp_hit_provided() - No Tp Hit")
         return False

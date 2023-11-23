@@ -201,14 +201,14 @@ class AccountState(NamedTuple):
     bar_index: int
     timestamp: int
     # account info
-    available_balance: float = np.nan
-    cash_borrowed: float = np.nan
-    cash_used: float = np.nan
-    equity: float = np.nan
-    fees_paid: float = np.nan
-    possible_loss: float = np.nan
-    realized_pnl: float = np.nan
-    total_trades: int = 0
+    available_balance: float
+    cash_borrowed: float
+    cash_used: float
+    equity: float
+    fees_paid: float
+    possible_loss: int
+    realized_pnl: float
+    total_trades: int
 
 
 class BacktestSettings(NamedTuple):
@@ -379,7 +379,7 @@ or_dt = np.dtype(
         ("fees_paid", np.float_),
         ("leverage", np.float_),
         ("liq_price", np.float_),
-        ("possible_loss", np.float_),
+        ("possible_loss", np.int_),
         ("total_trades", np.int_),
         ("entry_size_asset", np.float_),
         ("entry_size_usd", np.float_),

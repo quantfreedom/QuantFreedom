@@ -45,18 +45,14 @@ def nb_sl_based_on_candle_body(
     """
     # lb will be bar index if sl isn't based on lookback because look back will be 0
     lookback = max(bar_index - sl_based_on_lookback, 0)
-    logger[LoggerFuncType.Debug](
-        "nb_stop_loss.py - sl_bcb() - lookback to index= " + stringer[StringerFuncType.float_to_str](lookback)
-    )
+    logger("nb_stop_loss.py - sl_bcb() - lookback to index= " + stringer[StringerFuncType.float_to_str](lookback))
     candle_body = nb_sl_bcb_price_getter(
         bar_index=bar_index,
         candles=candles,
         candle_body_type=sl_bcb_type,
         lookback=lookback,
     )
-    logger[LoggerFuncType.Debug](
-        "nb_stop_loss.py - sl_bcb() - candle_body= " + stringer[StringerFuncType.float_to_str](candle_body)
-    )
+    logger("nb_stop_loss.py - sl_bcb() - candle_body= " + stringer[StringerFuncType.float_to_str](candle_body))
     sl_price = nb_sl_price_calc(
         add_pct=sl_based_on_add_pct,
         candle_body=candle_body,
@@ -65,9 +61,7 @@ def nb_sl_based_on_candle_body(
         exchange_num=price_tick_step,
         user_num=sl_price,
     )
-    logger[LoggerFuncType.Debug](
-        "nb_stop_loss.py - sl_bcb() - sl_price= " + stringer[StringerFuncType.float_to_str](sl_price)
-    )
+    logger("nb_stop_loss.py - sl_bcb() - sl_price= " + stringer[StringerFuncType.float_to_str](sl_price))
     return sl_price
 
 
@@ -79,17 +73,17 @@ def nb_check_sl_hit(
     sl_price: float,
     stringer,
 ):
-    logger[LoggerFuncType.Debug]("nb_stop_loss.py - c_sl_hit() - Starting")
+    logger("nb_stop_loss.py - c_sl_hit() - Starting")
     if nb_sl_hit_bool(
         current_candle=current_candle,
         logger=logger,
         sl_price=sl_price,
         stringer=stringer,
     ):
-        logger[LoggerFuncType.Debug]("nb_stop_loss.py - c_sl_hit() - Stop loss hit")
+        logger("nb_stop_loss.py - c_sl_hit() - Stop loss hit")
         return True
     else:
-        logger[LoggerFuncType.Debug]("nb_stop_loss.py - c_sl_hit() - No hit on stop loss")
+        logger("nb_stop_loss.py - c_sl_hit() - No hit on stop loss")
         return False
 
 
@@ -112,11 +106,11 @@ def nb_check_move_sl_to_be(
     Checking to see if we move the stop loss to break even
     """
     if can_move_sl_to_be:
-        logger[LoggerFuncType.Debug]("nb_stop_loss.py - cm_sl_to_be() - Might move sl to break even")
+        logger("nb_stop_loss.py - cm_sl_to_be() - Might move sl to break even")
         # Stop Loss to break even
         candle_body = current_candle[sl_to_be_cb_type]
         pct_from_ae = abs(candle_body - average_entry) / average_entry
-        logger[LoggerFuncType.Debug](
+        logger(
             "nb_stop_loss.py - cm_sl_to_be() - pct_from_ae= "
             + stringer[StringerFuncType.float_to_str](round(pct_from_ae * 100, 3))
         )
@@ -132,7 +126,7 @@ def nb_check_move_sl_to_be(
                 price_tick_step=price_tick_step,
             )
             sl_pct = round(abs(average_entry - sl_price) / average_entry, 3)
-            logger[LoggerFuncType.Debug](
+            logger(
                 "nb_stop_loss.py - cm_sl_to_be() - moving sl old_sl= "
                 + stringer[StringerFuncType.float_to_str](old_sl)
                 + " new sl= "
@@ -142,10 +136,10 @@ def nb_check_move_sl_to_be(
             )
             return sl_price, sl_pct
         else:
-            logger[LoggerFuncType.Debug]("nb_stop_loss.py - cm_sl_to_be() - not moving sl to be")
+            logger("nb_stop_loss.py - cm_sl_to_be() - not moving sl to be")
             0.0, 0.0
     else:
-        logger[LoggerFuncType.Debug]("nb_stop_loss.py - cm_sl_to_be() - can't move sl to be")
+        logger("nb_stop_loss.py - cm_sl_to_be() - can't move sl to be")
         0.0, 0.0
 
 
@@ -179,7 +173,7 @@ def nb_move_stop_loss(
         realized_pnl=account_state.realized_pnl,
         total_trades=account_state.total_trades,
     )
-    logger[LoggerFuncType.Debug]("nb_stop_loss.py - nb_move_stop_loss() - created account state")
+    logger("nb_stop_loss.py - nb_move_stop_loss() - created account state")
     order_result = OrderResult(
         average_entry=order_result.average_entry,
         can_move_sl_to_be=can_move_sl_to_be,
@@ -197,7 +191,7 @@ def nb_move_stop_loss(
         tp_pct=order_result.tp_pct,
         tp_price=order_result.tp_price,
     )
-    logger[LoggerFuncType.Debug]("nb_stop_loss.py - nb_move_stop_loss() - created order result")
+    logger("nb_stop_loss.py - nb_move_stop_loss() - created order result")
 
     return account_state, order_result
 
@@ -221,7 +215,7 @@ def nb_check_move_tsl(
     """
     candle_body = current_candle[trail_sl_bcb_type]
     pct_from_ae = abs(candle_body - average_entry) / average_entry
-    logger[LoggerFuncType.Debug](
+    logger(
         "nb_stop_loss.py - cm_tsl() - pct_from_ae= "
         + stringer[StringerFuncType.float_to_str](round(pct_from_ae * 100, 3))
     )
@@ -230,7 +224,7 @@ def nb_check_move_tsl(
         num_2=trail_sl_when_pct,
     )
     if possible_move_tsl:
-        logger[LoggerFuncType.Debug]("nb_stop_loss.py - cm_tsl() - Maybe move tsl")
+        logger("nb_stop_loss.py - cm_tsl() - Maybe move tsl")
         temp_sl_price = nb_sl_price_calc(
             add_pct=trail_sl_by_pct,
             candle_body=candle_body,
@@ -239,7 +233,7 @@ def nb_check_move_tsl(
             exchange_num=price_tick_step,
             user_num=temp_sl_price,
         )
-        logger[LoggerFuncType.Debug](
+        logger(
             "nb_stop_loss.py - cm_tsl() - "
             + "temp sl= "
             + stringer[StringerFuncType.float_to_str](temp_sl_price)
@@ -251,7 +245,7 @@ def nb_check_move_tsl(
             num_2=sl_price,
         ):
             sl_pct = round(abs(average_entry - temp_sl_price) / average_entry, 3)
-            logger[LoggerFuncType.Debug](
+            logger(
                 "nb_stop_loss.py - cm_tsl() - Moving tsl new sl= "
                 + stringer[StringerFuncType.float_to_str](temp_sl_price)
                 + " > old sl= "
@@ -261,10 +255,10 @@ def nb_check_move_tsl(
             )
             return temp_sl_price, sl_pct
         else:
-            logger[LoggerFuncType.Debug]("nb_stop_loss.py - cm_tsl() - Wont move tsl")
+            logger("nb_stop_loss.py - cm_tsl() - Wont move tsl")
             return 0.0, 0.0
     else:
-        logger[LoggerFuncType.Debug]("nb_stop_loss.py - cm_tsl() - Not moving tsl")
+        logger("nb_stop_loss.py - cm_tsl() - Not moving tsl")
         return 0.0, 0.0
 
 
@@ -318,7 +312,7 @@ def nb_long_sl_hit_bool(
     stringer,
 ):
     candle_low = current_candle[CandleBodyType.Low]
-    logger[LoggerFuncType.Debug](
+    logger(
         "nb_stop_loss.py - nb_long_sl_hit_bool() - candle_low= " + stringer[StringerFuncType.float_to_str](candle_low)
     )
     return sl_price > candle_low
@@ -366,7 +360,7 @@ def nb_short_sl_hit_bool(
     stringer,
 ):
     candle_high = current_candle[CandleBodyType.High]
-    logger[LoggerFuncType.Debug](
+    logger(
         "nb_stop_loss.py - nb_short_sl_hit_bool() - candle_high= "
         + stringer[StringerFuncType.float_to_str](candle_high)
     )

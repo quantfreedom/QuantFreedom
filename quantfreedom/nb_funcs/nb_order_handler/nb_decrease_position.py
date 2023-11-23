@@ -51,7 +51,7 @@ def nb_decrease_position(
 
     # Setting new equity
     equity = round(realized_pnl + equity, 3)
-    logger[LoggerFuncType.Debug](
+    logger(
         "nb_decrease_position.py - nb_decrease_position() -"
         + "\nrealized_pnl= "
         + stringer[StringerFuncType.float_to_str](realized_pnl)
@@ -73,7 +73,7 @@ def nb_decrease_position(
         cash_used=0.0,
         equity=equity,
         fees_paid=fees_paid,
-        possible_loss=0.0,
+        possible_loss=0,
         realized_pnl=realized_pnl,
         total_trades=0,
     )

@@ -14,22 +14,7 @@ from numba import njit
 
 
 @njit(cache=True)
-def nb_log_debug(message: str):
-    print(message)
-
-
-@njit(cache=True)
-def nb_log_info(message: str):
-    print(message)
-
-
-@njit(cache=True)
-def nb_log_warning(message: str):
-    print(message)
-
-
-@njit(cache=True)
-def nb_log_error(message: str):
+def nb_logger(message: str):
     print(message)
 
 
