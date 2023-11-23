@@ -322,7 +322,7 @@ def nb_run_or_backtest(
             #     )
             #     pass
             except Exception:
-                logger("nb_simulate.py - nb_run_backtest() - Checking hit Exception")
+                logger("nb_simulate.py - nb_run_backtest() - Exception hit during Checking")
                 pass
         else:
             logger("nb_simulate.py - nb_run_backtest() - Not in a pos so not checking SL Liq or TP")
@@ -448,7 +448,7 @@ def nb_run_or_backtest(
                     ind_set_index=ind_set_index,
                     dos_index=dos_index,
                     bar_index=bar_index + 1,  # put plus 1 because we need to place entry on next bar
-                    timestamp=int(candles[bar_index + 2000, CandleBodyType.Timestamp]),
+                    timestamp=int(candles[bar_index + 1, CandleBodyType.Timestamp]),
                     # account info
                     available_balance=available_balance,
                     cash_borrowed=cash_borrowed,
@@ -487,8 +487,6 @@ def nb_run_or_backtest(
             #     print(f"nb_simulate.py - nb_run_backtest() - Exception hit in eval strat -> {e}")
             #     pass
             except Exception:
-                if bar_index + 2000 >= candles.shape[0]:
-                    print("hellooooooooooooooooo")
                 logger("nb_simulate.py - nb_run_backtest() - Exception hit in eval strat")
                 pass
-    return order_records[:or_index], indicator_settings, dynamic_order_settings, or_index
+    return order_records[:or_index], indicator_settings, dynamic_order_settings
