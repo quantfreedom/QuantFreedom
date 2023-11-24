@@ -1,6 +1,8 @@
 from typing import Callable
 import numpy as np
 
+from quantfreedom.enums import CandleBodyType
+
 
 def wma_tv(
     source: np.array,
@@ -175,9 +177,9 @@ def true_range_tv(candles: np.array):
     """
     https://www.tradingview.com/pine-script-reference/v5/#fun_ta.tr
     """
-    high = candles[:, 2]
-    low = candles[:, 3]
-    prev_close = np.roll(candles[:, 4], 1)
+    high = candles[:, CandleBodyType.High]
+    low = candles[:, CandleBodyType.Low]
+    prev_close = np.roll(candles[:, CandleBodyType.Close], 1)
     prev_close[0] = np.nan
     true_range = np.maximum(
         np.maximum(
@@ -240,8 +242,8 @@ def supertrend_tv(
     Super Trend https://www.tradingview.com/pine-script-reference/v5/#fun_ta.supertrend
     """
     atr = atr_tv(candles=candles, length=atr_length)
-    source = (candles[:, 2] + candles[:, 3]) / 2
-    close = candles[:, 4]
+    source = (candles[:, CandleBodyType.High] + candles[:, CandleBodyType.Low]) / 2
+    close = candles[:, CandleBodyType.Close]
     super_trend = np.full_like(close, np.nan)
     direction = np.full_like(close, np.nan)
 
@@ -291,11 +293,11 @@ def vwap_tv(
     """
     https://blog.quantinsti.com/vwap-strategy/
     """
-    timestamps = candles[:, 0]
-    high = candles[:, 2]
-    low = candles[:, 3]
-    close = candles[:, 4]
-    volume = candles[:, 5]
+    timestamps = candles[:, CandleBodyType.Timestamp]
+    high = candles[:, CandleBodyType.High]
+    low = candles[:, CandleBodyType.Low]
+    close = candles[:, CandleBodyType.Close]
+    volume = candles[:, CandleBodyType.Volume]
 
     typical_price = (high + low + close) / 3
     tp_x_vol = typical_price * volume
@@ -336,9 +338,9 @@ def squeeze_momentum_lazybear_tv(
 
     https://www.tradingview.com/script/nqQ1DT5a-Squeeze-Momentum-Indicator-LazyBear/
     """
-    high = candles[:, 2]
-    low = candles[:, 3]
-    close = candles[:, 4]
+    high = candles[:, CandleBodyType.High]
+    low = candles[:, CandleBodyType.Low]
+    close = candles[:, CandleBodyType.Close]
 
     s_min_ma_hl = np.full_like(close, np.nan)
     sqz_hist = np.full_like(close, np.nan)
@@ -374,3 +376,73 @@ def squeeze_momentum_lazybear_tv(
         m, b = np.linalg.lstsq(A, s_min_ma_hl[i - length_kc_m_1 : i + 1], rcond=None)[0]
         sqz_hist[i] = b + m * (length_kc_m_1)
     return sqz_hist, sqz_on, no_sqz
+
+
+def range_detextor_LuxAlgo(
+    candles: np.array,
+    min_range_length: int,
+    atr_multi: int,
+    atr_length: int,
+):
+    """
+    https://www.tradingview.com/script/QOuZIuvH-Range-Detector-LuxAlgo/
+    """
+    close = candles[:, CandleBodyType.Close]
+    timestamp = candles[:, CandleBodyType.Timestamp]
+    box_y = np.full(close.size * 2, np.nan)
+    box_x = np.full(close.size * 2, np.nan)
+    atr = atr_tv(candles=candles, length=atr_length) * atr_multi
+    sma = sma_tv(source=close, length=min_range_length)
+
+    count = -1
+    box_index = 0
+    box_top = 0
+    box_bottom = 0
+    len_m_1 = min_range_length - 1
+    for i in range(atr_length, close.size):
+        prev_count = count
+        current_sma = sma[i]
+        current_atr = atr[i]
+        current_timestamp = timestamp[i]
+        lookback_timestamp = timestamp[i - len_m_1]
+        abs_c_m_sma = np.absolute(close[i - len_m_1 : i + 1] - current_sma)
+        count = np.where(abs_c_m_sma > current_atr, 1, 0).sum()
+
+        # Box = bottom left, top left, top right, bottom right, bottom left
+        # Box =     0           1           2           3           4
+
+        if count == 0:
+            if count != prev_count:
+                if lookback_timestamp <= box_x[box_index + 2]:
+                    box_top = max(current_sma + current_atr, box_top)
+                    box_bottom = min(current_sma - current_atr, box_bottom)
+
+                    # Top
+                    box_y[[box_index + 1, box_index + 2]] = box_top
+                    
+                    # Bottom
+                    box_y[[box_index, box_index + 3, box_index + 4]] = box_bottom
+                    
+                    # right
+                    box_x[[box_index + 2, box_index + 3]] = timestamp[i]
+
+                else:
+                    box_top = current_sma + current_atr
+                    box_bottom = current_sma - current_atr
+
+                    # Top
+                    box_y[[box_index + 1, box_index + 2]] = box_top
+                    
+                    # Bottom
+                    box_y[[box_index, box_index + 3, box_index + 4]] = box_bottom
+                    
+                    # Left
+                    box_x[[box_index + 2, box_index + 3]] = current_timestamp
+                    
+                    # Right
+                    box_x[[box_index, box_index + 1, box_index + 4]] = lookback_timestamp
+
+                    box_index += 6
+            else:
+                box_x[[box_index + 2, box_index + 3]] = current_timestamp
+    return box_x[: box_index - 1], box_y[: box_index - 1]

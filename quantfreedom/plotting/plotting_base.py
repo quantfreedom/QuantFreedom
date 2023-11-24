@@ -50,7 +50,7 @@ def plot_candles_1_ind_same_pane(
         ]
     )
     fig.update_layout(height=800, xaxis_rangeslider_visible=False)
-    fig.show()
+    return fig
 
 
 def plot_candles_1_ind_dif_pane(
@@ -95,52 +95,28 @@ def plot_candles_1_ind_dif_pane(
     fig.show()
 
 
-def plot_supertrend(
-    candles: np.array,
-    indicator: np.array,
-):
-    datetimes = pd.to_datetime(candles[:, 0], unit="ms")
-    lower = np.where(indicator[:, 1] < 0, indicator[:, 0], np.nan)
-    upper = np.where(indicator[:, 1] > 0, indicator[:, 0], np.nan)
-    fig = go.Figure(
-        data=[
-            go.Candlestick(
-                x=datetimes,
-                open=candles[:, 1],
-                high=candles[:, 2],
-                low=candles[:, 3],
-                close=candles[:, 4],
-                name="Candles",
-            ),
-            go.Scatter(
-                x=datetimes,
-                y=upper,
-                name="Upper Band",
-            ),
-            go.Scatter(
-                x=datetimes,
-                y=lower,
-                name="Lower Band",
-            ),
-        ]
-    )
-    fig.update_layout(height=800, xaxis_rangeslider_visible=False)
-    fig.show()
-
-
 def plot_vwap(
     candles: np.array,
     indicator: np.array,
     ind_color: str = "yellow",
 ):
-    ind_shift = np.roll(indicator, 1)
-    ind_shift[0] = np.nan
-    return plot_candles_1_ind_same_pane(
+    fig = plot_candles_1_ind_same_pane(
         candles=candles,
         indicator=indicator,
         ind_name="VWAP",
         ind_color=ind_color,
     )
+    fig.update_layout(
+        title=dict(
+            x=0.5,
+            text="VWAP",
+            xanchor="center",
+            font=dict(
+                size=50,
+            ),
+        ),
+    )
+    fig.show()
 
 
 def plot_rma(
@@ -148,12 +124,24 @@ def plot_rma(
     indicator: np.array,
     ind_color: str = "yellow",
 ):
-    return plot_candles_1_ind_same_pane(
+    fig = plot_candles_1_ind_same_pane(
         candles=candles,
         indicator=indicator,
         ind_name="RMA",
         ind_color=ind_color,
     )
+
+    fig.update_layout(
+        title=dict(
+            x=0.5,
+            text="RMA",
+            xanchor="center",
+            font=dict(
+                size=50,
+            ),
+        ),
+    )
+    fig.show()
 
 
 def plot_wma(
@@ -161,12 +149,24 @@ def plot_wma(
     indicator: np.array,
     ind_color: str = "yellow",
 ):
-    return plot_candles_1_ind_same_pane(
+    fig = plot_candles_1_ind_same_pane(
         candles=candles,
         indicator=indicator,
         ind_name="WMA",
         ind_color=ind_color,
     )
+
+    fig.update_layout(
+        title=dict(
+            x=0.5,
+            text="WMA",
+            xanchor="center",
+            font=dict(
+                size=50,
+            ),
+        ),
+    )
+    fig.show()
 
 
 def plot_sma(
@@ -174,12 +174,24 @@ def plot_sma(
     indicator: np.array,
     ind_color: str = "yellow",
 ):
-    return plot_candles_1_ind_same_pane(
+    fig = plot_candles_1_ind_same_pane(
         candles=candles,
         indicator=indicator,
         ind_name="SMA",
         ind_color=ind_color,
     )
+
+    fig.update_layout(
+        title=dict(
+            x=0.5,
+            text="SMA",
+            xanchor="center",
+            font=dict(
+                size=50,
+            ),
+        ),
+    )
+    fig.show()
 
 
 def plot_ema(
@@ -187,12 +199,24 @@ def plot_ema(
     indicator: np.array,
     ind_color: str = "yellow",
 ):
-    return plot_candles_1_ind_same_pane(
+    fig = plot_candles_1_ind_same_pane(
         candles=candles,
         indicator=indicator,
         ind_name="EMA",
         ind_color=ind_color,
     )
+
+    fig.update_layout(
+        title=dict(
+            x=0.5,
+            text="EMA",
+            xanchor="center",
+            font=dict(
+                size=50,
+            ),
+        ),
+    )
+    fig.show()
 
 
 def plot_rsi(
@@ -206,6 +230,7 @@ def plot_rsi(
         ind_name="RSI",
         ind_color=ind_color,
     )
+
 
 def plot_atr(
     candles: np.array,
@@ -272,7 +297,18 @@ def plot_bollinger_bands(
             ),
         ]
     )
-    fig.update_layout(height=800, xaxis_rangeslider_visible=False)
+    fig.update_layout(
+        height=800,
+        xaxis_rangeslider_visible=False,
+        title=dict(
+            x=0.5,
+            text="Bollinger Bands",
+            xanchor="center",
+            font=dict(
+                size=50,
+            ),
+        ),
+    )
     fig.show()
 
 
@@ -388,7 +424,10 @@ def plot_squeeze_mom_lazybear(
     fig.show()
 
 
-def plot_or_results(candles: np.array, order_records_df: pd.DataFrame):
+def plot_or_results(
+    candles: np.array,
+    order_records_df: pd.DataFrame,
+):
     fig = make_subplots(
         cols=1,
         rows=2,
@@ -579,4 +618,87 @@ def plot_or_results(candles: np.array, order_records_df: pd.DataFrame):
         pass
     fig.update_layout(height=1000, xaxis_rangeslider_visible=False)
     fig.update_yaxes(tickformat="$,")
+    fig.show()
+
+
+def plot_supertrend(
+    candles: np.array,
+    indicator: np.array,
+):
+    datetimes = pd.to_datetime(candles[:, 0], unit="ms")
+    lower = np.where(indicator[:, 1] < 0, indicator[:, 0], np.nan)
+    upper = np.where(indicator[:, 1] > 0, indicator[:, 0], np.nan)
+    fig = go.Figure(
+        data=[
+            go.Candlestick(
+                x=datetimes,
+                open=candles[:, 1],
+                high=candles[:, 2],
+                low=candles[:, 3],
+                close=candles[:, 4],
+                name="Candles",
+            ),
+            go.Scatter(
+                x=datetimes,
+                y=upper,
+                name="Upper Band",
+            ),
+            go.Scatter(
+                x=datetimes,
+                y=lower,
+                name="Lower Band",
+            ),
+        ]
+    )
+    fig.update_layout(
+        height=800,
+        xaxis_rangeslider_visible=False,
+        title=dict(
+            x=0.5,
+            text="Super Trend",
+            xanchor="center",
+            font=dict(
+                size=50,
+            ),
+        ),
+    )
+    fig.show()
+
+
+def plot_range_detextor_LuxAlgo(
+    candles: np.array,
+    box_x: np.array,
+    box_y: np.array,
+):
+    datetimes = pd.to_datetime(candles[:, 0], unit="ms")
+    fig = go.Figure(
+        data=[
+            go.Candlestick(
+                x=datetimes,
+                open=candles[:, 1],
+                high=candles[:, 2],
+                low=candles[:, 3],
+                close=candles[:, 4],
+                name="Candles",
+            ),
+            go.Scatter(
+                x=box_x,
+                y=box_y,
+                name="Range Detector",
+                fill="toself",
+            ),
+        ]
+    )
+    fig.update_layout(
+        height=800,
+        xaxis_rangeslider_visible=False,
+        title=dict(
+            x=0.5,
+            text="Range Detector [LuxAlgo]",
+            xanchor="center",
+            font=dict(
+                size=50,
+            ),
+        ),
+    )
     fig.show()
