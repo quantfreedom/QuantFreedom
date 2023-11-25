@@ -8,6 +8,8 @@ from jupyter_dash import JupyterDash
 from IPython import get_ipython
 import dash_bootstrap_components as dbc
 
+from quantfreedom.enums import CandleBodyType
+
 load_figure_template("darkly")
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
 try:
@@ -30,7 +32,7 @@ def plot_candles_1_ind_same_pane(
     ind_name: str,
     ind_color: str = "yellow",
 ):
-    datetimes = pd.to_datetime(candles[:, 0], unit="ms")
+    datetimes = pd.to_datetime(candles[:, CandleBodyType.Timestamp], unit="ms")
     fig = go.Figure(
         data=[
             go.Candlestick(
@@ -59,7 +61,7 @@ def plot_candles_1_ind_dif_pane(
     ind_name: str,
     ind_color: str = "yellow",
 ):
-    datetimes = pd.to_datetime(candles[:, 0], unit="ms")
+    datetimes = pd.to_datetime(candles[:, CandleBodyType.Timestamp], unit="ms")
     fig = make_subplots(
         cols=1,
         rows=2,
@@ -71,10 +73,10 @@ def plot_candles_1_ind_dif_pane(
     fig.add_trace(
         go.Candlestick(
             x=datetimes,
-            open=candles[:, 1],
-            high=candles[:, 2],
-            low=candles[:, 3],
-            close=candles[:, 4],
+            open=candles[:, CandleBodyType.Open],
+            high=candles[:, CandleBodyType.High],
+            low=candles[:, CandleBodyType.Low],
+            close=candles[:, CandleBodyType.Close],
             name="Candles",
         ),
         col=1,
@@ -222,7 +224,7 @@ def plot_ema(
 def plot_rsi(
     candles: np.array,
     indicator: np.array,
-    ind_color: str = "red",
+    ind_color: str = "yellow",
 ):
     return plot_candles_1_ind_dif_pane(
         candles=candles,
@@ -264,7 +266,7 @@ def plot_bollinger_bands(
     ul_rgb: str = "48, 123, 255",
     basis_color_rgb: str = "255, 176, 0",
 ):
-    datetimes = pd.to_datetime(candles[:, 0], unit="ms")
+    datetimes = pd.to_datetime(candles[:, CandleBodyType.Timestamp], unit="ms")
     fig = go.Figure(
         data=[
             go.Scatter(
@@ -316,7 +318,7 @@ def plot_macd(
     candles: np.array,
     indicator: np.array,
 ):
-    datetimes = pd.to_datetime(candles[:, 0], unit="ms")
+    datetimes = pd.to_datetime(candles[:, CandleBodyType.Timestamp], unit="ms")
     fig = make_subplots(
         cols=1,
         rows=2,
@@ -329,10 +331,10 @@ def plot_macd(
     fig.append_trace(
         go.Candlestick(
             x=datetimes,
-            open=candles[:, 1],
-            high=candles[:, 2],
-            low=candles[:, 3],
-            close=candles[:, 4],
+            open=candles[:, CandleBodyType.Open],
+            high=candles[:, CandleBodyType.High],
+            low=candles[:, CandleBodyType.Low],
+            close=candles[:, CandleBodyType.Close],
             name="Candles",
         ),
         col=1,
@@ -380,7 +382,7 @@ def plot_squeeze_mom_lazybear(
     candles: np.array,
     indicator: np.array,
 ):
-    datetimes = pd.to_datetime(candles[:, 0], unit="ms")
+    datetimes = pd.to_datetime(candles[:, CandleBodyType.Timestamp], unit="ms")
     fig = make_subplots(
         cols=1,
         rows=2,
@@ -393,10 +395,10 @@ def plot_squeeze_mom_lazybear(
     fig.append_trace(
         go.Candlestick(
             x=datetimes,
-            open=candles[:, 1],
-            high=candles[:, 2],
-            low=candles[:, 3],
-            close=candles[:, 4],
+            open=candles[:, CandleBodyType.Open],
+            high=candles[:, CandleBodyType.High],
+            low=candles[:, CandleBodyType.Low],
+            close=candles[:, CandleBodyType.Close],
             name="Candles",
         ),
         col=1,
@@ -441,7 +443,7 @@ def plot_or_results(
         # Candles
         fig.add_trace(
             go.Candlestick(
-                x=pd.to_datetime(candles[:, 0], unit="ms"),
+                x=pd.to_datetime(candles[:, CandleBodyType.Timestamp], unit="ms"),
                 open=candles[:, 1],
                 high=candles[:, 2],
                 low=candles[:, 3],
@@ -625,7 +627,7 @@ def plot_supertrend(
     candles: np.array,
     indicator: np.array,
 ):
-    datetimes = pd.to_datetime(candles[:, 0], unit="ms")
+    datetimes = pd.to_datetime(candles[:, CandleBodyType.Timestamp], unit="ms")
     lower = np.where(indicator[:, 1] < 0, indicator[:, 0], np.nan)
     upper = np.where(indicator[:, 1] > 0, indicator[:, 0], np.nan)
     fig = go.Figure(
@@ -670,7 +672,7 @@ def plot_range_detextor_LuxAlgo(
     box_x: np.array,
     box_y: np.array,
 ):
-    datetimes = pd.to_datetime(candles[:, 0], unit="ms")
+    datetimes = pd.to_datetime(candles[:, CandleBodyType.Timestamp], unit="ms")
     fig = go.Figure(
         data=[
             go.Candlestick(

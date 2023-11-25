@@ -7,9 +7,27 @@ from quantfreedom.enums import CandleBodyType
 def wma_tv(
     source: np.array,
     length: int,
-):
+) -> np.array:
     """
-    Weighted Moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.wma
+    Summary
+    -------
+    Weighted Moving average from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.wma
+
+    Explainer Video
+    ---------------
+    https://youtu.be/eHlHoWC4W8k
+
+    Parameters
+    ----------
+    source : np.array
+        Values to process
+    length : int
+        Number of bars
+
+    Returns
+    -------
+    np.array
+        wma
     """
     weight = np.flip((length - np.arange(0, length)) * length)
     norm = weight.sum()
@@ -26,9 +44,27 @@ def wma_tv(
 def sma_tv(
     source: np.array,
     length: int,
-):
+) -> np.array:
     """
-    Simple Moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.sma
+    Summary
+    -------
+    Simple Moving average from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.sma
+
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+    Parameters
+    ----------
+    source : np.array
+        Values to process
+    length : int
+        Number of bars
+
+    Returns
+    -------
+    np.array
+        sma
     """
     sma = np.full_like(source, np.nan)
     len_minus_one = source[np.isnan(source)].size + length - 1
@@ -42,9 +78,27 @@ def sma_tv(
 def ema_tv(
     source: np.array,
     length: int,
-):
+) -> np.array:
     """
-    Exponential Moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.ema
+    Summary
+    -------
+    Exponential Moving average from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.ema
+
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+    Parameters
+    ----------
+    source : np.array
+        Values to process
+    length : int
+        Number of bars
+
+    Returns
+    -------
+    np.array
+        ema
     """
     alpha = 2 / (length + 1)
 
@@ -62,9 +116,27 @@ def ema_tv(
 def rma_tv(
     source: np.array,
     length: int,
-):
+) -> np.array:
     """
-    Relative strength index Moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma
+    Summary
+    -------
+    Relative strength index Moving average from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma
+
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+    Parameters
+    ----------
+    source : np.array
+        Values to process
+    length : int
+        Number of bars
+
+    Returns
+    -------
+    np.array
+        rma
     """
     alpha = 1 / length
 
@@ -85,7 +157,27 @@ def rma_tv_2(
     length: int,
 ):
     """
-    Relative strength index Moving average https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma
+    Summary
+    -------
+    Relative strength index Moving average from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma
+
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+    Parameters
+    ----------
+    source_1 : np.array
+        Values to process
+    source_2 : np.array
+        Values to process
+    length : int
+        Number of bars
+
+    Returns
+    -------
+    np.array
+        rma_1, rma_2
     """
     alpha = 1 / length
 
@@ -107,9 +199,27 @@ def rma_tv_2(
 def stdev_tv(
     source: np.array,
     length: int,
-):
+) -> np.array:
     """
-    Standard deviation https://www.tradingview.com/pine-script-reference/v5/#fun_ta.stdev
+    Summary
+    -------
+    Standard deviation from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.stdev
+
+    Explainer Video
+    ---------------
+    https://youtu.be/Hejf_bzLfL4
+
+    Parameters
+    ----------
+    source : np.array
+        Values to process
+    length : int
+        Number of bars
+
+    Returns
+    -------
+    np.array
+        stdev
     """
     avg = -sma_tv(source=source, length=length)
 
@@ -130,8 +240,8 @@ def stdev_tv(
         )
         sum_square_dev[i] = (res_2 * res_2).sum()
 
-    final = np.sqrt(sum_square_dev / length)
-    return final
+    stdev = np.sqrt(sum_square_dev / length)
+    return stdev
 
 
 def macd_tv(
@@ -141,18 +251,42 @@ def macd_tv(
     signal_smoothing: int,
     oscillator_type: Callable = ema_tv,
     signal_ma_type: Callable = ema_tv,
-):
+) -> tuple[np.array, np.array, np.array]:
     """
-    return order = histogram, macd, signal
-    Moving average convergence divergence https://www.tradingview.com/pine-script-reference/v5/#fun_ta.macd
+    Summary
+    -------
+    Moving average convergence divergence from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.macd
+
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+    Parameters
+    ----------
+    source : np.array
+        Values to process
+    fast_length : int
+        Number of bars
+    slow_length : int
+        Number of bars
+    signal_smoothing : int
+        Number of bars
+    oscillator_type : Callable, ema_tv
+        Function to process fast and slow ma
+    signal_ma_type : Callable, ema_tv
+        Function to process signal ma
+
+    Returns
+    -------
+    np.array, np.array, np.array
+        histogram, macd, signal
     """
     fast_ma = oscillator_type(source=source, length=fast_length)
     slow_ma = oscillator_type(source=source, length=slow_length)
     macd = fast_ma - slow_ma
     signal = signal_ma_type(source=macd, length=signal_smoothing)
     histogram = macd - signal
-    final_macd = np.array([histogram, macd, signal]).T
-    return final_macd
+    return histogram, macd, signal
 
 
 def bb_tv(
@@ -160,11 +294,31 @@ def bb_tv(
     length: int,
     multi: float,
     basis_ma_type: Callable = sma_tv,
-):
+) -> tuple[np.array, np.array, np.array]:
     """
-    returns basis, upper, lower
+    Summary
+    -------
+    Bollinger bands from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.bb
 
-    Bollinger bands https://www.tradingview.com/pine-script-reference/v5/#fun_ta.bb
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+    Parameters
+    ----------
+    source : np.array
+        Values to process
+    length : int
+        Number of bars
+    multi : float
+        Standard deviation factor
+    basis_ma_type : Callable, sma_tv
+        Function to process basic ma
+
+    Returns
+    -------
+    tuple[np.array, np.array, np.array]
+        basis, upper, lower
     """
     basis = basis_ma_type(source=source, length=length)
     dev = multi * stdev_tv(source=source, length=length)
@@ -173,9 +327,27 @@ def bb_tv(
     return basis, upper, lower
 
 
-def true_range_tv(candles: np.array):
+def true_range_tv(
+    candles: np.array,
+) -> np.array:
     """
-    https://www.tradingview.com/pine-script-reference/v5/#fun_ta.tr
+    Summary
+    -------
+    True Range from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.tr
+
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+    Parameters
+    ----------
+    candles : np.array
+        2-dim np.array with columns in the following order [timestamp, open, high, low, close, volume]
+
+    Returns
+    -------
+    np.array
+        true_range
     """
     high = candles[:, CandleBodyType.High]
     low = candles[:, CandleBodyType.Low]
@@ -195,9 +367,29 @@ def atr_tv(
     candles: np.array,
     length: int,
     smoothing_type: Callable = rma_tv,
-):
+) -> np.array:
     """
-    Average true range smoothing https://www.tradingview.com/pine-script-reference/v5/#fun_ta.atr
+    Summary
+    -------
+    Average true range smoothing from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.atr
+
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+    Parameters
+    ----------
+    candles : np.array
+        2-dim np.array with columns in the following order [timestamp, open, high, low, close, volume]
+    length : int
+        Number of bars
+    smoothing_type : Callable, rma_tv
+        Function for processing the smoothing of the atr
+
+    Returns
+    -------
+    np.array
+        atr
     """
     true_range = true_range_tv(candles=candles)
     atr = smoothing_type(source=true_range, length=length)
@@ -207,13 +399,31 @@ def atr_tv(
 def rsi_tv(
     source: np.array,
     length: int,
-):
+) -> np.array:
     """
+    Summary
+    -------
     Relative strength index https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rsi
+
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+    Parameters
+    ----------
+    source : np.array
+        Values to process
+    length : int
+        Number of bars
+
+    Returns
+    -------
+    np.array
+        rsi
     """
-    prices_shift = np.roll(source, 1)
-    prices_shift[0] = np.nan
-    change = source - prices_shift
+    prev_source = np.roll(source, 1)
+    prev_source[0] = np.nan
+    change = source - prev_source
 
     gains = np.where(change > 0, change, 0)
     losses = np.where(change < 0, -(change), 0)
@@ -236,10 +446,29 @@ def supertrend_tv(
     candles: np.array,
     atr_length: int,
     factor: int,
-):
+) -> tuple[np.array, np.array]:
     """
-    return super trend, direction
+    Summary
+    -------
     Super Trend https://www.tradingview.com/pine-script-reference/v5/#fun_ta.supertrend
+
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+    Parameters
+    ----------
+    candles : np.array
+        2-dim np.array with columns in the following order [timestamp, open, high, low, close, volume]
+    atr_length : int
+        Number of bars
+    factor : int
+        The multiplier by which the ATR will get multiplied
+
+    Returns
+    -------
+    tuple[np.array, np.array]
+        super_trend, direction
     """
     atr = atr_tv(candles=candles, length=atr_length)
     source = (candles[:, CandleBodyType.High] + candles[:, CandleBodyType.Low]) / 2
@@ -289,9 +518,25 @@ def supertrend_tv(
 
 def vwap_tv(
     candles: np.array,
-):
+) -> np.array:
     """
-    https://blog.quantinsti.com/vwap-strategy/
+    Summary
+    -------
+    Volume Weighted Average Price https://blog.quantinsti.com/vwap-strategy/
+
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+    Parameters
+    ----------
+    candles : np.array
+        2-dim np.array with columns in the following order [timestamp, open, high, low, close, volume]
+
+    Returns
+    -------
+    np.array
+        vwap
     """
     timestamps = candles[:, CandleBodyType.Timestamp]
     high = candles[:, CandleBodyType.High]
@@ -332,11 +577,33 @@ def squeeze_momentum_lazybear_tv(
     length_kc: int,
     multi_bb: int,
     multi_kc: int,
-):
+) -> tuple[np.array, np.array, np.array]:
     """
-    Returns = sqz_hist, sqz_on, no_sqz
-
+    Summary
+    -------
     https://www.tradingview.com/script/nqQ1DT5a-Squeeze-Momentum-Indicator-LazyBear/
+            
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+    
+    Parameters
+    ----------
+    candles : np.array
+        2-dim np.array with columns in the following order [timestamp, open, high, low, close, volume]
+    length_bb : int
+        Number of bars of Bollinger Bands
+    length_kc : int
+        Number of bars of KC
+    multi_bb : int
+        The multiplier by which the Bollinger Bands will get multiplied
+    multi_kc : int
+        The multiplier by which the KC will get multiplied
+    
+    Returns
+    -------
+    tuple[np.array, np.array, np.array]
+        _description_
     """
     high = candles[:, CandleBodyType.High]
     low = candles[:, CandleBodyType.Low]
@@ -419,10 +686,10 @@ def range_detextor_LuxAlgo(
 
                     # Top
                     box_y[[box_index + 1, box_index + 2]] = box_top
-                    
+
                     # Bottom
                     box_y[[box_index, box_index + 3, box_index + 4]] = box_bottom
-                    
+
                     # right
                     box_x[[box_index + 2, box_index + 3]] = timestamp[i]
 
@@ -432,13 +699,13 @@ def range_detextor_LuxAlgo(
 
                     # Top
                     box_y[[box_index + 1, box_index + 2]] = box_top
-                    
+
                     # Bottom
                     box_y[[box_index, box_index + 3, box_index + 4]] = box_bottom
-                    
+
                     # Left
                     box_x[[box_index + 2, box_index + 3]] = current_timestamp
-                    
+
                     # Right
                     box_x[[box_index, box_index + 1, box_index + 4]] = lookback_timestamp
 
