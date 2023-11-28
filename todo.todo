@@ -6,8 +6,9 @@ Numba Updates:
   ☐ update numba simulate
 
 Videos:
-  ☐ ATR video on func and plot
-  ☐ RSI video on func and plot
+  ✔ ATR video on func and plot @done(23-11-27 17:32)
+  ✔ RSI video on func and plot @done(23-11-27 17:32)
+  ☐ linear regression candles
   ☐ SMA video on func and plot
   ☐ EMA video on func and plot
   ☐ VWAP video on func and plot

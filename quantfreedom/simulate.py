@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from logging import getLogger
 from quantfreedom.custom_logger import set_loggers
-from quantfreedom.helper_funcs import dos_cart_product, get_dos, get_to_the_upside_nb, log_dynamic_order_settings
+from quantfreedom.helper_funcs import dos_cart_product, get_dos, get_qf_score, log_dynamic_order_settings
 from quantfreedom.nb_funcs.nb_helper_funcs import order_records_to_df
 from quantfreedom.order_handler.order import OrderHandler
 from quantfreedom.plotting.plotting_base import plot_or_results
@@ -274,7 +274,7 @@ def run_df_backtest(
                     wins_and_losses_array_no_be = wins_and_losses_array[
                         (wins_and_losses_array < -0.009) | (wins_and_losses_array > 0.009)
                     ]
-                    qf_score = get_to_the_upside_nb(
+                    qf_score = get_qf_score(
                         gains_pct=gains_pct,
                         wins_and_losses_array_no_be=wins_and_losses_array_no_be,
                     )

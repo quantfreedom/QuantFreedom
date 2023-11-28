@@ -69,7 +69,7 @@ class Bybit(Exchange):
             response_json = response.json()
             return response_json
         except Exception as e:
-            raise Exception(f"Mufex __HTTP_post_request - > {e}")
+            raise Exception(f"Bybit __HTTP_post_request - > {e}")
 
     def __HTTP_get_request(self, end_point: str, params: dict):
         str_timestamp = str(int(time() * 1000))
@@ -92,7 +92,7 @@ class Bybit(Exchange):
             response_json = response.json()
             return response_json
         except Exception as e:
-            raise Exception(f"Mufex __HTTP_get_request - > {e}")
+            raise Exception(f"Bybit __HTTP_get_request - > {e}")
 
     def __gen_signature(self, str_timestamp: str, params_as_string: str):
         param_str = str_timestamp + self.api_key + "5000" + params_as_string
@@ -233,4 +233,4 @@ class Bybit(Exchange):
             order_id = response["result"]["orderId"]
             return order_id
         except Exception as e:
-            raise Exception(f"Mufex create_order {response['retMsg']} -> {e}")
+            raise Exception(f"Bybit create_order {response['retMsg']} -> {e}")

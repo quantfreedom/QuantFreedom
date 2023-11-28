@@ -123,9 +123,36 @@ class Mufex(Exchange):
         until_date_ms: int = None,
         candles_to_dl: int = 1500,
         category: str = "linear",
-    ):
+    ) -> np.array:
         """
+        Summary
+        -------
         https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
+
+
+        Explainer Video
+        ---------------
+        Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+        Parameters
+        ----------
+        symbol : str
+            https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#symbol-symbol
+        timeframe : str
+            "1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w"
+        since_date_ms : int, None
+            The starting date, in milliseconds, of candles you want to download
+        until_date_ms : int, None
+            The last date, in milliseconds, of candles you want to download minus one candle so if you are on the 5 min if you say your until date is 1200 your last candle will be 1155
+        candles_to_dl : int, 1500
+            The amount of candles you want to download
+        category : str, "linear"
+            https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#contract-type-contracttype
+
+        Returns
+        -------
+        np.array
+            a 2 dim array with the following columns "timestamp", "open", "high", "low", "close", "volume"
         """
         ex_timeframe = self.get_exchange_timeframe(ex_timeframes=MUFEX_TIMEFRAMES, timeframe=timeframe)
         timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)

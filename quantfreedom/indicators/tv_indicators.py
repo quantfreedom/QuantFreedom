@@ -34,8 +34,9 @@ def wma_tv(
 
     wma = np.full_like(source, np.nan)
     len_minus_one = length - 1
+    starting_index = source[np.isnan(source)].size + len_minus_one
 
-    for index in range(len_minus_one, source.size):
+    for index in range(starting_index, source.size):
         the_sum = (source[index - len_minus_one : index + 1] * weight).sum()
         wma[index] = the_sum / norm
     return wma
@@ -67,9 +68,11 @@ def sma_tv(
         sma
     """
     sma = np.full_like(source, np.nan)
-    len_minus_one = source[np.isnan(source)].size + length - 1
+    len_minus_one = length - 1
 
-    for i in range(len_minus_one, source.size):
+    starting_index = source[np.isnan(source)].size + len_minus_one
+
+    for i in range(starting_index, source.size):
         sma[i] = source[i - len_minus_one : i + 1].mean()
 
     return sma
@@ -140,12 +143,12 @@ def rma_tv(
     """
     alpha = 1 / length
 
-    new_length = source.size - source[~np.isnan(source)].size + length
+    starting_index = source[np.isnan(source)].size + length
 
     rma = np.full_like(source, np.nan)
-    rma[new_length - 1] = source[new_length - length : new_length].mean()
+    rma[starting_index - 1] = source[starting_index - length : starting_index].mean()
 
-    for i in range(new_length, source.size):
+    for i in range(starting_index, source.size):
         rma[i] = alpha * source[i] + (1 - alpha) * rma[i - 1]
 
     return rma
@@ -181,15 +184,15 @@ def rma_tv_2(
     """
     alpha = 1 / length
 
-    new_length = source_1.size - source_1[~np.isnan(source_1)].size + length
+    starting_index = source_1[np.isnan(source_1)].size + length
 
     rma_1 = np.full_like(source_1, np.nan)
     rma_2 = np.full_like(rma_1, np.nan)
 
-    rma_1[new_length - 1] = source_1[new_length - length : new_length].mean()
-    rma_2[new_length - 1] = source_2[new_length - length : new_length].mean()
+    rma_1[starting_index - 1] = source_1[starting_index - length : starting_index].mean()
+    rma_2[starting_index - 1] = source_2[starting_index - length : starting_index].mean()
 
-    for i in range(new_length, source_1.size):
+    for i in range(starting_index, source_1.size):
         rma_1[i] = alpha * source_1[i] + (1 - alpha) * rma_1[i - 1]
         rma_2[i] = alpha * source_2[i] + (1 - alpha) * rma_2[i - 1]
 
@@ -384,7 +387,7 @@ def atr_tv(
     length : int
         Number of bars
     smoothing_type : Callable, rma_tv
-        Function for processing the smoothing of the atr
+        function to process the smoothing of the atr
 
     Returns
     -------
@@ -582,11 +585,11 @@ def squeeze_momentum_lazybear_tv(
     Summary
     -------
     https://www.tradingview.com/script/nqQ1DT5a-Squeeze-Momentum-Indicator-LazyBear/
-            
+
     Explainer Video
     ---------------
     Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
-    
+
     Parameters
     ----------
     candles : np.array
@@ -599,11 +602,11 @@ def squeeze_momentum_lazybear_tv(
         The multiplier by which the Bollinger Bands will get multiplied
     multi_kc : int
         The multiplier by which the KC will get multiplied
-    
+
     Returns
     -------
     tuple[np.array, np.array, np.array]
-        _description_
+        squeeze historgram, squeeze on, no squeeze
     """
     high = candles[:, CandleBodyType.High]
     low = candles[:, CandleBodyType.Low]
@@ -645,71 +648,140 @@ def squeeze_momentum_lazybear_tv(
     return sqz_hist, sqz_on, no_sqz
 
 
-def range_detextor_LuxAlgo(
+def linear_regression_candles_ugurvu_tv(
     candles: np.array,
-    min_range_length: int,
-    atr_multi: int,
-    atr_length: int,
-):
+    lin_reg_length: int,
+    smoothing_length: int,
+    smoothing_type: Callable = sma_tv,
+) -> tuple[np.array, np.array]:
     """
-    https://www.tradingview.com/script/QOuZIuvH-Range-Detector-LuxAlgo/
+    Summary
+    -------
+    There are many linear regression indicators out there, most of them draw lines or channels, but this one actually draws a chart.
+
+    https://www.tradingview.com/script/hMaQO1FX-Linear-Regression-Candles/
+
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+    Parameters
+    ----------
+    candles : np.array
+        2-dim np.array with columns in the following order [timestamp, open, high, low, close, volume]
+    lin_reg_length : int
+        Number of bars for lin reg
+    smoothing_length : int
+        Number of bars for singal line
+    smoothing_type : Callable, sma_tv
+        function to process the smoothing of the singal line
+
+    Returns
+    -------
+    tuple[np.array, np.array]
+        2-dim np.array with columns in the following order [timestamp, open, high, low, close, volume], signal
     """
+    open = candles[:, CandleBodyType.Open]
+    high = candles[:, CandleBodyType.High]
+    low = candles[:, CandleBodyType.Low]
     close = candles[:, CandleBodyType.Close]
-    timestamp = candles[:, CandleBodyType.Timestamp]
-    box_y = np.full(close.size * 2, np.nan)
-    box_x = np.full(close.size * 2, np.nan)
-    atr = atr_tv(candles=candles, length=atr_length) * atr_multi
-    sma = sma_tv(source=close, length=min_range_length)
 
-    count = -1
-    box_index = 0
-    box_top = 0
-    box_bottom = 0
-    len_m_1 = min_range_length - 1
-    for i in range(atr_length, close.size):
-        prev_count = count
-        current_sma = sma[i]
-        current_atr = atr[i]
-        current_timestamp = timestamp[i]
-        lookback_timestamp = timestamp[i - len_m_1]
-        abs_c_m_sma = np.absolute(close[i - len_m_1 : i + 1] - current_sma)
-        count = np.where(abs_c_m_sma > current_atr, 1, 0).sum()
+    lin_reg_candles = np.full_like(candles, np.nan)
 
-        # Box = bottom left, top left, top right, bottom right, bottom left
-        # Box =     0           1           2           3           4
+    x = np.arange(0, lin_reg_length)
+    A = np.vstack([x, np.ones(len(x))]).T
 
-        if count == 0:
-            if count != prev_count:
-                if lookback_timestamp <= box_x[box_index + 2]:
-                    box_top = max(current_sma + current_atr, box_top)
-                    box_bottom = min(current_sma - current_atr, box_bottom)
+    lin_reg_length_m_1 = lin_reg_length - 1
 
-                    # Top
-                    box_y[[box_index + 1, box_index + 2]] = box_top
+    for i in range(lin_reg_length_m_1, close.size):
+        m, b = np.linalg.lstsq(A, open[i - lin_reg_length_m_1 : i + 1], rcond=None)[0]
+        lin_reg_candles[i, CandleBodyType.Open] = b + m * (lin_reg_length_m_1)
 
-                    # Bottom
-                    box_y[[box_index, box_index + 3, box_index + 4]] = box_bottom
+        m, b = np.linalg.lstsq(A, high[i - lin_reg_length_m_1 : i + 1], rcond=None)[0]
+        lin_reg_candles[i, CandleBodyType.High] = b + m * (lin_reg_length_m_1)
 
-                    # right
-                    box_x[[box_index + 2, box_index + 3]] = timestamp[i]
+        m, b = np.linalg.lstsq(A, low[i - lin_reg_length_m_1 : i + 1], rcond=None)[0]
+        lin_reg_candles[i, CandleBodyType.Low] = b + m * (lin_reg_length_m_1)
 
-                else:
-                    box_top = current_sma + current_atr
-                    box_bottom = current_sma - current_atr
+        m, b = np.linalg.lstsq(A, close[i - lin_reg_length_m_1 : i + 1], rcond=None)[0]
+        lin_reg_candles[i, CandleBodyType.Close] = b + m * (lin_reg_length_m_1)
 
-                    # Top
-                    box_y[[box_index + 1, box_index + 2]] = box_top
+    signal = smoothing_type(
+        source=lin_reg_candles[:, CandleBodyType.Close],
+        length=smoothing_length,
+    )
 
-                    # Bottom
-                    box_y[[box_index, box_index + 3, box_index + 4]] = box_bottom
+    lin_reg_candles[:, CandleBodyType.Timestamp] = candles[:, CandleBodyType.Timestamp]
+    lin_reg_candles[:, CandleBodyType.Volume] = candles[:, CandleBodyType.Volume]
 
-                    # Left
-                    box_x[[box_index + 2, box_index + 3]] = current_timestamp
+    return lin_reg_candles, signal
 
-                    # Right
-                    box_x[[box_index, box_index + 1, box_index + 4]] = lookback_timestamp
 
-                    box_index += 6
-            else:
-                box_x[[box_index + 2, box_index + 3]] = current_timestamp
-    return box_x[: box_index - 1], box_y[: box_index - 1]
+# def range_detextor_lux_algo_tv(
+#     candles: np.array,
+#     min_range_length: int,
+#     atr_multi: int,
+#     atr_length: int,
+# ) -> tuple[np.array, np.array]:
+#     """
+#     https://www.tradingview.com/script/QOuZIuvH-Range-Detector-LuxAlgo/
+#     """
+#     close = candles[:, CandleBodyType.Close]
+#     timestamp = candles[:, CandleBodyType.Timestamp]
+#     box_y = np.full(close.size * 2, np.nan)
+#     box_x = np.full(close.size * 2, np.nan)
+#     atr = atr_tv(candles=candles, length=atr_length) * atr_multi
+#     sma = sma_tv(source=close, length=min_range_length)
+
+#     count = -1
+#     box_index = 0
+#     box_top = 0
+#     box_bottom = 0
+#     len_m_1 = min_range_length - 1
+#     for i in range(atr_length, close.size):
+#         prev_count = count
+#         current_sma = sma[i]
+#         current_atr = atr[i]
+#         current_timestamp = timestamp[i]
+#         lookback_timestamp = timestamp[i - len_m_1]
+#         abs_c_m_sma = np.absolute(close[i - len_m_1 : i + 1] - current_sma)
+#         count = np.where(abs_c_m_sma > current_atr, 1, 0).sum()
+
+#         # Box = bottom left, top left, top right, bottom right, bottom left
+#         # Box =     0           1           2           3           4
+
+#         if count == 0:
+#             if count != prev_count:
+#                 if lookback_timestamp <= box_x[box_index + 2]:
+#                     box_top = max(current_sma + current_atr, box_top)
+#                     box_bottom = min(current_sma - current_atr, box_bottom)
+
+#                     # Top
+#                     box_y[[box_index + 1, box_index + 2]] = box_top
+
+#                     # Bottom
+#                     box_y[[box_index, box_index + 3, box_index + 4]] = box_bottom
+
+#                     # right
+#                     box_x[[box_index + 2, box_index + 3]] = timestamp[i]
+
+#                 else:
+#                     box_top = current_sma + current_atr
+#                     box_bottom = current_sma - current_atr
+
+#                     # Top
+#                     box_y[[box_index + 1, box_index + 2]] = box_top
+
+#                     # Bottom
+#                     box_y[[box_index, box_index + 3, box_index + 4]] = box_bottom
+
+#                     # Left
+#                     box_x[[box_index + 2, box_index + 3]] = current_timestamp
+
+#                     # Right
+#                     box_x[[box_index, box_index + 1, box_index + 4]] = lookback_timestamp
+
+#                     box_index += 6
+#             else:
+#                 box_x[[box_index + 2, box_index + 3]] = current_timestamp
+#     return box_x[: box_index - 1], box_y[: box_index - 1]

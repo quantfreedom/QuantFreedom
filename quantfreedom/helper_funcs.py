@@ -22,16 +22,44 @@ def dl_ex_candles(
     candles_to_dl: int = None,
 ):
     """
-    exchange param
-        binance us = binance_us | default candles to dl is 1500
-        
-        binance futures = binance_usdm | default candles to dl is 1500
-        
-        apex = apex | default candles to dl is 200
-        
-        mufex = mufex | default candles to dl is 1500
-        
-        bybit = bybit | default candles to dl is 
+    Summary
+    -------
+    https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
+
+
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+    Parameters
+    ----------
+    symbol : str
+        Check the api for the exchange or get all the symbols of the exchange to see which ones you need
+    exchange: str
+        binance us = 'binance_us' | default candles to dl is 1500
+
+        binance futures = 'binance_usdm' | default candles to dl is 1500
+
+        apex = 'apex' | default candles to dl is 200
+
+        mufex = 'mufex' | default candles to dl is 1500
+
+        bybit = 'bybit' | default candles to dl is 1000
+    timeframe : str
+        "1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w"
+    since_date_ms : int, None
+        The starting date, in milliseconds, of candles you want to download
+    until_date_ms : int, None
+        The last date, in milliseconds, of candles you want to download minus one candle so if you are on the 5 min if you say your until date is 1200 your last candle will be 1155
+    candles_to_dl : int, 1500
+        The amount of candles you want to download
+    category : str, "linear"
+        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#contract-type-contracttype
+
+    Returns
+    -------
+    np.array
+        a 2 dim array with the following columns "timestamp", "open", "high", "low", "close", "volume"
     """
     if exchange.lower() == "binance_usdm":
         return BinanceUSDM(use_test_net=False).get_candles(
@@ -77,7 +105,28 @@ def dl_ex_candles(
         raise Exception("You need to pick an exchange from this list apex, binance_usdm, mufex")
 
 
-def candles_to_df(candles: np.array):
+def candles_to_df(
+    candles: np.array,
+) -> pd.DataFrame:
+    """
+    Summary
+    -------
+    Converts your numpy array candles to a pandas dataframe
+            
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+    
+    Parameters
+    ----------
+    candles : np.array
+        a 2 dim array with the following columns "timestamp", "open", "high", "low", "close", "volume"
+    
+    Returns
+    -------
+    pd.DataFrame
+        columns "timestamp", "open", "high", "low", "close", "volume" with an index of pandas datetimes
+    """
     candles_df = pd.DataFrame(candles, columns=["timestamp", "open", "high", "low", "close", "volume"])
     candles_df["timestamp"] = candles_df["timestamp"].astype(dtype=np.int64)
     candles_df.set_index(pd.to_datetime(candles_df["timestamp"], unit="ms"), inplace=True)
@@ -85,7 +134,7 @@ def candles_to_df(candles: np.array):
     return candles_df
 
 
-def get_to_the_upside_nb(
+def get_qf_score(
     gains_pct: float,
     wins_and_losses_array_no_be: np.array,
 ):

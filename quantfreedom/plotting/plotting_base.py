@@ -667,6 +667,33 @@ def plot_supertrend(
     fig.show()
 
 
+def plot_linear_regression_candles_ugurvu_tv(
+    lin_reg_candles: np.array,
+    signal: np.array,
+):
+    datetimes = pd.to_datetime(lin_reg_candles[:, CandleBodyType.Timestamp], unit="ms")
+    fig = go.Figure(
+        data=[
+            go.Candlestick(
+                x=datetimes,
+                open=lin_reg_candles[:, CandleBodyType.Open],
+                high=lin_reg_candles[:, CandleBodyType.High],
+                low=lin_reg_candles[:, CandleBodyType.Low],
+                close=lin_reg_candles[:, CandleBodyType.Close],
+                name="Linear Regression Candles",
+            ),
+            go.Scatter(
+                x=datetimes,
+                y=signal,
+                name="Signal",
+                line_color="yellow",
+            ),
+        ]
+    )
+    fig.update_layout(height=800, xaxis_rangeslider_visible=False)
+    fig.show()
+
+"""
 def plot_range_detextor_LuxAlgo(
     candles: np.array,
     box_x: np.array,
@@ -704,3 +731,4 @@ def plot_range_detextor_LuxAlgo(
         ),
     )
     fig.show()
+"""
