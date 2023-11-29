@@ -280,9 +280,12 @@ class IncreasePosition:
         sl_price: float,
         entry_price: float,
     ):
+        # math https://www.symbolab.com/solver/simplify-calculator/solve%20for%20u%2C%20%5Cleft(%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%5Cleft(x%20-%20e%5Cright)%5Cright)-%20%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%20e%5Ccdot%20m%5Cright)%20-%20%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%20x%5Ccdot%20m%5Cright)%20%5Cright)%3Dp?or=input
+
         return round(
-            possible_loss
-            / (sl_price / entry_price - 1 - self.market_fee_pct - sl_price * self.market_fee_pct / entry_price),
+            entry_price
+            * -possible_loss
+            / (-sl_price + entry_price + entry_price * self.market_fee_pct + self.market_fee_pct * sl_price),
             3,
         )
 
@@ -319,10 +322,11 @@ class IncreasePosition:
         sl_price: float,
         entry_price: float,
     ):
+        # math https://www.symbolab.com/solver/simplify-calculator/solve%20for%20u%2C%20%5Cleft(%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%5Cleft(e%20-%20x%5Cright)%5Cright)-%20%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%20e%5Ccdot%20m%5Cright)%20-%20%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%20x%5Ccdot%20m%5Cright)%20%5Cright)%3Dp?or=input
         return -round(
             entry_price
-            * possible_loss
-            / (-entry_price + sl_price + entry_price * self.market_fee_pct + sl_price * self.market_fee_pct),
+            * -possible_loss
+            / (-entry_price + sl_price + entry_price * self.market_fee_pct + self.market_fee_pct * sl_price),
             3,
         )
 
