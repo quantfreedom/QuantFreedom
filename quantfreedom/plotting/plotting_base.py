@@ -529,16 +529,21 @@ def plot_or_results(
         pass
     try:
         # Stop Loss Filled
+        sl_filled_df = order_records_df[order_records_df["order_status"] == "StopLossFilled"]
         fig.add_trace(
             go.Scatter(
-                x=order_records_df[order_records_df["order_status"] == "StopLossFilled"]["datetime"],
-                y=order_records_df[order_records_df["order_status"] == "StopLossFilled"]["exit_price"],
+                x=sl_filled_df["datetime"],
+                y=sl_filled_df["exit_price"],
                 mode="markers",
                 name="Stop Loss Filled",
                 marker=dict(
                     size=10,
                     symbol="x",
-                    color="#FF00BB",
+                    color=np.where(
+                        sl_filled_df["realized_pnl"] > 0,
+                        "#14FF00",
+                        "#FF00BB",
+                    ),
                     line=dict(
                         width=1,
                         color="DarkSlateGrey",
@@ -552,10 +557,11 @@ def plot_or_results(
         pass
     try:
         # Take Profit Filled
+        tp_filled_df = order_records_df[order_records_df["order_status"] == "TakeProfitFilled"]
         fig.add_trace(
             go.Scatter(
-                x=order_records_df[order_records_df["order_status"] == "TakeProfitFilled"]["datetime"],
-                y=order_records_df[order_records_df["order_status"] == "TakeProfitFilled"]["exit_price"],
+                x=tp_filled_df["datetime"],
+                y=tp_filled_df["exit_price"],
                 mode="markers",
                 name="Take Profit Filled",
                 marker=dict(
@@ -575,10 +581,11 @@ def plot_or_results(
         pass
     try:
         # Moved SL
+        move_sl_df = order_records_df[order_records_df["order_status"].isin(["MovedTSL", "MovedSLToBE"])]
         fig.add_trace(
             go.Scatter(
-                x=order_records_df[order_records_df["order_status"].isin(["MovedTSL", "MovedSLToBE"])]["datetime"],
-                y=order_records_df[order_records_df["order_status"].isin(["MovedTSL", "MovedSLToBE"])]["sl_price"],
+                x=move_sl_df["datetime"],
+                y=move_sl_df["sl_price"],
                 mode="markers",
                 name="Moved SL",
                 marker=dict(
@@ -692,6 +699,7 @@ def plot_linear_regression_candles_ugurvu_tv(
     )
     fig.update_layout(height=800, xaxis_rangeslider_visible=False)
     fig.show()
+
 
 """
 def plot_range_detextor_LuxAlgo(

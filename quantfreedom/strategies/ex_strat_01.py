@@ -1,5 +1,6 @@
 from datetime import datetime
 from logging import getLogger
+from quantfreedom.helper_funcs import cart_product
 from quantfreedom.indicators.tv_indicators import rsi_tv
 
 from typing import NamedTuple
@@ -14,6 +15,8 @@ from dash import Dash
 from IPython import get_ipython
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
+
+from quantfreedom.strategies.strategy import Strategy
 
 logger = getLogger("info")
 
@@ -34,54 +37,36 @@ bg_color = "#0b0b18"
 
 
 class IndicatorSettingsArrays(NamedTuple):
-    rsi_is_below: np.array
     rsi_is_above: np.array
+    rsi_is_below: np.array
     rsi_length: np.array
 
 
-def create_ind_cart_product(ind_set_arrays: IndicatorSettingsArrays):
-    n = 1
-    for x in ind_set_arrays:
-        n *= x.size
-    out = np.empty((n, len(ind_set_arrays)))
-
-    for i in range(len(ind_set_arrays)):
-        m = int(n / ind_set_arrays[i].size)
-        out[:n, i] = np.repeat(ind_set_arrays[i], m)
-        n //= ind_set_arrays[i].size
-
-    n = ind_set_arrays[-1].size
-    for k in range(len(ind_set_arrays) - 2, -1, -1):
-        n *= ind_set_arrays[k].size
-        m = int(n / ind_set_arrays[k].size)
-        for j in range(1, ind_set_arrays[k].size):
-            out[j * m : (j + 1) * m, k + 1 :] = out[0:m, k + 1 :]
-
-    return IndicatorSettingsArrays(
-        rsi_is_below=out.T[0],
-        rsi_is_above=out.T[1],
-        rsi_length=out.T[2].astype(np.int_),
-    )
-
-
-class Strategy:
+class RSIBelowAbove(Strategy):
     starting_bar: int
 
     def __init__(
         self,
         long_short: str,
         rsi_length: np.array,
-        rsi_is_below: np.array = np.array([0]),
         rsi_is_above: np.array = np.array([0]),
+        rsi_is_below: np.array = np.array([0]),
     ) -> None:
         logger.debug("Creating Strategy class init")
         self.long_short = long_short
-        ind_set_arrays = IndicatorSettingsArrays(
-            rsi_is_below=rsi_is_below,
-            rsi_is_above=rsi_is_above,
-            rsi_length=rsi_length,
+
+        cart_arrays = cart_product(
+            named_tuple=IndicatorSettingsArrays(
+                rsi_is_above=rsi_is_above,
+                rsi_is_below=rsi_is_below,
+                rsi_length=rsi_length,
+            )
         )
-        self.indicator_settings_arrays = create_ind_cart_product(ind_set_arrays=ind_set_arrays)
+        self.indicator_settings_arrays = IndicatorSettingsArrays(
+            rsi_is_above=cart_arrays.T[0],
+            rsi_is_below=cart_arrays.T[1],
+            rsi_length=cart_arrays.T[2].astype(np.int_),
+        )
 
         if long_short == "long":
             self.set_entries_exits_array = self.long_set_entries_exits_array

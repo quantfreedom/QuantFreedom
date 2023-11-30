@@ -1,4 +1,5 @@
 from time import time
+from typing import NamedTuple
 import numpy as np
 import pandas as pd
 from logging import getLogger
@@ -112,16 +113,16 @@ def candles_to_df(
     Summary
     -------
     Converts your numpy array candles to a pandas dataframe
-            
+
     Explainer Video
     ---------------
     Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
-    
+
     Parameters
     ----------
     candles : np.array
         a 2 dim array with the following columns "timestamp", "open", "high", "low", "close", "volume"
-    
+
     Returns
     -------
     pd.DataFrame
@@ -190,37 +191,45 @@ def get_dos(
     )
 
 
-def dos_cart_product(dos_arrays: DynamicOrderSettingsArrays):
+def cart_product(
+    named_tuple: NamedTuple,
+) -> np.array:
     n = 1
-    for x in dos_arrays:
+    for x in named_tuple:
         n *= x.size
-    out = np.empty((n, len(dos_arrays)))
+    out = np.empty((n, len(named_tuple)))
 
-    for i in range(len(dos_arrays)):
-        m = int(n / dos_arrays[i].size)
-        out[:n, i] = np.repeat(dos_arrays[i], m)
-        n //= dos_arrays[i].size
+    for i in range(len(named_tuple)):
+        m = int(n / named_tuple[i].size)
+        out[:n, i] = np.repeat(named_tuple[i], m)
+        n //= named_tuple[i].size
 
-    n = dos_arrays[-1].size
-    for k in range(len(dos_arrays) - 2, -1, -1):
-        n *= dos_arrays[k].size
-        m = int(n / dos_arrays[k].size)
-        for j in range(1, dos_arrays[k].size):
+    n = named_tuple[-1].size
+    for k in range(len(named_tuple) - 2, -1, -1):
+        n *= named_tuple[k].size
+        m = int(n / named_tuple[k].size)
+        for j in range(1, named_tuple[k].size):
             out[j * m : (j + 1) * m, k + 1 :] = out[0:m, k + 1 :]
+    return out
 
+
+def dos_cart_product(
+    dos_arrays: DynamicOrderSettingsArrays,
+) -> DynamicOrderSettingsArrays:
+    cart_arrays = cart_product(named_tuple=dos_arrays)
     return DynamicOrderSettingsArrays(
-        max_equity_risk_pct=out.T[0] / 100,
-        max_trades=out.T[1].astype(np.int_),
-        risk_account_pct_size=out.T[2] / 100,
-        risk_reward=out.T[3],
-        sl_based_on_add_pct=out.T[4] / 100,
-        sl_based_on_lookback=out.T[5].astype(np.int_),
-        sl_bcb_type=out.T[6].astype(np.int_),
-        sl_to_be_cb_type=out.T[7].astype(np.int_),
-        sl_to_be_when_pct=out.T[8] / 100,
-        trail_sl_bcb_type=out.T[9].astype(np.int_),
-        trail_sl_by_pct=out.T[10] / 100,
-        trail_sl_when_pct=out.T[11] / 100,
+        max_equity_risk_pct=cart_arrays.T[0] / 100,
+        max_trades=cart_arrays.T[1].astype(np.int_),
+        risk_account_pct_size=cart_arrays.T[2] / 100,
+        risk_reward=cart_arrays.T[3],
+        sl_based_on_add_pct=cart_arrays.T[4] / 100,
+        sl_based_on_lookback=cart_arrays.T[5].astype(np.int_),
+        sl_bcb_type=cart_arrays.T[6].astype(np.int_),
+        sl_to_be_cb_type=cart_arrays.T[7].astype(np.int_),
+        sl_to_be_when_pct=cart_arrays.T[8] / 100,
+        trail_sl_bcb_type=cart_arrays.T[9].astype(np.int_),
+        trail_sl_by_pct=cart_arrays.T[10] / 100,
+        trail_sl_when_pct=cart_arrays.T[11] / 100,
     )
 
 

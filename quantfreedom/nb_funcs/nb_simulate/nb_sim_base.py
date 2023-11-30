@@ -20,8 +20,8 @@ from quantfreedom.nb_funcs.nb_order_handler.nb_increase_position import *
 from quantfreedom.nb_funcs.nb_order_handler.nb_leverage import *
 from quantfreedom.nb_funcs.nb_order_handler.nb_stop_loss import *
 from quantfreedom.nb_funcs.nb_order_handler.nb_take_profit import *
-from quantfreedom.nb_funcs.nb_sim_df import nb_run_df_backtest
-from quantfreedom.nb_funcs.nb_sim_or import nb_run_or_backtest
+from quantfreedom.nb_funcs.nb_simulate.nb_sim_df import nb_run_df_backtest
+from quantfreedom.nb_funcs.nb_simulate.nb_sim_or import nb_run_or_backtest
 from quantfreedom.plotting.plotting_base import plot_or_results
 from quantfreedom.utils import pretty_qf
 
