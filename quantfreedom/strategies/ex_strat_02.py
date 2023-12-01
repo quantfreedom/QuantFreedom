@@ -37,7 +37,7 @@ bg_color = "#0b0b18"
 
 
 class IndicatorSettingsArrays(NamedTuple):
-    volitility_lb: np.array
+    volatility_lb: np.array
     max_high_lb: np.array
 
 
@@ -48,7 +48,7 @@ class SimpleBreakoutDynamicLookback(Strategy):
     def __init__(
         self,
         long_short: str,
-        volitility_lb: np.array,
+        volatility_lb: np.array,
         max_high_lb: np.array,
     ) -> None:
         logger.debug("Creating Strategy class init")
@@ -56,12 +56,12 @@ class SimpleBreakoutDynamicLookback(Strategy):
 
         cart_arrays = cart_product(
             named_tuple=IndicatorSettingsArrays(
-                volitility_lb=volitility_lb,
+                volatility_lb=volatility_lb,
                 max_high_lb=max_high_lb,
             )
         )
         self.indicator_settings_arrays: IndicatorSettingsArrays = IndicatorSettingsArrays(
-            volitility_lb=cart_arrays.T[0].astype(np.int_),
+            volatility_lb=cart_arrays.T[0].astype(np.int_),
             max_high_lb=cart_arrays.T[1].astype(np.int_),
         )
 
@@ -120,15 +120,15 @@ class SimpleBreakoutDynamicLookback(Strategy):
             close = candles[:, CandleBodyType.Close]
             high = candles[:, CandleBodyType.High]
 
-            self.volitility_lb = self.indicator_settings_arrays.volitility_lb[ind_set_index]
+            self.volatility_lb = self.indicator_settings_arrays.volatility_lb[ind_set_index]
             self.max_high_lb = self.indicator_settings_arrays.max_high_lb[ind_set_index]
 
             self.max_high = np.full_like(close, np.nan)
-            current_vol = np.std(close[0 : self.volitility_lb])
+            current_vol = np.std(close[0 : self.volatility_lb])
 
-            vol_lb_m_1 = self.volitility_lb - 1
+            vol_lb_m_1 = self.volatility_lb - 1
 
-            for i in range(max(self.volitility_lb, self.max_high_lb), close.size):
+            for i in range(max(self.volatility_lb, self.max_high_lb), close.size):
                 prev_vol = current_vol
                 current_vol = np.std(close[i - vol_lb_m_1 : i + 1])
 
@@ -152,7 +152,7 @@ class SimpleBreakoutDynamicLookback(Strategy):
     def long_log_indicator_settings(self, ind_set_index: int):
         logger.info(
             f"Indicator Settings Index= {ind_set_index}\
-            \nvolitility_lb= {self.volitility_lb}\
+            \nvolatility_lb= {self.volatility_lb}\
             \nrmax_high_lb= {self.max_high_lb}"
         )
 
@@ -175,29 +175,10 @@ class SimpleBreakoutDynamicLookback(Strategy):
     """
 
     def live_set_indicator(self, closes: np.array):
-        try:
-            self.rsi = rsi_tv(
-                source=closes,
-                length=self.rsi_length,
-            )
-            self.rsi = np.around(self.rsi, 2)
-            logger.info(f"Created RSI rsi_is_below= {self.rsi_is_below} rsi_length= {self.rsi_length}")
-        except Exception as e:
-            logger.info(f"Exception set_live_trading_indicator -> {e}")
-            raise Exception(f"Exception set_live_trading_indicator -> {e}")
+        pass
 
     def live_evaluate(self, candles: np.array):
-        try:
-            self.live_set_indicator(closes=candles[:, CandleBodyType.Close])
-            if self.rsi[-1] < self.rsi_is_below:
-                logger.info("\n\n")
-                logger.info(f"Entry time!!! rsi= {self.rsi[-1]} < rsi_is_below= {self.rsi_is_below}")
-                return True
-            else:
-                logger.info("No entry")
-                return False
-        except Exception as e:
-            raise Exception(f"Exception evalutating strat -> {e}")
+        pass
 
     """
     #######################################################
@@ -213,16 +194,27 @@ class SimpleBreakoutDynamicLookback(Strategy):
 
     def get_strategy_plot_filename(self, candles: np.array):
         logger.debug("Getting entry plot file")
-        last_20 = self.rsi[-20:]
-        last_20_datetimes = pd.to_datetime(candles[-20:, CandleBodyType.Timestamp], unit="ms")
-
-        fig = go.Figure()
-        fig.add_scatter(
-            x=last_20_datetimes,
-            y=last_20,
-            name="RSI",
+        not_nan = ~np.isnan(self.entry_prices)
+        fig = go.Figure(
+            data=[
+                go.Candlestick(
+                    x=pd.to_datetime(candles[:, CandleBodyType.Timestamp], unit="ms"),
+                    open=candles[:, 1],
+                    high=candles[:, 2],
+                    low=candles[:, 3],
+                    close=candles[:, 4],
+                    name="Candles",
+                ),
+                go.Scatter(
+                    x=pd.to_datetime(candles[not_nan, CandleBodyType.Timestamp], unit="ms"),
+                    y=self.entry_prices[not_nan],
+                    name="entries",
+                    mode="markers",
+                    marker=dict(color="yellow"),
+                ),
+            ]
         )
-        fig.update_layout(xaxis_rangeslider_visible=False)
+        fig.update_layout(height=800, xaxis_rangeslider_visible=False)
         fig.show()
         entry_filename = os.path.join(
             ".",

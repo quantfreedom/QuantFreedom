@@ -25,6 +25,30 @@ class IncreasePosition:
         price_tick_step: float,
         sl_strategy_type: StopLossStrategyType,
     ) -> None:
+        """
+        Summary
+        -------
+        Creates and sets the increase position class settings
+        
+        Parameters
+        ----------
+        asset_tick_step : float
+            asset_tick_step
+        increase_position_type : IncreasePositionType
+            How you want to process increasing your position
+        long_short : str
+            long or short
+        market_fee_pct : float
+            market_fee_pct
+        max_asset_size : float
+            max_asset_size
+        min_asset_size : float
+            min_asset_size
+        price_tick_step : float
+            price_tick_step
+        sl_strategy_type : StopLossStrategyType
+            how you want to process creating your stop loss
+        """
         self.min_asset_size = min_asset_size
         self.asset_tick_step = asset_tick_step
         self.price_tick_step = price_tick_step
@@ -49,9 +73,17 @@ class IncreasePosition:
     def c_too_b_s(
         self,
         entry_size_asset: float,
-    ):
+    ) -> None:
         """
+        Summary
+        -------
         Check if the asset size is too big or too small
+
+        Parameters
+        ----------
+        entry_size_asset : float
+            entry size of the asset
+
         """
         if entry_size_asset < self.min_asset_size:
             logger.warning(
@@ -71,9 +103,25 @@ class IncreasePosition:
         equity: float,
         possible_loss: float,
         total_trades: int,
-    ):
+    ) -> tuple[int, int]:
         """
-        Check if Possible loss is bigger than risk account percent size
+        Summary
+        -------
+        Creates possible loss then checks if it is bigger than risk account percent size then returns the new possible loss and total trades
+
+        Parameters
+        ----------
+        equity : float
+            equity
+        possible_loss : float
+            possible_loss
+        total_trades : int
+            total_trades
+
+        Returns
+        -------
+        int, int
+            possible_loss, total_trades
         """
         possible_loss = int(possible_loss - equity * self.risk_account_pct_size)
         logger.debug(f"possible_loss= {possible_loss}")
@@ -98,9 +146,29 @@ class IncreasePosition:
         position_size_asset: float,
         sl_price: float,
         total_trades: int,
-    ):
+    ) -> tuple[int, int]:
         """
-        Checking the total trades is bigger than max trades
+        Summary
+        -------
+        Creates possible loss then adds 1 to total trades then checks if total trades is bigger than max trades
+
+        Parameters
+        ----------
+        average_entry : float
+            average_entry
+        possible_loss : float
+            possible_loss
+        position_size_asset : float
+            position_size_asset
+        sl_price : float
+            sl_price
+        total_trades : int
+            total_trades
+
+        Returns
+        -------
+        tuple[int, int]
+            possible_loss, total_trades
         """
         pnl = -abs(average_entry - sl_price) * position_size_asset  # math checked
         fee_open = position_size_asset * average_entry * self.market_fee_pct  # math checked
@@ -123,17 +191,51 @@ class IncreasePosition:
 
     def min_asset_amount(
         self,
-        equity: float,
         average_entry: float,
         entry_price: float,
+        equity: float,
         position_size_asset: float,
         position_size_usd: float,
         possible_loss: float,
         sl_price: float,
         total_trades: int,
-    ):
+    ) -> tuple[float, float, float, float, float, float, int, int, float]:
         """
-        Setting your position size to the min amount the exchange will allow
+        Summary
+        -------
+        Check if we are in a position or not and sending you to the correct function to handle that
+
+        Parameters
+        ----------
+        average_entry : float
+            average_entry
+        entry_price : float
+            entry_price
+        equity : float
+            equity
+        position_size_asset : float
+            position_size_asset
+        position_size_usd : float
+            position_size_usd
+        possible_loss : float
+            possible_loss
+        sl_price : float
+            sl_price
+        total_trades : int
+            total_trades
+
+        Returns
+        -------
+        float, float, float, float, float, float, int, int, float
+            average_entry,
+            entry_price,
+            entry_size_asset,
+            entry_size_usd,
+            position_size_asset,
+            position_size_usd,
+            possible_loss,
+            total_trades,
+            sl_pct
         """
         if position_size_asset > 0:
             logger.debug("We are in a position")
@@ -162,7 +264,42 @@ class IncreasePosition:
         possible_loss: float,
         sl_price: float,
         total_trades: int,
-    ):
+    ) -> tuple[float, float, float, float, float, float, int, int, float]:
+        """
+        Summary
+        -------
+        Setting the entry size to the minimum amount plus what ever position size we are already in
+
+        Parameters
+        ----------
+        average_entry : float
+            average_entry
+        entry_price : float
+            entry_price
+        position_size_asset : float
+            position_size_asset
+        position_size_usd : float
+            position_size_usd
+        possible_loss : float
+            possible_loss
+        sl_price : float
+            sl_price
+        total_trades : int
+            total_trades
+
+        Returns
+        -------
+        tuple[float, float, float, float, float, float, int, int, float]
+            average_entry,
+            entry_price,
+            entry_size_asset,
+            entry_size_usd,
+            position_size_asset,
+            position_size_usd,
+            possible_loss,
+            total_trades,
+            sl_pct
+        """
         position_size_asset += self.min_asset_size
         entry_size_asset = self.min_asset_size
         logger.debug(f"entry_size_asset= {entry_size_asset} position_size_asset{position_size_asset}")
@@ -211,7 +348,32 @@ class IncreasePosition:
         self,
         entry_price: float,
         sl_price: float,
-    ):
+    ) -> tuple[float, float, float, float, float, float, int, int, float]:
+        """
+        Summary
+        -------
+        Setting the entry size to the minimum amount
+
+        Parameters
+        ----------
+        entry_price : float
+            entry_price
+        sl_price : float
+            sl_price
+
+        Returns
+        -------
+        tuple[float, float, float, float, float, float, int, int, float]
+            average_entry,
+            entry_price,
+            entry_size_asset,
+            entry_size_usd,
+            position_size_asset,
+            position_size_usd,
+            possible_loss,
+            total_trades,
+            sl_pct
+        """
         entry_size_asset = position_size_asset = self.min_asset_size
         logger.debug(f"entry_size_asset={entry_size_asset} position_size_asset= {position_size_asset}")
 
@@ -249,13 +411,39 @@ class IncreasePosition:
 
     def long_entry_size_p(
         self,
+        average_entry: float,
+        entry_price: float,
+        position_size_usd: float,
         possible_loss: float,
         sl_price: float,
-        entry_price: float,
-        average_entry: float,
-        position_size_usd: float,
-    ):
-        # math https://www.symbolab.com/solver/simplify-calculator/solve%20for%20u%2C%20%5Cleft(%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%5Cleft(n%20-%20%5Cleft(%5Cfrac%7B%5Cleft(p%2Bu%5Cright)%7D%7B%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%7D%5Cright)%5Cright)%5Cright)-%20%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%5Cleft(%5Cfrac%7B%5Cleft(p%2Bu%5Cright)%7D%7B%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%7D%5Cright)%5Ccdot%20m%5Cright)%20-%20%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%20n%5Ccdot%20m%5Cright)%20%5Cright)%3D-f?or=input
+    ) -> float:
+        """
+        Summary
+        -------
+        Formula to calulcate the long entry size when we are in a position and have our stop loss type set to stop loss based on candle body
+
+        how to calculate pnl https://www.bybithelp.com/en-US/s/article/Profit-Loss-calculations-USDT-Contract
+
+        math for the formula https://www.symbolab.com/solver/simplify-calculator/solve%20for%20u%2C%20%5Cleft(%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%5Cleft(n%20-%20%5Cleft(%5Cfrac%7B%5Cleft(p%2Bu%5Cright)%7D%7B%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%7D%5Cright)%5Cright)%5Cright)-%20%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%5Cleft(%5Cfrac%7B%5Cleft(p%2Bu%5Cright)%7D%7B%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%7D%5Cright)%5Ccdot%20m%5Cright)%20-%20%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%20n%5Ccdot%20m%5Cright)%20%5Cright)%3D-f?or=input
+
+        Parameters
+        ----------
+        average_entry : float
+            average_entry
+        entry_price : float
+            entry_price
+        position_size_usd : float
+            position_size_usd
+        possible_loss : float
+            possible_loss
+        sl_price : float
+            sl_price
+
+        Returns
+        -------
+        float
+            entry_size_usd
+        """
 
         return round(
             -(
@@ -276,11 +464,33 @@ class IncreasePosition:
 
     def long_entry_size_np(
         self,
+        entry_price: float,
         possible_loss: float,
         sl_price: float,
-        entry_price: float,
-    ):
-        # math https://www.symbolab.com/solver/simplify-calculator/solve%20for%20u%2C%20%5Cleft(%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%5Cleft(x%20-%20e%5Cright)%5Cright)-%20%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%20e%5Ccdot%20m%5Cright)%20-%20%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%20x%5Ccdot%20m%5Cright)%20%5Cright)%3Dp?or=input
+    ) -> float:
+        """
+        Summary
+        -------
+        Formula to calulcate the long entry size when we are not in a position and have our stop loss type set to stop loss based on candle body
+
+        how to calculate pnl https://www.bybithelp.com/en-US/s/article/Profit-Loss-calculations-USDT-Contract
+
+        math for the formula https://www.symbolab.com/solver/simplify-calculator/solve%20for%20u%2C%20%5Cleft(%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%5Cleft(x%20-%20e%5Cright)%5Cright)-%20%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%20e%5Ccdot%20m%5Cright)%20-%20%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%20x%5Ccdot%20m%5Cright)%20%5Cright)%3Dp?or=input
+
+        Parameters
+        ----------
+        entry_price : float
+            entry_price
+        possible_loss : float
+            possible_loss
+        sl_price : float
+            sl_price
+
+        Returns
+        -------
+        float
+            entry_size_usd
+        """
 
         return round(
             entry_price
@@ -291,13 +501,39 @@ class IncreasePosition:
 
     def short_entry_size_p(
         self,
+        average_entry: float,
+        entry_price: float,
+        position_size_usd: float,
         possible_loss: float,
         sl_price: float,
-        entry_price: float,
-        average_entry: float,
-        position_size_usd: float,
-    ):
-        # math https://www.symbolab.com/solver/simplify-calculator/solve%20for%20u%2C%20%5Cleft(%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%5Cleft(%5Cleft(%5Cfrac%7B%5Cleft(p%2Bu%5Cright)%7D%7B%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%7D%5Cright)-n%5Cright)%5Cright)-%20%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%5Cleft(%5Cfrac%7B%5Cleft(p%2Bu%5Cright)%7D%7B%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%7D%5Cright)%5Ccdot%20%20m%5Cright)%20-%20%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%20%20n%5Ccdot%20%20m%5Cright)%20%5Cright)%3D-f?or=input
+    ) -> float:
+        """
+        Summary
+        -------
+        Formula to calulcate the short entry size when we are in a position and have our stop loss type set to stop loss based on candle body
+
+        how to calculate pnl https://www.bybithelp.com/en-US/s/article/Profit-Loss-calculations-USDT-Contract
+
+        math for the formula https://www.symbolab.com/solver/simplify-calculator/solve%20for%20u%2C%20%5Cleft(%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%5Cleft(%5Cleft(%5Cfrac%7B%5Cleft(p%2Bu%5Cright)%7D%7B%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%7D%5Cright)-n%5Cright)%5Cright)-%20%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%5Cleft(%5Cfrac%7B%5Cleft(p%2Bu%5Cright)%7D%7B%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%7D%5Cright)%5Ccdot%20%20m%5Cright)%20-%20%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%20%20n%5Ccdot%20%20m%5Cright)%20%5Cright)%3D-f?or=input
+
+        Parameters
+        ----------
+        average_entry : float
+            average_entry
+        entry_price : float
+            entry_price
+        position_size_usd : float
+            position_size_usd
+        possible_loss : float
+            possible_loss
+        sl_price : float
+            sl_price
+
+        Returns
+        -------
+        float
+            entry_size_usd
+        """
 
         return round(
             -(
@@ -321,8 +557,30 @@ class IncreasePosition:
         possible_loss: float,
         sl_price: float,
         entry_price: float,
-    ):
-        # math https://www.symbolab.com/solver/simplify-calculator/solve%20for%20u%2C%20%5Cleft(%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%5Cleft(e%20-%20x%5Cright)%5Cright)-%20%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%20e%5Ccdot%20m%5Cright)%20-%20%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%20x%5Ccdot%20m%5Cright)%20%5Cright)%3Dp?or=input
+    ) -> float:
+        """
+        Summary
+        -------
+        Formula to calulcate the short entry size when we are not in a position and have our stop loss type set to stop loss based on candle body
+
+        how to calculate pnl https://www.bybithelp.com/en-US/s/article/Profit-Loss-calculations-USDT-Contract
+
+        math for the formula https://www.symbolab.com/solver/simplify-calculator/solve%20for%20u%2C%20%5Cleft(%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%5Cleft(e%20-%20x%5Cright)%5Cright)-%20%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%20e%5Ccdot%20m%5Cright)%20-%20%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%20x%5Ccdot%20m%5Cright)%20%5Cright)%3Dp?or=input
+
+        Parameters
+        ----------
+        entry_price : float
+            entry_price
+        possible_loss : float
+            possible_loss
+        sl_price : float
+            sl_price
+
+        Returns
+        -------
+        float
+            entry_size_usd
+        """
         return -round(
             entry_price
             * -possible_loss
@@ -340,9 +598,43 @@ class IncreasePosition:
         possible_loss: float,
         sl_price: float,
         total_trades: int,
-    ):
+    ) -> tuple[float, float, float, float, float, float, int, int, float]:
         """
-        Risking percent of your account while also having your stop loss based open high low or close of a candle
+        Summary
+        -------
+        Check if we are in a position or not and sending you to the correct function to handle that
+
+        Parameters
+        ----------
+        average_entry : float
+            average_entry
+        entry_price : float
+            entry_price
+        equity : float
+            equity
+        position_size_asset : float
+            position_size_asset
+        position_size_usd : float
+            position_size_usd
+        possible_loss : float
+            possible_loss
+        sl_price : float
+            sl_price
+        total_trades : int
+            total_trades
+
+        Returns
+        -------
+        float, float, float, float, float, float, int, int, float
+            average_entry,
+            entry_price,
+            entry_size_asset,
+            entry_size_usd,
+            position_size_asset,
+            position_size_usd,
+            possible_loss,
+            total_trades,
+            sl_pct
         """
         if position_size_asset > 0:
             logger.debug("We are in a position")
@@ -366,15 +658,52 @@ class IncreasePosition:
 
     def rpa_slbcb_p(
         self,
-        equity: float,
         average_entry: float,
         entry_price: float,
+        equity: float,
         position_size_asset: float,
         position_size_usd: float,
         possible_loss: float,
         sl_price: float,
         total_trades: int,
-    ):
+    ) -> tuple[float, float, float, float, float, float, int, int, float]:
+        """
+        Summary
+        -------
+        In a position - Risking a percent of your account while also having your stop loss type set to stop loss based on candle body 
+        
+        Parameters
+        ----------
+        average_entry : float
+            average_entry
+        entry_price : float
+            entry_price
+        equity : float
+            equity
+        position_size_asset : float
+            position_size_asset
+        position_size_usd : float
+            position_size_usd
+        possible_loss : float
+            possible_loss
+        sl_price : float
+            sl_price
+        total_trades : int
+            total_trades
+
+        Returns
+        -------
+        float, float, float, float, float, float, int, int, float
+            average_entry,
+            entry_price,
+            entry_size_asset,
+            entry_size_usd,
+            position_size_asset,
+            position_size_usd,
+            possible_loss,
+            total_trades,
+            sl_pct
+        """
         possible_loss, total_trades = self.c_pl_ra_ps(
             equity=equity,
             possible_loss=possible_loss,
@@ -433,7 +762,34 @@ class IncreasePosition:
         equity: float,
         entry_price: float,
         sl_price: float,
-    ):
+    ) -> tuple[float, float, float, float, float, float, int, int, float]:
+        """
+        Summary
+        -------
+        Not in a position - Risking a percent of your account while also having your stop loss type set to stop loss based on candle body
+        
+        Parameters
+        ----------
+        equity : float
+            equity
+        entry_price : float
+            entry_price
+        sl_price : float
+            sl_price
+        
+        Returns
+        -------
+        tuple[float, float, float, float, float, float, int, int, float]
+            average_entry,
+            entry_price,
+            entry_size_asset,
+            entry_size_usd,
+            position_size_asset,
+            position_size_usd,
+            possible_loss,
+            total_trades,
+            sl_pct
+        """
         possible_loss, total_trades = self.c_pl_ra_ps(
             equity=equity,
             possible_loss=0,

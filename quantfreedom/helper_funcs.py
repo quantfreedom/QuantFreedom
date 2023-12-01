@@ -210,7 +210,7 @@ def cart_product(
         m = int(n / named_tuple[k].size)
         for j in range(1, named_tuple[k].size):
             out[j * m : (j + 1) * m, k + 1 :] = out[0:m, k + 1 :]
-    return out
+    return out.T
 
 
 def dos_cart_product(
@@ -218,18 +218,18 @@ def dos_cart_product(
 ) -> DynamicOrderSettingsArrays:
     cart_arrays = cart_product(named_tuple=dos_arrays)
     return DynamicOrderSettingsArrays(
-        max_equity_risk_pct=cart_arrays.T[0] / 100,
-        max_trades=cart_arrays.T[1].astype(np.int_),
-        risk_account_pct_size=cart_arrays.T[2] / 100,
-        risk_reward=cart_arrays.T[3],
-        sl_based_on_add_pct=cart_arrays.T[4] / 100,
-        sl_based_on_lookback=cart_arrays.T[5].astype(np.int_),
-        sl_bcb_type=cart_arrays.T[6].astype(np.int_),
-        sl_to_be_cb_type=cart_arrays.T[7].astype(np.int_),
-        sl_to_be_when_pct=cart_arrays.T[8] / 100,
-        trail_sl_bcb_type=cart_arrays.T[9].astype(np.int_),
-        trail_sl_by_pct=cart_arrays.T[10] / 100,
-        trail_sl_when_pct=cart_arrays.T[11] / 100,
+        max_equity_risk_pct=cart_arrays[0] / 100,
+        max_trades=cart_arrays[1].astype(np.int_),
+        risk_account_pct_size=cart_arrays[2] / 100,
+        risk_reward=cart_arrays[3],
+        sl_based_on_add_pct=cart_arrays[4] / 100,
+        sl_based_on_lookback=cart_arrays[5].astype(np.int_),
+        sl_bcb_type=cart_arrays[6].astype(np.int_),
+        sl_to_be_cb_type=cart_arrays[7].astype(np.int_),
+        sl_to_be_when_pct=cart_arrays[8] / 100,
+        trail_sl_bcb_type=cart_arrays[9].astype(np.int_),
+        trail_sl_by_pct=cart_arrays[10] / 100,
+        trail_sl_when_pct=cart_arrays[11] / 100,
     )
 
 
