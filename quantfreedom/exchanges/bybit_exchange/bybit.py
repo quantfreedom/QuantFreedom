@@ -6,7 +6,7 @@ from time import sleep, time
 
 from requests import get, post
 from quantfreedom.enums import PositionModeType, TriggerDirectionType
-from quantfreedom.exchanges.bybit_exchange.pybit.unified_trading import HTTP
+from quantfreedom.exchanges.bybit_exchange.bybit_github.unified_trading import HTTP
 
 from quantfreedom.exchanges.exchange import Exchange
 

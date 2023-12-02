@@ -1,6 +1,37 @@
 site_name: My Docs
 theme:
   name: material
+
+markdown_extensions:
+  - meta
+  - admonition
+  - def_list
+  - md_in_html
+  - attr_list
+  - tables
+  - footnotes
+  - toc:
+      permalink: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.progressbar
+  - pymdownx.magiclink:
+      repo_url_shorthand: true
+      user: Quant Freedom
+      repo: quantfreedom
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.highlight:
+      extend_pygments_lang:
+        - name: pycon3
+          lang: pycon
+          options:
+            python3: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
 plugins:
 - gen-files:
     scripts:
@@ -8,8 +39,16 @@ plugins:
 - literate-nav:
     nav_file: SUMMARY.md
     implicit_index: false
+
 - mkdocstrings:
     handlers:
       python:
+        paths: [quantfreedom]
         options:
-          docstring_style: google
+          show_source: false
+          line_length: 1
+          show_category_heading: true
+          docstring_style: numpy
+          show_signature_annotations: false
+          separate_signature: true
+          annotations_path: brief

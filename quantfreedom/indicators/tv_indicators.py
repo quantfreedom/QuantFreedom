@@ -20,7 +20,7 @@ def wma_tv(
     Parameters
     ----------
     source : np.array
-        Values to process
+        Values to process 
     length : int
         Number of bars
 
@@ -274,9 +274,9 @@ def macd_tv(
         Number of bars
     signal_smoothing : int
         Number of bars
-    oscillator_type : Callable, ema_tv
+    oscillator_type : Callable
         Function to process fast and slow ma
-    signal_ma_type : Callable, ema_tv
+    signal_ma_type : Callable
         Function to process signal ma
 
     Returns
@@ -315,7 +315,7 @@ def bb_tv(
         Number of bars
     multi : float
         Standard deviation factor
-    basis_ma_type : Callable, sma_tv
+    basis_ma_type : Callable = sma_tv
         Function to process basic ma
 
     Returns
@@ -383,10 +383,10 @@ def atr_tv(
     Parameters
     ----------
     candles : np.array
-        2-dim np.array with columns in the following order [timestamp, open, high, low, close, volume]
+        2-dim np.array with columns in the following order [timestamp, open, high, low, close, volume] 
     length : int
-        Number of bars
-    smoothing_type : Callable, rma_tv
+        Number of bars 
+    smoothing_type : Callable = rma_tv
         function to process the smoothing of the atr
 
     Returns
@@ -673,7 +673,7 @@ def linear_regression_candles_ugurvu_tv(
         Number of bars for lin reg
     smoothing_length : int
         Number of bars for singal line
-    smoothing_type : Callable, sma_tv
+    smoothing_type : Callable = sma_tv
         function to process the smoothing of the singal line
 
     Returns
