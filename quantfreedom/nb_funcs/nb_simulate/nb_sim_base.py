@@ -74,13 +74,11 @@ def nb_sim_backtest(
         stringer.append(nb_float_to_str)
         stringer.append(nb_log_datetime)
         stringer.append(nb_candle_body_str)
-        stringer.append(nb_z_or_e_str)
         stringer.append(nb_os_to_str)
 
     else:
         logger = nb_logger_pass
 
-        stringer.append(nb_stringer_pass)
         stringer.append(nb_stringer_pass)
         stringer.append(nb_stringer_pass)
         stringer.append(nb_stringer_pass)

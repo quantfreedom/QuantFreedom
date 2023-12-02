@@ -2,14 +2,6 @@ from typing import NamedTuple
 import numpy as np
 
 
-class CandleProcessingTypeT(NamedTuple):
-    Backtest: int = 0
-    LiveTrading: int = 1
-
-
-CandleProcessingType = CandleProcessingTypeT()
-
-
 class CandleBodyTypeT(NamedTuple):
     Timestamp: int = 0
     Open: int = 1
@@ -24,12 +16,31 @@ CandleBodyType = CandleBodyTypeT()
 
 
 class IncreasePositionTypeT(NamedTuple):
-    Nothing: int = 0
-    AmountEntrySize: int = 1
-    PctAccountEntrySize: int = 2
-    RiskAmountEntrySize: int = 3
-    RiskPctAccountEntrySize: int = 4
-    SmalletEntrySizeAsset: int = 5
+    """
+    Summary
+    -------
+    The different ways you can increase your position
+
+    Parameters
+    ----------
+    AmountEntrySize : int = 0
+        How much you want your position size to be per trade in USDT
+    PctAccountEntrySize : int = 1
+        If you have an equity of 1000 and you want your pct account entry size to be 1% then that means each trade will be a position size of 10 usdt
+    RiskAmountEntrySize : int = 2
+        How much you will risk per trade. You must have a stop loss in order to use this mode.
+    RiskPctAccountEntrySize : int = 3
+        How much of your account you want to risk per trade. If you have an equtiy of 1000 and you want to risk 1% then each trade would be risking $10. You must have a stop loss in order to use this mode
+    SmalletEntrySizeAsset : int = 4
+        What ever the exchange smallest asset size is that is what your position size will be for each trade. Let's say the smallest is .001 for btcusdt, then each trade will be worth .001 btc
+
+    """
+
+    AmountEntrySize: int = 0
+    PctAccountEntrySize: int = 1
+    RiskAmountEntrySize: int = 2
+    RiskPctAccountEntrySize: int = 3
+    SmalletEntrySizeAsset: int = 4
 
 
 IncreasePositionType = IncreasePositionTypeT()
@@ -44,20 +55,25 @@ LeverageModeType = LeverageModeTypeT()
 
 
 class LeverageStrategyTypeT(NamedTuple):
-    Nothing: int = 0
+    """
+    Summary
+    -------
+    Choosing which leverage strategy you would like to use.
+
+    Parameters
+    ----------
+    Dynamic : int = 0
+        This will automatically adjust your leverage to be .001 percent further than your stop loss. The reason behind this is to that it will keep your used cash amount down as much as possible so you can place more trades on the same or other assets.
+    Static : int = 1
+        Static leverage
+
+    """
+
+    Dynamic: int = 0
     Static: int = 1
-    Dynamic: int = 2
 
 
 LeverageStrategyType = LeverageStrategyTypeT()
-
-
-class LoggerTypeT(NamedTuple):
-    File: int = 0
-    Pass: int = 1
-
-
-LoggerType = LoggerTypeT()
 
 
 class LoggerFuncTypeT(NamedTuple):
@@ -68,22 +84,6 @@ class LoggerFuncTypeT(NamedTuple):
 
 
 LoggerFuncType = LoggerFuncTypeT()
-
-
-class OrderPlacementTypeT(NamedTuple):
-    Limit: int = 0
-    Market: int = 1
-
-
-class NBLoggerTypeT(NamedTuple):
-    Print: int = 0
-    Pass: int = 1
-
-
-NBLoggerType = NBLoggerTypeT()
-
-
-OrderPlacementType = OrderPlacementTypeT()
 
 
 class OrderStatusT(NamedTuple):
@@ -116,50 +116,41 @@ class PositionModeTypeT(NamedTuple):
 PositionModeType = PositionModeTypeT()
 
 
-class PriceGetterTypeT(NamedTuple):
-    Min: int = 0
-    Max: int = 1
-    Nothing: int = 2
-
-
-PriceGetterType = PriceGetterTypeT()
-
-
 class StringerFuncTypeT(NamedTuple):
     float_to_str: int = 0
     log_datetime: int = 1
     candle_body_str: int = 2
-    z_or_e_str: int = 3
-    or_to_str: int = 4
+    os_to_str: int = 3
 
 
 StringerFuncType = StringerFuncTypeT()
 
 
 class StopLossStrategyTypeT(NamedTuple):
-    SLBasedOnCandleBody: int = 0
-    Nothing: int = 1
+    Nothing: int = 0
+    SLBasedOnCandleBody: int = 1
 
 
 StopLossStrategyType = StopLossStrategyTypeT()
 
 
-class TakeProfitFeeTypeT(NamedTuple):
-    Nothing: int = 0
-    Limit: int = 1
-    Market: int = 2
-
-
-TakeProfitFeeType = TakeProfitFeeTypeT()
-
-
 class TakeProfitStrategyTypeT(NamedTuple):
-    ProvidedandRR: int = 0
-    RiskReward: int = 1
-    TPPct: int = 2
-    Provided: int = 3
-    ProvidedandPct: int = 4
-    Nothing: int = 5
+    """
+    Summary
+    -------
+    How you want to process the take profit
+
+    Parameters
+    ----------
+    RiskReward : int = 0
+        Risk to reward
+    Provided : int = 1
+        Your strategy will provide the exit prices
+
+    """
+
+    RiskReward: int = 0
+    Provided: int = 1
 
 
 TakeProfitStrategyType = TakeProfitStrategyTypeT()
@@ -171,15 +162,6 @@ class TriggerDirectionTypeT(NamedTuple):
 
 
 TriggerDirectionType = TriggerDirectionTypeT()
-
-
-class ZeroOrEntryTypeT(NamedTuple):
-    ZeroLoss: int = 0
-    AverageEntry: int = 1
-    Nothing: int = 2
-
-
-ZeroOrEntryType = ZeroOrEntryTypeT()
 
 
 ############################################################
@@ -212,13 +194,61 @@ class AccountState(NamedTuple):
 
 
 class BacktestSettings(NamedTuple):
+    """
+    Summary
+    -------
+    Settings for filtering the results of your backtest. The main purpose of this is to save on memory and also there is sometimes no point in wanting to see strategies that are negative gains or below a specific qf score because they are useless.
+    
+    Parameters
+    ----------
+    array_size : int = 10000
+        _description_
+    gains_pct_filter : float = -np.inf
+        Will not record any strategies whos gains % result is below gains_pct_filter
+    total_trade_filter : int = -1
+        Will not record any strategies whos total trades result is below total trades filter.
+    qf_filter : float = -np.inf
+        Will not record any strategies whos qf score result is below the qf filter. qf_score is between -1 to 1,
+    
+    """
     array_size: int = 10000
     gains_pct_filter: float = -np.inf
     total_trade_filter: int = -1
-    upside_filter: float = -np.inf
+    qf_filter: float = -np.inf
 
 
 class DynamicOrderSettingsArrays(NamedTuple):
+    """
+    Summary
+    -------
+    _summary_
+    
+    Parameters
+    ----------
+    NamedTuple : _type_
+        _description_
+    NamedTuple : _type_
+        _description_
+    NamedTuple : _type_
+        _description_
+    NamedTuple : _type_
+        _description_
+    NamedTuple : _type_
+        _description_
+    NamedTuple : _type_
+        _description_
+    NamedTuple : _type_
+        _description_
+    NamedTuple : _type_
+        _description_
+    NamedTuple : _type_
+        _description_
+    NamedTuple : _type_
+        _description_
+    NamedTuple : _type_
+        _description_
+    
+    """
     max_equity_risk_pct: np.array
     max_trades: np.array
     risk_account_pct_size: np.array
@@ -249,6 +279,17 @@ class DynamicOrderSettings(NamedTuple):
 
 
 class ExchangeSettings(NamedTuple):
+    """
+    Summary
+    -------
+    _summary_
+    
+    Parameters
+    ----------
+    NamedTuple : _type_
+        _description_
+    
+    """
     limit_fee_pct: float = None
     max_leverage: float = None
     market_fee_pct: float = None
@@ -261,6 +302,7 @@ class ExchangeSettings(NamedTuple):
     leverage_mode: int = None
     price_tick_step: int = None
     leverage_tick_step: int = None
+
 
 
 class OrderResult(NamedTuple):
@@ -282,12 +324,23 @@ class OrderResult(NamedTuple):
 
 
 class StaticOrderSettings(NamedTuple):
-    starting_bar: int
+    """
+    Summary
+    -------
+    _summary_
+    
+    Parameters
+    ----------
+    NamedTuple : _type_
+        _description_
+    
+    """
     increase_position_type: int
     leverage_strategy_type: int
     pg_min_max_sl_bcb: str
     sl_strategy_type: int
     sl_to_be_bool: bool
+    starting_bar: int
     starting_equity: float
     static_leverage: float
     tp_fee_type: str

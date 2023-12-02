@@ -42,16 +42,6 @@ def nb_candle_body_str(number: float):
     return answer
 
 
-@njit(cache=True)
-def nb_z_or_e_str(number: float):
-    if number == 0:
-        answer = "ZeroLoss"
-    if number == 1:
-        answer = "AverageEntry"
-    elif number == 2:
-        answer = "Nothing"
-    return answer
-
 
 @njit(cache=True)
 def nb_os_to_str(number: float):

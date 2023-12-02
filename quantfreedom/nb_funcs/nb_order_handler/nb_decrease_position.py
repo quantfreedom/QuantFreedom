@@ -59,6 +59,8 @@ def nb_decrease_position(
         + stringer[StringerFuncType.float_to_str](equity)
         + "\nfees_paid= "
         + stringer[StringerFuncType.float_to_str](fees_paid)
+        + "\norder status= "
+        + stringer[StringerFuncType.os_to_str](order_status)
     )
 
     account_state = AccountState(
