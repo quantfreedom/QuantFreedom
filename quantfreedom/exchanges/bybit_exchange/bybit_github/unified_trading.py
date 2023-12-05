@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from quantfreedom.exchanges.bybit_exchange.pybit.exceptions import (
+from quantfreedom.exchanges.bybit_exchange.bybit_github.exceptions import (
     InvalidChannelTypeError,
     TopicMismatchError,
     UnauthorizedExceptionError,

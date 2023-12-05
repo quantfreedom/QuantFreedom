@@ -19,7 +19,7 @@ numpy = "1.26.1"
 pandas = "2.1.1"
 plotly = "5.17.0"
 pycryptodome = "3.19.0"
-python = "3.10"
+python = "^3.10"
 web3 = "5.31.4"
 
 [tool.poetry.dev-dependencies]
