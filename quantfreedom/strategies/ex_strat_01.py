@@ -37,6 +37,25 @@ bg_color = "#0b0b18"
 
 
 class IndicatorSettingsArrays(NamedTuple):
+    """
+    Summary
+    -------
+    Named tuple for all of our indicators paramaters
+
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+    Parameters
+    ----------
+    rsi_is_above : np.array
+        Numbers for rsi is above
+    rsi_is_below : np.array
+        Numbers for rsi is below
+    rsi_length : np.array
+        Numbers for rsi length
+    """
+
     rsi_is_above: np.array
     rsi_is_below: np.array
     rsi_length: np.array
@@ -52,6 +71,27 @@ class RSIBelowAbove(Strategy):
         rsi_is_above: np.array = np.array([0]),
         rsi_is_below: np.array = np.array([0]),
     ) -> None:
+        """
+        Summary
+        -------
+        _summary_
+                
+        Explainer Video
+        ---------------
+        Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+        
+        Parameters
+        ----------
+        long_short : str
+            _description_
+        rsi_length : np.array
+            _description_
+        rsi_is_above : np.array
+            _description_
+        rsi_is_below : np.array
+            _description_
+        
+        """
         logger.debug("Creating Strategy class init")
         self.long_short = long_short
 
@@ -77,7 +117,6 @@ class RSIBelowAbove(Strategy):
             self.log_indicator_settings = self.short_log_indicator_settings
             self.entry_message = self.short_entry_message
 
-    """
     #######################################################
     #######################################################
     #######################################################
@@ -87,13 +126,29 @@ class RSIBelowAbove(Strategy):
     #######################################################
     #######################################################
     #######################################################
-    """
 
     def short_set_entries_exits_array(
         self,
         candles: np.array,
         ind_set_index: int,
     ):
+        """
+        Summary
+        -------
+        _summary_
+                
+        Explainer Video
+        ---------------
+        Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+        
+        Parameters
+        ----------
+        candles : np.array
+            _description_
+        ind_set_index : int
+            _description_
+        
+        """
         try:
             self.rsi_is_above = self.indicator_settings_arrays.rsi_is_above[ind_set_index]
             self.rsi_length = self.indicator_settings_arrays.rsi_length[ind_set_index]
@@ -122,7 +177,6 @@ class RSIBelowAbove(Strategy):
         logger.info("\n\n")
         logger.info(f"Entry time!!! rsi= {self.rsi[bar_index]} < rsi_is_above= {self.rsi_is_above}")
 
-    """
     #######################################################
     #######################################################
     #######################################################
@@ -132,7 +186,6 @@ class RSIBelowAbove(Strategy):
     #######################################################
     #######################################################
     #######################################################
-    """
 
     def long_set_entries_exits_array(
         self,
@@ -167,7 +220,6 @@ class RSIBelowAbove(Strategy):
         logger.info("\n\n")
         logger.info(f"Entry time!!! rsi= {self.rsi[bar_index]} < rsi_is_below= {self.rsi_is_below}")
 
-    """
     #######################################################
     #######################################################
     #######################################################
@@ -177,7 +229,6 @@ class RSIBelowAbove(Strategy):
     #######################################################
     #######################################################
     #######################################################
-    """
 
     def live_set_indicator(self, closes: np.array):
         try:
@@ -204,7 +255,6 @@ class RSIBelowAbove(Strategy):
         except Exception as e:
             raise Exception(f"Exception evalutating strat -> {e}")
 
-    """
     #######################################################
     #######################################################
     #######################################################
@@ -214,7 +264,6 @@ class RSIBelowAbove(Strategy):
     #######################################################
     #######################################################
     #######################################################
-    """
 
     def get_strategy_plot_filename(self, candles: np.array):
         logger.debug("Getting entry plot file")

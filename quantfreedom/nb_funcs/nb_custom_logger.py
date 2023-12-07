@@ -42,7 +42,6 @@ def nb_candle_body_str(number: float):
     return answer
 
 
-
 @njit(cache=True)
 def nb_os_to_str(number: float):
     if number == 0:

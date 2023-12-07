@@ -174,9 +174,9 @@ def nb_run_or_backtest(
                 logger("nb_simulate.py - nb_run_backtest() - check_liq_hit")
                 liq_hit_bool = nb_check_liq_hit(
                     current_candle=candles[bar_index, :],
+                    liq_price=order_result.liq_price,
                     logger=logger,
                     nb_liq_hit_bool=nb_liq_hit_bool,
-                    liq_price=order_result.liq_price,
                     stringer=stringer,
                 )
                 if liq_hit_bool:

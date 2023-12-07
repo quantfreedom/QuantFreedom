@@ -3,6 +3,22 @@ import numpy as np
 
 
 class IndicatorSettingsArrays(NamedTuple):
+    """
+    Summary
+    -------
+    _summary_
+
+    Explainer Video
+    ---------------
+    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+    Parameters
+    ----------
+    NamedTuple : _type_
+        _description_
+
+    """
+
     pass
 
 
@@ -17,4 +33,22 @@ class Strategy:
         self,
         long_short: str,
     ) -> None:
+        """
+        Summary
+        -------
+        _summary_
+
+        Explainer Video
+        ---------------
+        Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+        Parameters
+        ----------
+        long_short : str
+            _description_
+
+        """
         self.long_short = long_short
+
+    def testing(self):
+        pass

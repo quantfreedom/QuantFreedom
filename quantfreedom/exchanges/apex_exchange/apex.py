@@ -64,7 +64,7 @@ class Apex(Exchange):
         sourceFlag=None,
     ):
         """
-        https://api-docs.pro.apex.exchange/#privateapi-post-creating-orders
+        [Apex API for Creating Orders](https://api-docs.pro.apex.exchange/#privateapi-post-creating-orders)
         """
         return self.apex_ex.create_order_v2(
             symbol=symbol,
@@ -245,7 +245,7 @@ class Apex(Exchange):
 
     def set_leverage(self, symbol: str, leverage: float):
         """
-        https://api-docs.pro.apex.exchange/#privateapi-post-sets-the-initial-margin-rate-of-a-contract
+        [Apex API for initial margin rate of a contract](https://api-docs.pro.apex.exchange/#privateapi-post-sets-the-initial-margin-rate-of-a-contract)
         """
         new_leverage = round(leverage, 2)
         initialMarginRate = str(round(1 / new_leverage, 5))

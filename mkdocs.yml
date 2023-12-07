@@ -1,13 +1,20 @@
-site_name: My Docs
+site_name: QuantFreedom Docs
+remote_name: QuantFreedom
+repo_url: https://github.com/QuantFreedom1022/QuantFreedom
+
 theme:
+  features:
+    - navigation.tabs
+    - navigation.path
+    - navigation.indexes
   name: material
 
 markdown_extensions:
+  - attr_list
   - meta
   - admonition
   - def_list
   - md_in_html
-  - attr_list
   - tables
   - footnotes
   - toc:
@@ -33,17 +40,17 @@ markdown_extensions:
       custom_checkbox: true
 
 plugins:
-- gen-files:
-    scripts:
-      - gen_ref_pages.py
+- search:
+- open-in-new-tab:
 - literate-nav:
-    nav_file: SUMMARY.md
+    nav_file: nav_file.md
     implicit_index: false
+  
 
 - mkdocstrings:
     handlers:
       python:
-        paths: [quantfreedom]
+        paths: [.]
         options:
           show_source: false
           line_length: 1

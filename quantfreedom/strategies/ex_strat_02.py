@@ -51,6 +51,25 @@ class SimpleBreakoutDynamicLookback(Strategy):
         volatility_lb: np.array,
         max_high_lb: np.array,
     ) -> None:
+        """
+        Summary
+        -------
+        _summary_
+                
+        Explainer Video
+        ---------------
+        Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+        
+        Parameters
+        ----------
+        long_short : str
+            _description_
+        volatility_lb : np.array
+            _description_
+        max_high_lb : np.array
+            _description_
+        
+        """
         logger.debug("Creating Strategy class init")
         self.long_short = long_short
 
@@ -74,7 +93,6 @@ class SimpleBreakoutDynamicLookback(Strategy):
             self.log_indicator_settings = self.short_log_indicator_settings
             self.entry_message = self.short_entry_message
 
-    """
     #######################################################
     #######################################################
     #######################################################
@@ -84,7 +102,6 @@ class SimpleBreakoutDynamicLookback(Strategy):
     #######################################################
     #######################################################
     #######################################################
-    """
 
     def short_set_entries_exits_array(
         self,
@@ -99,7 +116,6 @@ class SimpleBreakoutDynamicLookback(Strategy):
     def short_entry_message(self, bar_index: int):
         pass
 
-    """
     #######################################################
     #######################################################
     #######################################################
@@ -109,7 +125,6 @@ class SimpleBreakoutDynamicLookback(Strategy):
     #######################################################
     #######################################################
     #######################################################
-    """
 
     def long_set_entries_exits_array(
         self,
@@ -162,7 +177,6 @@ class SimpleBreakoutDynamicLookback(Strategy):
             f"Entry time!!! Close is higher than the High {self.entry_prices[bar_index]} > {self.max_high[bar_index]}"
         )
 
-    """
     #######################################################
     #######################################################
     #######################################################
@@ -172,7 +186,6 @@ class SimpleBreakoutDynamicLookback(Strategy):
     #######################################################
     #######################################################
     #######################################################
-    """
 
     def live_set_indicator(self, closes: np.array):
         pass
@@ -180,7 +193,6 @@ class SimpleBreakoutDynamicLookback(Strategy):
     def live_evaluate(self, candles: np.array):
         pass
 
-    """
     #######################################################
     #######################################################
     #######################################################
@@ -190,7 +202,6 @@ class SimpleBreakoutDynamicLookback(Strategy):
     #######################################################
     #######################################################
     #######################################################
-    """
 
     def get_strategy_plot_filename(self, candles: np.array):
         logger.debug("Getting entry plot file")
