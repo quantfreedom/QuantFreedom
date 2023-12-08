@@ -103,9 +103,9 @@ class RSIBelowAbove(Strategy):
             )
         )
         self.indicator_settings_arrays: IndicatorSettingsArrays = IndicatorSettingsArrays(
-            rsi_is_above=cart_arrays.T[0],
-            rsi_is_below=cart_arrays.T[1],
-            rsi_length=cart_arrays.T[2].astype(np.int_),
+            rsi_is_above=cart_arrays[0],
+            rsi_is_below=cart_arrays[1],
+            rsi_length=cart_arrays[2].astype(np.int_),
         )
 
         if long_short == "long":

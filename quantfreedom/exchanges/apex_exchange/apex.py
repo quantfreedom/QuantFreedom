@@ -1,9 +1,10 @@
-from datetime import timedelta
 from quantfreedom.exchanges.apex_exchange.apex_github.http_private_stark_key_sign import HttpPrivateStark
 from quantfreedom.exchanges.apex_exchange.apex_github.http_public import HttpPublic
 from quantfreedom.exchanges.exchange import Exchange
 from time import sleep, time
 import numpy as np
+from datetime import datetime
+
 
 APEX_TIMEFRAMES = [1, 5, 15, 30, 60, 120, 240, 360, 720, "D", "W"]
 
@@ -135,8 +136,8 @@ class Apex(Exchange):
         self,
         symbol: str,
         timeframe: str,
-        since_date_ms: int = None,
-        until_date_ms: int = None,
+        since_datetime: datetime = None,
+        until_datetime: datetime = None,
         candles_to_dl: int = 200,
     ):
         symbol = symbol.replace("-", "")
@@ -144,34 +145,30 @@ class Apex(Exchange):
         timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
         candles_to_dl_ms = candles_to_dl * timeframe_in_ms
 
-        if until_date_ms is None:
-            if since_date_ms is None:
-                until_date_ms = self.get_current_time_ms() - timeframe_in_ms
-                since_date_ms = until_date_ms - candles_to_dl_ms
-            else:
-                until_date_ms = since_date_ms + candles_to_dl_ms - 5000  # 5000 is to add 5 seconds
-        else:
-            if since_date_ms is None:
-                since_date_ms = until_date_ms - candles_to_dl_ms
-            until_date_ms -= 5000
+        since_timestamp, until_timestamp = self.get_since_until_timestamp(
+            candles_to_dl_ms=candles_to_dl_ms,
+            since_datetime=since_datetime,
+            timeframe_in_ms=timeframe_in_ms,
+            until_datetime=until_datetime,
+        )
 
         apex_candles = []
-        while since_date_ms + timeframe_in_ms < until_date_ms:
+        while since_timestamp + timeframe_in_ms < until_timestamp:
             try:
                 apex_data = self.apex_ex.klines(
                     symbol=symbol,
                     interval=ex_timeframe,
-                    start=int(since_date_ms / 1000),
-                    end=int(until_date_ms / 1000),
+                    start=int(since_timestamp / 1000),
+                    end=int(until_timestamp / 1000),
                     limit=200,
                 )
                 apex_candle_list = apex_data["data"][symbol]
-                last_candle_time_ms = apex_candle_list[-1]["t"]
-                if last_candle_time_ms == since_date_ms:
+                last_candle_timestamp = apex_candle_list[-1]["t"]
+                if last_candle_timestamp == since_timestamp:
                     sleep(0.2)
                 else:
                     apex_candles.extend(apex_candle_list)
-                    since_date_ms = last_candle_time_ms + 2000
+                    since_timestamp = last_candle_timestamp + 2000
             except Exception as e:
                 raise Exception(f"Apex get_candles - > {e}")
 

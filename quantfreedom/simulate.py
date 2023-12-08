@@ -280,7 +280,7 @@ def run_df_backtest(
                     )
 
                     # Checking to the upside filter
-                    if qf_score > backtest_settings.upside_filter:
+                    if qf_score > backtest_settings.qf_filter:
                         win_loss = np.where(wins_and_losses_array_no_be < 0, 0, 1)
                         wins = np.count_nonzero(win_loss)
                         losses = win_loss.size - wins

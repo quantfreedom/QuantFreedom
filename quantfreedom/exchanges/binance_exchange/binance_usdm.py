@@ -2,6 +2,8 @@ from time import sleep
 import numpy as np
 from quantfreedom.exchanges.exchange import Exchange
 from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.um_futures import UMFutures
+from datetime import datetime, timezone
+
 
 BINANCE_USDM_TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "1d", "1w"]
 
@@ -87,8 +89,8 @@ class BinanceUSDM(Exchange):
         self,
         symbol: str,
         timeframe: str,
-        since_date_ms: int = None,
-        until_date_ms: int = None,
+        since_datetime: datetime = None,
+        until_datetime: datetime = None,
         candles_to_dl: int = 1500,
     ):
         """
@@ -98,33 +100,29 @@ class BinanceUSDM(Exchange):
         timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
         candles_to_dl_ms = candles_to_dl * timeframe_in_ms
 
-        if until_date_ms is None:
-            if since_date_ms is None:
-                until_date_ms = self.get_current_time_ms() - timeframe_in_ms
-                since_date_ms = until_date_ms - candles_to_dl_ms
-            else:
-                until_date_ms = since_date_ms + candles_to_dl_ms - 5000  # 5000 is to sub 5 seconds
-        else:
-            if since_date_ms is None:
-                since_date_ms = until_date_ms - candles_to_dl_ms
-            until_date_ms -= 5000
+        since_timestamp, until_timestamp = self.get_since_until_timestamp(
+            candles_to_dl_ms=candles_to_dl_ms,
+            since_datetime=since_datetime,
+            timeframe_in_ms=timeframe_in_ms,
+            until_datetime=until_datetime,
+        )
 
         b_candles = []
-        while since_date_ms + timeframe_in_ms < until_date_ms:
+        while since_timestamp + timeframe_in_ms < until_timestamp:
             try:
                 b_data = self.binance_ex.klines(
                     symbol=symbol,
                     interval=ex_timeframe,
-                    startTime=since_date_ms,
-                    endTime=until_date_ms,
+                    startTime=since_timestamp,
+                    endTime=until_timestamp,
                     limit=1500,
                 )
-                last_candle_time_ms = b_data[-1][0]
-                if last_candle_time_ms == since_date_ms:
+                last_candle_timestamp = b_data[-1][0]
+                if last_candle_timestamp == since_timestamp:
                     sleep(0.2)
                 else:
                     b_candles.extend(b_data)
-                    since_date_ms = last_candle_time_ms + 2000
+                    since_timestamp = last_candle_timestamp + 2000
             except Exception as e:
                 raise Exception(f"Apex get_candles - > {e}")
         candles_np = np.array(b_candles, dtype=np.float_)[:, :6]

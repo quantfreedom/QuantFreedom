@@ -1,10 +1,10 @@
 import hashlib
 import hmac
-import json
 import numpy as np
-from datetime import timedelta
 from requests import get, post
 from time import sleep, time
+from datetime import datetime
+
 
 from quantfreedom.enums import (
     ExchangeSettings,
@@ -119,8 +119,8 @@ class Mufex(Exchange):
         self,
         symbol: str,
         timeframe: str,
-        since_date_ms: int = None,
-        until_date_ms: int = None,
+        since_datetime: datetime = None,
+        until_datetime: datetime = None,
         candles_to_dl: int = 1500,
         category: str = "linear",
     ) -> np.array:
@@ -140,9 +140,9 @@ class Mufex(Exchange):
             https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#symbol-symbol
         timeframe : str
             "1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w"
-        since_date_ms : int, None
+        since_timestamp : int, None
             The starting date, in milliseconds, of candles you want to download
-        until_date_ms : int, None
+        until_timestamp : int, None
             The last date, in milliseconds, of candles you want to download minus one candle so if you are on the 5 min if you say your until date is 1200 your last candle will be 1155
         candles_to_dl : int, 1500
             The amount of candles you want to download
@@ -158,16 +158,12 @@ class Mufex(Exchange):
         timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
         candles_to_dl_ms = candles_to_dl * timeframe_in_ms
 
-        if until_date_ms is None:
-            if since_date_ms is None:
-                until_date_ms = self.get_current_time_ms() - timeframe_in_ms
-                since_date_ms = until_date_ms - candles_to_dl_ms
-            else:
-                until_date_ms = since_date_ms + candles_to_dl_ms - 5000  # 5000 is to add 5 seconds
-        else:
-            if since_date_ms is None:
-                since_date_ms = until_date_ms - candles_to_dl_ms
-            until_date_ms -= 5000
+        since_timestamp, until_timestamp = self.get_since_until_timestamp(
+            candles_to_dl_ms=candles_to_dl_ms,
+            since_datetime=since_datetime,
+            timeframe_in_ms=timeframe_in_ms,
+            until_datetime=until_datetime,
+        )
 
         candles_list = []
         end_point = "/public/v1/market/kline"
@@ -175,23 +171,23 @@ class Mufex(Exchange):
             "category": category,
             "symbol": symbol,
             "interval": ex_timeframe,
-            "start": since_date_ms,
-            "end": until_date_ms,
+            "start": since_timestamp,
+            "end": until_timestamp,
             "limit": 1500,
         }
         # start_time = self.get_current_time_sec()
-        while params["start"] + timeframe_in_ms < until_date_ms:
+        while params["start"] + timeframe_in_ms < until_timestamp:
             try:
                 response: dict = get(url=self.url_start + end_point, params=params).json()
                 new_candles = response["data"]["list"]
-                last_candle_time_ms = int(new_candles[-1][0])
-                if last_candle_time_ms == params["start"]:
+                last_candle_timestamp = int(new_candles[-1][0])
+                if last_candle_timestamp == params["start"]:
                     print("sleeping .2 seconds")
                     sleep(0.2)
                 else:
                     candles_list.extend(new_candles)
                     # add 2 sec so we don't download the same candle two times
-                    params["start"] = last_candle_time_ms + 2000
+                    params["start"] = last_candle_timestamp + 2000
 
             except Exception as e:
                 raise Exception(f"Mufex get_candles {response.get('message')} - > {e}")
@@ -204,18 +200,18 @@ class Mufex(Exchange):
         self,
         symbol: str,
         limit: int = 200,
-        since_date_ms: int = None,
-        until_date_ms: int = None,
+        since_datetime: datetime = None,
+        until_datetime: datetime = None,
     ):
         """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_closedprofitandloss
+        [Mufex API link to Get Closed Profit and Loss](https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_closedprofitandloss)
         """
         end_point = "/private/v1/account/closed-pnl"
         params = {}
         params["symbol"] = symbol
         params["limit"] = limit
-        params["startTime"] = since_date_ms
-        params["endTime"] = until_date_ms
+        params["startTime"] = int(since_timestamp.replace(tzinfo=timezone.utc).timestamp() * 1000)
+        params["endTime"] = int(until_timestamp.replace(tzinfo=timezone.utc).timestamp() * 1000)
         response: dict = self.__HTTP_get_request(end_point=end_point, params=params)
         try:
             response["data"]["list"][0]
@@ -224,15 +220,40 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Data or List is empty {response['message']} -> {e}")
 
-    def get_latest_pnl_result(self, symbol: str):
+    def get_latest_pnl_result(
+        self,
+        symbol: str,
+    ):
         return float(self.get_closed_pnl(symbol=symbol)[0]["closedPnl"])
 
-    def get_all_symbols_info(self, category: str = "linear", limit: int = 1000, symbol: str = None):
+    def get_all_symbols_info(
+        self,
+        category: str = "linear",
+        limit: int = 1000,
+        symbol: str = None,
+    ):
         """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_instrhead
+        Summary
+        -------
+        [Mufex API link to Get Instrument Info](https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_instrhead)
 
-        Paramaters:
-        symbol
+        Explainer Video
+        ---------------
+        Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+        Parameters
+        ----------
+        category : str
+            If category is not passed, then return ""For now, default:linear
+        limit : int
+            Limit for data size per page, max size is 1000. Default as showing 500 pieces of data per page.It's not sorted by time
+        symbol : str
+            Symbol
+
+        Returns
+        -------
+        _type_
+            _description_
         """
         end_point = "/public/v1/instruments"
         params = {}
@@ -252,9 +273,31 @@ class Mufex(Exchange):
             else:
                 raise Exception(f"Mufex get_all_symbols_info = Data or List is empty {response['message']} -> {e}")
 
-    def get_risk_limit_info(self, symbol: str, category: str = "linear"):
+    def get_risk_limit_info(
+        self,
+        symbol: str,
+        category: str = "linear",
+    ):
         """
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_risklimithead
+        Summary
+        -------
+        [Mufex API link to Get Risk Limit](https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_risklimithead)
+
+        Explainer Video
+        ---------------
+        Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+        Parameters
+        ----------
+        symbol : str
+            Symbol
+        category : str
+            If category is not passed, then return ""For now, default:linear
+
+        Returns
+        -------
+        _type_
+            _description_
         """
         end_point = "/public/v1/position-risk"
         params = {}
@@ -434,8 +477,8 @@ class Mufex(Exchange):
         self,
         symbol: str,
         limit: int = 200,
-        since_date_ms: int = None,
-        until_date_ms: int = None,
+        since_datetime: datetime = None,
+        until_datetime: datetime = None,
         execType: str = None,
         order_id: str = None,
     ):
@@ -452,8 +495,8 @@ class Mufex(Exchange):
         params["limit"] = limit
         params["execType"] = execType
         params["orderId"] = order_id
-        params["startTime"] = since_date_ms
-        params["endTime"] = until_date_ms
+        params["startTime"] = int(since_timestamp.replace(tzinfo=timezone.utc).timestamp() * 1000)
+        params["endTime"] = int(until_timestamp.replace(tzinfo=timezone.utc).timestamp() * 1000)
         response: dict = self.__HTTP_get_request(end_point=end_point, params=params)
         try:
             response["data"]["list"][0]

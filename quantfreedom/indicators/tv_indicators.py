@@ -20,7 +20,7 @@ def wma_tv(
     Parameters
     ----------
     source : np.array
-        Values to process 
+        Values to process
     length : int
         Number of bars
 
@@ -47,12 +47,8 @@ def sma_tv(
     length: int,
 ) -> np.array:
     """
-    Summary
-    -------
-    Simple Moving average from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.sma
+    [Simple Moving average from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.sma)
 
-    Explainer Video
-    ---------------
     Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
 
     Parameters
@@ -383,9 +379,9 @@ def atr_tv(
     Parameters
     ----------
     candles : np.array
-        2-dim np.array with columns in the following order [timestamp, open, high, low, close, volume] 
+        2-dim np.array with columns in the following order [timestamp, open, high, low, close, volume]
     length : int
-        Number of bars 
+        Number of bars
     smoothing_type : Callable = rma_tv
         function to process the smoothing of the atr
 

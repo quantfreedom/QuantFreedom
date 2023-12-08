@@ -11,6 +11,8 @@ def delete_dir(
     p: Path,
 ):
     """
+    Summary
+    -------
     Delete info in directory
 
     Parameters
@@ -44,12 +46,9 @@ def pretty_qf(
     object: NamedTuple,
 ):
     """
-    Prints named tuples in a pretty way like
-    StopOrder(
-        var1=54,
-        var2=1000,
-        var3=2.45,
-    )
+    Summary
+    -------
+    Prints named tuples in a pretty way
 
     Parameters
     ----------
@@ -73,10 +72,6 @@ def generate_candles(
     seed: int = None,
 ):
     """
-    Function Name
-    -------------
-    generate_candles
-
     Summary
     -------
     Generate a dataframe filled with random candles
@@ -85,7 +80,6 @@ def generate_candles(
     ---------------
     Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
 
-    ## Variables needed
     Parameters
     ----------
     number_of_candles : int, 100
@@ -95,7 +89,6 @@ def generate_candles(
     plot_candles : bool, False
         If the candles should be graphed or not.
 
-    ## What is being returned
     Returns
     -------
     pdFrame

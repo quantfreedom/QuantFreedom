@@ -14,17 +14,23 @@ from numba import njit
 
 
 @njit(cache=True)
-def nb_logger(message: str):
+def nb_logger(
+    message: str,
+):
     print(message)
 
 
 @njit(cache=True)
-def nb_log_datetime(number: float):
+def nb_log_datetime(
+    number: float,
+):
     return str(int(number))
 
 
 @njit(cache=True)
-def nb_candle_body_str(number: float):
+def nb_candle_body_str(
+    number: float,
+):
     if number == 0:
         answer = "Timestamp"
     if number == 1:
@@ -43,7 +49,9 @@ def nb_candle_body_str(number: float):
 
 
 @njit(cache=True)
-def nb_os_to_str(number: float):
+def nb_os_to_str(
+    number: float,
+):
     if number == 0:
         answer = "HitMaxTrades"
     if number == 1:
@@ -75,10 +83,14 @@ def nb_os_to_str(number: float):
 
 
 @njit(cache=True)
-def nb_logger_pass(message: str):
+def nb_logger_pass(
+    message: str,
+):
     pass
 
 
 @njit(cache=True)
-def nb_stringer_pass(number: float):
+def nb_stringer_pass(
+    number: float,
+):
     return str()

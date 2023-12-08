@@ -1,9 +1,8 @@
 import hashlib
 import hmac
-import json
 import numpy as np
 from time import sleep, time
-
+from datetime import datetime
 from requests import get, post
 from quantfreedom.enums import PositionModeType, TriggerDirectionType
 from quantfreedom.exchanges.bybit_exchange.bybit_github.unified_trading import HTTP
@@ -115,8 +114,8 @@ class Bybit(Exchange):
         self,
         symbol: str,
         timeframe: str,
-        since_date_ms: int = None,
-        until_date_ms: int = None,
+        since_datetime: datetime = None,
+        until_datetime: datetime = None,
         candles_to_dl: int = 1000,
         category: str = "linear",
     ):
@@ -127,16 +126,12 @@ class Bybit(Exchange):
         timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
         candles_to_dl_ms = candles_to_dl * timeframe_in_ms
 
-        if until_date_ms is None:
-            if since_date_ms is None:
-                until_date_ms = self.get_current_time_ms() - timeframe_in_ms
-                since_date_ms = until_date_ms - candles_to_dl_ms
-            else:
-                until_date_ms = since_date_ms + candles_to_dl_ms - 5000  # 5000 is to add 5 seconds
-        else:
-            if since_date_ms is None:
-                since_date_ms = until_date_ms - candles_to_dl_ms
-            until_date_ms -= 5000
+        since_timestamp, until_timestamp = self.get_since_until_timestamp(
+            candles_to_dl_ms=candles_to_dl_ms,
+            since_datetime=since_datetime,
+            timeframe_in_ms=timeframe_in_ms,
+            until_datetime=until_datetime,
+        )
 
         candles_list = []
         end_point = "/v5/market/kline"
@@ -144,22 +139,22 @@ class Bybit(Exchange):
             "category": category,
             "symbol": symbol,
             "interval": ex_timeframe,
-            "start": since_date_ms,
-            "end": until_date_ms,
+            "start": since_timestamp,
+            "end": until_timestamp,
             "limit": 1000,
         }
 
-        while params["end"] - timeframe_in_ms > since_date_ms:
+        while params["end"] - timeframe_in_ms > since_timestamp:
             try:
                 response: dict = get(url=self.url_start + end_point, params=params).json()
                 new_candles = response["result"]["list"]
-                last_candle_time_ms = int(new_candles[-1][0])
-                if last_candle_time_ms == params["start"]:
+                last_candle_timestamp = int(new_candles[-1][0])
+                if last_candle_timestamp == params["start"]:
                     sleep(0.2)
                 else:
                     candles_list.extend(new_candles)
                     # add 2 sec so we don't download the same candle two times
-                    params["end"] = last_candle_time_ms - 2000
+                    params["end"] = last_candle_timestamp - 2000
                 1 + 1
 
             except Exception as e:

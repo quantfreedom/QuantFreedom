@@ -1,5 +1,5 @@
 Update Backtester:
-  ☐ bring the evalute back to real backtesting style
+  ☐ fix since_date and until_date
 
 Numba Updates:
   ☐ update numba with tv indicators

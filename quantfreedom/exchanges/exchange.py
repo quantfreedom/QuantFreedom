@@ -1,11 +1,10 @@
 import json
 import pandas as pd
-import numpy as np
 
 from datetime import timedelta
 from time import time
 
-from requests import get
+from datetime import datetime, timezone
 
 from quantfreedom.enums import ExchangeSettings
 
@@ -93,7 +92,10 @@ class Exchange:
         return self.get_timeframe_in_s(timeframe=timeframe) * 1000
 
     def get_timeframe_in_s(self, timeframe: str):
-        return int(timedelta(minutes=TIMEFRAMES_IN_MINUTES[UNIVERSAL_TIMEFRAMES.index(timeframe)]).seconds)
+        total_mins = TIMEFRAMES_IN_MINUTES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
+        time_delta_mins = timedelta(minutes=total_mins)
+        total_seconds = int(time_delta_mins.total_seconds())
+        return total_seconds
 
     def get_exchange_timeframe(self, timeframe: str, ex_timeframes: list):
         try:
@@ -113,3 +115,26 @@ class Exchange:
     def get_params_as_path(self, params: dict):
         params_as_path = "&".join("{key}={value}".format(key=k, value=v) for k, v in params.items() if v is not None)
         return params_as_path
+
+    def get_since_until_timestamp(
+        self,
+        candles_to_dl_ms: int,
+        since_datetime: datetime,
+        timeframe_in_ms: int,
+        until_datetime: datetime,
+    ) -> tuple[int, int]:
+        if until_datetime is None:
+            if since_datetime is None:
+                until_timestamp = self.get_current_time_ms() - timeframe_in_ms
+                since_timestamp = until_timestamp - candles_to_dl_ms
+            else:
+                since_timestamp = int(since_datetime.replace(tzinfo=timezone.utc).timestamp() * 1000)
+                until_timestamp = since_timestamp + candles_to_dl_ms - 5000  # 5000 is to sub 5 seconds
+        else:
+            until_timestamp = int(until_datetime.replace(tzinfo=timezone.utc).timestamp() * 1000)
+            if since_datetime is None:
+                since_timestamp = until_timestamp - candles_to_dl_ms
+            else:
+                since_timestamp = int(since_datetime.replace(tzinfo=timezone.utc).timestamp() * 1000)
+            until_timestamp -= 5000
+        return since_timestamp, until_timestamp

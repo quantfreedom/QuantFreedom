@@ -6,9 +6,7 @@ from quantfreedom.enums import (
     CandleBodyType,
     DecreasePosition,
     OrderStatus,
-    PriceGetterType,
     StopLossStrategyType,
-    ZeroOrEntryType,
 )
 
 logger = getLogger("info")

@@ -3,12 +3,12 @@ from typing import NamedTuple
 import numpy as np
 import pandas as pd
 from logging import getLogger
+from datetime import datetime
 from quantfreedom.enums import AccountState, DynamicOrderSettings, DynamicOrderSettingsArrays, OrderResult
 from quantfreedom.exchanges.apex_exchange.apex import Apex
 from quantfreedom.exchanges.binance_exchange.binance_us import BinanceUS
-from quantfreedom.exchanges.binance_exchange.binance_usdm import BINANCE_USDM_TIMEFRAMES, BinanceUSDM
+from quantfreedom.exchanges.binance_exchange.binance_usdm import BinanceUSDM
 from quantfreedom.exchanges.bybit_exchange.bybit import Bybit
-from quantfreedom.exchanges.exchange import Exchange
 from quantfreedom.exchanges.mufex_exchange.mufex import Mufex
 
 logger = getLogger("info")
@@ -18,8 +18,8 @@ def dl_ex_candles(
     symbol: str,
     exchange: str,
     timeframe: str,
-    since_date_ms: int = None,
-    until_date_ms: int = None,
+    since_datetime: datetime = None,
+    until_datetime: datetime = None,
     candles_to_dl: int = None,
 ):
     """
@@ -48,9 +48,9 @@ def dl_ex_candles(
         bybit = 'bybit' | default candles to dl is 1000
     timeframe : str
         "1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w"
-    since_date_ms : int, None
+    since_datetime : int, None
         The starting date, in milliseconds, of candles you want to download
-    until_date_ms : int, None
+    until_datetime : int, None
         The last date, in milliseconds, of candles you want to download minus one candle so if you are on the 5 min if you say your until date is 1200 your last candle will be 1155
     candles_to_dl : int, 1500
         The amount of candles you want to download
@@ -66,40 +66,40 @@ def dl_ex_candles(
         return BinanceUSDM(use_test_net=False).get_candles(
             symbol=symbol,
             timeframe=timeframe,
-            since_date_ms=since_date_ms,
-            until_date_ms=until_date_ms,
+            since_datetime=since_datetime,
+            until_datetime=until_datetime,
             candles_to_dl=1500 if candles_to_dl is None else candles_to_dl,
         )
     elif exchange.lower() == "binance_us":
         return BinanceUS().get_candles(
             symbol=symbol,
             timeframe=timeframe,
-            since_date_ms=since_date_ms,
-            until_date_ms=until_date_ms,
+            since_datetime=since_datetime,
+            until_datetime=until_datetime,
             candles_to_dl=1500 if candles_to_dl is None else candles_to_dl,
         )
     elif exchange.lower() == "apex":
         return Apex(use_test_net=False).get_candles(
             symbol=symbol,
             timeframe=timeframe,
-            since_date_ms=since_date_ms,
-            until_date_ms=until_date_ms,
+            since_datetime=since_datetime,
+            until_datetime=until_datetime,
             candles_to_dl=200 if candles_to_dl is None else candles_to_dl,
         )
     elif exchange.lower() == "mufex":
         return Mufex(use_test_net=False).get_candles(
             symbol=symbol,
             timeframe=timeframe,
-            since_date_ms=since_date_ms,
-            until_date_ms=until_date_ms,
+            since_datetime=since_datetime,
+            until_datetime=until_datetime,
             candles_to_dl=1500 if candles_to_dl is None else candles_to_dl,
         )
     elif exchange.lower() == "bybit":
         return Bybit(use_test_net=False).get_candles(
             symbol=symbol,
             timeframe=timeframe,
-            since_date_ms=since_date_ms,
-            until_date_ms=until_date_ms,
+            since_datetime=since_datetime,
+            until_datetime=until_datetime,
             candles_to_dl=1000 if candles_to_dl is None else candles_to_dl,
         )
     else:
