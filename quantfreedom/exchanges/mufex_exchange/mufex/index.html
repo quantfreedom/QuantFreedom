@@ -873,6 +873,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="get_all_symbols_info()">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.mufex_exchange.mufex.Mufex.get_all_symbols_info--summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.mufex_exchange.mufex.Mufex.get_all_symbols_info--explainer-video" class="md-nav__link">
+    <span class="md-ellipsis">
+      Explainer Video
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -959,6 +983,30 @@
       get_risk_limit_info()
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="get_risk_limit_info()">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.mufex_exchange.mufex.Mufex.get_risk_limit_info--summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.mufex_exchange.mufex.Mufex.get_risk_limit_info--explainer-video" class="md-nav__link">
+    <span class="md-ellipsis">
+      Explainer Video
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -2000,6 +2048,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="get_all_symbols_info()">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.mufex_exchange.mufex.Mufex.get_all_symbols_info--summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.mufex_exchange.mufex.Mufex.get_all_symbols_info--explainer-video" class="md-nav__link">
+    <span class="md-ellipsis">
+      Explainer Video
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -2086,6 +2158,30 @@
       get_risk_limit_info()
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="get_risk_limit_info()">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.mufex_exchange.mufex.Mufex.get_risk_limit_info--summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.mufex_exchange.mufex.Mufex.get_risk_limit_info--explainer-video" class="md-nav__link">
+    <span class="md-ellipsis">
+      Explainer Video
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -2406,8 +2502,92 @@
 
   <div class="doc doc-contents ">
   
-      <p>Paramaters:
-symbol</p>
+      <h6 id="quantfreedom.exchanges.mufex_exchange.mufex.Mufex.get_all_symbols_info--summary">Summary<a class="headerlink" href="#quantfreedom.exchanges.mufex_exchange.mufex.Mufex.get_all_symbols_info--summary" title="Permanent link">&para;</a></h6>
+<p><a href="https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_instrhead">Mufex API link to Get Instrument Info</a></p>
+<h6 id="quantfreedom.exchanges.mufex_exchange.mufex.Mufex.get_all_symbols_info--explainer-video">Explainer Video<a class="headerlink" href="#quantfreedom.exchanges.mufex_exchange.mufex.Mufex.get_all_symbols_info--explainer-video" title="Permanent link">&para;</a></h6>
+<p>Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>category</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>If category is not passed, then return ""For now, default:linear</p>
+            </div>
+          </td>
+          <td>
+                <code>&#39;linear&#39;</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>limit</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Limit for data size per page, max size is 1000. Default as showing 500 pieces of data per page.It's not sorted by time</p>
+            </div>
+          </td>
+          <td>
+                <code>1000</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>symbol</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Symbol</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>_type_</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p><em>description</em></p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
 
   </div>
 
@@ -2427,8 +2607,8 @@ symbol</p>
 <div class="doc-signature highlight"><pre><span></span><code><span class="n">get_candles</span><span class="p">(</span>
     <span class="n">symbol</span><span class="p">,</span>
     <span class="n">timeframe</span><span class="p">,</span>
-    <span class="n">since_date_ms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">until_date_ms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">since_datetime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">until_datetime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">candles_to_dl</span><span class="o">=</span><span class="mi">1500</span><span class="p">,</span>
     <span class="n">category</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
 <span class="p">)</span>
@@ -2483,7 +2663,7 @@ symbol</p>
           </td>
         </tr>
         <tr>
-          <td><code>since_date_ms</code></td>
+          <td><code>since_timestamp</code></td>
           <td>
                 <code>(int, None)</code>
           </td>
@@ -2493,11 +2673,11 @@ symbol</p>
             </div>
           </td>
           <td>
-                <code>None</code>
+              <em>required</em>
           </td>
         </tr>
         <tr>
-          <td><code>until_date_ms</code></td>
+          <td><code>until_timestamp</code></td>
           <td>
                 <code>(int, None)</code>
           </td>
@@ -2507,7 +2687,7 @@ symbol</p>
             </div>
           </td>
           <td>
-                <code>None</code>
+              <em>required</em>
           </td>
         </tr>
         <tr>
@@ -2583,14 +2763,14 @@ symbol</p>
 <div class="doc-signature highlight"><pre><span></span><code><span class="n">get_closed_pnl</span><span class="p">(</span>
     <span class="n">symbol</span><span class="p">,</span>
     <span class="n">limit</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
-    <span class="n">since_date_ms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">until_date_ms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">since_datetime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">until_datetime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
-      
+      <p><a href="https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_closedprofitandloss">Mufex API link to Get Closed Profit and Loss</a></p>
 
   </div>
 
@@ -2610,8 +2790,8 @@ symbol</p>
 <div class="doc-signature highlight"><pre><span></span><code><span class="n">get_filled_orders</span><span class="p">(</span>
     <span class="n">symbol</span><span class="p">,</span>
     <span class="n">limit</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
-    <span class="n">since_date_ms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">until_date_ms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">since_datetime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">until_datetime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">execType</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">order_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span>
@@ -2730,7 +2910,78 @@ limit</p>
 
   <div class="doc doc-contents ">
   
-      
+      <h6 id="quantfreedom.exchanges.mufex_exchange.mufex.Mufex.get_risk_limit_info--summary">Summary<a class="headerlink" href="#quantfreedom.exchanges.mufex_exchange.mufex.Mufex.get_risk_limit_info--summary" title="Permanent link">&para;</a></h6>
+<p><a href="https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_risklimithead">Mufex API link to Get Risk Limit</a></p>
+<h6 id="quantfreedom.exchanges.mufex_exchange.mufex.Mufex.get_risk_limit_info--explainer-video">Explainer Video<a class="headerlink" href="#quantfreedom.exchanges.mufex_exchange.mufex.Mufex.get_risk_limit_info--explainer-video" title="Permanent link">&para;</a></h6>
+<p>Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>symbol</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Symbol</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>category</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>If category is not passed, then return ""For now, default:linear</p>
+            </div>
+          </td>
+          <td>
+                <code>&#39;linear&#39;</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>_type_</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p><em>description</em></p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
 
   </div>
 
