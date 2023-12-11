@@ -38,7 +38,6 @@ class Mufex(Exchange):
         else:
             self.url_start = "https://api.mufex.finance"
 
-    """
     ################################################################
     ################################################################
     ###################                          ###################
@@ -48,7 +47,6 @@ class Mufex(Exchange):
     ###################                          ###################
     ################################################################
     ################################################################
-    """
 
     def __HTTP_post_request(self, end_point, params):
         timestamp = str(int(time() * 1000))
@@ -103,7 +101,6 @@ class Mufex(Exchange):
         hash = hmac.new(bytes(self.secret_key, "utf-8"), param_str.encode("utf-8"), hashlib.sha256)
         return hash.hexdigest()
 
-    """
     ###################################################################
     ###################################################################
     ###################                             ###################
@@ -113,7 +110,6 @@ class Mufex(Exchange):
     ###################                             ###################
     ###################################################################
     ###################################################################
-    """
 
     def get_candles(
         self,
@@ -127,8 +123,7 @@ class Mufex(Exchange):
         """
         Summary
         -------
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
-
+        [mufex candle docs](https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline)
 
         Explainer Video
         ---------------
@@ -137,17 +132,17 @@ class Mufex(Exchange):
         Parameters
         ----------
         symbol : str
-            https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#symbol-symbol
+            [Mufex Symbol List](https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#symbol-symbol)
         timeframe : str
             "1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w"
-        since_timestamp : int, None
-            The starting date, in milliseconds, of candles you want to download
-        until_timestamp : int, None
-            The last date, in milliseconds, of candles you want to download minus one candle so if you are on the 5 min if you say your until date is 1200 your last candle will be 1155
-        candles_to_dl : int, 1500
+        since_datetime : datetime
+            The start date, in datetime format, of candles you want to download. EX: datetime(year, month, day, hour, minute)
+        until_datetime : datetime
+            The until date, in datetime format, of candles you want to download minus one candle so if you are on the 5 min if you say your until date is 1200 your last candle will be 1155. EX: datetime(year, month, day, hour, minute)
+        candles_to_dl : int
             The amount of candles you want to download
-        category : str, "linear"
-            https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#contract-type-contracttype
+        category : str
+            [mufex categories link](https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#contract-type-contracttype)
 
         Returns
         -------

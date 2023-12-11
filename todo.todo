@@ -1,5 +1,6 @@
 Update Backtester:
-  ☐ fix since_date and until_date
+  ✔ fix since_date and until_date @done(23-12-08 13:08)
+  ☐ update candles doc strings
 
 Numba Updates:
   ☐ update numba with tv indicators
@@ -9,7 +10,7 @@ Videos:
   ✔ ATR video on func and plot @done(23-11-27 17:32)
   ✔ RSI video on func and plot @done(23-11-27 17:32)
   ✔ linear regression candles @done(23-11-30 11:14)
-  ☐ SMA video on func and plot
+  ✔ SMA video on func and plot @done(23-12-08 13:08)
   ☐ EMA video on func and plot
   ☐ VWAP video on func and plot
   ☐ MACD video on func and plot

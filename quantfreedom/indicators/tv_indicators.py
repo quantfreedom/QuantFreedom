@@ -11,11 +11,9 @@ def wma_tv(
     """
     Summary
     -------
-    Weighted Moving average from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.wma
+    [Weighted Moving Average From Tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.wma)
 
-    Explainer Video
-    ---------------
-    https://youtu.be/eHlHoWC4W8k
+    [Explainer Video](https://youtu.be/eHlHoWC4W8k)
 
     Parameters
     ----------
@@ -49,8 +47,6 @@ def sma_tv(
     """
     [Simple Moving average from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.sma)
 
-    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
-
     Parameters
     ----------
     source : np.array
@@ -82,10 +78,6 @@ def ema_tv(
     Summary
     -------
     Exponential Moving average from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.ema
-
-    Explainer Video
-    ---------------
-    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
 
     Parameters
     ----------
@@ -119,11 +111,7 @@ def rma_tv(
     """
     Summary
     -------
-    Relative strength index Moving average from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma
-
-    Explainer Video
-    ---------------
-    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+    [Relative strength index Moving average from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma)
 
     Parameters
     ----------
@@ -158,11 +146,7 @@ def rma_tv_2(
     """
     Summary
     -------
-    Relative strength index Moving average from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma
-
-    Explainer Video
-    ---------------
-    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+    [Relative strength index Moving average from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma)
 
     Parameters
     ----------
@@ -202,11 +186,9 @@ def stdev_tv(
     """
     Summary
     -------
-    Standard deviation from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.stdev
+    [Standard deviation from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.stdev)
 
-    Explainer Video
-    ---------------
-    https://youtu.be/Hejf_bzLfL4
+    [Explainer Video](https://youtu.be/Hejf_bzLfL4)
 
     Parameters
     ----------
@@ -254,11 +236,7 @@ def macd_tv(
     """
     Summary
     -------
-    Moving average convergence divergence from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.macd
-
-    Explainer Video
-    ---------------
-    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+    [Moving average convergence divergence from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.macd)
 
     Parameters
     ----------
@@ -297,11 +275,7 @@ def bb_tv(
     """
     Summary
     -------
-    Bollinger bands from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.bb
-
-    Explainer Video
-    ---------------
-    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+    [Bollinger bands from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.bb)
 
     Parameters
     ----------
@@ -311,7 +285,7 @@ def bb_tv(
         Number of bars
     multi : float
         Standard deviation factor
-    basis_ma_type : Callable = sma_tv
+    basis_ma_type : Callable
         Function to process basic ma
 
     Returns
@@ -332,11 +306,7 @@ def true_range_tv(
     """
     Summary
     -------
-    True Range from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.tr
-
-    Explainer Video
-    ---------------
-    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+    [True Range from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.tr)
 
     Parameters
     ----------
@@ -370,11 +340,7 @@ def atr_tv(
     """
     Summary
     -------
-    Average true range smoothing from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.atr
-
-    Explainer Video
-    ---------------
-    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+    [Average true range smoothing from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.atr)
 
     Parameters
     ----------
@@ -382,7 +348,7 @@ def atr_tv(
         2-dim np.array with columns in the following order [timestamp, open, high, low, close, volume]
     length : int
         Number of bars
-    smoothing_type : Callable = rma_tv
+    smoothing_type : Callable
         function to process the smoothing of the atr
 
     Returns
@@ -402,11 +368,7 @@ def rsi_tv(
     """
     Summary
     -------
-    Relative strength index https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rsi
-
-    Explainer Video
-    ---------------
-    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+    [Relative strength index](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rsi)
 
     Parameters
     ----------
@@ -449,11 +411,7 @@ def supertrend_tv(
     """
     Summary
     -------
-    Super Trend https://www.tradingview.com/pine-script-reference/v5/#fun_ta.supertrend
-
-    Explainer Video
-    ---------------
-    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+    [Super Trend](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.supertrend)
 
     Parameters
     ----------
@@ -521,11 +479,7 @@ def vwap_tv(
     """
     Summary
     -------
-    Volume Weighted Average Price https://blog.quantinsti.com/vwap-strategy/
-
-    Explainer Video
-    ---------------
-    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+    [Volume Weighted Average Price](https://blog.quantinsti.com/vwap-strategy/)
 
     Parameters
     ----------
@@ -580,11 +534,7 @@ def squeeze_momentum_lazybear_tv(
     """
     Summary
     -------
-    https://www.tradingview.com/script/nqQ1DT5a-Squeeze-Momentum-Indicator-LazyBear/
-
-    Explainer Video
-    ---------------
-    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+    [LazyBear Pinescript](https://www.tradingview.com/script/nqQ1DT5a-Squeeze-Momentum-Indicator-LazyBear/)
 
     Parameters
     ----------
@@ -653,13 +603,7 @@ def linear_regression_candles_ugurvu_tv(
     """
     Summary
     -------
-    There are many linear regression indicators out there, most of them draw lines or channels, but this one actually draws a chart.
-
-    https://www.tradingview.com/script/hMaQO1FX-Linear-Regression-Candles/
-
-    Explainer Video
-    ---------------
-    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+    [Linear regression indicator](https://www.tradingview.com/script/hMaQO1FX-Linear-Regression-Candles/)
 
     Parameters
     ----------
@@ -669,7 +613,7 @@ def linear_regression_candles_ugurvu_tv(
         Number of bars for lin reg
     smoothing_length : int
         Number of bars for singal line
-    smoothing_type : Callable = sma_tv
+    smoothing_type : Callable
         function to process the smoothing of the singal line
 
     Returns

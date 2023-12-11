@@ -25,17 +25,10 @@ def dl_ex_candles(
     """
     Summary
     -------
-    https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline
-
-
-    Explainer Video
-    ---------------
-    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+    Download candles from the exchange of your choice
 
     Parameters
     ----------
-    symbol : str
-        Check the api for the exchange or get all the symbols of the exchange to see which ones you need
     exchange: str
         binance us = 'binance_us' | default candles to dl is 1500
 
@@ -46,16 +39,16 @@ def dl_ex_candles(
         mufex = 'mufex' | default candles to dl is 1500
 
         bybit = 'bybit' | default candles to dl is 1000
+    symbol : str
+        Check the api of the exchange or get all the symbols of the exchange to see which ones you need to put here
     timeframe : str
-        "1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w"
-    since_datetime : int, None
-        The starting date, in milliseconds, of candles you want to download
-    until_datetime : int, None
-        The last date, in milliseconds, of candles you want to download minus one candle so if you are on the 5 min if you say your until date is 1200 your last candle will be 1155
-    candles_to_dl : int, 1500
+            "1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w"
+    since_datetime : datetime
+        The start date, in datetime format, of candles you want to download. EX: datetime(year, month, day, hour, minute)
+    until_datetime : datetime
+        The until date, in datetime format, of candles you want to download minus one candle so if you are on the 5 min if you say your until date is 1200 your last candle will be 1155. EX: datetime(year, month, day, hour, minute)
+    candles_to_dl : int
         The amount of candles you want to download
-    category : str, "linear"
-        https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#contract-type-contracttype
 
     Returns
     -------
@@ -113,10 +106,6 @@ def candles_to_df(
     Summary
     -------
     Converts your numpy array candles to a pandas dataframe
-
-    Explainer Video
-    ---------------
-    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
 
     Parameters
     ----------
@@ -245,7 +234,7 @@ def fill_order_records(
     or_index: int,
     order_records: np.array,
     order_result: OrderResult,
-):
+) -> int:
     order_records["ind_set_idx"] = account_state.ind_set_index
     order_records["or_set_idx"] = account_state.dos_index
     order_records["bar_idx"] = account_state.bar_index

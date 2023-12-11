@@ -21,7 +21,31 @@ class BinanceUS(Exchange):
         candles_to_dl: int = 1500,
     ):
         """
-        https://docs.binance.us/#get-candlestick-data
+        Summary
+        -------
+        [Biance US candle docs](https://docs.binance.us/#get-candlestick-data)
+
+        Explainer Video
+        ---------------
+        Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+        Parameters
+        ----------
+        symbol : str
+            [Use Binance US API for symbol list](https://docs.binance.us/#introduction)
+        timeframe : str
+            "1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w"
+        since_datetime : datetime
+            The start date, in datetime format, of candles you want to download. EX: datetime(year, month, day, hour, minute)
+        until_datetime : datetime
+            The until date, in datetime format, of candles you want to download minus one candle so if you are on the 5 min if you say your until date is 1200 your last candle will be 1155. EX: datetime(year, month, day, hour, minute)
+        candles_to_dl : int
+            The amount of candles you want to download
+
+        Returns
+        -------
+        np.array
+            a 2 dim array with the following columns "timestamp", "open", "high", "low", "close", "volume"
         """
         ex_timeframe = self.get_exchange_timeframe(ex_timeframes=BINANCE_USDM_TIMEFRAMES, timeframe=timeframe)
         timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)

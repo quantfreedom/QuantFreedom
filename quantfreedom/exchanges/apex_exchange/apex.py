@@ -140,6 +140,33 @@ class Apex(Exchange):
         until_datetime: datetime = None,
         candles_to_dl: int = 200,
     ):
+        """
+        Summary
+        -------
+        [Apex candle docs](https://api-docs.pro.apex.exchange/#publicapi_v2-get-candlestick-chart-data-v2)
+
+        Explainer Video
+        ---------------
+        Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
+
+        Parameters
+        ----------
+        symbol : str
+            [Use APEX API for symbol list](https://api-docs.pro.apex.exchange/#introduction)
+        timeframe : str
+            "1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w"
+        since_datetime : datetime
+            The start date, in datetime format, of candles you want to download. EX: datetime(year, month, day, hour, minute)
+        until_datetime : datetime
+            The until date, in datetime format, of candles you want to download minus one candle so if you are on the 5 min if you say your until date is 1200 your last candle will be 1155. EX: datetime(year, month, day, hour, minute)
+        candles_to_dl : int
+            The amount of candles you want to download
+
+        Returns
+        -------
+        np.array
+            a 2 dim array with the following columns "timestamp", "open", "high", "low", "close", "volume"
+        """
         symbol = symbol.replace("-", "")
         ex_timeframe = self.get_exchange_timeframe(ex_timeframes=APEX_TIMEFRAMES, timeframe=timeframe)
         timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)

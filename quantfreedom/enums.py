@@ -23,7 +23,7 @@ class IncreasePositionTypeT(NamedTuple):
 
     Parameters
     ----------
-    AmountEntrySize : int = 0
+    AmountEntrySize : int= 0
         How much you want your position size to be per trade in USDT
     PctAccountEntrySize : int = 1
         If you have an equity of 1000 and you want your pct account entry size to be 1% then that means each trade will be a position size of 10 usdt
@@ -198,7 +198,7 @@ class BacktestSettings(NamedTuple):
     Summary
     -------
     Settings for filtering the results of your backtest. The main purpose of this is to save on memory and also there is sometimes no point in wanting to see strategies that are negative gains or below a specific qf score because they are useless.
-    
+
     Parameters
     ----------
     array_size : int = 10000
@@ -209,8 +209,9 @@ class BacktestSettings(NamedTuple):
         Will not record any strategies whos total trades result is below total trades filter.
     qf_filter : float = -np.inf
         Will not record any strategies whos qf score result is below the qf filter. qf_score is between -1 to 1,
-    
+
     """
+
     array_size: int = 10000
     gains_pct_filter: float = -np.inf
     total_trade_filter: int = -1
@@ -218,37 +219,6 @@ class BacktestSettings(NamedTuple):
 
 
 class DynamicOrderSettingsArrays(NamedTuple):
-    """
-    Summary
-    -------
-    _summary_
-    
-    Parameters
-    ----------
-    NamedTuple : _type_
-        _description_
-    NamedTuple : _type_
-        _description_
-    NamedTuple : _type_
-        _description_
-    NamedTuple : _type_
-        _description_
-    NamedTuple : _type_
-        _description_
-    NamedTuple : _type_
-        _description_
-    NamedTuple : _type_
-        _description_
-    NamedTuple : _type_
-        _description_
-    NamedTuple : _type_
-        _description_
-    NamedTuple : _type_
-        _description_
-    NamedTuple : _type_
-        _description_
-    
-    """
     max_equity_risk_pct: np.array
     max_trades: np.array
     risk_account_pct_size: np.array
@@ -279,17 +249,6 @@ class DynamicOrderSettings(NamedTuple):
 
 
 class ExchangeSettings(NamedTuple):
-    """
-    Summary
-    -------
-    _summary_
-    
-    Parameters
-    ----------
-    NamedTuple : _type_
-        _description_
-    
-    """
     limit_fee_pct: float = None
     max_leverage: float = None
     market_fee_pct: float = None
@@ -302,7 +261,6 @@ class ExchangeSettings(NamedTuple):
     leverage_mode: int = None
     price_tick_step: int = None
     leverage_tick_step: int = None
-
 
 
 class OrderResult(NamedTuple):
@@ -324,17 +282,6 @@ class OrderResult(NamedTuple):
 
 
 class StaticOrderSettings(NamedTuple):
-    """
-    Summary
-    -------
-    _summary_
-    
-    Parameters
-    ----------
-    NamedTuple : _type_
-        _description_
-    
-    """
     increase_position_type: int
     leverage_strategy_type: int
     pg_min_max_sl_bcb: str

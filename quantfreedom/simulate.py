@@ -30,7 +30,7 @@ def run_df_backtest(
     exchange_settings: ExchangeSettings,
     logger_bool: bool,
     static_os: StaticOrderSettings,
-    strategy: Strategy,
+    strategy: Strategy ,
 ):
     if logger_bool == False:
         logger.disabled = True
