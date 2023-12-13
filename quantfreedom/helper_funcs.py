@@ -23,8 +23,6 @@ def dl_ex_candles(
     candles_to_dl: int = None,
 ):
     """
-    Summary
-    -------
     Download candles from the exchange of your choice
 
     Parameters
@@ -103,8 +101,6 @@ def candles_to_df(
     candles: np.array,
 ) -> pd.DataFrame:
     """
-    Summary
-    -------
     Converts your numpy array candles to a pandas dataframe
 
     Parameters

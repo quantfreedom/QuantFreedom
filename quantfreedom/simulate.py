@@ -30,7 +30,7 @@ def run_df_backtest(
     exchange_settings: ExchangeSettings,
     logger_bool: bool,
     static_os: StaticOrderSettings,
-    strategy: Strategy ,
+    strategy: Strategy,
 ):
     if logger_bool == False:
         logger.disabled = True
@@ -72,10 +72,8 @@ def run_df_backtest(
     logger.info(f"Total candles: {total_bars:,}")
     logger.info(f"Total candles to test: {total_indicator_settings * total_order_settings * total_bars:,}")
 
-    array_size = int(backtest_settings.array_size)
-
     strategy_result_records = np.empty(
-        array_size,
+        backtest_settings.record_size,
         dtype=strat_df_array_dt,
     )
     result_records_filled = 0
@@ -121,7 +119,10 @@ def run_df_backtest(
                         logger.debug("Checking liq hit")
                         order.check_liq_hit(current_candle=current_candle)
                         logger.debug("Checking take profit hit")
-                        order.check_take_profit_hit(current_candle=current_candle)
+                        order.check_take_profit_hit(
+                            current_candle=current_candle,
+                            exit_price=strategy.exit_prices[bar_index],
+                        )
 
                         logger.debug("Checking to move stop to break even")
                         sl_to_be_price, sl_to_be_pct = order.check_move_sl_to_be(current_candle=current_candle)
@@ -164,7 +165,7 @@ def run_df_backtest(
                     logger.debug("Not in a pos so not checking SL Liq or TP")
 
                 logger.debug("strategy evaluate")
-                if strategy.entries_strat[bar_index]:
+                if strategy.entries[bar_index]:
                     strategy.entry_message(bar_index=bar_index)
                     try:
                         logger.debug("calculate_stop_loss")
@@ -376,7 +377,10 @@ def or_backtest(
                 logger.debug("Checking liq hit")
                 order.check_liq_hit(current_candle=current_candle)
                 logger.debug("Checking take profit hit")
-                order.check_take_profit_hit(current_candle=current_candle)
+                order.check_take_profit_hit(
+                    current_candle=current_candle,
+                    exit_price=strategy.exit_prices[bar_index],
+                )
 
                 logger.debug("Checking to move stop to break even")
                 sl_to_be_price, sl_to_be_pct = order.check_move_sl_to_be(current_candle=current_candle)
@@ -452,7 +456,7 @@ def or_backtest(
             logger.debug("Not in a pos so not checking SL Liq or TP")
 
         logger.debug("strategy evaluate")
-        if strategy.entries_strat[bar_index]:
+        if strategy.entries[bar_index]:
             strategy.entry_message(bar_index=bar_index)
             try:
                 logger.debug("calculate_stop_loss")

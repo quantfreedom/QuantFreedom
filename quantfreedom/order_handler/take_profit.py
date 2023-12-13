@@ -33,6 +33,9 @@ class TakeProfit:
         if tp_strategy_type == TakeProfitStrategyType.RiskReward:
             self.tp_calculator = self.tp_rr
             self.checker_tp_hit = self.c_tp_hit_regular
+        if tp_strategy_type == TakeProfitStrategyType.Provided:
+            self.tp_calculator = self.tp_provided
+            self.checker_tp_hit = self.c_tp_hit_provided
 
     def short_tp_price(
         self,
@@ -108,16 +111,53 @@ class TakeProfit:
             tp_pct,
         )
 
+    def tp_provided(
+        self,
+        average_entry: float,
+        position_size_usd: float,
+        possible_loss: float,
+    ):
+        can_move_sl_to_be = True
+        tp_price = np.nan
+        tp_pct = np.nan
+
+        return (
+            can_move_sl_to_be,
+            tp_price,
+            tp_pct,
+        )
+
     def c_tp_hit_regular(
         self,
         current_candle: np.array,
+        exit_price: float,
         tp_price: float,
     ):
-        if self.get_check_tp_candle_price(current_candle=current_candle, tp_price=tp_price):
+        if self.get_check_tp_candle_price(
+            current_candle=current_candle,
+            tp_price=tp_price,
+        ):
             logger.debug(f"TP Hit tp_price= {tp_price}")
             raise DecreasePosition(
                 exit_fee_pct=self.tp_fee_pct,
                 exit_price=tp_price,
+                order_status=OrderStatus.TakeProfitFilled,
+            )
+        else:
+            logger.debug("No Tp Hit")
+            pass
+
+    def c_tp_hit_provided(
+        self,
+        current_candle: np.array,
+        exit_price: float,
+        tp_price: float,
+    ):
+        if not np.isnan(exit_price):
+            logger.debug(f"TP Hit tp_price= {exit_price}")
+            raise DecreasePosition(
+                exit_fee_pct=self.tp_fee_pct,
+                exit_price=exit_price,
                 order_status=OrderStatus.TakeProfitFilled,
             )
         else:

@@ -209,8 +209,13 @@ class OrderHandler:
             liq_price=self.liq_price,
         )
 
-    def check_take_profit_hit(self, current_candle: np.array):
+    def check_take_profit_hit(
+        self,
+        current_candle: np.array,
+        exit_price: float,
+    ):
         self.obj_take_profit.checker_tp_hit(
+            exit_price=exit_price,
             current_candle=current_candle,
             tp_price=self.tp_price,
         )

@@ -1,29 +1,30 @@
 import numpy as np
 import pandas as pd
+from quantfreedom.enums import CandleBodyType
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from dash import Dash
-from dash_bootstrap_templates import load_figure_template
-from jupyter_dash import JupyterDash
-from IPython import get_ipython
-import dash_bootstrap_components as dbc
 
-from quantfreedom.enums import CandleBodyType
+# from dash import Dash
+# from dash_bootstrap_templates import load_figure_template
+# from jupyter_dash import JupyterDash
+# from IPython import get_ipython
+# import dash_bootstrap_components as dbc
 
-load_figure_template("darkly")
-dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
-try:
-    shell = str(get_ipython())
-    if "ZMQInteractiveShell" in shell:
-        app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
-    elif shell == "TerminalInteractiveShell":
-        app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
-    else:
-        app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
-except NameError:
-    app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
 
-bg_color = "#0b0b18"
+# load_figure_template("darkly")
+# dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
+# try:
+#     shell = str(get_ipython())
+#     if "ZMQInteractiveShell" in shell:
+#         app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
+#     elif shell == "TerminalInteractiveShell":
+#         app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
+#     else:
+#         app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
+# except NameError:
+#     app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
+
+# bg_color = "#0b0b18"
 
 
 def plot_candles_1_ind_same_pane(
@@ -32,7 +33,7 @@ def plot_candles_1_ind_same_pane(
     ind_name: str,
     ind_color: str = "yellow",
 ):
-    datetimes = pd.to_datetime(candles[:, CandleBodyType.Timestamp], unit="ms")
+    datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
     fig = go.Figure(
         data=[
             go.Candlestick(
@@ -61,7 +62,7 @@ def plot_candles_1_ind_dif_pane(
     ind_name: str,
     ind_color: str = "yellow",
 ):
-    datetimes = pd.to_datetime(candles[:, CandleBodyType.Timestamp], unit="ms")
+    datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
     fig = make_subplots(
         cols=1,
         rows=2,
@@ -266,7 +267,7 @@ def plot_bollinger_bands(
     ul_rgb: str = "48, 123, 255",
     basis_color_rgb: str = "255, 176, 0",
 ):
-    datetimes = pd.to_datetime(candles[:, CandleBodyType.Timestamp], unit="ms")
+    datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
     fig = go.Figure(
         data=[
             go.Scatter(
@@ -318,7 +319,7 @@ def plot_macd(
     candles: np.array,
     indicator: np.array,
 ):
-    datetimes = pd.to_datetime(candles[:, CandleBodyType.Timestamp], unit="ms")
+    datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
     fig = make_subplots(
         cols=1,
         rows=2,
@@ -382,7 +383,7 @@ def plot_squeeze_mom_lazybear(
     candles: np.array,
     indicator: np.array,
 ):
-    datetimes = pd.to_datetime(candles[:, CandleBodyType.Timestamp], unit="ms")
+    datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
     fig = make_subplots(
         cols=1,
         rows=2,
@@ -443,7 +444,7 @@ def plot_or_results(
         # Candles
         fig.add_trace(
             go.Candlestick(
-                x=pd.to_datetime(candles[:, CandleBodyType.Timestamp], unit="ms"),
+                x=candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]"),
                 open=candles[:, 1],
                 high=candles[:, 2],
                 low=candles[:, 3],
@@ -562,8 +563,8 @@ def plot_or_results(
             go.Scatter(
                 x=tp_filled_df["datetime"],
                 y=tp_filled_df["exit_price"],
-                mode="markers",
                 name="Take Profit Filled",
+                mode="markers",
                 marker=dict(
                     size=10,
                     symbol="star",
@@ -606,7 +607,7 @@ def plot_or_results(
     try:
         pnl_dt_df = order_records_df[~order_records_df["realized_pnl"].isna()]["datetime"]
         dt_list = pnl_dt_df.to_list()
-        dt_list.insert(0, pd.to_datetime(candles[0, 0], unit="ms"))
+        dt_list.insert(0, candles[0, 0].astype("datetime64[ms]"))
 
         pnl_df = order_records_df[~order_records_df["realized_pnl"].isna()]["realized_pnl"]
         pnl_list = pnl_df.to_list()
@@ -634,7 +635,7 @@ def plot_supertrend(
     candles: np.array,
     indicator: np.array,
 ):
-    datetimes = pd.to_datetime(candles[:, CandleBodyType.Timestamp], unit="ms")
+    datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
     lower = np.where(indicator[:, 1] < 0, indicator[:, 0], np.nan)
     upper = np.where(indicator[:, 1] > 0, indicator[:, 0], np.nan)
     fig = go.Figure(
@@ -678,7 +679,7 @@ def plot_linear_regression_candles_ugurvu_tv(
     lin_reg_candles: np.array,
     signal: np.array,
 ):
-    datetimes = pd.to_datetime(lin_reg_candles[:, CandleBodyType.Timestamp], unit="ms")
+    datetimes = lin_reg_candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
     fig = go.Figure(
         data=[
             go.Candlestick(
@@ -707,7 +708,7 @@ def plot_range_detextor_LuxAlgo(
     box_x: np.array,
     box_y: np.array,
 ):
-    datetimes = pd.to_datetime(candles[:, CandleBodyType.Timestamp], unit="ms")
+    datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
     fig = go.Figure(
         data=[
             go.Candlestick(

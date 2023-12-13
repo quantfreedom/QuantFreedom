@@ -9,8 +9,6 @@ def wma_tv(
     length: int,
 ) -> np.array:
     """
-    Summary
-    -------
     [Weighted Moving Average From Tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.wma)
 
     [Explainer Video](https://youtu.be/eHlHoWC4W8k)
@@ -75,9 +73,7 @@ def ema_tv(
     length: int,
 ) -> np.array:
     """
-    Summary
-    -------
-    Exponential Moving average from tradingview https://www.tradingview.com/pine-script-reference/v5/#fun_ta.ema
+    [Exponential Moving average from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.ema)
 
     Parameters
     ----------
@@ -109,8 +105,6 @@ def rma_tv(
     length: int,
 ) -> np.array:
     """
-    Summary
-    -------
     [Relative strength index Moving average from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma)
 
     Parameters
@@ -144,8 +138,6 @@ def rma_tv_2(
     length: int,
 ):
     """
-    Summary
-    -------
     [Relative strength index Moving average from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma)
 
     Parameters
@@ -184,8 +176,6 @@ def stdev_tv(
     length: int,
 ) -> np.array:
     """
-    Summary
-    -------
     [Standard deviation from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.stdev)
 
     [Explainer Video](https://youtu.be/Hejf_bzLfL4)
@@ -234,8 +224,6 @@ def macd_tv(
     signal_ma_type: Callable = ema_tv,
 ) -> tuple[np.array, np.array, np.array]:
     """
-    Summary
-    -------
     [Moving average convergence divergence from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.macd)
 
     Parameters
@@ -273,8 +261,6 @@ def bb_tv(
     basis_ma_type: Callable = sma_tv,
 ) -> tuple[np.array, np.array, np.array]:
     """
-    Summary
-    -------
     [Bollinger bands from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.bb)
 
     Parameters
@@ -304,8 +290,6 @@ def true_range_tv(
     candles: np.array,
 ) -> np.array:
     """
-    Summary
-    -------
     [True Range from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.tr)
 
     Parameters
@@ -338,8 +322,6 @@ def atr_tv(
     smoothing_type: Callable = rma_tv,
 ) -> np.array:
     """
-    Summary
-    -------
     [Average true range smoothing from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.atr)
 
     Parameters
@@ -366,8 +348,6 @@ def rsi_tv(
     length: int,
 ) -> np.array:
     """
-    Summary
-    -------
     [Relative strength index](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rsi)
 
     Parameters
@@ -409,8 +389,6 @@ def supertrend_tv(
     factor: int,
 ) -> tuple[np.array, np.array]:
     """
-    Summary
-    -------
     [Super Trend](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.supertrend)
 
     Parameters
@@ -477,8 +455,6 @@ def vwap_tv(
     candles: np.array,
 ) -> np.array:
     """
-    Summary
-    -------
     [Volume Weighted Average Price](https://blog.quantinsti.com/vwap-strategy/)
 
     Parameters
@@ -532,8 +508,6 @@ def squeeze_momentum_lazybear_tv(
     multi_kc: int,
 ) -> tuple[np.array, np.array, np.array]:
     """
-    Summary
-    -------
     [LazyBear Pinescript](https://www.tradingview.com/script/nqQ1DT5a-Squeeze-Momentum-Indicator-LazyBear/)
 
     Parameters
@@ -601,8 +575,6 @@ def linear_regression_candles_ugurvu_tv(
     smoothing_type: Callable = sma_tv,
 ) -> tuple[np.array, np.array]:
     """
-    Summary
-    -------
     [Linear regression indicator](https://www.tradingview.com/script/hMaQO1FX-Linear-Regression-Candles/)
 
     Parameters

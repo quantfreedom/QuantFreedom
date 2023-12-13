@@ -9,53 +9,13 @@ from quantfreedom.enums import CandleBodyType
 import os
 import numpy as np
 import pandas as pd
-from dash_bootstrap_templates import load_figure_template
-from jupyter_dash import JupyterDash
-from dash import Dash
-from IPython import get_ipython
-import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
-
 from quantfreedom.strategies.strategy import Strategy
 
 logger = getLogger("info")
 
-load_figure_template("darkly")
-dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
-try:
-    shell = str(get_ipython())
-    if "ZMQInteractiveShell" in shell:
-        app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
-    elif shell == "TerminalInteractiveShell":
-        app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
-    else:
-        app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
-except NameError:
-    app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
-
-bg_color = "#0b0b18"
-
 
 class IndicatorSettingsArrays(NamedTuple):
-    """
-    Summary
-    -------
-    Named tuple for all of our indicators paramaters
-
-    Explainer Video
-    ---------------
-    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
-
-    Parameters
-    ----------
-    rsi_is_above : np.array
-        Numbers for rsi is above
-    rsi_is_below : np.array
-        Numbers for rsi is below
-    rsi_length : np.array
-        Numbers for rsi length
-    """
-
     rsi_is_above: np.array
     rsi_is_below: np.array
     rsi_length: np.array
@@ -71,27 +31,6 @@ class RSIBelowAbove(Strategy):
         rsi_is_above: np.array = np.array([0]),
         rsi_is_below: np.array = np.array([0]),
     ) -> None:
-        """
-        Summary
-        -------
-        _summary_
-                
-        Explainer Video
-        ---------------
-        Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
-        
-        Parameters
-        ----------
-        long_short : str
-            _description_
-        rsi_length : np.array
-            _description_
-        rsi_is_above : np.array
-            _description_
-        rsi_is_below : np.array
-            _description_
-        
-        """
         logger.debug("Creating Strategy class init")
         self.long_short = long_short
 
@@ -132,23 +71,6 @@ class RSIBelowAbove(Strategy):
         candles: np.array,
         ind_set_index: int,
     ):
-        """
-        Summary
-        -------
-        _summary_
-                
-        Explainer Video
-        ---------------
-        Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
-        
-        Parameters
-        ----------
-        candles : np.array
-            _description_
-        ind_set_index : int
-            _description_
-        
-        """
         try:
             self.rsi_is_above = self.indicator_settings_arrays.rsi_is_above[ind_set_index]
             self.rsi_length = self.indicator_settings_arrays.rsi_length[ind_set_index]
@@ -159,8 +81,8 @@ class RSIBelowAbove(Strategy):
             self.rsi = np.around(rsi, 2)
             logger.info(f"Created RSI rsi_is_above= {self.rsi_is_above} rsi_length= {self.rsi_length}")
 
-            self.entries_strat = np.where(self.rsi > self.rsi_is_above, True, False)
-            self.exits_strat = np.full_like(self.rsi, np.nan)
+            self.entries = np.where(self.rsi > self.rsi_is_above, True, False)
+            self.exit_prices = np.full_like(self.rsi, np.nan)
 
         except Exception as e:
             logger.info(f"Exception short_set_entries_exits_array -> {e}")
@@ -202,8 +124,8 @@ class RSIBelowAbove(Strategy):
             self.rsi = np.around(rsi, 2)
             logger.info(f"Created RSI rsi_is_below= {self.rsi_is_below} rsi_length= {self.rsi_length}")
 
-            self.entries_strat = np.where(self.rsi < self.rsi_is_below, True, False)
-            self.exits_strat = np.full_like(self.rsi, np.nan)
+            self.entries = np.where(self.rsi < self.rsi_is_below, True, False)
+            self.exit_prices = np.full_like(self.rsi, np.nan)
 
         except Exception as e:
             logger.info(f"Exception long_set_entries_exits_array -> {e}")

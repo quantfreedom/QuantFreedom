@@ -17,8 +17,6 @@ CandleBodyType = CandleBodyTypeT()
 
 class IncreasePositionTypeT(NamedTuple):
     """
-    Summary
-    -------
     The different ways you can increase your position
 
     Parameters
@@ -56,8 +54,6 @@ LeverageModeType = LeverageModeTypeT()
 
 class LeverageStrategyTypeT(NamedTuple):
     """
-    Summary
-    -------
     Choosing which leverage strategy you would like to use.
 
     Parameters
@@ -136,8 +132,6 @@ StopLossStrategyType = StopLossStrategyTypeT()
 
 class TakeProfitStrategyTypeT(NamedTuple):
     """
-    Summary
-    -------
     How you want to process the take profit
 
     Parameters
@@ -195,27 +189,25 @@ class AccountState(NamedTuple):
 
 class BacktestSettings(NamedTuple):
     """
-    Summary
-    -------
     Settings for filtering the results of your backtest. The main purpose of this is to save on memory and also there is sometimes no point in wanting to see strategies that are negative gains or below a specific qf score because they are useless.
 
     Parameters
     ----------
-    array_size : int = 10000
-        _description_
     gains_pct_filter : float = -np.inf
         Will not record any strategies whos gains % result is below gains_pct_filter
-    total_trade_filter : int = -1
-        Will not record any strategies whos total trades result is below total trades filter.
     qf_filter : float = -np.inf
         Will not record any strategies whos qf score result is below the qf filter. qf_score is between -1 to 1,
+    total_trade_filter : int = -1
+        Will not record any strategies whos total trades result is below total trades filter.
+    record_size : int = 10000
+        The amount of records you want to to save. Keep this number as low as possible to save memory.
 
     """
 
-    array_size: int = 10000
     gains_pct_filter: float = -np.inf
-    total_trade_filter: int = -1
     qf_filter: float = -np.inf
+    total_trade_filter: int = -1
+    record_size: int = 10000
 
 
 class DynamicOrderSettingsArrays(NamedTuple):
@@ -249,18 +241,18 @@ class DynamicOrderSettings(NamedTuple):
 
 
 class ExchangeSettings(NamedTuple):
-    limit_fee_pct: float = None
-    max_leverage: float = None
-    market_fee_pct: float = None
-    mmr_pct: float = None
-    min_leverage: float = None
-    max_asset_size: float = None
-    min_asset_size: float = None
-    asset_tick_step: int = None
-    position_mode: int = None
-    leverage_mode: int = None
-    price_tick_step: int = None
-    leverage_tick_step: int = None
+    asset_tick_step: int
+    leverage_mode: int
+    leverage_tick_step: int
+    limit_fee_pct: float
+    market_fee_pct: float
+    max_asset_size: float
+    max_leverage: float
+    min_asset_size: float
+    min_leverage: float
+    mmr_pct: float
+    position_mode: int
+    price_tick_step: int
 
 
 class OrderResult(NamedTuple):

@@ -9,31 +9,10 @@ from quantfreedom.enums import CandleBodyType
 import os
 import numpy as np
 import pandas as pd
-from dash_bootstrap_templates import load_figure_template
-from jupyter_dash import JupyterDash
-from dash import Dash
-from IPython import get_ipython
-import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
-
 from quantfreedom.strategies.strategy import Strategy
 
 logger = getLogger("info")
-
-load_figure_template("darkly")
-dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
-try:
-    shell = str(get_ipython())
-    if "ZMQInteractiveShell" in shell:
-        app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
-    elif shell == "TerminalInteractiveShell":
-        app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
-    else:
-        app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
-except NameError:
-    app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
-
-bg_color = "#0b0b18"
 
 
 class IndicatorSettingsArrays(NamedTuple):
@@ -41,7 +20,6 @@ class IndicatorSettingsArrays(NamedTuple):
     max_high_lb: np.array
 
 
-# https://www.youtube.com/watch?v=s8uyLscRl-Q
 class SimpleBreakoutDynamicLookback(Strategy):
     starting_bar: int
 
@@ -51,25 +29,6 @@ class SimpleBreakoutDynamicLookback(Strategy):
         volatility_lb: np.array,
         max_high_lb: np.array,
     ) -> None:
-        """
-        Summary
-        -------
-        _summary_
-                
-        Explainer Video
-        ---------------
-        Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
-        
-        Parameters
-        ----------
-        long_short : str
-            _description_
-        volatility_lb : np.array
-            _description_
-        max_high_lb : np.array
-            _description_
-        
-        """
         logger.debug("Creating Strategy class init")
         self.long_short = long_short
 
@@ -157,8 +116,8 @@ class SimpleBreakoutDynamicLookback(Strategy):
 
             self.entry_prices = np.where(close >= self.max_high, close, np.nan)
 
-            self.entries_strat = np.where(np.isnan(self.entry_prices), False, True)
-            self.exits_strat = np.full_like(self.entries_strat, np.nan)
+            self.entries = np.where(np.isnan(self.entry_prices), False, True)
+            self.exit_prices = np.full_like(self.entries, np.nan)
 
         except Exception as e:
             logger.info(f"Exception long_set_entries_exits_array -> {e}")

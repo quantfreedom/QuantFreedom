@@ -11,8 +11,6 @@ def delete_dir(
     p: Path,
 ):
     """
-    Summary
-    -------
     Delete info in directory
 
     Parameters
@@ -43,27 +41,25 @@ def clear_cache():
 
 
 def pretty_qf(
-    object: NamedTuple,
+    named_tuple: NamedTuple,
 ):
     """
-    Summary
-    -------
     Prints named tuples in a pretty way
 
     Parameters
     ----------
-    object : namedtuple
+    named_tuple : namedtuple
         must only be a named tuple
     """
     try:
-        object._fields[0]
+        named_tuple._fields[0]
         items = []
         indent = str("    ")
-        for x in range(len(object)):
-            items.append(indent + object._fields[x] + " = " + str(object[x]) + ",\n")
-        return print(type(object).__name__ + "(" + "\n" + "".join(items) + ")")
+        for x in range(len(named_tuple)):
+            items.append(indent + named_tuple._fields[x] + " = " + str(named_tuple[x]) + ",\n")
+        return print(type(named_tuple).__name__ + "(" + "\n" + "".join(items) + ")")
     except:
-        return object
+        return named_tuple
 
 
 def generate_candles(
@@ -72,13 +68,7 @@ def generate_candles(
     seed: int = None,
 ):
     """
-    Summary
-    -------
     Generate a dataframe filled with random candles
-
-    Explainer Video
-    ---------------
-    Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
 
     Parameters
     ----------
