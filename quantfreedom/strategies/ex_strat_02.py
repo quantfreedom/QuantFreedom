@@ -1,15 +1,10 @@
-from datetime import datetime
-from logging import getLogger
-from quantfreedom.helper_funcs import cart_product
-from quantfreedom.indicators.tv_indicators import rsi_tv
+import numpy as np
 
+from logging import getLogger
 from typing import NamedTuple
 
+from quantfreedom.helper_funcs import cart_product
 from quantfreedom.enums import CandleBodyType
-import os
-import numpy as np
-import pandas as pd
-import plotly.graph_objects as go
 from quantfreedom.strategies.strategy import Strategy
 
 logger = getLogger("info")
@@ -21,8 +16,6 @@ class IndicatorSettingsArrays(NamedTuple):
 
 
 class SimpleBreakoutDynamicLookback(Strategy):
-    starting_bar: int
-
     def __init__(
         self,
         long_short: str,
@@ -69,10 +62,16 @@ class SimpleBreakoutDynamicLookback(Strategy):
     ):
         pass
 
-    def short_log_indicator_settings(self, ind_set_index: int):
+    def short_log_indicator_settings(
+        self,
+        ind_set_index: int,
+    ):
         pass
 
-    def short_entry_message(self, bar_index: int):
+    def short_entry_message(
+        self,
+        bar_index: int,
+    ):
         pass
 
     #######################################################
@@ -123,14 +122,20 @@ class SimpleBreakoutDynamicLookback(Strategy):
             logger.info(f"Exception long_set_entries_exits_array -> {e}")
             raise Exception(f"Exception long_set_entries_exits_array -> {e}")
 
-    def long_log_indicator_settings(self, ind_set_index: int):
+    def long_log_indicator_settings(
+        self,
+        ind_set_index: int,
+    ):
         logger.info(
             f"Indicator Settings Index= {ind_set_index}\
             \nvolatility_lb= {self.volatility_lb}\
             \nrmax_high_lb= {self.max_high_lb}"
         )
 
-    def long_entry_message(self, bar_index: int):
+    def long_entry_message(
+        self,
+        bar_index: int,
+    ):
         logger.info("\n\n")
         logger.info(
             f"Entry time!!! Close is higher than the High {self.entry_prices[bar_index]} > {self.max_high[bar_index]}"
@@ -146,10 +151,16 @@ class SimpleBreakoutDynamicLookback(Strategy):
     #######################################################
     #######################################################
 
-    def live_set_indicator(self, closes: np.array):
+    def live_set_indicator(
+        self,
+        closes: np.array,
+    ):
         pass
 
-    def live_evaluate(self, candles: np.array):
+    def live_evaluate(
+        self,
+        candles: np.array,
+    ):
         pass
 
     #######################################################
@@ -162,35 +173,8 @@ class SimpleBreakoutDynamicLookback(Strategy):
     #######################################################
     #######################################################
 
-    def get_strategy_plot_filename(self, candles: np.array):
-        logger.debug("Getting entry plot file")
-        not_nan = ~np.isnan(self.entry_prices)
-        fig = go.Figure(
-            data=[
-                go.Candlestick(
-                    x=pd.to_datetime(candles[:, CandleBodyType.Timestamp], unit="ms"),
-                    open=candles[:, 1],
-                    high=candles[:, 2],
-                    low=candles[:, 3],
-                    close=candles[:, 4],
-                    name="Candles",
-                ),
-                go.Scatter(
-                    x=pd.to_datetime(candles[not_nan, CandleBodyType.Timestamp], unit="ms"),
-                    y=self.entry_prices[not_nan],
-                    name="entries",
-                    mode="markers",
-                    marker=dict(color="yellow"),
-                ),
-            ]
-        )
-        fig.update_layout(height=800, xaxis_rangeslider_visible=False)
-        fig.show()
-        entry_filename = os.path.join(
-            ".",
-            "logs",
-            "images",
-            f'indicator_{datetime.utcnow().strftime("%m-%d-%Y_%H-%M-%S")}.png',
-        )
-        fig.write_image(entry_filename)
-        return entry_filename
+    def get_strategy_plot_filename(
+        self,
+        candles: np.array,
+    ):
+        pass

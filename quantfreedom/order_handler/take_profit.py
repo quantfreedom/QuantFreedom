@@ -36,6 +36,9 @@ class TakeProfit:
         if tp_strategy_type == TakeProfitStrategyType.Provided:
             self.tp_calculator = self.tp_provided
             self.checker_tp_hit = self.c_tp_hit_provided
+        if tp_strategy_type == TakeProfitStrategyType.Provided:
+            self.tp_calculator = self.tp_provided
+            self.checker_tp_hit = self.c_tp_hit_nothing
 
     def short_tp_price(
         self,
@@ -146,6 +149,14 @@ class TakeProfit:
         else:
             logger.debug("No Tp Hit")
             pass
+
+    def c_tp_hit_nothing(
+        self,
+        current_candle: np.array,
+        exit_price: float,
+        tp_price: float,
+    ):
+        pass
 
     def c_tp_hit_provided(
         self,

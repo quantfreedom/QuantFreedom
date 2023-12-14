@@ -20,5 +20,8 @@ class Strategy:
     ) -> None:
         self.long_short = long_short
 
-    def testing(self):
+    def plot_signals(
+        self,
+        candles: np.array,
+    ):
         pass

@@ -140,11 +140,14 @@ class TakeProfitStrategyTypeT(NamedTuple):
         Risk to reward
     Provided : int = 1
         Your strategy will provide the exit prices
+    Nothing : int = 2
+        No take profits.
 
     """
 
     RiskReward: int = 0
     Provided: int = 1
+    Nothing: int = 2
 
 
 TakeProfitStrategyType = TakeProfitStrategyTypeT()

@@ -19,6 +19,7 @@ from quantfreedom.enums import (
     strat_df_array_dt,
     or_dt,
 )
+from quantfreedom.utils import pretty_qf
 
 logger = getLogger("info")
 
@@ -560,6 +561,8 @@ def or_backtest(
                     logger.error(f"Exception hit in eval strat -> {e}")
                     raise Exception(f"Exception hit in eval strat -> {e}")
     order_records_df = order_records_to_df(order_records[:or_filled])
+    pretty_qf(dynamic_order_settings)
     if plot_results:
+        strategy.plot_signals(candles=candles)
         plot_or_results(candles=candles, order_records_df=order_records_df)
     return order_records_df

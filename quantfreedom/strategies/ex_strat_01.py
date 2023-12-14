@@ -1,15 +1,14 @@
-from datetime import datetime
-from logging import getLogger
-from quantfreedom.helper_funcs import cart_product
-from quantfreedom.indicators.tv_indicators import rsi_tv
-
-from typing import NamedTuple
-
-from quantfreedom.enums import CandleBodyType
 import os
 import numpy as np
-import pandas as pd
 import plotly.graph_objects as go
+
+from datetime import datetime
+from logging import getLogger
+from typing import NamedTuple
+
+from quantfreedom.helper_funcs import cart_product
+from quantfreedom.indicators.tv_indicators import rsi_tv
+from quantfreedom.enums import CandleBodyType
 from quantfreedom.strategies.strategy import Strategy
 
 logger = getLogger("info")
@@ -22,8 +21,6 @@ class IndicatorSettingsArrays(NamedTuple):
 
 
 class RSIBelowAbove(Strategy):
-    starting_bar: int
-
     def __init__(
         self,
         long_short: str,

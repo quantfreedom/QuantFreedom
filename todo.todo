@@ -5,6 +5,7 @@ Update Backtester:
 Numba Updates:
   ☐ update numba with tv indicators
   ☐ update numba simulate
+  ☐ add nothing tp and provided tp
 
 Videos:
   ✔ ATR video on func and plot @done(23-11-27 17:32)
