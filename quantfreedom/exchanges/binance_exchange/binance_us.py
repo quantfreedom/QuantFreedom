@@ -1,16 +1,23 @@
 from time import sleep
 import numpy as np
 from requests import get
-from quantfreedom.exchanges.exchange import Exchange
+from quantfreedom.exchanges.binance_exchange.binance_usdm import BINANCE_USDM_TIMEFRAMES
+from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES, Exchange
 from datetime import datetime
-
-
-BINANCE_USDM_TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "1d", "1w"]
 
 
 class BinanceUS(Exchange):
     def __init__(self) -> None:
         pass
+
+    def get_exchange_timeframe(
+        self,
+        timeframe: str,
+    ):
+        try:
+            return BINANCE_USDM_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
+        except Exception as e:
+            raise Exception(f"Use one of these timeframes - {UNIVERSAL_TIMEFRAMES} -> {e}")
 
     def get_candles(
         self,
@@ -47,7 +54,7 @@ class BinanceUS(Exchange):
         np.array
             a 2 dim array with the following columns "timestamp", "open", "high", "low", "close", "volume"
         """
-        ex_timeframe = self.get_exchange_timeframe(ex_timeframes=BINANCE_USDM_TIMEFRAMES, timeframe=timeframe)
+        ex_timeframe = self.get_exchange_timeframe(timeframe=timeframe)
         timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
         candles_to_dl_ms = candles_to_dl * timeframe_in_ms
 

@@ -1,6 +1,6 @@
 from quantfreedom.exchanges.apex_exchange.apex_github.http_private_stark_key_sign import HttpPrivateStark
 from quantfreedom.exchanges.apex_exchange.apex_github.http_public import HttpPublic
-from quantfreedom.exchanges.exchange import Exchange
+from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES, Exchange
 from time import sleep, time
 import numpy as np
 from datetime import datetime
@@ -132,6 +132,15 @@ class Apex(Exchange):
         except Exception as e:
             raise Exception(f"Apex create_entry_limit_order -> {e}")
 
+    def get_exchange_timeframe(
+        self,
+        timeframe: str,
+    ):
+        try:
+            return APEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
+        except Exception as e:
+            raise Exception(f"Use one of these timeframes - {UNIVERSAL_TIMEFRAMES} -> {e}")
+
     def get_candles(
         self,
         symbol: str,
@@ -168,7 +177,7 @@ class Apex(Exchange):
             a 2 dim array with the following columns "timestamp", "open", "high", "low", "close", "volume"
         """
         symbol = symbol.replace("-", "")
-        ex_timeframe = self.get_exchange_timeframe(ex_timeframes=APEX_TIMEFRAMES, timeframe=timeframe)
+        ex_timeframe = self.get_exchange_timeframe(timeframe=timeframe)
         timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
         candles_to_dl_ms = candles_to_dl * timeframe_in_ms
 

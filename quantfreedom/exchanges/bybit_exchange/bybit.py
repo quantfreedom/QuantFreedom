@@ -7,7 +7,7 @@ from requests import get, post
 from quantfreedom.enums import PositionModeType, TriggerDirectionType
 from quantfreedom.exchanges.bybit_exchange.bybit_github.unified_trading import HTTP
 
-from quantfreedom.exchanges.exchange import Exchange
+from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES, Exchange
 
 BYBIT_TIMEFRAMES = ["1", "5", "15", "30", "60", "120", "240", "360", "720", "D", "W"]
 
@@ -110,6 +110,15 @@ class Bybit(Exchange):
     ###################################################################
     """
 
+    def get_exchange_timeframe(
+        self,
+        timeframe: str,
+    ):
+        try:
+            return BYBIT_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
+        except Exception as e:
+            raise Exception(f"Use one of these timeframes - {UNIVERSAL_TIMEFRAMES} -> {e}")
+
     def get_candles(
         self,
         symbol: str,
@@ -148,7 +157,7 @@ class Bybit(Exchange):
         np.array
             a 2 dim array with the following columns "timestamp", "open", "high", "low", "close", "volume"
         """
-        ex_timeframe = self.get_exchange_timeframe(ex_timeframes=BYBIT_TIMEFRAMES, timeframe=timeframe)
+        ex_timeframe = self.get_exchange_timeframe(timeframe=timeframe)
         timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
         candles_to_dl_ms = candles_to_dl * timeframe_in_ms
 
