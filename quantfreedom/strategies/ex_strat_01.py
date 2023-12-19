@@ -48,10 +48,12 @@ class RSIBelowAbove(Strategy):
             self.set_entries_exits_array = self.long_set_entries_exits_array
             self.log_indicator_settings = self.long_log_indicator_settings
             self.entry_message = self.long_entry_message
+            self.live_evalutate = self.long_live_evaluate
         else:
             self.set_entries_exits_array = self.short_set_entries_exits_array
             self.log_indicator_settings = self.short_log_indicator_settings
             self.entry_message = self.short_entry_message
+            self.live_evalutate = self.short_live_evaluate
 
     #######################################################
     #######################################################
@@ -149,21 +151,36 @@ class RSIBelowAbove(Strategy):
     #######################################################
     #######################################################
 
-    def live_set_indicator(self, closes: np.array):
-        try:
-            self.rsi = rsi_tv(
-                source=closes,
-                length=self.rsi_length,
-            )
-            self.rsi = np.around(self.rsi, 2)
-            logger.info(f"Created RSI rsi_is_below= {self.rsi_is_below} rsi_length= {self.rsi_length}")
-        except Exception as e:
-            logger.info(f"Exception set_live_trading_indicator -> {e}")
-            raise Exception(f"Exception set_live_trading_indicator -> {e}")
+    def live_set_ind_settings(
+        self,
+        ind_set_index: int,
+    ):
+        self.rsi_is_below = self.indicator_settings_arrays.rsi_is_below[ind_set_index]
+        self.rsi_is_above = self.indicator_settings_arrays.rsi_is_above[ind_set_index]
+        self.rsi_length = self.indicator_settings_arrays.rsi_length[ind_set_index]
+        logger.info(f"live_set_ind_settings finished")
 
-    def live_evaluate(self, candles: np.array):
+    def live_set_indicator(
+        self,
+        close_prices: np.array,
+    ):
         try:
-            self.live_set_indicator(closes=candles[:, CandleBodyType.Close])
+            rsi = rsi_tv(
+                length=self.rsi_length,
+                source=close_prices,
+            )
+            self.rsi = np.around(rsi, 2)
+            logger.info(f"Created RSI rsi_length= {self.rsi_length}")
+        except Exception as e:
+            logger.info(f"Exception live_set_indicator -> {e}")
+            raise Exception(f"Exception live_set_indicator -> {e}")
+
+    def long_live_evaluate(
+        self,
+        candles: np.array,
+    ):
+        try:
+            self.live_set_indicator(close_prices=candles[:, CandleBodyType.Close])
             if self.rsi[-1] < self.rsi_is_below:
                 logger.info("\n\n")
                 logger.info(f"Entry time!!! rsi= {self.rsi[-1]} < rsi_is_below= {self.rsi_is_below}")
@@ -172,7 +189,23 @@ class RSIBelowAbove(Strategy):
                 logger.info("No entry")
                 return False
         except Exception as e:
-            raise Exception(f"Exception evalutating strat -> {e}")
+            raise Exception(f"Exception long_live_evaluate -> {e}")
+
+    def short_live_evaluate(
+        self,
+        candles: np.array,
+    ):
+        try:
+            self.live_set_indicator(close_prices=candles[:, CandleBodyType.Close])
+            if self.rsi[-1] > self.rsi_is_above:
+                logger.info("\n\n")
+                logger.info(f"Entry time!!! rsi= {self.rsi[-1]} > rsi_is_above= {self.rsi_is_above}")
+                return True
+            else:
+                logger.info("No entry")
+                return False
+        except Exception as e:
+            raise Exception(f"Exception short_live_evaluate -> {e}")
 
     #######################################################
     #######################################################
@@ -184,18 +217,21 @@ class RSIBelowAbove(Strategy):
     #######################################################
     #######################################################
 
-    def get_strategy_plot_filename(self, candles: np.array):
+    def get_strategy_plot_filename(
+        self,
+        candles: np.array,
+    ):
         logger.debug("Getting entry plot file")
-        last_20 = self.rsi[-20:]
-        last_20_datetimes = pd.to_datetime(candles[-20:, CandleBodyType.Timestamp], unit="ms")
+        last_50 = self.rsi[-50:]
+        last_50_datetimes = candles[-50:, CandleBodyType.Timestamp].astype("datetime64[ms]")
 
         fig = go.Figure()
         fig.add_scatter(
-            x=last_20_datetimes,
-            y=last_20,
+            x=last_50_datetimes,
+            y=last_50,
             name="RSI",
         )
-        fig.update_layout(xaxis_rangeslider_visible=False)
+        fig.update_layout(height=800, xaxis_rangeslider_visible=False)
         fig.show()
         entry_filename = os.path.join(
             ".",

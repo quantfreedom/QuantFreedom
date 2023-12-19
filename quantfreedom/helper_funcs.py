@@ -263,8 +263,8 @@ def fill_order_records(
 
 
 def log_dynamic_order_settings(
-    dynamic_order_settings: DynamicOrderSettingsArrays,
     dos_index: int,
+    dynamic_order_settings: DynamicOrderSettingsArrays,
 ):
     logger.info(
         f"Dynamic Order settings index= {dos_index}\

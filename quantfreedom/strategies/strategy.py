@@ -9,6 +9,7 @@ class IndicatorSettingsArrays(NamedTuple):
 class Strategy:
     entries: np.array
     entry_message: Callable
+    live_evalutate: Callable
     exit_prices: np.array
     indicator_settings_arrays: IndicatorSettingsArrays
     log_indicator_settings: Callable
@@ -21,6 +22,12 @@ class Strategy:
         self.long_short = long_short
 
     def plot_signals(
+        self,
+        candles: np.array,
+    ):
+        pass
+
+    def get_strategy_plot_filename(
         self,
         candles: np.array,
     ):

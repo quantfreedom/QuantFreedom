@@ -1,49 +1,22 @@
-from logging import getLogger
 import os
 import numpy as np
-from time import sleep
-from quantfreedom.email_sender import EmailSender
-from quantfreedom.enums import (
-    CandleBodyType,
-    DecreasePosition,
-    DynamicOrderSettings,
-    LoggerFuncType,
-    LongOrShortType,
-    MoveStopLoss,
-    OrderPlacementType,
-    OrderStatus,
-    PositionModeType,
-    RejectedOrder,
-    StaticOrderSettings,
-)
-
-from quantfreedom.order_handler.order import OrderHandler
-from quantfreedom.strategies.strategy import Strategy
-from quantfreedom.exchanges.live_exchange import LiveExchange
-from datetime import datetime, timedelta
 import plotly.graph_objects as go
 import pandas as pd
 
-# from dash_bootstrap_templates import load_figure_template
-# from jupyter_dash import JupyterDash
-# from dash import Dash
-# from IPython import get_ipython
-# import dash_bootstrap_components as dbc
+from time import sleep
+from datetime import datetime, timedelta
+from logging import getLogger
 
-# load_figure_template("darkly")
-# dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
-# try:
-#     shell = str(get_ipython())
-#     if "ZMQInteractiveShell" in shell:
-#         app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
-#     elif shell == "TerminalInteractiveShell":
-#         app = JupyterDash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
-#     else:
-#         app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
-# except NameError:
-#     app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY, dbc_css])
-
-# bg_color = "#0b0b18"
+from quantfreedom.email_sender import EmailSender
+from quantfreedom.exchanges.exchange import Exchange
+from quantfreedom.order_handler.order import OrderHandler
+from quantfreedom.strategies.strategy import Strategy
+from quantfreedom.enums import (
+    CandleBodyType,
+    OrderStatus,
+    PositionModeType,
+    RejectedOrder,
+)
 
 logger = getLogger("info")
 trade_logger = getLogger("trades")
@@ -53,35 +26,40 @@ class LiveTrading:
     def __init__(
         self,
         email_sender: EmailSender,
-        entry_order_type: OrderPlacementType,
-        exchange: LiveExchange,
+        entry_order_type: str,
+        exchange: Exchange,
+        long_or_short: str,
         order: OrderHandler,
         strategy: Strategy,
-        tp_order_type: OrderPlacementType,
-        long_or_short: LongOrShortType,
+        symbol: str,
+        trading_with: str,
+        tp_order_type: str,
     ):
         self.order = order
         self.exchange = exchange
         self.email_sender = email_sender
-        self.symbol = exchange.symbol
+        self.symbol = symbol
         self.strategy = strategy
+        self.trading_with = trading_with
 
         if self.exchange.position_mode == PositionModeType.HedgeMode:
-            if long_or_short == LongOrShortType.Long:
-                self.place_sl_order = self.exchange.create_long_hedge_mode_sl_order
-                self.get_position_info = self.exchange.get_long_hedge_mode_position_info
-                if entry_order_type == OrderPlacementType.Market:
-                    self.entry_order = self.exchange.create_long_hedge_mode_entry_market_order
+            if long_or_short == "long":
+                self.place_sl_order = exchange.create_long_hedge_mode_sl_order
+                self.get_position_info = exchange.get_long_hedge_mode_position_info
+                if entry_order_type == "market":
+                    self.entry_order = exchange.create_long_hedge_mode_entry_market_order
 
-                if tp_order_type == OrderPlacementType.Market:
-                    pass
-                else:
-                    self.place_tp_order = self.exchange.create_long_hedge_mode_tp_limit_order
+                if tp_order_type == "limit":
+                    self.place_tp_order = exchange.create_long_hedge_mode_tp_limit_order
 
-        self.ex_position_size_asset = float(self.get_position_info().get("size"))
-        self.order.equity = self.exchange.get_equity_of_asset(trading_with=self.exchange.trading_with)
+        self.ex_position_size_asset = float(self.get_position_info(symbol=symbol).get("size"))
+        self.order.equity = exchange.get_equity_of_asset(trading_with=trading_with)
 
-    def run(self):
+    def run(
+        self,
+        candles_to_dl: int,
+        timeframe: str,
+    ):
         latest_pnl = 0
 
         logger.info(f"Starting live trading")
@@ -95,14 +73,25 @@ class LiveTrading:
         tp_order_id = 0
         sl_order_id = 0
 
-        self.exchange.set_init_last_fetched_time()
+        self.exchange.last_fetched_ms_time = int(
+            self.exchange.get_candles(
+                symbol=self.symbol,
+                timeframe=timeframe,
+            )[-1, CandleBodyType.Timestamp]
+        )
         logger.info(f"Last Candle time {self.exchange.last_fetched_time_to_pd_datetime()}")
+
         sleep(self.get_sleep_time_to_next_bar())
+
         while True:
             try:
                 logger.info("Getting Candles")
                 print("Getting Candles")
-                self.candles = self.exchange.get_live_candles()
+                self.candles = self.exchange.get_candles(
+                    symbol=self.symbol,
+                    timeframe=timeframe,
+                    candles_to_dl=candles_to_dl,
+                )
                 num_candles = self.candles.shape[0]
 
                 # bar_index bar index is always the last bar ... so if we have 200 candles we are at index 199
@@ -115,7 +104,7 @@ class LiveTrading:
                 except Exception as e:
                     logger.error(f"get_latest_pnl_result {e}")
                 logger.info("Evaluating Strat")
-                if self.strategy.evaluate(bar_index=bar_index, candles=self.candles):
+                if self.strategy.live_evalutate(candles=self.candles):
                     try:
                         logger.debug("Setting ex postion size usd")
                         self.__set_ex_position_size_usd()
@@ -127,9 +116,7 @@ class LiveTrading:
                             logger.debug("we are not in a position updating order info")
                             self.order.position_size_usd = 0.0
                             self.order.average_entry = 0.0
-                            self.order.equity = self.exchange.get_equity_of_asset(
-                                trading_with=self.exchange.trading_with
-                            )
+                            self.order.equity = self.exchange.get_equity_of_asset(trading_with=self.trading_with)
                             self.order.available_balance = self.order.equity
                             self.order.possible_loss = 0.0
                             self.order.cash_used = 0.0
@@ -175,7 +162,8 @@ class LiveTrading:
                             average_entry=average_entry,
                             cash_borrowed=self.order.cash_borrowed,
                             cash_used=self.order.cash_used,
-                            entry_size_usd=entry_size_usd,
+                            position_size_usd=position_size_usd,
+                            position_size_asset=position_size_asset,
                             sl_price=sl_price,
                         )
 
@@ -222,7 +210,7 @@ class LiveTrading:
                         logger.info("Placing Entry Order")
                         entry_order_id = self.entry_order(
                             asset_size=self.order.entry_size_asset,
-                            entry_price=self.order.entry_price,
+                            symbol=self.symbol,
                         )
 
                         logger.info(f"Submitted entry order -> [order_id={entry_order_id}]")
@@ -231,8 +219,8 @@ class LiveTrading:
                         # check if order fileld
                         logger.debug(f"Checking if entry order was filled")
                         if self.exchange.check_if_order_filled(
-                            symbol=self.symbol,
                             order_id=entry_order_id,
+                            symbol=self.symbol,
                         ):
                             logger.info("Entry was filled")
                         else:
@@ -267,6 +255,7 @@ class LiveTrading:
                         logger.info(f"Submitting stop loss order")
                         sl_order_id = self.place_sl_order(
                             asset_size=self.ex_position_size_asset,
+                            symbol=self.symbol,
                             trigger_price=self.order.sl_price,
                         )
                         logger.info(f"Submitted SL order -> [order_id={sl_order_id}]")
@@ -275,6 +264,7 @@ class LiveTrading:
                         logger.info(f"Submitting take profit order")
                         tp_order_id = self.place_tp_order(
                             asset_size=self.ex_position_size_asset,
+                            symbol=self.symbol,
                             tp_price=self.order.tp_price,
                         )
                         logger.info(f"Submitted TP order -> [order_id={tp_order_id}]")
@@ -282,8 +272,8 @@ class LiveTrading:
                         sleep(1)
                         logger.info(f"Checking if stop loss was placed")
                         if self.exchange.check_if_order_open(
-                            symbol=self.symbol,
                             order_id=sl_order_id,
+                            symbol=self.symbol,
                         ):
                             logger.info(f"Stop loss was placed")
                         else:
@@ -293,8 +283,8 @@ class LiveTrading:
 
                         logger.debug(f"Checking if tp was placed")
                         if self.exchange.check_if_order_open(
-                            symbol=self.symbol,
                             order_id=tp_order_id,
+                            symbol=self.symbol,
                         ):
                             logger.info(f"take profit placed")
                         else:
@@ -309,16 +299,16 @@ class LiveTrading:
                                 order_id=entry_order_id,
                             )
                             leverage_changed = self.exchange.set_leverage(
-                                symbol=self.symbol,
                                 leverage=self.order.leverage,
+                                symbol=self.symbol,
                             )
                             sl_placed = self.exchange.check_if_order_open(
-                                symbol=self.symbol,
                                 order_id=sl_order_id,
+                                symbol=self.symbol,
                             )
                             tp_placed = self.exchange.check_if_order_open(
-                                symbol=self.symbol,
                                 order_id=tp_order_id,
+                                symbol=self.symbol,
                             )
                             verify_list = [entry_placed, leverage_changed, sl_placed, tp_placed]
                             if not all(v == True for v in verify_list):
@@ -334,9 +324,7 @@ class LiveTrading:
                             )
                             message = self.__create_entry_successful_message()
                             entry_filename = self.__get_entry_plot_filename()
-                            strategy_filename = self.strategy.get_strategy_plot_filename(
-                                candles=self.candles,
-                            )
+                            strategy_filename = self.strategy.get_strategy_plot_filename(candles=self.candles)
                             # self.email_sender.email_new_order(
                             #     message=message,
                             #     entry_filename=entry_filename,
@@ -416,15 +404,15 @@ class LiveTrading:
 
     def __set_ex_position_size_asset(self):
         logger.debug(f"Setting position size asset")
-        self.ex_position_size_asset = float(self.get_position_info()["size"])
+        self.ex_position_size_asset = float(self.get_position_info(symbol=self.symbol)["size"])
 
     def __set_ex_position_size_usd(self):
         logger.debug(f"Setting position size usd")
-        self.ex_position_size_usd = float(self.get_position_info()["positionValue"])
+        self.ex_position_size_usd = float(self.get_position_info(symbol=self.symbol)["positionValue"])
 
     def __set_order_average_entry(self):
         logger.debug(f"Setting average entry")
-        self.order.average_entry = float(self.get_position_info()["entryPrice"])
+        self.order.average_entry = float(self.get_position_info(symbol=self.symbol)["entryPrice"])
 
     def __set_ex_possible_loss(self):
         logger.debug(f"setting all exchange vars")
@@ -446,7 +434,7 @@ class LiveTrading:
 
     def __set_exchange_variables(self, entry_order_id, sl_order_id, tp_order_id):
         logger.debug(f"setting all exchange vars")
-        pos_info = self.get_position_info()
+        pos_info = self.get_position_info(symbol=self.symbol)
         entry_info = self.exchange.get_filled_orders_by_order_id(symbol=self.symbol, order_id=entry_order_id)
         tp_info = self.exchange.get_open_order_by_order_id(symbol=self.symbol, order_id=tp_order_id)
         sl_info = self.exchange.get_open_order_by_order_id(symbol=self.symbol, order_id=sl_order_id)
@@ -515,16 +503,16 @@ class LiveTrading:
 
     def __get_entry_plot_filename(self):
         logger.debug("Getting entry plot file")
-        last_20 = self.candles[-20:]
-        last_20_datetimes = pd.to_datetime(last_20[:, CandleBodyType.Timestamp], unit="ms")
-        graph_entry = [last_20_datetimes[-1]]
+        last_50 = self.candles[-50:]
+        last_50_datetimes = pd.to_datetime(last_50[:, CandleBodyType.Timestamp], unit="ms")
+        graph_entry = [last_50_datetimes[-1]]
         fig = go.Figure()
         fig.add_candlestick(
-            x=last_20_datetimes,
-            open=last_20[:, CandleBodyType.Open],
-            high=last_20[:, CandleBodyType.High],
-            low=last_20[:, CandleBodyType.Low],
-            close=last_20[:, CandleBodyType.Close],
+            x=last_50_datetimes,
+            open=last_50[:, CandleBodyType.Open],
+            high=last_50[:, CandleBodyType.High],
+            low=last_50[:, CandleBodyType.Low],
+            close=last_50[:, CandleBodyType.Close],
             name="Exchange order",
         )
         # entry
@@ -567,7 +555,7 @@ class LiveTrading:
             marker=dict(size=10, symbol="hexagram", color="red"),
             name=f"Liq Price",
         )
-        fig.update_layout(xaxis_rangeslider_visible=False)
+        fig.update_layout(height=800, xaxis_rangeslider_visible=False)
         fig.show()
         entry_filename = os.path.join(
             ".",

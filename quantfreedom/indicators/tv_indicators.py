@@ -255,9 +255,9 @@ def macd_tv(
 
 
 def bb_tv(
-    source: np.array,
     length: int,
     multi: float,
+    source: np.array,
     basis_ma_type: Callable = sma_tv,
 ) -> tuple[np.array, np.array, np.array]:
     """
@@ -344,8 +344,8 @@ def atr_tv(
 
 
 def rsi_tv(
-    source: np.array,
     length: int,
+    source: np.array,
 ) -> np.array:
     """
     [Relative strength index](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rsi)

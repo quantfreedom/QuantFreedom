@@ -17,7 +17,10 @@ class Exchange:
     candles_list = None
     volume_yes_no_start = None
     volume_yes_no_end = None
+    position_mode = None
     exchange_settings: ExchangeSettings = None
+    timeframe_in_ms = None
+    last_fetched_ms_time = None
 
     def __init__(
         self,
@@ -27,6 +30,84 @@ class Exchange:
     ):
         self.api_key = api_key
         self.secret_key = secret_key
+
+    def get_current_time_sec(self):
+        return int(time())
+
+    def get_current_time_ms(self):
+        return self.get_current_time_sec() * 1000
+
+    def get_current_pd_datetime(self):
+        return pd.to_datetime(self.get_current_time_sec(), unit="s")
+
+    def get_ms_time_to_pd_datetime(
+        self,
+        time_in_ms: int,
+    ):
+        return pd.to_datetime(time_in_ms / 1000, unit="s")
+
+    def get_timeframe_in_ms(
+        self,
+        timeframe: str,
+    ):
+        return self.get_timeframe_in_s(timeframe=timeframe) * 1000
+
+    def get_timeframe_in_s(
+        self,
+        timeframe: str,
+    ):
+        total_mins = TIMEFRAMES_IN_MINUTES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
+        time_delta_mins = timedelta(minutes=total_mins)
+        total_seconds = int(time_delta_mins.total_seconds())
+        return total_seconds
+
+    def remove_none_from_dict(
+        self,
+        params: dict,
+    ):
+        new_params = {k: v for k, v in params.items() if v is not None}
+        return new_params
+
+    def get_params_as_dict_string(
+        self,
+        params: dict,
+    ):
+        new_params = self.remove_none_from_dict(params=params)
+        dict_string = str(json.dumps(new_params))
+        return dict_string
+
+    def get_params_as_path(
+        self,
+        params: dict,
+    ):
+        params_as_path = "&".join("{key}={value}".format(key=k, value=v) for k, v in params.items() if v is not None)
+        return params_as_path
+
+    def get_since_until_timestamp(
+        self,
+        candles_to_dl_ms: int,
+        since_datetime: datetime,
+        timeframe_in_ms: int,
+        until_datetime: datetime,
+    ) -> tuple[int, int]:
+        if until_datetime is None:
+            if since_datetime is None:
+                until_timestamp = self.get_current_time_ms() - timeframe_in_ms
+                since_timestamp = until_timestamp - candles_to_dl_ms
+            else:
+                since_timestamp = int(since_datetime.replace(tzinfo=timezone.utc).timestamp() * 1000)
+                until_timestamp = since_timestamp + candles_to_dl_ms - 5000  # 5000 is to sub 5 seconds
+        else:
+            until_timestamp = int(until_datetime.replace(tzinfo=timezone.utc).timestamp() * 1000)
+            if since_datetime is None:
+                since_timestamp = until_timestamp - candles_to_dl_ms
+            else:
+                since_timestamp = int(since_datetime.replace(tzinfo=timezone.utc).timestamp() * 1000)
+            until_timestamp -= 5000
+        return since_timestamp, until_timestamp
+
+    def last_fetched_time_to_pd_datetime(self):
+        return self.get_ms_time_to_pd_datetime(time_in_ms=self.last_fetched_ms_time)
 
     def create_order(self, **kwargs):
         pass
@@ -76,65 +157,20 @@ class Exchange:
     def get_closed_pnl(self, **kwargs):
         pass
 
-    def get_current_time_sec(self):
-        return int(time())
+    def create_long_hedge_mode_sl_order(self, **kwargs):
+        pass
 
-    def get_current_time_ms(self):
-        return self.get_current_time_sec() * 1000
+    def get_long_hedge_mode_position_info(self, **kwargs):
+        pass
 
-    def get_current_pd_datetime(self):
-        return pd.to_datetime(self.get_current_time_sec(), unit="s")
+    def create_long_hedge_mode_entry_market_order(self, **kwargs):
+        pass
 
-    def get_ms_time_to_pd_datetime(self, time_in_ms):
-        return pd.to_datetime(time_in_ms / 1000, unit="s")
+    def create_long_hedge_mode_tp_limit_order(self, **kwargs):
+        pass
 
-    def get_timeframe_in_ms(self, timeframe: str):
-        return self.get_timeframe_in_s(timeframe=timeframe) * 1000
+    def set_init_last_fetched_time(self, **kwargs):
+        pass
 
-    def get_timeframe_in_s(self, timeframe: str):
-        total_mins = TIMEFRAMES_IN_MINUTES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
-        time_delta_mins = timedelta(minutes=total_mins)
-        total_seconds = int(time_delta_mins.total_seconds())
-        return total_seconds
-
-    def get_exchange_timeframe(self, timeframe: str, ex_timeframes: list):
-        try:
-            return ex_timeframes[UNIVERSAL_TIMEFRAMES.index(timeframe)]
-        except Exception as e:
-            raise Exception(f"Use one of these timeframes - {UNIVERSAL_TIMEFRAMES} -> {e}")
-
-    def remove_none_from_dict(self, params: dict):
-        new_params = {k: v for k, v in params.items() if v is not None}
-        return new_params
-
-    def get_params_as_dict_string(self, params: dict):
-        new_params = self.remove_none_from_dict(params=params)
-        dict_string = str(json.dumps(new_params))
-        return dict_string
-
-    def get_params_as_path(self, params: dict):
-        params_as_path = "&".join("{key}={value}".format(key=k, value=v) for k, v in params.items() if v is not None)
-        return params_as_path
-
-    def get_since_until_timestamp(
-        self,
-        candles_to_dl_ms: int,
-        since_datetime: datetime,
-        timeframe_in_ms: int,
-        until_datetime: datetime,
-    ) -> tuple[int, int]:
-        if until_datetime is None:
-            if since_datetime is None:
-                until_timestamp = self.get_current_time_ms() - timeframe_in_ms
-                since_timestamp = until_timestamp - candles_to_dl_ms
-            else:
-                since_timestamp = int(since_datetime.replace(tzinfo=timezone.utc).timestamp() * 1000)
-                until_timestamp = since_timestamp + candles_to_dl_ms - 5000  # 5000 is to sub 5 seconds
-        else:
-            until_timestamp = int(until_datetime.replace(tzinfo=timezone.utc).timestamp() * 1000)
-            if since_datetime is None:
-                since_timestamp = until_timestamp - candles_to_dl_ms
-            else:
-                since_timestamp = int(since_datetime.replace(tzinfo=timezone.utc).timestamp() * 1000)
-            until_timestamp -= 5000
-        return since_timestamp, until_timestamp
+    def get_exchange_timeframe(self, **kwargs):
+        pass

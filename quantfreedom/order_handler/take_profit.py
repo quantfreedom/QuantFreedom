@@ -36,7 +36,7 @@ class TakeProfit:
         if tp_strategy_type == TakeProfitStrategyType.Provided:
             self.tp_calculator = self.tp_provided
             self.checker_tp_hit = self.c_tp_hit_provided
-        if tp_strategy_type == TakeProfitStrategyType.Provided:
+        if tp_strategy_type == TakeProfitStrategyType.Nothing:
             self.tp_calculator = self.tp_provided
             self.checker_tp_hit = self.c_tp_hit_nothing
 

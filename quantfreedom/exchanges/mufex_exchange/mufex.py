@@ -3,7 +3,7 @@ import hmac
 import numpy as np
 from requests import get, post
 from time import sleep, time
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 from quantfreedom.enums import (
@@ -12,7 +12,7 @@ from quantfreedom.enums import (
     PositionModeType,
     TriggerDirectionType,
 )
-from quantfreedom.exchanges.exchange import Exchange
+from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES, Exchange
 
 MUFEX_TIMEFRAMES = [1, 5, 15, 30, 60, 120, 240, 360, 720, "D", "W"]
 
@@ -48,7 +48,11 @@ class Mufex(Exchange):
     ################################################################
     ################################################################
 
-    def __HTTP_post_request(self, end_point, params):
+    def __HTTP_post_request(
+        self,
+        end_point: str,
+        params: dict,
+    ):
         timestamp = str(int(time() * 1000))
         params_as_dict_string = self.get_params_as_dict_string(params=params)
         signature = self.__gen_signature(timestamp=timestamp, params_as_string=params_as_dict_string)
@@ -63,7 +67,7 @@ class Mufex(Exchange):
         }
 
         try:
-            response: dict = post(
+            response = post(
                 url=self.url_start + end_point,
                 headers=headers,
                 data=params_as_dict_string,
@@ -73,7 +77,11 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex __HTTP_post_request - > {e}")
 
-    def __HTTP_get_request(self, end_point, params):
+    def __HTTP_get_request(
+        self,
+        end_point: str,
+        params: dict,
+    ):
         timestamp = str(int(time() * 1000))
         params_as_path = self.get_params_as_path(params=params)
         signature = self.__gen_signature(timestamp=timestamp, params_as_string=params_as_path)
@@ -87,7 +95,7 @@ class Mufex(Exchange):
         }
 
         try:
-            response: dict = get(
+            response = get(
                 url=self.url_start + end_point + "?" + params_as_path,
                 headers=headers,
             )
@@ -96,7 +104,11 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex __HTTP_get_request - > {e}")
 
-    def __gen_signature(self, timestamp, params_as_string):
+    def __gen_signature(
+        self,
+        timestamp: str,
+        params_as_string: str,
+    ):
         param_str = timestamp + self.api_key + "5000" + params_as_string
         hash = hmac.new(bytes(self.secret_key, "utf-8"), param_str.encode("utf-8"), hashlib.sha256)
         return hash.hexdigest()
@@ -121,13 +133,7 @@ class Mufex(Exchange):
         category: str = "linear",
     ) -> np.array:
         """
-        Summary
-        -------
         [mufex candle docs](https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_querykline)
-
-        Explainer Video
-        ---------------
-        Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
 
         Parameters
         ----------
@@ -149,14 +155,14 @@ class Mufex(Exchange):
         np.array
             a 2 dim array with the following columns "timestamp", "open", "high", "low", "close", "volume"
         """
-        ex_timeframe = self.get_exchange_timeframe(ex_timeframes=MUFEX_TIMEFRAMES, timeframe=timeframe)
-        timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
-        candles_to_dl_ms = candles_to_dl * timeframe_in_ms
+        ex_timeframe = self.get_exchange_timeframe(timeframe=timeframe)
+        self.timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
+        candles_to_dl_ms = candles_to_dl * self.timeframe_in_ms
 
         since_timestamp, until_timestamp = self.get_since_until_timestamp(
             candles_to_dl_ms=candles_to_dl_ms,
             since_datetime=since_datetime,
-            timeframe_in_ms=timeframe_in_ms,
+            timeframe_in_ms=self.timeframe_in_ms,
             until_datetime=until_datetime,
         )
 
@@ -171,7 +177,7 @@ class Mufex(Exchange):
             "limit": 1500,
         }
         # start_time = self.get_current_time_sec()
-        while params["start"] + timeframe_in_ms < until_timestamp:
+        while params["start"] + self.timeframe_in_ms < until_timestamp:
             try:
                 response: dict = get(url=self.url_start + end_point, params=params).json()
                 new_candles = response["data"]["list"]
@@ -187,9 +193,10 @@ class Mufex(Exchange):
             except Exception as e:
                 raise Exception(f"Mufex get_candles {response.get('message')} - > {e}")
 
-        candles_np = np.array(candles_list, dtype=np.float_)[:, :-1]
+        candles = np.array(candles_list, dtype=np.float_)[:, :-1]
+        self.last_fetched_ms_time = int(candles[-1, 0])
 
-        return candles_np
+        return candles
 
     def get_closed_pnl(
         self,
@@ -201,12 +208,19 @@ class Mufex(Exchange):
         """
         [Mufex API link to Get Closed Profit and Loss](https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_closedprofitandloss)
         """
+
+        if since_datetime is not None:
+            since_datetime = int(since_datetime.replace(tzinfo=timezone.utc).timestamp() * 1000)
+        if until_datetime is not None:
+            until_datetime = int(until_datetime.replace(tzinfo=timezone.utc).timestamp() * 1000)
+
         end_point = "/private/v1/account/closed-pnl"
         params = {}
         params["symbol"] = symbol
         params["limit"] = limit
-        params["startTime"] = int(since_timestamp.replace(tzinfo=timezone.utc).timestamp() * 1000)
-        params["endTime"] = int(until_timestamp.replace(tzinfo=timezone.utc).timestamp() * 1000)
+        params["startTime"] = since_datetime
+        params["endTime"] = until_datetime
+
         response: dict = self.__HTTP_get_request(end_point=end_point, params=params)
         try:
             response["data"]["list"][0]
@@ -228,13 +242,7 @@ class Mufex(Exchange):
         symbol: str = None,
     ):
         """
-        Summary
-        -------
         [Mufex API link to Get Instrument Info](https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_instrhead)
-
-        Explainer Video
-        ---------------
-        Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
 
         Parameters
         ----------
@@ -274,13 +282,7 @@ class Mufex(Exchange):
         category: str = "linear",
     ):
         """
-        Summary
-        -------
         [Mufex API link to Get Risk Limit](https://www.mufex.finance/apidocs/derivatives/contract/index.html?console#t-dv_risklimithead)
-
-        Explainer Video
-        ---------------
-        Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you
 
         Parameters
         ----------
@@ -373,7 +375,10 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex create_order {response['message']} -> {e}")
 
-    def get_trading_fee_rates(self, symbol: str = None):
+    def get_trading_fee_rates(
+        self,
+        symbol: str = None,
+    ):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-tradingfeerate
         """
@@ -387,7 +392,10 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_trading_fee_rates = Data or List is empty {response['message']} -> {e}")
 
-    def get_symbol_trading_fee_rates(self, symbol: str = None):
+    def get_symbol_trading_fee_rates(
+        self,
+        symbol: str = None,
+    ):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-tradingfeerate
         """
@@ -431,7 +439,11 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_order_history = Data or List is empty {response['message']} -> {e}")
 
-    def get_order_history_by_order_id(self, symbol: str, order_id: str):
+    def get_order_history_by_order_id(
+        self,
+        symbol: str,
+        order_id: str,
+    ):
         return self.get_order_history(symbol=symbol, order_id=order_id)[0]
 
     def get_open_orders(
@@ -484,14 +496,20 @@ class Mufex(Exchange):
 
         use link to see all Request Parameters
         """
+        if since_datetime is not None:
+            since_datetime = int(since_datetime.replace(tzinfo=timezone.utc).timestamp() * 1000)
+        if until_datetime is not None:
+            until_datetime = int(until_datetime.replace(tzinfo=timezone.utc).timestamp() * 1000)
+
         end_point = "/private/v1/trade/fills"
         params = {}
         params["symbol"] = symbol
         params["limit"] = limit
         params["execType"] = execType
         params["orderId"] = order_id
-        params["startTime"] = int(since_timestamp.replace(tzinfo=timezone.utc).timestamp() * 1000)
-        params["endTime"] = int(until_timestamp.replace(tzinfo=timezone.utc).timestamp() * 1000)
+        params["startTime"] = since_datetime
+        params["endTime"] = until_datetime
+        
         response: dict = self.__HTTP_get_request(end_point=end_point, params=params)
         try:
             response["data"]["list"][0]
@@ -501,7 +519,11 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_filled_orders = Data or List is empty {response['message']} -> {e}")
 
-    def get_filled_orders_by_order_id(self, symbol: str, order_id: str):
+    def get_filled_orders_by_order_id(
+        self,
+        symbol: str,
+        order_id: str,
+    ):
         return self.get_filled_orders(symbol=symbol, order_id=order_id)[0]
 
     def get_position_info(
@@ -552,7 +574,10 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex cancel_open_order message= {response['message']} -> {e}")
 
-    def cancel_all_open_orders_per_symbol(self, symbol: str):
+    def cancel_all_open_orders_per_symbol(
+        self,
+        symbol: str,
+    ):
         """
         no link yet
         """
@@ -569,7 +594,10 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex cancel_all_open_orders_per_symbol message = {response['message']} -> {e}")
 
-    def adjust_order(self, params: dict = {}):
+    def adjust_order(
+        self,
+        params: dict = {},
+    ):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-contract_replaceorder
 
@@ -587,7 +615,13 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex adjust_order message = {response['message']} -> {e}")
 
-    def move_limit_order(self, symbol: str, order_id: str, new_price: float, asset_size: float):
+    def move_limit_order(
+        self,
+        symbol: str,
+        order_id: str,
+        new_price: float,
+        asset_size: float,
+    ):
         params = {}
         params["symbol"] = symbol
         params["orderId"] = order_id
@@ -595,7 +629,13 @@ class Mufex(Exchange):
         params["price"] = str(new_price)
         return self.adjust_order(params=params)
 
-    def move_stop_order(self, symbol: str, order_id: str, new_price: float, asset_size: float):
+    def move_stop_order(
+        self,
+        symbol: str,
+        order_id: str,
+        new_price: float,
+        asset_size: float,
+    ):
         params = {}
         params["symbol"] = symbol
         params["orderId"] = order_id
@@ -603,7 +643,10 @@ class Mufex(Exchange):
         params["triggerPrice"] = str(new_price)
         return self.adjust_order(params=params)
 
-    def get_wallet_info(self, trading_with: str = None):
+    def get_wallet_info(
+        self,
+        trading_with: str = None,
+    ):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-balance
         """
@@ -619,7 +662,10 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_wallet_info = Data or List is empty {response['message']} -> {e}")
 
-    def get_equity_of_asset(self, trading_with: str):
+    def get_equity_of_asset(
+        self,
+        trading_with: str,
+    ):
         return float(self.get_wallet_info(trading_with=trading_with)[0]["equity"])
 
     def set_position_mode(
@@ -646,7 +692,11 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex: set_position_mode= {response['message']} -> {e}")
 
-    def set_leverage(self, symbol: str, leverage: float):
+    def set_leverage(
+        self,
+        symbol: str,
+        leverage: float,
+    ):
         """
         No link yet
         """
@@ -666,7 +716,12 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex set_leverage = Data or List is empty {response['message']} -> {e}")
 
-    def set_leverage_mode(self, symbol: str, leverage_mode: LeverageModeType, leverage: int = 5):
+    def set_leverage_mode(
+        self,
+        symbol: str,
+        leverage_mode: LeverageModeType,
+        leverage: int = 5,
+    ):
         """
         https://www.mufex.finance/apidocs/derivatives/contract/index.html#t-dv_marginswitch
         Cross/isolated mode. 0: cross margin mode; 1: isolated margin mode
@@ -688,97 +743,110 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex set_leverage_mode = Data or List is empty {response['message']} -> {e}")
 
-    def check_if_order_filled(self, symbol: str, order_id: str):
-        response: dict = self.get_filled_orders(symbol=symbol, order_id=order_id)
+    def check_if_order_filled(
+        self,
+        symbol: str,
+        order_id: str,
+    ):
+        data_list = self.get_filled_orders(symbol=symbol, order_id=order_id)
         try:
-            if response["message"] == "OK":
+            if data_list[0]["orderId"] == order_id:
                 return True
             else:
-                response["data"]["list"][0]
-                if response["orderId"] == order_id:
-                    return True
-                else:
-                    raise Exception
+                raise Exception
         except Exception as e:
-            raise Exception(f"Mufex check_if_order_filled{response['message']} -> {e}")
+            raise Exception(f"Mufex check_if_order_filled -> {e}")
 
-    def check_if_order_canceled(self, symbol: str, order_id: str):
-        response: dict = self.get_order_history(symbol=symbol, order_id=order_id)
+    def check_if_order_canceled(
+        self,
+        symbol: str,
+        order_id: str,
+    ):
+        data_list = self.get_order_history(symbol=symbol, order_id=order_id)
         try:
-            if response["message"] == "OK":
+            if data_list[0]["orderId"] == order_id:
                 return True
             else:
-                response["data"]["list"][0]
-                if response["orderId"] == order_id:
-                    return True
-                else:
-                    raise Exception
+                raise Exception
         except Exception as e:
-            raise Exception(f"Mufex check_if_order_canceled= {response['message']} -> {e}")
+            raise Exception(f"Mufex check_if_order_canceled -> {e}")
 
-    def check_if_order_open(self, symbol: str, order_id: str):
-        response: dict = self.get_open_orders(symbol=symbol, order_id=order_id)
+    def check_if_order_open(
+        self,
+        symbol: str,
+        order_id: str,
+    ):
+        data_list = self.get_open_orders(symbol=symbol, order_id=order_id)
         try:
-            if response["message"] == "OK":
+            if data_list[0]["orderId"] == order_id:
                 return True
             else:
-                response["data"]["list"][0]
-                if response["orderId"] == order_id:
-                    return True
-                else:
-                    raise Exception
+                raise Exception
         except Exception as e:
-            raise Exception(f"Mufex check_if_order_canceled= {response['message']} -> {e}")
+            raise Exception(f"Mufex check_if_order_canceled -> {e}")
 
-    """
-    ##############################################################
-    ##############################################################
-    ###################                        ###################
-    ###################                        ###################
-    ################### Functions for exchange ###################
-    ###################                        ###################
-    ###################                        ###################
-    ##############################################################
-    ##############################################################
-    """
-
-    def set_leverage_mode_isolated(self, symbol: str):
+    def set_leverage_mode_isolated(
+        self,
+        symbol: str,
+    ):
         true_false = self.set_leverage_mode(symbol=symbol, leverage_mode=1)
 
         return true_false
 
-    def set_leverage_mode_cross(self, symbol: str):
+    def set_leverage_mode_cross(
+        self,
+        symbol: str,
+    ):
         true_false = self.set_leverage_mode(symbol=symbol, leverage_mode=0)
 
         return true_false
 
-    def __get_fee_pcts(self, symbol):
+    def __get_fee_pcts(
+        self,
+        symbol: str,
+    ):
         trading_fee_info = self.get_symbol_trading_fee_rates(symbol=symbol)
         market_fee_pct = float(trading_fee_info["takerFeeRate"])
         limit_fee_pct = float(trading_fee_info["makerFeeRate"])
 
         return market_fee_pct, limit_fee_pct
 
-    def __get_mmr_pct(self, symbol, category: str = "linear"):
+    def __get_mmr_pct(
+        self,
+        symbol,
+        category: str = "linear",
+    ):
         risk_limit_info = self.get_risk_limit_info(symbol=symbol, category=category)
         mmr_pct = float(risk_limit_info["maintainMargin"])
 
         return mmr_pct
 
-    def set_position_mode_as_hedge_mode(self, symbol):
-        true_false = self.set_position_mode(symbol=symbol, position_mode=1)
+    def set_position_mode_as_hedge_mode(
+        self,
+        symbol: str,
+    ):
+        true_false = self.set_position_mode(symbol=symbol, position_mode=3)
 
         return true_false
 
-    def set_position_mode_as_one_way_mode(self, symbol):
+    def set_position_mode_as_one_way_mode(
+        self,
+        symbol: str,
+    ):
         true_false = self.set_position_mode(symbol=symbol, position_mode=0)
 
         return true_false
 
-    def __int_value_of_step_size(self, step_size: str):
+    def __int_value_of_step_size(
+        self,
+        step_size: str,
+    ):
         return step_size.index("1") - step_size.index(".")
 
-    def __get_min_max_leverage_and_asset_size(self, symbol):
+    def __get_min_max_leverage_and_asset_size(
+        self,
+        symbol: str,
+    ):
         symbol_info = self.get_all_symbols_info(symbol=symbol, limit=1)[0]
         max_leverage = float(symbol_info["leverageFilter"]["maxLeverage"])
         min_leverage = float(symbol_info["leverageFilter"]["minLeverage"])
@@ -800,13 +868,21 @@ class Mufex(Exchange):
 
     def set_exchange_settings(
         self,
-        symbol: str,
-        position_mode: PositionModeType,
         leverage_mode: LeverageModeType,
+        position_mode: PositionModeType,
+        symbol: str,
     ):
-        """
-        Make sure you actually set your leverage mode and position mode first before running this function
-        """
+        self.position_mode = position_mode
+        if position_mode == PositionModeType.HedgeMode:
+            self.set_position_mode_as_hedge_mode(symbol=symbol)
+        else:
+            self.set_position_mode_as_one_way_mode(symbol=symbol)
+
+        if leverage_mode == LeverageModeType.Isolated:
+            self.set_leverage_mode_isolated(symbol=symbol)
+        else:
+            self.set_leverage_mode_cross(symbol=symbol)
+
         market_fee_pct, limit_fee_pct = self.__get_fee_pcts(symbol=symbol)
         (
             max_leverage,
@@ -833,7 +909,9 @@ class Mufex(Exchange):
             leverage_tick_step=leverage_tick_step,
         )
 
-    def get_balance(self):
+    def get_balance(
+        self,
+    ):
         endpoint = "/private/v1/account/balance"
         params = {}
         try:
@@ -857,3 +935,86 @@ class Mufex(Exchange):
             print(f"HTTP Status Code: {status_code}")
 
             return {"message": str(e)}
+
+    def get_exchange_timeframe(
+        self,
+        timeframe: str,
+    ):
+        try:
+            return MUFEX_TIMEFRAMES[UNIVERSAL_TIMEFRAMES.index(timeframe)]
+        except Exception as e:
+            raise Exception(f"Use one of these timeframes - {UNIVERSAL_TIMEFRAMES} -> {e}")
+
+    #######################################################
+    #######################################################
+    #######################################################
+    ##################      Live     ######################
+    ##################      Live     ######################
+    ##################      Live     ######################
+    #######################################################
+    #######################################################
+    #######################################################
+
+    def check_long_hedge_mode_if_in_position(
+        self,
+        symbol: str,
+    ):
+        if float(self.get_position_info(symbol=symbol)[0]["entryPrice"]) > 0:
+            return True
+        else:
+            return False
+
+    def create_long_hedge_mode_entry_market_order(
+        self,
+        asset_size: float,
+        symbol: str,
+    ):
+        return self.create_order(
+            symbol=symbol,
+            position_mode=1,
+            buy_sell="Buy",
+            order_type="Market",
+            asset_size=asset_size,
+            time_in_force="GoodTillCancel",
+        )
+
+    def create_long_hedge_mode_tp_limit_order(
+        self,
+        asset_size: float,
+        symbol: str,
+        tp_price: float,
+    ):
+        return self.create_order(
+            symbol=symbol,
+            position_mode=1,
+            buy_sell="Sell",
+            order_type="Limit",
+            asset_size=asset_size,
+            price=tp_price,
+            reduce_only=True,
+            time_in_force="PostOnly",
+        )
+
+    def create_long_hedge_mode_sl_order(
+        self,
+        asset_size: float,
+        symbol: str,
+        trigger_price: float,
+    ):
+        return self.create_order(
+            symbol=symbol,
+            position_mode=1,
+            buy_sell="Sell",
+            order_type="Market",
+            asset_size=asset_size,
+            triggerPrice=trigger_price,
+            reduce_only=True,
+            triggerDirection=TriggerDirectionType.Fall,
+            time_in_force="GoodTillCancel",
+        )
+
+    def get_long_hedge_mode_position_info(
+        self,
+        symbol: str,
+    ):
+        return self.get_position_info(symbol=symbol)[0]

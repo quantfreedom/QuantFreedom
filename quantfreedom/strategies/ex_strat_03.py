@@ -1,3 +1,5 @@
+from datetime import datetime
+import os
 import numpy as np
 import plotly.graph_objects as go
 
@@ -264,4 +266,77 @@ class SMACrossing(Strategy):
         self,
         candles: np.array,
     ):
-        pass
+        logger.debug("Getting entry plot file")
+        last_20 = candles[-20:]
+        last_20_datetimes = last_20[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
+        fig = go.Figure()
+        fig.add_candlestick(
+            x=last_20_datetimes,
+            open=last_20[:, CandleBodyType.Open],
+            high=last_20[:, CandleBodyType.High],
+            low=last_20[:, CandleBodyType.Low],
+            close=last_20[:, CandleBodyType.Close],
+            name="Candles",
+        )
+        fig.add_scatter(
+            x=last_20_datetimes,
+            y=self.sma_fast,
+            name="SMA Fast",
+            line_color="lightblue",
+        )
+        fig.add_scatter(
+            x=last_20_datetimes,
+            y=self.sma_slow,
+            name="SMA Slow",
+            line_color="yellow",
+        )
+        fig.add_scatter(
+            x=last_20_datetimes,
+            y=self.cross_above_signal,
+            mode="markers",
+            name="Entries",
+            marker=dict(
+                size=12,
+                symbol="circle",
+                color="#00F6FF",
+                line=dict(
+                    width=1,
+                    color="DarkSlateGrey",
+                ),
+            ),
+        )
+        fig.add_scatter(
+            x=last_20_datetimes,
+            y=self.cross_below_signal,
+            mode="markers",
+            name="Exits",
+            marker=dict(
+                size=12,
+                symbol="triangle-up",
+                color="#FF7B00",
+                line=dict(
+                    width=1,
+                    color="DarkSlateGrey",
+                ),
+            ),
+        )
+        fig.update_layout(
+            height=800,
+            xaxis_rangeslider_visible=False,
+            title=dict(
+                x=0.5,
+                text="Signals",
+                xanchor="center",
+                font=dict(
+                    size=50,
+                ),
+            ),
+        )
+        entry_filename = os.path.join(
+            ".",
+            "logs",
+            "images",
+            f'entry_{datetime.utcnow().strftime("%m-%d-%Y_%H-%M-%S")}.png',
+        )
+        fig.write_image(entry_filename)
+        return entry_filename
