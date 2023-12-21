@@ -1,4 +1,4 @@
-from typing import Callable, NamedTuple
+from typing import NamedTuple
 import numpy as np
 
 
