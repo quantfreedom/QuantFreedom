@@ -28,7 +28,6 @@ class LiveTrading:
         email_sender: EmailSender,
         entry_order_type: str,
         exchange: Exchange,
-        long_or_short: str,
         order: OrderHandler,
         strategy: Strategy,
         symbol: str,
@@ -43,7 +42,7 @@ class LiveTrading:
         self.trading_with = trading_with
 
         if self.exchange.position_mode == PositionModeType.HedgeMode:
-            if long_or_short == "long":
+            if strategy.long_short == "long":
                 self.place_sl_order = exchange.create_long_hedge_mode_sl_order
                 self.get_position_info = exchange.get_long_hedge_mode_position_info
                 if entry_order_type == "market":
@@ -503,16 +502,16 @@ class LiveTrading:
 
     def __get_entry_plot_filename(self):
         logger.debug("Getting entry plot file")
-        last_50 = self.candles[-50:]
-        last_50_datetimes = pd.to_datetime(last_50[:, CandleBodyType.Timestamp], unit="ms")
-        graph_entry = [last_50_datetimes[-1]]
+        latest_candles = self.candles[-50:]
+        latest_candles_datetimes = pd.to_datetime(latest_candles[:, CandleBodyType.Timestamp], unit="ms")
+        graph_entry = [latest_candles_datetimes[-1]]
         fig = go.Figure()
         fig.add_candlestick(
-            x=last_50_datetimes,
-            open=last_50[:, CandleBodyType.Open],
-            high=last_50[:, CandleBodyType.High],
-            low=last_50[:, CandleBodyType.Low],
-            close=last_50[:, CandleBodyType.Close],
+            x=latest_candles_datetimes,
+            open=latest_candles[:, CandleBodyType.Open],
+            high=latest_candles[:, CandleBodyType.High],
+            low=latest_candles[:, CandleBodyType.Low],
+            close=latest_candles[:, CandleBodyType.Close],
             name="Exchange order",
         )
         # entry
@@ -558,7 +557,7 @@ class LiveTrading:
         fig.update_layout(height=800, xaxis_rangeslider_visible=False)
         fig.show()
         entry_filename = os.path.join(
-            ".",
+            self.strategy.log_folder,
             "logs",
             "images",
             f'entry_{datetime.utcnow().strftime("%m-%d-%Y_%H-%M-%S")}.png',

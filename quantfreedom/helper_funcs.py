@@ -267,7 +267,7 @@ def log_dynamic_order_settings(
     dynamic_order_settings: DynamicOrderSettingsArrays,
 ):
     logger.info(
-        f"Dynamic Order settings index= {dos_index}\
+        f"\nDynamic Order settings index= {dos_index}\
         \nmax_equity_risk_pct={round(dynamic_order_settings.max_equity_risk_pct * 100, 3)}\
         \nmax_trades={dynamic_order_settings.max_trades}\
         \nrisk_account_pct_size={round(dynamic_order_settings.risk_account_pct_size * 100, 3)}\

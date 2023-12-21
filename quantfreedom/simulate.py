@@ -29,21 +29,16 @@ def run_df_backtest(
     candles: np.array,
     dos_arrays: DynamicOrderSettingsArrays,
     exchange_settings: ExchangeSettings,
-    logger_bool: bool,
     static_os: StaticOrderSettings,
     strategy: Strategy,
 ):
-    if logger_bool == False:
-        logger.disabled = True
-    else:
-        logger.disabled = False
-        set_loggers()
+    logger.disabled = True
+    # logger.disabled = False
+    # set_loggers(log_folder=strategy.log_folder)
 
     starting_equity = static_os.starting_equity
 
-    dos_cart_arrays = dos_cart_product(
-        dos_arrays=dos_arrays,
-    )
+    dos_cart_arrays = dos_cart_product(dos_arrays=dos_arrays)
 
     order = OrderHandler(
         long_short=strategy.long_short,
@@ -92,8 +87,8 @@ def run_df_backtest(
                 dos_index=dos_index,
             )
             log_dynamic_order_settings(
-                dynamic_order_settings=dynamic_order_settings,
                 dos_index=dos_index,
+                dynamic_order_settings=dynamic_order_settings,
             )
 
             pnl_array = np.full(shape=round(total_bars / 3), fill_value=np.nan)
@@ -328,7 +323,7 @@ def or_backtest(
         logger.disabled = True
     else:
         logger.disabled = False
-        set_loggers()
+        set_loggers(log_folder=strategy.log_folder)
 
     starting_equity = static_os.starting_equity
 
@@ -337,9 +332,9 @@ def or_backtest(
     )
 
     order = OrderHandler(
-        static_os=static_os,
         exchange_settings=exchange_settings,
         long_short=strategy.long_short,
+        static_os=static_os,
     )
 
     strategy.set_entries_exits_array(
@@ -353,8 +348,8 @@ def or_backtest(
         dos_index=dos_index,
     )
     log_dynamic_order_settings(
+        dos_index=dos_index,
         dynamic_order_settings=dynamic_order_settings,
-        dos_index=dos_arrays,
     )
 
     order.update_class_dos(dynamic_order_settings=dynamic_order_settings)
@@ -562,6 +557,7 @@ def or_backtest(
                     raise Exception(f"Exception hit in eval strat -> {e}")
     order_records_df = order_records_to_df(order_records[:or_filled])
     pretty_qf(dynamic_order_settings)
+    pretty_qf(strategy.current_ind_settings)
     if plot_results:
         strategy.plot_signals(candles=candles)
         plot_or_results(candles=candles, order_records_df=order_records_df)

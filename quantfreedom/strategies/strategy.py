@@ -7,10 +7,12 @@ class IndicatorSettingsArrays(NamedTuple):
 
 
 class Strategy:
+    current_ind_settings: IndicatorSettingsArrays
     entries: np.array
     entry_message: Callable
     live_evalutate: Callable
     exit_prices: np.array
+    log_folder: str
     indicator_settings_arrays: IndicatorSettingsArrays
     log_indicator_settings: Callable
     set_entries_exits_array: Callable

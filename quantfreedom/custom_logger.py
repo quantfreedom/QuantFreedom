@@ -2,20 +2,21 @@ from datetime import datetime
 import os, logging
 import time
 
-DIR_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 FORMATTER = "%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s() - %(lineno)d - %(message)s"
 
 
-def set_loggers():
+def set_loggers(
+    log_folder: str,
+):
     logging.Formatter.converter = time.gmtime
     # creating images folder
-    complete_path = os.path.join(DIR_PATH, "logs", "images")
+    complete_path = os.path.join(log_folder, "logs", "images")
     isExist = os.path.exists(complete_path)
     if not isExist:
         os.makedirs(complete_path)
 
     # Info logs
-    complete_path = os.path.join(DIR_PATH, "logs")
+    complete_path = os.path.join(log_folder, "logs")
     isExist = os.path.exists(complete_path)
     if not isExist:
         os.makedirs(complete_path)
@@ -25,7 +26,7 @@ def set_loggers():
     logger.addHandler(create_logging_handler(filename, FORMATTER))
     logger.info("Testing info log")
 
-    complete_path = os.path.join(DIR_PATH, "logs", "trades")
+    complete_path = os.path.join(log_folder, "logs", "trades")
     isExist = os.path.exists(complete_path)
     if not isExist:
         os.makedirs(complete_path)
