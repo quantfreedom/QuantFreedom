@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "quantfreedom"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["QuantFreedom <QuantFreedom1022@gmail.com>"]
 
