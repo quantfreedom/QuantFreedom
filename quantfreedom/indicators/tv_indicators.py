@@ -629,6 +629,43 @@ def linear_regression_candles_ugurvu_tv(
     return lin_reg_candles, signal
 
 
+def revolution_volatility_bands_tv(
+    length: int,
+    source: np.array,
+):
+    basis = ema_tv(source=source, length=length)
+
+    a = source - basis
+    b = np.where(a < 0, a * -1, a)
+    d = ema_tv(source=b, length=length)
+
+    len_div = int(length / 5) - 1
+
+    upper = basis + d
+    upper_max = np.where(upper > source, upper, source)
+    upper_smooth = ema_tv(source=upper_max, length=length)
+    upper_diff = np.diff(upper_smooth, prepend=np.nan)
+    upper_falling = np.full_like(upper, np.nan)
+
+    lower = basis - d
+    lower_min = np.where(lower < source, lower, source)
+    lower_smooth = ema_tv(source=lower_min, length=length)
+    lower_diff = np.diff(lower_smooth, prepend=np.nan)
+    lower_rising = np.full_like(lower, np.nan)
+
+    for x in range(len_div, source.size):
+        if not (lower_diff[x - len_div : x + 1] > 0).all():
+            continue
+
+        if not (upper_diff[x - len_div : x + 1] < 0).all():
+            continue
+
+        lower_rising[x] = lower_smooth[x]
+        upper_falling[x] = upper_smooth[x]
+
+    return upper_smooth, upper_falling, lower_smooth, lower_rising
+
+
 # def range_detextor_lux_algo_tv(
 #     candles: np.array,
 #     min_range_length: int,

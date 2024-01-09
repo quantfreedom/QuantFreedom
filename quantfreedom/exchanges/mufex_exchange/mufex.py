@@ -509,7 +509,7 @@ class Mufex(Exchange):
         params["orderId"] = order_id
         params["startTime"] = since_datetime
         params["endTime"] = until_datetime
-        
+
         response: dict = self.__HTTP_get_request(end_point=end_point, params=params)
         try:
             response["data"]["list"][0]
@@ -519,7 +519,7 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_filled_orders = Data or List is empty {response['message']} -> {e}")
 
-    def get_filled_orders_by_order_id(
+    def get_filled_order_by_order_id(
         self,
         symbol: str,
         order_id: str,
@@ -837,12 +837,6 @@ class Mufex(Exchange):
 
         return true_false
 
-    def __int_value_of_step_size(
-        self,
-        step_size: str,
-    ):
-        return step_size.index("1") - step_size.index(".")
-
     def __get_min_max_leverage_and_asset_size(
         self,
         symbol: str,
@@ -852,9 +846,9 @@ class Mufex(Exchange):
         min_leverage = float(symbol_info["leverageFilter"]["minLeverage"])
         max_asset_size = float(symbol_info["lotSizeFilter"]["maxTradingQty"])
         min_asset_size = float(symbol_info["lotSizeFilter"]["minTradingQty"])
-        asset_tick_step = self.__int_value_of_step_size(symbol_info["lotSizeFilter"]["qtyStep"])
-        price_tick_step = self.__int_value_of_step_size(symbol_info["priceFilter"]["tickSize"])
-        leverage_tick_step = self.__int_value_of_step_size(symbol_info["leverageFilter"]["leverageStep"])
+        asset_tick_step = self.int_value_of_step_size(symbol_info["lotSizeFilter"]["qtyStep"])
+        price_tick_step = self.int_value_of_step_size(symbol_info["priceFilter"]["tickSize"])
+        leverage_tick_step = self.int_value_of_step_size(symbol_info["leverageFilter"]["leverageStep"])
 
         return (
             max_leverage,

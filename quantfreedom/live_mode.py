@@ -92,6 +92,7 @@ class LiveTrading:
                     candles_to_dl=candles_to_dl,
                 )
                 num_candles = self.candles.shape[0]
+                print("got candles")
 
                 # bar_index bar index is always the last bar ... so if we have 200 candles we are at index 199
                 bar_index = num_candles - 1
@@ -434,7 +435,7 @@ class LiveTrading:
     def __set_exchange_variables(self, entry_order_id, sl_order_id, tp_order_id):
         logger.debug(f"setting all exchange vars")
         pos_info = self.get_position_info(symbol=self.symbol)
-        entry_info = self.exchange.get_filled_orders_by_order_id(symbol=self.symbol, order_id=entry_order_id)
+        entry_info = self.exchange.get_filled_order_by_order_id(symbol=self.symbol, order_id=entry_order_id)
         tp_info = self.exchange.get_open_order_by_order_id(symbol=self.symbol, order_id=tp_order_id)
         sl_info = self.exchange.get_open_order_by_order_id(symbol=self.symbol, order_id=sl_order_id)
 

@@ -12,23 +12,20 @@ def plot_candles_1_ind_same_pane(
     ind_color: str = "yellow",
 ):
     datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
-    fig = go.Figure(
-        data=[
-            go.Candlestick(
-                x=datetimes,
-                open=candles[:, 1],
-                high=candles[:, 2],
-                low=candles[:, 3],
-                close=candles[:, 4],
-                name="Candles",
-            ),
-            go.Scatter(
-                x=datetimes,
-                y=indicator,
-                name=ind_name,
-                line_color=ind_color,
-            ),
-        ]
+    fig = go.Figure()
+    fig.add_candlestick(
+        x=datetimes,
+        open=candles[:, 1],
+        high=candles[:, 2],
+        low=candles[:, 3],
+        close=candles[:, 4],
+        name="Candles",
+    )
+    fig.add_scatter(
+        x=datetimes,
+        y=indicator,
+        name=ind_name,
+        line_color=ind_color,
     )
     fig.update_layout(height=800, xaxis_rangeslider_visible=False)
     return fig
@@ -677,6 +674,77 @@ def plot_linear_regression_candles_ugurvu_tv(
         ]
     )
     fig.update_layout(height=800, xaxis_rangeslider_visible=False)
+    fig.show()
+
+
+def plot_revolution_volatility_bands_tv(
+    candles: np.array,
+    upper_smooth: np.array,
+    upper_falling: np.array,
+    lower_smooth: np.array,
+    lower_rising: np.array,
+    ind_color: str = "yellow",
+):
+    datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
+    fig = go.Figure()
+    fig.add_candlestick(
+        x=datetimes,
+        open=candles[:, 1],
+        high=candles[:, 2],
+        low=candles[:, 3],
+        close=candles[:, 4],
+        name="Candles",
+    )
+    fig.add_scatter(
+        x=datetimes,
+        y=upper_smooth,
+        name="Upper Smooth",
+        line_color=ind_color,
+    )
+    fig.add_scatter(
+        x=datetimes,
+        y=upper_falling,
+        name="Upper Falling",
+        line=dict(color="blue", width=6),
+    )
+    fig.add_scatter(
+        x=datetimes,
+        y=lower_smooth,
+        name="Lower Smooth",
+        line_color=ind_color,
+    )
+    fig.add_scatter(
+        x=datetimes,
+        y=lower_rising,
+        name="Lower Rising",
+        line=dict(color="blue", width=6),
+    )
+    fig.update_layout(height=800, xaxis_rangeslider_visible=False)
+    fig.show()
+
+
+def plot_volume(
+    candles: np.array,
+    moving_average: np.array = None,
+):
+    datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
+    close_prices = candles[:, CandleBodyType.Close]
+    open_prices = candles[:, CandleBodyType.Open]
+    volume = candles[:, CandleBodyType.Volume]
+
+    fig = go.Figure()
+    fig.add_bar(
+        x=datetimes,
+        y=volume,
+        marker=dict(color=np.where(close_prices < open_prices, "red", "green")),
+    )
+    if moving_average:
+        fig.add_scatter(
+            x=datetimes,
+            y=moving_average,
+            name="Lower Rising",
+        )
+    fig.update_layout(height=400, xaxis_rangeslider_visible=False)
     fig.show()
 
 

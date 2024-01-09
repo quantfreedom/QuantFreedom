@@ -109,6 +109,12 @@ class Exchange:
     def last_fetched_time_to_pd_datetime(self):
         return self.get_ms_time_to_pd_datetime(time_in_ms=self.last_fetched_ms_time)
 
+    def int_value_of_step_size(
+        self,
+        step_size: str,
+    ):
+        return step_size.index("1") - step_size.index(".")
+
     def create_order(self, **kwargs):
         pass
 
@@ -118,7 +124,7 @@ class Exchange:
     def cancel_open_order(self, **kwargs):
         pass
 
-    def get_filled_orders_by_order_id(self, **kwargs):
+    def get_filled_order_by_order_id(self, **kwargs):
         pass
 
     def move_open_order(self, **kwargs):

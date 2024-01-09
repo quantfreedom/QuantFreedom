@@ -1,3 +1,30 @@
+bybit exchange live:
+  ✔ get_closed_pnl @done(24-01-08 06:41)
+  ✔ get_latest_pnl_result @done(24-01-08 06:42)
+  ✔ get_order_history @done(24-01-08 07:04)
+  ✔ get_filled_orders @done(24-01-08 07:05)
+  ✔ get_filled_order_by_order_id @done(24-01-08 07:13)
+  ✔ check_if_order_filled @done(24-01-08 07:17)
+  ✔ cancel_all_open_orders_per_symbol @done(24-01-08 07:27)
+  ✔ set_leverage @done(24-01-08 08:14)
+  ✔ set_leverage_mode @done(24-01-08 08:14)
+  ✔ check_if_order_open @done(24-01-08 08:27)
+  ✔ adjust_order @done(24-01-08 12:50)
+  ✔ move_stop_order @done(24-01-09 06:25)
+  ✔ get_open_order_by_order_id @done(24-01-09 06:29)
+  ✔ get_risk_limit_info @done(24-01-09 07:11)
+  ✔ set_position_mode @done(24-01-09 07:18)
+  ✔ __get_mmr_pct @done(24-01-09 07:28)
+  ✔ get_all_symbols_info @done(24-01-09 07:57)
+  ✔ __get_min_max_leverage_and_asset_size @done(24-01-09 07:57)
+  ✔ get_symbol_trading_fee_rates @done(24-01-09 08:04)
+  ✔ __get_fee_pcts @done(24-01-09 08:04)
+  ✔ set_leverage_mode_cross @done(24-01-09 08:38)
+  ✔ set_leverage_mode_isolated @done(24-01-09 08:39)
+  ✔ set_position_mode_as_one_way_mode @done(24-01-09 08:39)
+  ✔ set_position_mode_as_hedge_mode @done(24-01-09 08:39)
+  ✔ set_exchange_settings @done(24-01-09 08:42)
+
 Update Backtester:
   ✔ fix since_date and until_date @done(23-12-08 13:08)
   ☐ update candles doc strings
@@ -6,6 +33,9 @@ Numba Updates:
   ☐ update numba with tv indicators
   ☐ update numba simulate
   ☐ add nothing tp and provided tp
+
+general quality of life:
+  ☐ figure out what to do with the get_risk_limit_info because you need to match up the risk limit with the position info to pick the right risk limit info ... and then risk limit info needs to return both the buy risk limit and sell risk limit info
 
 Videos:
   ✔ ATR video on func and plot @done(23-11-27 17:32)
