@@ -27,6 +27,7 @@ bybit exchange live:
 
 Update Backtester:
   ✔ fix since_date and until_date @done(23-12-08 13:08)
+  ☐ fix shorting
   ☐ update candles doc strings
 
 Numba Updates:
@@ -36,6 +37,7 @@ Numba Updates:
 
 general quality of life:
   ☐ figure out what to do with the get_risk_limit_info because you need to match up the risk limit with the position info to pick the right risk limit info ... and then risk limit info needs to return both the buy risk limit and sell risk limit info
+  ☐ add something to catch if the person has no previous pnl history
 
 Videos:
   ✔ ATR video on func and plot @done(23-11-27 17:32)
