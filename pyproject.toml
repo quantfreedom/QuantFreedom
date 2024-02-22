@@ -9,9 +9,6 @@ ipykernel = "6.25.0"
 dash = "2.9.1"
 dash-bootstrap-templates = "1.1.1"
 ipywidgets = "8.1.1"
-ecdsa = "0.16.0"
-mpmath = "1.0.0"
-sympy = "1.6"
 jupyter-dash = "0.4.2"
 kaleido = "0.1.*"
 notebook = "6.5.6"
@@ -19,11 +16,17 @@ numba = "0.58.1"
 numpy = "1.26.1"
 pandas = "2.1.1"
 plotly = "5.17.0"
-pycryptodome = "3.19.0"
 python = "^3.10"
-web3 = "6.13.0"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.apex]
+optional = true
+
+[tool.poetry.group.apex.dependencies]
+ecdsa = "0.16.0"
+mpmath = "1.0.0"
+sympy = "1.6"
+pycryptodome = "3.19.0"
+web3 = "6.13.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

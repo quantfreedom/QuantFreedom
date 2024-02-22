@@ -292,7 +292,9 @@ def plot_bollinger_bands(
 
 def plot_macd(
     candles: np.array,
-    indicator: np.array,
+    signal: np.array,
+    histogram: np.array,
+    macd: np.array,
 ):
     datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
     fig = make_subplots(
@@ -316,7 +318,6 @@ def plot_macd(
         col=1,
         row=1,
     )
-    histogram = indicator[:, 0]
     ind_shift = np.roll(histogram, 1)
     ind_shift[0] = np.nan
     colors = np.where(
@@ -337,7 +338,7 @@ def plot_macd(
     fig.append_trace(
         go.Scatter(
             x=datetimes,
-            y=indicator[:, 1],
+            y=macd,
             name="macd",
             line_color="#2962FF",
         ),
@@ -345,7 +346,7 @@ def plot_macd(
         col=1,
     )
     fig.append_trace(
-        go.Scatter(x=datetimes, y=indicator[:, 2], name="signal", line_color="#FF6D00"),
+        go.Scatter(x=datetimes, y=signal, name="signal", line_color="#FF6D00"),
         row=2,
         col=1,
     )

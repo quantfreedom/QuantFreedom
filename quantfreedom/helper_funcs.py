@@ -94,7 +94,7 @@ def dl_ex_candles(
             candles_to_dl=1000 if candles_to_dl is None else candles_to_dl,
         )
     else:
-        raise Exception("You need to pick an exchange from this list apex, binance_usdm, mufex")
+        raise Exception("You need to pick an exchange from this list apex, binance_usdm, mufex, binance_us, bybit")
 
 
 def candles_to_df(
