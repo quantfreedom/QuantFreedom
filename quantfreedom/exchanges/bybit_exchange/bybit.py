@@ -5,7 +5,6 @@ from time import sleep, time
 from datetime import datetime, timezone
 from requests import get, post
 from quantfreedom.enums import ExchangeSettings, LeverageModeType, PositionModeType, TriggerDirectionType
-from quantfreedom.exchanges.bybit_exchange.bybit_github.unified_trading import HTTP
 
 from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES, Exchange
 
@@ -204,13 +203,13 @@ class Bybit(Exchange):
         self,
         symbol: str,
         buy_sell: str,
-        position_mode: PositionModeType,
+        position_mode: int,
         order_type: str,
         asset_size: float,
         category: str = "linear",
         time_in_force: str = "GTC",
         price: float = None,
-        triggerDirection: TriggerDirectionType = None,
+        triggerDirection: int = None,
         triggerPrice: float = None,
         triggerBy: str = None,
         tpTriggerBy: str = None,
@@ -567,7 +566,7 @@ class Bybit(Exchange):
     def set_leverage_mode(
         self,
         symbol: str,
-        leverage_mode: LeverageModeType,
+        leverage_mode: int,
         category: str = "linear",
         leverage: int = 5,
     ):
@@ -691,7 +690,7 @@ class Bybit(Exchange):
 
     def set_position_mode(
         self,
-        position_mode: PositionModeType,
+        position_mode: int,
         symbol: str,
         category: str = "linear",
         trading_with: str = None,
@@ -843,8 +842,8 @@ class Bybit(Exchange):
 
     def set_exchange_settings(
         self,
-        leverage_mode: LeverageModeType,
-        position_mode: PositionModeType,
+        leverage_mode: int,
+        position_mode: int,
         symbol: str,
     ):
         self.position_mode = position_mode
