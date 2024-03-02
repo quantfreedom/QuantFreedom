@@ -370,9 +370,8 @@ class Bybit(Exchange):
 
         response: dict = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
-            response["result"]["list"][0]
-            data_list = response["result"]["list"]
-            return data_list
+            return response["retMsg"]
+
         except Exception as e:
             raise Exception(f"Data or List is empty {response['retMsg']} -> {e}")
 
