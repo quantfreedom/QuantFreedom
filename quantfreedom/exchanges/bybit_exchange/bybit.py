@@ -22,6 +22,7 @@ class Bybit(Exchange):
     ):
         """
         main docs page https://bybit-exchange.github.io/docs/v5/intro
+        [upgrade to unified account](https://www.bybit.com/en/help-center/article/UTA-guide#cb)
         """
         if api_key:
             self.api_key = api_key
@@ -337,7 +338,7 @@ class Bybit(Exchange):
 
     def get_wallet_info(
         self,
-        accountType: str = "CONTRACT",
+        accountType: str = "UNIFIED",
         trading_with: str = None,
     ):
         """
@@ -359,10 +360,22 @@ class Bybit(Exchange):
 
     def get_equity_of_asset(
         self,
-        accountType: str = "CONTRACT",
+        accountType: str = "UNIFIED",
         trading_with: str = None,
     ):
         return float(self.get_wallet_info(accountType=accountType, trading_with=trading_with)[0]["coin"][0]["equity"])
+
+    def upgrade_to_unified_trading_account(self):
+        end_point = "/v5/account/upgrade-to-uta"
+        params = {}
+
+        response: dict = self.__HTTP_post_request(end_point=end_point, params=params)
+        try:
+            response["result"]["list"][0]
+            data_list = response["result"]["list"]
+            return data_list
+        except Exception as e:
+            raise Exception(f"Data or List is empty {response['retMsg']} -> {e}")
 
     def get_closed_pnl(
         self,
