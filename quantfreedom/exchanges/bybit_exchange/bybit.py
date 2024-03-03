@@ -555,7 +555,7 @@ class Bybit(Exchange):
 
         response: dict = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
-            if response["retMsg"] in ["OK", "Set leverage not modified"]:
+            if response["retMsg"] in ["OK", "Set leverage not modified", "leverage not modified"]:
                 return True
             else:
                 raise Exception
@@ -564,31 +564,51 @@ class Bybit(Exchange):
 
     def set_leverage_mode(
         self,
-        symbol: str,
-        leverage_mode: int,
-        category: str = "linear",
-        leverage: int = 5,
+        setMarginMode: str = "ISOLATED_MARGIN",
     ):
         """
-        https://bybit-exchange.github.io/docs/v5/position/cross-isolate
-        Cross/isolated mode. 0: cross margin mode; 1: isolated margin mode
+        https://bybit-exchange.github.io/docs/v5/account/set-margin-mode
+        ISOLATED_MARGIN, REGULAR_MARGIN(i.e. Cross margin), PORTFOLIO_MARGIN
         """
-        end_point = "/v5/position/switch-isolated"
-        leverage_str = str(leverage)
+        end_point = "/v5/account/set-margin-mode"
         params = {}
-        params["symbol"] = symbol
-        params["category"] = category
-        params["tradeMode"] = leverage_mode
-        params["buyLeverage"] = leverage_str
-        params["sellLeverage"] = leverage_str
+        params["setMarginMode"] = setMarginMode
         response: dict = self.__HTTP_post_request(end_point=end_point, params=params)
         try:
-            if response["retMsg"] in ["OK", "Cross/isolated margin mode is not modified"]:
+            if response["retMsg"] == "Request accepted":
                 return True
             else:
                 raise Exception
         except Exception as e:
             raise Exception(f"Bybit set_leverage_mode = Data or List is empty {response['retMsg']} -> {e}")
+
+    # def set_leverage_mode(
+    #     self,
+    #     symbol: str,
+    #     leverage_mode: int,
+    #     category: str = "linear",
+    #     leverage: int = 5,
+    # ):
+    #     """
+    #     https://bybit-exchange.github.io/docs/v5/position/cross-isolate
+    #     Cross/isolated mode. 0: cross margin mode; 1: isolated margin mode
+    #     """
+    #     end_point = "/v5/position/switch-isolated"
+    #     leverage_str = str(leverage)
+    #     params = {}
+    #     params["symbol"] = symbol
+    #     params["category"] = category
+    #     params["tradeMode"] = leverage_mode
+    #     params["buyLeverage"] = leverage_str
+    #     params["sellLeverage"] = leverage_str
+    #     response: dict = self.__HTTP_post_request(end_point=end_point, params=params)
+    #     try:
+    #         if response["retMsg"] in ["OK", "Cross/isolated margin mode is not modified"]:
+    #             return True
+    #         else:
+    #             raise Exception
+    #     except Exception as e:
+    #         raise Exception(f"Bybit set_leverage_mode = Data or List is empty {response['retMsg']} -> {e}")
 
     def adjust_order(
         self,
@@ -807,19 +827,13 @@ class Bybit(Exchange):
 
         return market_fee_pct, limit_fee_pct
 
-    def set_leverage_mode_cross(
-        self,
-        symbol: str,
-    ):
-        true_false = self.set_leverage_mode(symbol=symbol, leverage_mode=0)
+    def set_leverage_mode_cross(self):
+        true_false = self.set_leverage_mode(setMarginMode="REGULAR_MARGIN")
 
         return true_false
 
-    def set_leverage_mode_isolated(
-        self,
-        symbol: str,
-    ):
-        true_false = self.set_leverage_mode(symbol=symbol, leverage_mode=1)
+    def set_leverage_mode_isolated(self):
+        true_false = self.set_leverage_mode(setMarginMode="ISOLATED_MARGIN")
 
         return true_false
 
@@ -852,9 +866,9 @@ class Bybit(Exchange):
             self.set_position_mode_as_one_way_mode(symbol=symbol)
 
         if leverage_mode == LeverageModeType.Isolated:
-            self.set_leverage_mode_isolated(symbol=symbol)
+            self.set_leverage_mode_isolated()
         else:
-            self.set_leverage_mode_cross(symbol=symbol)
+            self.set_leverage_mode_cross()
 
         market_fee_pct, limit_fee_pct = self.__get_fee_pcts(symbol=symbol)
         (
