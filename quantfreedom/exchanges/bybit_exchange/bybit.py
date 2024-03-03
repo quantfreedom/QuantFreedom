@@ -10,7 +10,6 @@ from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES, Exchange
 
 BYBIT_TIMEFRAMES = ["1", "5", "15", "30", "60", "120", "240", "360", "720", "D", "W"]
 
-
 class Bybit(Exchange):
     def __init__(
         # Exchange Vars
@@ -499,14 +498,14 @@ class Bybit(Exchange):
             data_list[0]  # try this to see if anything is in here
             return data_list
         except Exception as e:
-            raise Exception(f"Bybit get_order_history = Data or List is empty {response['retMsg']} -> {e}")
+            raise Exception(f"Bybit get_open_orders = Data or List is empty {response['retMsg']} -> {e}")
 
     def check_if_order_open(
         self,
         order_id: str,
         symbol: str = None,
     ):
-        data_list = self.get_order_history(order_id=order_id)
+        data_list = self.get_open_orders(order_id=order_id)
         try:
             if data_list[0]["orderId"] == order_id:
                 return True
@@ -520,14 +519,14 @@ class Bybit(Exchange):
         order_id: str,
         symbol: str = None,
     ):
-        return self.get_order_history(order_id=order_id)[0]
+        return self.get_open_orders(order_id=order_id)[0]
 
     def get_open_order_by_order_id(
         self,
         order_id: str,
         symbol: str = None,
     ):
-        return self.get_order_history(order_id=order_id)[0]
+        return self.get_open_orders(order_id=order_id)[0]
 
     def check_if_order_filled(
         self,
