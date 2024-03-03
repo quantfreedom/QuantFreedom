@@ -458,6 +458,49 @@ class Bybit(Exchange):
         except Exception as e:
             raise Exception(f"Bybit get_order_history = Data or List is empty {response['retMsg']} -> {e}")
 
+    def get_open_orders(
+        self,
+        baseCoin: str = None,
+        category: str = "linear",
+        custom_order_id: str = None,
+        limit: int = 50,
+        orderFilter: str = None,
+        orderStatus: str = None,
+        order_id: str = None,
+        settleCoin: str = None,
+        since_datetime: datetime = None,
+        symbol: str = None,
+        until_datetime: datetime = None,
+    ):
+        """
+        https://bybit-exchange.github.io/docs/v5/order/open-order
+        """
+        if since_datetime is not None:
+            since_datetime = int(since_datetime.replace(tzinfo=timezone.utc).timestamp() * 1000)
+        if until_datetime is not None:
+            until_datetime = int(until_datetime.replace(tzinfo=timezone.utc).timestamp() * 1000)
+
+        end_point = "/v5/order/realtime"
+        params = {}
+        params["baseCoin"] = baseCoin
+        params["category"] = category
+        params["endTime"] = until_datetime
+        params["limit"] = limit
+        params["orderFilter"] = orderFilter
+        params["orderId"] = order_id
+        params["orderLinkId"] = custom_order_id
+        params["orderStatus"] = orderStatus
+        params["settleCoin"] = settleCoin
+        params["startTime"] = since_datetime
+        params["symbol"] = symbol
+        response: dict = self.__HTTP_get_request(end_point=end_point, params=params)
+        try:
+            data_list = response["result"]["list"]
+            data_list[0]  # try this to see if anything is in here
+            return data_list
+        except Exception as e:
+            raise Exception(f"Bybit get_order_history = Data or List is empty {response['retMsg']} -> {e}")
+
     def check_if_order_open(
         self,
         order_id: str,
