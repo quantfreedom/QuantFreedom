@@ -104,7 +104,7 @@ class LiveTrading:
                 except Exception as e:
                     logger.error(f"get_latest_pnl_result {e}")
                 logger.info("Evaluating Strat")
-                if self.strategy.live_evalutate(candles=self.candles):
+                if self.strategy.live_evaluate(candles=self.candles):
                     try:
                         logger.debug("Setting ex postion size usd")
                         self.__set_ex_position_size_usd()
@@ -128,7 +128,7 @@ class LiveTrading:
                             candles=self.candles,
                         )
 
-                        logger.debug("calculate_increase_posotion")
+                        logger.debug("calculate_increase_position")
                         (
                             average_entry,
                             entry_price,
@@ -139,7 +139,7 @@ class LiveTrading:
                             possible_loss,
                             total_trades,
                             sl_pct,
-                        ) = self.order.calculate_increase_posotion(
+                        ) = self.order.calculate_increase_position(
                             average_entry=self.order.average_entry,
                             entry_price=self.candles[bar_index, CandleBodyType.Close],
                             equity=self.order.equity,

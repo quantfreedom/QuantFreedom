@@ -170,7 +170,7 @@ def run_df_backtest(
                             candles=candles,
                         )
 
-                        logger.debug("calculate_increase_posotion")
+                        logger.debug("calculate_increase_position")
                         (
                             average_entry,
                             entry_price,
@@ -181,7 +181,7 @@ def run_df_backtest(
                             possible_loss,
                             total_trades,
                             sl_pct,
-                        ) = order.calculate_increase_posotion(
+                        ) = order.calculate_increase_position(
                             average_entry=order.average_entry,
                             entry_price=candles[bar_index, CandleBodyType.Close],
                             equity=order.equity,
@@ -461,7 +461,7 @@ def or_backtest(
                     candles=candles,
                 )
 
-                logger.debug("calculate_increase_posotion")
+                logger.debug("calculate_increase_position")
                 (
                     average_entry,
                     entry_price,
@@ -472,7 +472,7 @@ def or_backtest(
                     possible_loss,
                     total_trades,
                     sl_pct,
-                ) = order.calculate_increase_posotion(
+                ) = order.calculate_increase_position(
                     average_entry=order.average_entry,
                     entry_price=candles[bar_index, CandleBodyType.Close],
                     equity=order.equity,

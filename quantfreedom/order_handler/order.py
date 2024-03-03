@@ -260,7 +260,7 @@ class OrderHandler:
         logger.info(f"\nsl price= {sl_price}")
         return sl_price
 
-    def calculate_increase_posotion(
+    def calculate_increase_position(
         self,
         equity: float,
         average_entry: float,

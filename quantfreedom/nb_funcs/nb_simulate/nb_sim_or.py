@@ -352,7 +352,7 @@ def nb_run_or_backtest(
                     stringer=stringer,
                 )
 
-                logger("nb_simulate.py - nb_run_backtest() - calculate_increase_posotion")
+                logger("nb_simulate.py - nb_run_backtest() - calculate_increase_position")
                 (
                     average_entry,
                     entry_price,

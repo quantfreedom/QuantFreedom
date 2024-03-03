@@ -12,7 +12,7 @@ class Strategy:
     entry_message = None
     exit_prices = None
     indicator_settings_arrays = None
-    live_evalutate = None
+    live_evaluate = None
     log_folder = None
     log_indicator_settings = None
     long_short = None
