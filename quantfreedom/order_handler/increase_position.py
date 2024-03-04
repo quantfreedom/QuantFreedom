@@ -17,19 +17,19 @@ class IncreasePosition:
     def __init__(
         self,
         asset_tick_step: float,
-        increase_position_type: IncreasePositionType,
+        increase_position_type: IncreasePositionType,  # type: ignore
         long_short: str,
         market_fee_pct: float,
         max_asset_size: float,
         min_asset_size: float,
         price_tick_step: float,
-        sl_strategy_type: StopLossStrategyType,
+        sl_strategy_type: StopLossStrategyType,  # type: ignore
     ) -> None:
         """
         Summary
         -------
         Creates and sets the increase position class settings
-        
+
         Parameters
         ----------
         asset_tick_step : float
@@ -670,8 +670,8 @@ class IncreasePosition:
         """
         Summary
         -------
-        In a position - Risking a percent of your account while also having your stop loss type set to stop loss based on candle body 
-        
+        In a position - Risking a percent of your account while also having your stop loss type set to stop loss based on candle body
+
         Parameters
         ----------
         average_entry : float
@@ -767,7 +767,7 @@ class IncreasePosition:
         Summary
         -------
         Not in a position - Risking a percent of your account while also having your stop loss type set to stop loss based on candle body
-        
+
         Parameters
         ----------
         equity : float
@@ -776,7 +776,7 @@ class IncreasePosition:
             entry_price
         sl_price : float
             sl_price
-        
+
         Returns
         -------
         tuple[float, float, float, float, float, float, int, int, float]
