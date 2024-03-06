@@ -22,7 +22,7 @@ logger = getLogger("info")
 trade_logger = getLogger("trades")
 
 
-class BybitLiveMode:
+class MufexLiveMode:
     def __init__(
         self,
         email_sender: EmailSender,
@@ -324,7 +324,7 @@ class BybitLiveMode:
                                 tp_order_id=tp_order_id,
                             )
                             message = self.__create_entry_successful_message()
-                            print("Placed a new Trade")
+                            print('Placed a new Trade')
                             # entry_filename = self.__get_entry_plot_filename()
                             # strategy_filename = self.strategy.get_strategy_plot_filename(candles=self.candles)
                             # self.email_sender.email_new_order(
