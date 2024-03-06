@@ -14,7 +14,7 @@ dist
 quantfreedom.egg-info
 numba_cache
 thinking.txt
-.todo
+*.todo
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
