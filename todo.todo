@@ -1,4 +1,5 @@
 bybit exchange live:
+  ☐ add await functions to bybit live mode so that while you are waiting for the next candle ever 15 second you check to see if your stop loss and tp are still there
   ✔ get_closed_pnl @done(24-01-08 06:41)
   ✔ get_latest_pnl_result @done(24-01-08 06:42)
   ✔ get_order_history @done(24-01-08 07:04)
@@ -34,6 +35,9 @@ Numba Updates:
   ☐ update numba with tv indicators
   ☐ update numba simulate
   ☐ add nothing tp and provided tp
+
+beginner videos:
+  ☐ creating repo and updating repo
 
 general quality of life:
   ☐ figure out what to do with the get_risk_limit_info because you need to match up the risk limit with the position info to pick the right risk limit info ... and then risk limit info needs to return both the buy risk limit and sell risk limit info
