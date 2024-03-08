@@ -215,7 +215,7 @@ class MufexLiveMode:
                         )
 
                         logger.info(f"Submitted entry order -> [order_id={entry_order_id}]")
-                        sleep(0.5)
+                        sleep(1)
 
                         # check if order fileld
                         logger.debug(f"Checking if entry order was filled")
@@ -239,7 +239,7 @@ class MufexLiveMode:
                             else:
                                 logger.warning("Wasn't able to verify that the tp and sl were canceled")
 
-                        sleep(0.5)
+                        sleep(1)
 
                         # set the levergae
                         logger.info("Setting leverage")
@@ -261,7 +261,7 @@ class MufexLiveMode:
                         )
                         logger.info(f"Submitted SL order -> [order_id={sl_order_id}]")
 
-                        sleep(0.5)
+                        sleep(1)
                         logger.info(f"Submitting take profit order")
                         tp_order_id = self.place_tp_order(
                             asset_size=self.ex_position_size_asset,
