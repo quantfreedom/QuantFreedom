@@ -332,7 +332,7 @@ class Bybit(Exchange):
         self,
         symbol: str,
     ):
-        return self.get_position_info(symbol=symbol)[0]
+        return dict(sorted(self.get_position_info(symbol=symbol)[0].items()))
 
     def get_wallet_info(
         self,
@@ -519,14 +519,14 @@ class Bybit(Exchange):
         order_id: str,
         symbol: str = None,
     ):
-        return self.get_open_orders(order_id=order_id)[0]
+        return dict(sorted(self.get_open_orders(order_id=order_id)[0].items()))
 
     def get_open_order_by_order_id(
         self,
         order_id: str,
         symbol: str = None,
     ):
-        return self.get_open_orders(order_id=order_id)[0]
+        return dict(sorted(self.get_open_orders(order_id=order_id)[0].items()))
 
     def check_if_order_filled(
         self,
@@ -857,7 +857,7 @@ class Bybit(Exchange):
         baseCoin: str = None,
         category: str = "linear",
     ):
-        return self.get_trading_fee_rates(symbol=symbol, baseCoin=baseCoin, category=category)[0]
+        return dict(sorted(self.get_trading_fee_rates(symbol=symbol, baseCoin=baseCoin, category=category)[0].items()))
 
     def __get_fee_pcts(
         self,

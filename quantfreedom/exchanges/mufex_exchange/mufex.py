@@ -478,7 +478,7 @@ class Mufex(Exchange):
             raise Exception(f"Mufex get_open_orders = Data or List is empty {response['message']} -> {e}")
 
     def get_open_order_by_order_id(self, symbol: str, order_id: str):
-        return self.get_open_orders(symbol=symbol, order_id=order_id)[0]
+        return dict(sorted(self.get_open_orders(symbol=symbol, order_id=order_id)[0].items()))
 
     def get_filled_orders(
         self,
@@ -524,7 +524,7 @@ class Mufex(Exchange):
         symbol: str,
         order_id: str,
     ):
-        return self.get_filled_orders(symbol=symbol, order_id=order_id)[0]
+        return dict(sorted(self.get_filled_orders(symbol=symbol, order_id=order_id)[0].items()))
 
     def get_position_info(
         self,
@@ -1011,4 +1011,4 @@ class Mufex(Exchange):
         self,
         symbol: str,
     ):
-        return self.get_position_info(symbol=symbol)[0]
+        return dict(sorted(self.get_position_info(symbol=symbol)[0].items()))

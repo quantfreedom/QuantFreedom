@@ -22,7 +22,7 @@ logger = getLogger("info")
 trade_logger = getLogger("trades")
 
 
-class BybitLiveMode:
+class MufexLiveMode:
     def __init__(
         self,
         email_sender: EmailSender,
@@ -324,7 +324,7 @@ class BybitLiveMode:
                                 tp_order_id=tp_order_id,
                             )
                             message = self.__create_entry_successful_message()
-                            print("Placed a new Trade")
+                            print('Placed a new Trade')
                             # entry_filename = self.__get_entry_plot_filename()
                             # strategy_filename = self.strategy.get_strategy_plot_filename(candles=self.candles)
                             # self.email_sender.email_new_order(
@@ -416,7 +416,7 @@ class BybitLiveMode:
 
     def __set_order_average_entry(self):
         logger.debug(f"Setting average entry")
-        self.order.average_entry = float(self.get_position_info(symbol=self.symbol)["avgPrice"])
+        self.order.average_entry = float(self.get_position_info(symbol=self.symbol)["entryPrice"])
 
     def __set_ex_possible_loss(self):
         logger.debug(f"setting all exchange vars")
@@ -445,12 +445,12 @@ class BybitLiveMode:
 
         self.ex_position_size_asset = float(pos_info.get("size"))
         self.ex_position_size_usd = float(pos_info.get("positionValue"))
-        self.ex_average_entry = float(pos_info.get("avgPrice"))
+        self.ex_average_entry = float(pos_info.get("entryPrice"))
         self.avg_entry_slippage = self.__get_pct_difference(self.order.average_entry, self.ex_average_entry)
-        self.ex_entry_price = float(entry_info.get("avgPrice"))
+        self.ex_entry_price = float(entry_info.get("execPrice"))
         self.entry_slippage = self.__get_pct_difference(self.order.entry_price, self.ex_entry_price)
-        self.ex_entry_size_asset = float(entry_info.get("qty"))
-        self.ex_entry_size_usd = float(entry_info.get("cumExecValue"))
+        self.ex_entry_size_asset = float(entry_info.get("orderQty"))
+        self.ex_entry_size_usd = float(entry_info.get("execValue"))
         self.ex_leverage = float(pos_info.get("leverage"))
         self.ex_liq_price = float(pos_info.get("liqPrice"))
         self.ex_liq_pct = self.__get_pct_difference(starting_num=self.ex_average_entry, diff_num=self.ex_liq_price)
