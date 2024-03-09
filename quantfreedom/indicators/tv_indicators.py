@@ -500,6 +500,41 @@ def vwap_tv(
     return vwap
 
 
+def donchain_channels_tv(
+    candles: np.array,
+    length: int,
+):
+    """
+    Donchain channels
+
+    Parameters
+    ----------
+    candles : np.array
+        2-dim np.array with columns in the following order [timestamp, open, high, low, close, volume]
+    length : int
+        Number of bars of donchain lookback
+
+    Returns
+    -------
+    tuple[np.array, np.array, np.array]
+        upper, basis, lower
+    """
+    high_prices = candles[:, CandleBodyType.High]
+    low_prices = candles[:, CandleBodyType.Low]
+
+    length_m_1 = length - 1
+    lower = np.full_like(low_prices, np.nan)
+    upper = np.full_like(low_prices, np.nan)
+
+    for i in range(length_m_1, low_prices.size):
+        lower[i] = np.min(low_prices[i - length_m_1 : i + 1])
+        upper[i] = np.max(high_prices[i - length_m_1 : i + 1])
+
+    basis = np.mean(np.array([upper, lower]), axis=0)
+
+    return upper, basis, lower
+
+
 def squeeze_momentum_lazybear_tv(
     candles: np.array,
     length_bb: int,
