@@ -455,9 +455,27 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#github-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      Github token
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#create-an-amazon-web-services-account" class="md-nav__link">
     <span class="md-ellipsis">
       Create an Amazon web services account
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#winscp" class="md-nav__link">
+    <span class="md-ellipsis">
+      WINSCP
     </span>
   </a>
   
@@ -1915,9 +1933,27 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#github-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      Github token
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#create-an-amazon-web-services-account" class="md-nav__link">
     <span class="md-ellipsis">
       Create an Amazon web services account
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#winscp" class="md-nav__link">
+    <span class="md-ellipsis">
+      WINSCP
     </span>
   </a>
   
@@ -1995,7 +2031,10 @@
 </ul>
 <h4 id="mufex-api">Mufex API<a class="headerlink" href="#mufex-api" title="Permanent link">&para;</a></h4>
 <ul>
-<li>hover your mouse over your wallet and then click api managment and then create your keys but make sure make sure make sure you copy and paste them somewhere <img alt="alt text" src="../images/image-11.png" /></li>
+<li>hover your mouse over your wallet and then click api managment and setup your 2 factor authentication</li>
+<li>give your api a name and select reading and trading and you don't need to put anything in the ip address and click save</li>
+<li>now send your code and then put in the code then put in your 2fa</li>
+<li>make sure make sure make sure you copy and paste them somewhere <img alt="alt text" src="../images/image-11.png" /></li>
 </ul>
 <h3 id="bybit">Bybit<a class="headerlink" href="#bybit" title="Permanent link">&para;</a></h3>
 <ul>
@@ -2015,15 +2054,56 @@ Step 3:</p>
 <li>for bybit you also need to make sure your account is unified</li>
 </ul>
 <p>once you have done all of this then put the following info in the bot sign up channel <a href="https://discord.com/channels/1007134880129355796/1215873863913836645">Click here</a></p>
+<h2 id="github-token">Github token<a class="headerlink" href="#github-token" title="Permanent link">&para;</a></h2>
+<ul>
+<li>in the upper right corner click on your profile icon and go to settings</li>
+<li>now go all the way down to the bottom to dev settings</li>
+<li>then on the left side click personal access tokens then click on token classic</li>
+<li>now generate a new token and click on classic</li>
+<li>then select the main repo that will select all the options under repo</li>
+<li>then scroll to the bottom and choose create token</li>
+<li>make sure you copy and save this somewhere because you will need it to run the strategy</li>
+<li>go to the github page here <a href="https://github.com/QuantFreedom1022/live_bots/blob/main/aws_script.sh">https://github.com/QuantFreedom1022/live_bots/blob/main/aws_script.sh</a></li>
+<li>then on the right side click the pencil edit icon</li>
+<li>on line 7 change where is says %%%%%%%GITHUB_TOKEN with yoru github token</li>
+<li>on line 13 replace %%%%%%%STRAT_FOLDER with the name of the folder of the strat you want to run ... in this case it would be 02_rsi_rising_falling</li>
+<li>on line 14 replace %%%%%%%RUN_FILE.py with the main.py in the folder of the strat you want to run ... in this case it will be rsi_main.py</li>
+<li>now replace the %%%%%%%API_KEY with your api key</li>
+<li>replace the %%%%%%%SECRET_KEY with your secret key</li>
+<li>now replace %%%%%%%USE_TEST_NET with a true if you want to use the testnet and a false if you want to use the main net ... all lower case</li>
+<li>finally replace %%%%%%%%EXCHANGE_NAME with the name of the exchange you want to trade on ... in this case it is mufex or bybit ... all lower case</li>
+</ul>
 <h2 id="create-an-amazon-web-services-account">Create an Amazon web services account<a class="headerlink" href="#create-an-amazon-web-services-account" title="Permanent link">&para;</a></h2>
 <ul>
 <li>You will need to sign up to the <a href="https://aws.amazon.com/ec2/pricing/?loc=ft#Free_tier">EC2 Free Tier</a></li>
-<li>create</li>
-<li>replace %%%%%%%GITHUB_TOKEN with your github token</li>
-<li>replace</li>
-<li>key pair login create new key ppk</li>
-<li>download winscp and putty <a href="https://winscp.net/eng/downloads.php">https://winscp.net/eng/downloads.php</a></li>
-<li>go to the instance and on the far right ipv</li>
+<li>click on launch templates and create launch template the orange button</li>
+<li>name your template something</li>
+<li>scroll down and choose unbutu then under amazon machine image choose free tier unbubut latetst version</li>
+<li>scroll down instance type is t2.micro free tier</li>
+<li>scroll down key pair create new key pair ... then put a name and then choose rsa and then choose ppk and create the pair and then save it somewhere you will be ok storing it ... i suggest not your desktop</li>
+<li>network settings securty groups launch wizard 1</li>
+<li>open advanced and scroll all the way down and paste in the aws sript that you made</li>
+<li>create launch template</li>
+<li>now in the green sction click on the link</li>
+<li>then click on actions and launch instance from template</li>
+<li>then in lower right corner click launch instance</li>
+<li>thne in the green click the link</li>
+<li>then under instance id you click that link</li>
+<li>copy the ipv4 dns and paste it into the host name for the winscp and change the user name to ubuntu</li>
+<li>clcik on the name advanced and on the left side go to ssh autnetication</li>
+<li>now find the private key file that you downloaded</li>
+<li>then hit login</li>
+<li>click on the live bots folder and then open logs and you should see that the bot is running</li>
+</ul>
+<h2 id="winscp">WINSCP<a class="headerlink" href="#winscp" title="Permanent link">&para;</a></h2>
+<ul>
+<li>download winscp <a href="https://winscp.net/eng/downloads.php">https://winscp.net/eng/downloads.php</a> then launch the install</li>
+<li>choose typical and then commander then install</li>
+<li>uncheck open get started page</li>
+<li></li>
+<li>
+<p>go to the instance and on the far right ipv</p>
+</li>
 <li>file protocol for sftp port is 22 username is ubuntu</li>
 <li>advanced ssh authentication pricate key file and then link to your private key file that you downloaded</li>
 <li>security group inbound and outbound</li>
