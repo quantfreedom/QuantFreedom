@@ -1,9 +1,17 @@
-from time import sleep
+import hmac
+import hashlib
 import numpy as np
+from time import sleep, time
+from requests import get, post
+from datetime import datetime, timezone
+from quantfreedom.enums import (
+    ExchangeSettings,
+    LeverageModeType,
+    PositionModeType,
+    TriggerDirectionType,
+)
 from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES, Exchange
 from quantfreedom.exchanges.binance_exchange.binance_github.usdm_futures.um_futures import UMFutures
-from datetime import datetime, timezone
-
 
 BINANCE_USDM_TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "1d", "1w"]
 
@@ -26,6 +34,70 @@ class BinanceUSDM(Exchange):
             self.url_start = "https://fapi.binance.com"
 
         self.binance_ex = UMFutures(key=api_key, secret=secret_key, base_url=self.url_start)
+
+    def __HTTP_post_request(
+        self,
+        end_point: str,
+        params: dict,
+    ):
+        timestamp = str(int(time() * 1000))
+        params_as_dict_string = self.get_params_as_dict_string(params=params)
+        signature = self.__gen_signature(timestamp=timestamp, params_as_string=params_as_dict_string)
+        headers = {
+            "MF-ACCESS-API-KEY": self.api_key,
+            "MF-ACCESS-SIGN": signature,
+            "MF-ACCESS-SIGN-TYPE": "2",
+            "MF-ACCESS-TIMESTAMP": timestamp,
+            "MF-ACCESS-RECV-WINDOW": "5000",
+            "Content-Type": "application/json",
+        }
+
+        try:
+            response = post(
+                url=self.url_start + end_point,
+                headers=headers,
+                data=params_as_dict_string,
+            )
+            response_json = response.json()
+            return response_json
+        except Exception as e:
+            raise Exception(f"Mufex __HTTP_post_request - > {e}")
+
+    def __HTTP_get_request(
+        self,
+        end_point: str,
+        params: dict,
+    ):
+        timestamp = str(int(time() * 1000))
+        params_as_path = self.get_params_as_path(params=params)
+        signature = self.__gen_signature(timestamp=timestamp, params_as_string=params_as_path)
+        headers = {
+            "MF-ACCESS-API-KEY": self.api_key,
+            "MF-ACCESS-SIGN": signature,
+            "MF-ACCESS-SIGN-TYPE": "2",
+            "MF-ACCESS-TIMESTAMP": timestamp,
+            "MF-ACCESS-RECV-WINDOW": "5000",
+            "Content-Type": "application/json",
+        }
+
+        try:
+            response = get(
+                url=self.url_start + end_point + "?" + params_as_path,
+                headers=headers,
+            )
+            response_json = response.json()
+            return response_json
+        except Exception as e:
+            raise Exception(f"Mufex __HTTP_get_request - > {e}")
+
+    def __gen_signature(
+        self,
+        timestamp: str,
+        params_as_string: str,
+    ):
+        param_str = timestamp + self.api_key + "5000" + params_as_string
+        hash = hmac.new(bytes(self.secret_key, "utf-8"), param_str.encode("utf-8"), hashlib.sha256)
+        return hash.hexdigest()
 
     def create_order(
         self,
@@ -160,3 +232,35 @@ class BinanceUSDM(Exchange):
                 raise Exception(f"Apex get_candles - > {e}")
         candles_np = np.array(b_candles, dtype=np.float_)[:, :6]
         return candles_np
+
+    def get_exchange_info(self):
+        """
+        [Binance Exchange Information](https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/Exchange-Information)
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
+        end_point = "/fapi/v1/exchangeInfo"
+        params = {}
+        try:
+            response = get(url=self.url_start + end_point).json()
+            response['symbols'][0]
+            return response
+        except Exception as e:
+                raise Exception(f"Binance get_all_symbols_info = Data or List is empty {response['message']} -> {e}")
+
+    def get_all_symbols_info(self):
+        return self.get_exchange_info()["symbols"]
+
+    def get_symbols_list(self):
+        symbols = []
+        for info in self.get_all_symbols_info():
+            symbols.append(info["symbol"])
+            symbols.sort()
+        return symbols

@@ -10,6 +10,7 @@ from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES, Exchange
 
 BYBIT_TIMEFRAMES = ["1", "5", "15", "30", "60", "120", "240", "360", "720", "D", "W"]
 
+
 class Bybit(Exchange):
     def __init__(
         # Exchange Vars
@@ -776,6 +777,25 @@ class Bybit(Exchange):
         except Exception as e:
             raise Exception(f"Bybit set_position_mode - {response['retMsg']} -> {e}")
 
+    def get_symbols_list(self):
+        """
+        Returns a list of the symbols in alphabetical order
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        list
+            symbols
+        """
+        symbols = []
+        for info in self.get_all_symbols_info():
+            symbols.append(info["symbol"])
+            symbols.sort()
+        return symbols
+
     def get_all_symbols_info(
         self,
         category: str = "linear",
@@ -792,11 +812,11 @@ class Bybit(Exchange):
         params = {}
         params["limit"] = limit
         params["category"] = category
-        params["symbol"] = symbol.upper()
+        params["symbol"] = symbol
         params["status"] = status
         params["baseCoin"] = baseCoin
 
-        response: dict = self.__HTTP_get_request(end_point=end_point, params=params)
+        response: dict = get(url=self.url_start + end_point, params=params).json()
         try:
             response["result"]["list"][0]
             data_list = response["result"]["list"]

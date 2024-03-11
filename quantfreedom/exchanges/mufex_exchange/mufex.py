@@ -1,10 +1,9 @@
-import hashlib
 import hmac
+import hashlib
 import numpy as np
-from requests import get, post
 from time import sleep, time
+from requests import get, post
 from datetime import datetime, timezone
-
 
 from quantfreedom.enums import (
     ExchangeSettings,
@@ -235,6 +234,25 @@ class Mufex(Exchange):
     ):
         return float(self.get_closed_pnl(symbol=symbol)[0]["closedPnl"])
 
+    def get_symbols_list(self):
+        """
+        Returns a list of the symbols in alphabetical order
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        list
+            symbols
+        """
+        symbols = []
+        for info in self.get_all_symbols_info():
+            symbols.append(info["symbol"])
+            symbols.sort()
+        return symbols
+
     def get_all_symbols_info(
         self,
         category: str = "linear",
@@ -317,12 +335,12 @@ class Mufex(Exchange):
         self,
         symbol: str,
         buy_sell: str,
-        position_mode: PositionModeType,
+        position_mode: PositionModeType, # type: ignore
         order_type: str,
         asset_size: float,
         time_in_force: str = "GoodTillCancel",
         price: float = None,
-        triggerDirection: TriggerDirectionType = None,
+        triggerDirection: TriggerDirectionType = None, # type: ignore
         triggerPrice: str = None,
         triggerBy: str = None,
         tpTriggerBy: str = None,
@@ -670,7 +688,7 @@ class Mufex(Exchange):
 
     def set_position_mode(
         self,
-        position_mode: PositionModeType,
+        position_mode: PositionModeType, # type: ignore
         trading_with: str = None,
         symbol: str = None,
     ):
@@ -719,7 +737,7 @@ class Mufex(Exchange):
     def set_leverage_mode(
         self,
         symbol: str,
-        leverage_mode: LeverageModeType,
+        leverage_mode: LeverageModeType, # type: ignore
         leverage: int = 5,
     ):
         """
@@ -862,8 +880,8 @@ class Mufex(Exchange):
 
     def set_exchange_settings(
         self,
-        leverage_mode: LeverageModeType,
-        position_mode: PositionModeType,
+        leverage_mode: LeverageModeType, # type: ignore
+        position_mode: PositionModeType, # type: ignore
         symbol: str,
     ):
         self.position_mode = position_mode

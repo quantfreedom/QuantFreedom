@@ -113,7 +113,10 @@ class Exchange:
         self,
         step_size: str,
     ):
-        return step_size.index("1") - step_size.index(".")
+        if '.' not in step_size:
+            return int(step_size)
+        else:
+            return step_size.index("1") - step_size.index(".")
 
     def create_order(self, **kwargs):
         pass
