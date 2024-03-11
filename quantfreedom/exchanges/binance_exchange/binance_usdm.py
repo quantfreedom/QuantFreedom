@@ -24,7 +24,7 @@ class BinanceUSDM(Exchange):
         secret_key: str = None,
     ):
         """
-        main docs page https://binance-docs.github.io/apidocs/futures/en
+        [main docs page](https://binance-docs.github.io/apidocs/futures/en)
         """
         super().__init__(api_key, secret_key, use_test_net)
 
@@ -243,22 +243,45 @@ class BinanceUSDM(Exchange):
 
         Returns
         -------
-        _type_
-            _description_
+        Dictionary
+            dictionary of info about the exchange
         """
         end_point = "/fapi/v1/exchangeInfo"
-        params = {}
         try:
             response = get(url=self.url_start + end_point).json()
-            response['symbols'][0]
+            response["symbols"][0]
             return response
         except Exception as e:
-                raise Exception(f"Binance get_all_symbols_info = Data or List is empty {response['message']} -> {e}")
+            raise Exception(f"Binance get_all_symbols_info = Data or List is empty {response['message']} -> {e}")
 
     def get_all_symbols_info(self):
+        """
+        [Binance Exchange Information](https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/Exchange-Information)
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        Dictionary
+            dictionary of info about the symbols
+        """
         return self.get_exchange_info()["symbols"]
 
     def get_symbols_list(self):
+        """
+        [Binance Exchange Information](https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/Exchange-Information)
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        List
+            List of exchange symbols
+        """
         symbols = []
         for info in self.get_all_symbols_info():
             symbols.append(info["symbol"])

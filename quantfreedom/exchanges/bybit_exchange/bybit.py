@@ -777,25 +777,6 @@ class Bybit(Exchange):
         except Exception as e:
             raise Exception(f"Bybit set_position_mode - {response['retMsg']} -> {e}")
 
-    def get_symbols_list(self):
-        """
-        Returns a list of the symbols in alphabetical order
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        list
-            symbols
-        """
-        symbols = []
-        for info in self.get_all_symbols_info():
-            symbols.append(info["symbol"])
-            symbols.sort()
-        return symbols
-
     def get_all_symbols_info(
         self,
         category: str = "linear",
@@ -824,6 +805,25 @@ class Bybit(Exchange):
             return data_list
         except Exception as e:
             raise Exception(f"Bybit get_all_symbols_info = Data or List is empty {response['retMsg']} -> {e}")
+
+    def get_symbols_list(self):
+        """
+        Returns a list of the symbols in alphabetical order
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        list
+            symbols
+        """
+        symbols = []
+        for info in self.get_all_symbols_info():
+            symbols.append(info["symbol"])
+            symbols.sort()
+        return symbols
 
     def __get_min_max_leverage_and_asset_size(
         self,
