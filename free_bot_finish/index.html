@@ -1559,27 +1559,39 @@
 <li>now go all the way down to the bottom and on the left side click dev settings</li>
 <li>then on the left side click personal access tokens then click on token classics</li>
 <li>now click on generate a new token on the upper right side next to revoke all and click on generate new token classic</li>
-<li>then select the main repo that will select all the options under repo <img alt="alt text" src="../images/image-21.png" /></li>
+<li>then select the main repo that will select all the options under repo
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-21.png"/></p></li>
 <li>then scroll to the bottom and choose create token</li>
 <li>make sure you copy and save this somewhere because you will need it to run the strategy</li>
 </ul>
 <h2 id="aws-launch-template">AWS Launch Template<a class="headerlink" href="#aws-launch-template" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Log into AWS and go to the console home page and click on EC2</li>
-<li>On the left side click on security groups under network and security <img alt="alt text" src="../images/image-28.png" /></li>
-<li>Click on the blue name under secuirty group id which should have the name default under secuirty group name <img alt="alt text" src="../images/image-31.png" /></li>
-<li>Now we are going to edit the inbound rules in the inbound rules then click edit inbound rules <img alt="alt text" src="../images/image-34.png" /></li>
-<li>Type will be ssh ... source will be ipv4 and then hit save rule <img alt="alt text" src="../images/image-30.png" /></li>
+<li>On the left side click on security groups under network and security
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-28.png"/></p></li>
+<li>Click on the blue name under secuirty group id which should have the name default under secuirty group name
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-31.png"/></p></li>
+<li>Now we are going to edit the inbound rules in the inbound rules then click edit inbound rules
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-34.png"/></p></li>
+<li>Type will be ssh ... source will be ipv4 and then hit save rule
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-30.png"/></p></li>
 <li>Now click on the outbound tab click edit outbound rules</li>
-<li>change the type to all traffic and destination to anywhere ipv4 then save rules <img alt="alt text" src="../images/image-36.png" /></li>
-<li>On the left side menu click on launch templates under instances and then click the orange create launch template in the upper right corner <img alt="alt text" src="../images/image-37.png" /></li>
-<li>Give your template a name under launch template name <img alt="alt text" src="../images/image-22.png" /></li>
-<li>In the next section choose ubuntu <img alt="alt text" src="../images/image-23.png" /></li>
-<li>For instance type choose the t2 free tier option <img alt="alt text" src="../images/image-24.png" /></li>
-<li>next in key pair login click on create new key pair <img alt="alt text" src="../images/image-25.png" /></li>
-<li>Then name the key pair something and select ppk and then click create key pair <img alt="alt text" src="../images/image-26.png" /></li>
+<li>change the type to all traffic and destination to anywhere ipv4 then save rules
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-36.png"/></p></li>
+<li>On the left side menu click on launch templates under instances and then click the orange create launch template in the upper right corner
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-37.png"/></p></li>
+<li>Give your template a name under launch template name <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-22.png"/></p></li>
+<li>In the next section choose ubuntu
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-23.png"/></p></li>
+<li>For instance type choose the t2 free tier option
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-24.png"/></p></li>
+<li>next in key pair login click on create new key pair
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-25.png"/></p></li>
+<li>Then name the key pair something and select ppk and then click create key pair
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-26.png"/></p></li>
 <li>Make sure you save the download somewhere other than your desktop because you will need to use it later on.</li>
-<li>In network settings choose the security group that we made earlier <img alt="alt text" src="../images/image-32.png" /></li>
+<li>In network settings choose the security group that we made earlier
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-32.png"/></p></li>
 </ul>
 <h2 id="adding-github-token">Adding Github Token<a class="headerlink" href="#adding-github-token" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1590,43 +1602,53 @@
 <li>Now replace the %%%%%%%API_KEY with your api key</li>
 <li>Replace the %%%%%%%SECRET_KEY with your secret key</li>
 <li>Now replace %%%%%%%USE_TEST_NET with a true if you want to use the testnet and a false if you want to use the main net ... all lower case</li>
-<li>Finally replace %%%%%%%%EXCHANGE_NAME with the name of the exchange you want to trade on ... Ex: mufex ... all lower case</li>
-<li><img alt="alt text" src="../images/image-33.png" /></li>
+<li>Finally replace %%%%%%%%EXCHANGE_NAME with the name of the exchange you want to trade on ... Ex: mufex ... all lower case
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-33.png"/></p></li>
 <li>Go back to the amazon template website</li>
 </ul>
 <h2 id="aes-advanced-details">AES Advanced Details<a class="headerlink" href="#aes-advanced-details" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Scroll down to the bottom and open advanced details <img alt="alt text" src="../images/image-46.png" /></li>
-<li>Scroll down to the part that says Metadata version and make sure you have v2 only selected <img alt="alt text" src="../images/image-47.png" /></li>
+<li>Scroll down to the bottom and open advanced details
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-46.png"/></p></li>
+<li>Scroll down to the part that says Metadata version and make sure you have v2 only selected
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-47.png"/></p></li>
 <li>Then go down to the bottom and paste in the aws sript that you made</li>
 <li>Click on the create template create launch template</li>
 </ul>
 <h2 id="running-the-bot">Running The Bot<a class="headerlink" href="#running-the-bot" title="Permanent link">&para;</a></h2>
 <ul>
-<li>now in the green section click on the link <img alt="alt text" src="../images/image-38.png" /></li>
-<li>then click on actions on the right side and click launch instance from template <img alt="alt text" src="../images/image-39.png" /></li>
+<li>now in the green section click on the link
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-38.png"/></p></li>
+<li>then click on actions on the right side and click launch instance from template
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-39.png"/></p></li>
 <li>then on the right side click on the orange button launch instance</li>
 <li>then in the green success box click the link</li>
-<li>then under instance id you click that blue link <img alt="alt text" src="../images/image-40.png" /></li>
-<li>copy the ipv4 dns <img alt="alt text" src="../images/image-41.png" /></li>
+<li>then under instance id you click that blue link
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-40.png"/></p></li>
+<li>copy the ipv4 dns
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-41.png"/></p></li>
 </ul>
 <h2 id="winscp">WINSCP<a class="headerlink" href="#winscp" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Open winscp</li>
 <li>in the login screen if you can't edit the host name click edit</li>
 <li>in the host name field past in the public ipv4 dns</li>
-<li>Paste it into the host name <img alt="alt text" src="../images/image-42.png" /></li>
+<li>Paste it into the host name
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-42.png"/></p></li>
 <li>change the user name to ubuntu</li>
 <li>clcik on the button advanced and on the left side go to ssh authentication</li>
-<li>now find the private key file that you downloaded and hit ok <img alt="alt text" src="../images/image-43.png" /></li>
+<li>now find the private key file that you downloaded and hit ok
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-43.png"/></p></li>
 <li>now hit save and then hit login and hit yes</li>
 </ul>
 <h2 id="checking-the-logs">Checking The Logs<a class="headerlink" href="#checking-the-logs" title="Permanent link">&para;</a></h2>
 <ul>
 <li>You may have to wait 3 to 5 mins for the live bots folder to appear </li>
-<li>Once the folder shows up you can open the folder and then inside of that folder there should be a logs folder <img alt="alt text" src="../images/image-44.png" /></li>
+<li>Once the folder shows up you can open the folder and then inside of that folder there should be a logs folder
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-44.png"/></p></li>
 <li>If you don't see a logs folder just wait another min or two and click the refresh button until you see the logs folder.</li>
-<li>Click on the log file to see what the bot is doing. open logs and you should see that the bot is running <img alt="alt text" src="../images/image-45.png" /></li>
+<li>Click on the log file to see what the bot is doing. open logs and you should see that the bot is running
+    <p align='center'><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-45.png"/></p></li>
 </ul>
 
 

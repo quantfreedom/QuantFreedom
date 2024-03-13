@@ -1579,16 +1579,22 @@
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <h2 id="bybit">ByBit<a class="headerlink" href="#bybit" title="Permanent link">&para;</a></h2>
-<p>(include in Bybit section - added from <a href="https://quantfreedom1022.github.io/QuantFreedom/free_trading_bots/#winscp">WINSCP</a>)
-* for bybit you have to make sure you are in a uinfied account ... log into bybit and go to the trading pair btcusdt and on the right side below the open and short and above the contract details and price pool ... if you see the word upgrade make sure</p>
+<p>(include in Bybit section - added from <a href="https://quantfreedom1022.github.io/QuantFreedom/free_trading_bots/#winscp">WINSCP</a>)</p>
+<ul>
+<li>for bybit you have to make sure you are in a uinfied account ... log into bybit and go to the trading pair btcusdt and on the right side below the open and short and above the contract details and price pool ... if you see the word upgrade make sure</li>
+</ul>
 <p align="center"><img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-10.png" width="300px;"/></p>
 <p align="right">(<a href="#readme-top">back to top </a>)</p>
 
 <h2 id="aws-launch-template">AWS Launch Template<a class="headerlink" href="#aws-launch-template" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Log into AWS and go to the console home page and click on EC2</li>
-<li>On the left side menu click on <a href="https://eu-north-1.console.aws.amazon.com/ec2/home?region=eu-north-1#SecurityGroups:">Security Groups</a> under Network and Security.</li>
-<li>Crerate new security group (in my case: wizard 1), and make sure the Inbound and Outbound rules are setup correctly, and create new security group. </li>
+<li>
+<p>Log into AWS and go to the console home page and click on EC2</p>
+</li>
+<li>
+<p>On the left side menu click on <a href="https://eu-north-1.console.aws.amazon.com/ec2/home?region=eu-north-1#SecurityGroups:">Security Groups</a> under Network and Security.</p>
+</li>
+<li>Crerate new security group (in my case: wizard 1), and make sure the Inbound and Outbound rules are setup correctly, and create new security group.</li>
 <li>Go back to EC2 main page, on the left side menu click on launch templates under instances and then click the orange create launch template</li>
 <li>
 <p>Name your template under launch template name
@@ -1616,21 +1622,27 @@
 <li>in network settings choose the security groups as (created begore) wizard 1
   <img src="https://quantfreedom1022.github.io/QuantFreedom/images/image-27.png" width="800px;"/></li>
 </ul>
-<p>(Added from <a href="https://quantfreedom1022.github.io/QuantFreedom/free_trading_bots/#adding-github-token">Adding Github Token</a>)
-* create launch template
-* now in the green sction click on the link
-* then click on actions and launch instance from template
-* then in lower right corner click launch instance
-* thne in the green click the link to see the instance details</p>
+<p>(Added from <a href="https://quantfreedom1022.github.io/QuantFreedom/free_trading_bots/#adding-github-token">Adding Github Token</a>)</p>
+<ul>
+<li>create launch template</li>
+<li>now in the green sction click on the link</li>
+<li>then click on actions and launch instance from template</li>
+<li>then in lower right corner click launch instance</li>
+<li>thne in the green click the link to see the instance details</li>
+</ul>
 <p align="right">(<a href="#readme-top">back to top </a>)</p>
 
 <h2 id="connect-to-aws-instance">Connect to AWS Instance<a class="headerlink" href="#connect-to-aws-instance" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Go to EC2 main page</li>
-<li>then under instance id you click that link</li>
+<li>
+<p>Go to EC2 main page</p>
+</li>
+<li>
+<p>then under instance id you click that link</p>
+</li>
 <li>copy the ipv4 dns and paste it into the host name for the winscp, use SFTP file protocol port 22 and ubuntu as username</li>
 <li>clcik on the name advanced and on the left side go to SSH / Autnetication</li>
-<li>now find the private key file that you downloaded during creation of AWS template. </li>
+<li>now find the private key file that you downloaded during creation of AWS template.</li>
 <li>then hit OK and login, (make sure the IP from Instance ID and security group inbound and outbound are corrct)</li>
 <li>click on the live bots folder and then open logs and you should see that the bot is running</li>
 </ul>
@@ -1638,8 +1650,12 @@
 
 <h2 id="github-token">Github token<a class="headerlink" href="#github-token" title="Permanent link">&para;</a></h2>
 <ul>
-<li>In the upper right corner of github click on your profile icon and go to <a href="https://github.com/settings/profile">settings</a> at the bottom of the menu</li>
-<li>now go all the way down to the bottom and on the left side click <a href="https://github.com/settings/apps">dev settings</a></li>
+<li>
+<p>In the upper right corner of github click on your profile icon and go to <a href="https://github.com/settings/profile">settings</a> at the bottom of the menu</p>
+</li>
+<li>
+<p>now go all the way down to the bottom and on the left side click <a href="https://github.com/settings/apps">dev settings</a></p>
+</li>
 <li>then on the left side click personal access tokens then click on token classics</li>
 <li>now click on generate a new token on the upper right side next to revoke all and click on generate new token classic</li>
 <li>
