@@ -5,6 +5,7 @@ repo_url: https://github.com/QuantFreedom1022/QuantFreedom
 theme:
   features:
     - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.path
     - navigation.indexes
   name: material
