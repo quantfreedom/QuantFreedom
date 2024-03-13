@@ -16,7 +16,7 @@
     
     
       
-        <title>Free bot finish - QuantFreedom Docs</title>
+        <title>Free Bot Finish - QuantFreedom Docs</title>
       
     
     
@@ -63,7 +63,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#winscp" class="md-skip">
+        <a href="#free-bot-finish" class="md-skip">
           Skip to content
         </a>
       
@@ -97,7 +97,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Free bot finish
+              Free Bot Finish
             
           </span>
         </div>
@@ -1670,6 +1670,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -1678,9 +1680,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#winscp" class="md-nav__link">
+  <a href="#donnload-winscp" class="md-nav__link">
     <span class="md-ellipsis">
-      WINSCP
+      Donnload WINSCP
     </span>
   </a>
   
@@ -1723,9 +1725,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#winscp_1" class="md-nav__link">
+  <a href="#winscp" class="md-nav__link">
     <span class="md-ellipsis">
       WINSCP
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checking-the-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Checking The Logs
     </span>
   </a>
   
@@ -1749,19 +1760,18 @@
   
 
 
-  <h1>Free bot finish</h1>
-
-<h2 id="winscp">WINSCP<a class="headerlink" href="#winscp" title="Permanent link">&para;</a></h2>
+<h1 id="free-bot-finish">Free Bot Finish<a class="headerlink" href="#free-bot-finish" title="Permanent link">&para;</a></h1>
+<p>Make sure you read the entire bullet point before you start doing what the bullet point says.</p>
+<h2 id="donnload-winscp">Donnload WINSCP<a class="headerlink" href="#donnload-winscp" title="Permanent link">&para;</a></h2>
 <ul>
-<li>download winscp <a href="https://winscp.net/eng/downloads.php">https://winscp.net/eng/downloads.php</a> then launch the install</li>
-<li>choose typical and then commander then install</li>
-<li>uncheck open get started page</li>
-<li>go to the instance and on the far right ipv</li>
-<li>file protocol for sftp port is 22 username is ubuntu</li>
-<li>advanced ssh authentication pricate key file and then link to your private key file that you downloaded</li>
-<li>security group inbound and outbound</li>
-<li>when you create your github token make sure you check the box repo</li>
-<li>for bybit you have to make sure you are in a uinfied account ... log into bybit and go to the trading pair btcusdt and on the right side below the open and short and above the contract details and price pool ... if you see the word upgrade make sure you upgrade <img alt="alt text" src="../images/image-10.png" /></li>
+<li>Download winscp <a href="https://winscp.net/eng/downloads.php">https://winscp.net/eng/downloads.php</a></li>
+<li>Scroll down and click the download winscp green button and it should auto download, then launch the install</li>
+<li>Click install for all users</li>
+<li>Click on accept</li>
+<li>Choose typical then next</li>
+<li>Then commander then next</li>
+<li>Then install</li>
+<li>Uncheck open get started page and uncheck launch then hit finish</li>
 </ul>
 <h2 id="github-token">Github token<a class="headerlink" href="#github-token" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1795,8 +1805,8 @@
 <ul>
 <li><a href="https://github.com/QuantFreedom1022/live_bots/edit/main/aws_script.sh">Open this script</a></li>
 <li>On line 7 change where is says %%%%%%%GITHUB_TOKEN with yoru github token</li>
-<li>On line 13 replace %%%%%%%STRAT_FOLDER with the name of the folder of the strat you want to run ... Ex: 02_rsi_rising_falling</li>
-<li>On line 14 replace %%%%%%%RUN_FILE.py with the main.py in the folder of the strat you want to run ... Ex: rsi_main.py</li>
+<li>On line 13 replace %%%%%%%STRAT_FOLDER with the name of the folder of the strat you want to run ... Ex: 02_rsi_rising_falling ... you can get the name of the folder from the main repo <a href="https://github.com/QuantFreedom1022/live_bots">https://github.com/QuantFreedom1022/live_bots</a></li>
+<li>On line 14 replace %%%%%%%RUN_FILE.py with the main.py in the folder of the strat you want to run ... Ex: rsi_main.py it will always be a file with main in the name of it</li>
 <li>Now replace the %%%%%%%API_KEY with your api key</li>
 <li>Replace the %%%%%%%SECRET_KEY with your secret key</li>
 <li>Now replace %%%%%%%USE_TEST_NET with a true if you want to use the testnet and a false if you want to use the main net ... all lower case</li>
@@ -1813,23 +1823,25 @@
 <li>then on the right side click on the orange button launch instance</li>
 <li>then in the green success box click the link</li>
 <li>then under instance id you click that blue link <img alt="alt text" src="../images/image-40.png" /></li>
-<li>copy the ipv4 dns and paste it into the host name for the winscp and change the user name to ubuntu</li>
-<li>clcik on the name advanced and on the left side go to ssh autnetication</li>
-<li>now find the private key file that you downloaded</li>
-<li>then hit login</li>
-<li>click on the live bots folder and then open logs and you should see that the bot is running</li>
+<li>copy the ipv4 dns <img alt="alt text" src="../images/image-41.png" /></li>
 </ul>
-<h2 id="winscp_1">WINSCP<a class="headerlink" href="#winscp_1" title="Permanent link">&para;</a></h2>
+<h2 id="winscp">WINSCP<a class="headerlink" href="#winscp" title="Permanent link">&para;</a></h2>
 <ul>
-<li>download winscp <a href="https://winscp.net/eng/downloads.php">https://winscp.net/eng/downloads.php</a> then launch the install</li>
-<li>choose typical and then commander then install</li>
-<li>uncheck open get started page</li>
-<li>go to the instance and on the far right ipv</li>
-<li>file protocol for sftp port is 22 username is ubuntu</li>
-<li>advanced ssh authentication pricate key file and then link to your private key file that you downloaded</li>
-<li>security group inbound and outbound</li>
-<li>when you create your github token make sure you check the box repo</li>
-<li>for bybit you have to make sure you are in a uinfied account ... log into bybit and go to the trading pair btcusdt and on the right side below the open and short and above the contract details and price pool ... if you see the word upgrade make sure you upgrade <img alt="alt text" src="../images/image-10.png" /></li>
+<li>Open winscp</li>
+<li>in the login screen if you can't edit the host name click edit</li>
+<li>in the host name field past in the public ipv4 dns</li>
+<li>Paste it into the host name <img alt="alt text" src="../images/image-42.png" /></li>
+<li>change the user name to ubuntu</li>
+<li>clcik on the button advanced and on the left side go to ssh authentication</li>
+<li>now find the private key file that you downloaded and hit ok <img alt="alt text" src="../images/image-43.png" /></li>
+<li>now hit save and then hit login and hit yes</li>
+</ul>
+<h2 id="checking-the-logs">Checking The Logs<a class="headerlink" href="#checking-the-logs" title="Permanent link">&para;</a></h2>
+<ul>
+<li>You may have to wait 3 to 5 mins for the live bots folder to appear </li>
+<li>Once the folder shows up you can open the folder and then inside of that folder there should be a logs folder <img alt="alt text" src="../images/image-44.png" /></li>
+<li>If you don't see a logs folder just wait another min or two and click the refresh button until you see the logs folder.</li>
+<li>Click on the log file to see what the bot is doing. open logs and you should see that the bot is running <img alt="alt text" src="../images/image-45.png" /></li>
 </ul>
 
 
