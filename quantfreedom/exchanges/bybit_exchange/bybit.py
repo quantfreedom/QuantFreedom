@@ -31,6 +31,7 @@ class Bybit(Exchange):
             self.url_start = "https://api-testnet.bybit.com"
         else:
             self.url_start = "https://api.bybit.com"
+            self.ws_url_start = "wss://stream.bybit.com/v5/public"
 
     """
     ################################################################
