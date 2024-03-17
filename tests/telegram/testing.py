@@ -1,6 +1,6 @@
 import asyncio
 
-from my_stuff import TELEGRAM_TOKEN
+from env import TELEGRAM_TOKEN
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart
