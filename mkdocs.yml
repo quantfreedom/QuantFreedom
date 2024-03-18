@@ -1,6 +1,6 @@
 site_name: QuantFreedom Docs
 remote_name: QuantFreedom
-repo_url: https://github.com/QuantFreedom1022/QuantFreedom
+repo_url: https://github.com/QuantFreedom/QuantFreedom
 
 theme:
   features:
