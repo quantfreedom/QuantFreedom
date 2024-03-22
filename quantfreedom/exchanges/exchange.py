@@ -113,7 +113,7 @@ class Exchange:
         self,
         step_size: str,
     ):
-        if '.' not in step_size:
+        if "." not in step_size:
             return int(step_size)
         else:
             return step_size.index("1") - step_size.index(".")
@@ -182,4 +182,7 @@ class Exchange:
         pass
 
     def get_exchange_timeframe(self, **kwargs):
+        pass
+
+    def set_exchange_settings(self, **kwargs):
         pass
