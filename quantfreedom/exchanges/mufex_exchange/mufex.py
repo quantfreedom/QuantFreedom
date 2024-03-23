@@ -905,7 +905,7 @@ class Mufex(Exchange):
         else:
             self.set_leverage_mode_cross(symbol=symbol)
 
-        market_fee_pct, limit_fee_pct = self.__get_fee_pcts(symbol=symbol)
+        market_fee_pct, limit_fee_pct = self.get_fee_pcts(symbol=symbol)
         (
             max_leverage,
             min_leverage,
