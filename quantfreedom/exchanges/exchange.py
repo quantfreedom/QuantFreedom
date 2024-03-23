@@ -154,7 +154,7 @@ class Exchange:
     def check_if_order_open(self, **kwargs):
         pass
 
-    def get_equity_of_asset(self, **kwargs):
+    def get_no_fees_balance_of_asset(self, **kwargs):
         pass
 
     def move_stop_order(self, **kwargs):
@@ -185,4 +185,7 @@ class Exchange:
         pass
 
     def set_exchange_settings(self, **kwargs):
+        pass
+
+    def get_no_fees_balance_of_asset_market_in_only(self, **kwargs):
         pass

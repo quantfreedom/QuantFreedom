@@ -323,8 +323,9 @@ class Bybit(Exchange):
         params["category"] = category
         response: dict = self.__HTTP_get_request(end_point=end_point, params=params)
         try:
-            response["result"]["list"][0]
+
             data_list = response["result"]["list"]
+            data_list = [dict(sorted(data_list[0].items())), dict(sorted(data_list[1].items()))]
 
             return data_list
         except Exception as e:
@@ -358,15 +359,22 @@ class Bybit(Exchange):
         except Exception as e:
             raise Exception(f"Bybit get_wallet_info = Data or List is empty {response['retMsg']} -> {e}")
 
-    def get_equity_of_asset(
+    def get_no_fees_balance_of_asset(
         self,
+        symbol: str,
         accountType: str = "UNIFIED",
         trading_with: str = None,
     ):
-        wallet_balance = float(
-            self.get_wallet_info(accountType=accountType, trading_with=trading_with)[0]["coin"][0]["walletBalance"]
-        )
-        return wallet_balance
+        coins = self.get_wallet_info(accountType=accountType, trading_with=trading_with)[0]["coin"]
+        for coin in coins:
+            if coin["coin"] == trading_with:
+                wallet_balance = float(coin["walletBalance"])
+        pos_info = self.get_position_info(symbol=symbol)
+        long_fees = -float(pos_info[0]["curRealisedPnl"])
+        short_fees = -float(pos_info[1]["curRealisedPnl"])
+        total_fees = long_fees + short_fees
+        equity = wallet_balance + total_fees
+        return equity
 
     def upgrade_to_unified_trading_account(self):
         end_point = "/v5/account/upgrade-to-uta"

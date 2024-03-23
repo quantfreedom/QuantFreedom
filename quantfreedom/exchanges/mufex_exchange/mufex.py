@@ -560,8 +560,8 @@ class Mufex(Exchange):
         params["settleCoin"] = settleCoin
         response: dict = self.__HTTP_get_request(end_point=end_point, params=params)
         try:
-            response["data"]["list"][0]
             data_list = response["data"]["list"]
+            data_list = [dict(sorted(data_list[0].items())), dict(sorted(data_list[1].items()))]
 
             return data_list
         except Exception as e:
@@ -680,12 +680,21 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_wallet_info = Data or List is empty {response['message']} -> {e}")
 
-    def get_equity_of_asset(
+    def get_no_fees_balance_of_asset_market_in_only(
         self,
         trading_with: str,
+        symbol: str,
     ):
-        wallet_balance = float(self.get_wallet_info(trading_with=trading_with)[0]["walletBalance"])
-        return wallet_balance
+        wallet_balance = float(self.get_wallet_info(trading_with=trading_with)[0]["coin"]["walletBalance"])
+        market_fee_pct = self.get_fee_pcts(symbol=symbol)[0]
+
+        pos_info = self.get_position_info(symbol=symbol)
+        long_fees = float(pos_info[0]["positionValue"]) * market_fee_pct
+        short_fees = float(pos_info[1]["positionValue"]) * market_fee_pct
+        total_fees = long_fees + short_fees
+        no_fee_wallet_balance += total_fees
+
+        return no_fee_wallet_balance
 
     def set_position_mode(
         self,
@@ -820,7 +829,7 @@ class Mufex(Exchange):
 
         return true_false
 
-    def __get_fee_pcts(
+    def get_fee_pcts(
         self,
         symbol: str,
     ):
