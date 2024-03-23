@@ -363,7 +363,10 @@ class Bybit(Exchange):
         accountType: str = "UNIFIED",
         trading_with: str = None,
     ):
-        return float(self.get_wallet_info(accountType=accountType, trading_with=trading_with)[0]["coin"][0]["equity"])
+        wallet_balance = float(
+            self.get_wallet_info(accountType=accountType, trading_with=trading_with)[0]["coin"][0]["walletBalance"]
+        )
+        return wallet_balance
 
     def upgrade_to_unified_trading_account(self):
         end_point = "/v5/account/upgrade-to-uta"

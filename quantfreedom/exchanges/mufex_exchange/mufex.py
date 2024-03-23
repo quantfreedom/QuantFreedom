@@ -335,12 +335,12 @@ class Mufex(Exchange):
         self,
         symbol: str,
         buy_sell: str,
-        position_mode: PositionModeType, # type: ignore
+        position_mode: PositionModeType,  # type: ignore
         order_type: str,
         asset_size: float,
         time_in_force: str = "GoodTillCancel",
         price: float = None,
-        triggerDirection: TriggerDirectionType = None, # type: ignore
+        triggerDirection: TriggerDirectionType = None,  # type: ignore
         triggerPrice: str = None,
         triggerBy: str = None,
         tpTriggerBy: str = None,
@@ -684,11 +684,12 @@ class Mufex(Exchange):
         self,
         trading_with: str,
     ):
-        return float(self.get_wallet_info(trading_with=trading_with)[0]["equity"])
+        wallet_balance = float(self.get_wallet_info(trading_with=trading_with)[0]["walletBalance"])
+        return wallet_balance
 
     def set_position_mode(
         self,
-        position_mode: PositionModeType, # type: ignore
+        position_mode: PositionModeType,  # type: ignore
         trading_with: str = None,
         symbol: str = None,
     ):
@@ -737,7 +738,7 @@ class Mufex(Exchange):
     def set_leverage_mode(
         self,
         symbol: str,
-        leverage_mode: LeverageModeType, # type: ignore
+        leverage_mode: LeverageModeType,  # type: ignore
         leverage: int = 5,
     ):
         """
@@ -880,8 +881,8 @@ class Mufex(Exchange):
 
     def set_exchange_settings(
         self,
-        leverage_mode: LeverageModeType, # type: ignore
-        position_mode: PositionModeType, # type: ignore
+        leverage_mode: LeverageModeType,  # type: ignore
+        position_mode: PositionModeType,  # type: ignore
         symbol: str,
     ):
         self.position_mode = position_mode
