@@ -15,7 +15,6 @@ def sign(
     priv_key: int,
     seed: Optional[int] = None,
 ) -> ECSignature:
-    # Note: cpp_sign() is not optimized and is currently slower than py_sign().
     #       So always use py_sign() for now.
     return py_sign(msg_hash=msg_hash, priv_key=priv_key, seed=seed)
 

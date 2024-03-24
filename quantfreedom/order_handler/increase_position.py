@@ -10,7 +10,7 @@ logger = getLogger("info")
 
 
 class IncreasePosition:
-    risk_account_pct_size: float
+    account_pct_risk_per_trade: float
     max_equity_risk_pct: float
     max_trades: int
 
@@ -101,7 +101,7 @@ class IncreasePosition:
     def c_pl_ra_ps(
         self,
         equity: float,
-        possible_loss: float,
+        total_possible_loss: float,
         total_trades: int,
     ) -> tuple[int, int]:
         """
@@ -113,36 +113,38 @@ class IncreasePosition:
         ----------
         equity : float
             equity
-        possible_loss : float
-            possible_loss
+        total_possible_loss : float
+            total_possible_loss
         total_trades : int
             total_trades
 
         Returns
         -------
         int, int
-            possible_loss, total_trades
+            total_possible_loss, total_trades
         """
-        possible_loss = int(possible_loss - equity * self.risk_account_pct_size)
-        logger.debug(f"possible_loss= {possible_loss}")
-
-        max_equity_risk = -int(equity * self.max_equity_risk_pct)
-        logger.debug(f"max_equity_risk= {max_equity_risk}")
-        if possible_loss < max_equity_risk:
-            logger.warning(f"PL too big possible_loss= {possible_loss} max risk= {max_equity_risk}")
+        total_trades += 1
+        if total_trades > self.max_trades:
+            logger.warning(f"Max trades reached - total trades= {total_trades} max trades= {self.max_trades}")
             raise RejectedOrder
 
-        total_trades += 1
+        possible_loss = -int(equity * self.account_pct_risk_per_trade)
+
+        total_possible_loss = int(total_possible_loss + possible_loss)
 
         logger.debug(
-            f"PL is fine possible_loss= {possible_loss} max risk= {max_equity_risk} total trades= {total_trades}"
+            f"""
+total trades= {total_trades}
+max trades= {self.max_trades}
+possible_loss= {possible_loss}
+total_possible_loss= {total_possible_loss}"""
         )
-        return possible_loss, total_trades
+        return total_possible_loss, total_trades
 
     def c_total_trades(
         self,
         average_entry: float,
-        possible_loss: float,
+        total_possible_loss: float,
         position_size_asset: float,
         sl_price: float,
         total_trades: int,
@@ -156,8 +158,8 @@ class IncreasePosition:
         ----------
         average_entry : float
             average_entry
-        possible_loss : float
-            possible_loss
+        total_possible_loss : float
+            total_possible_loss
         position_size_asset : float
             position_size_asset
         sl_price : float
@@ -168,26 +170,35 @@ class IncreasePosition:
         Returns
         -------
         tuple[int, int]
-            possible_loss, total_trades
+            total_possible_loss, total_trades
         """
+        total_trades += 1
+        if total_trades > self.max_trades:
+            logger.warning(
+                f"""
+Max trades reached
+Total trades= {total_trades}
+max trades= {self.max_trades}
+possible_loss= {possible_loss}
+total_possible_loss= {total_possible_loss}"""
+            )
+            raise RejectedOrder
+
         pnl = -abs(average_entry - sl_price) * position_size_asset  # math checked
         fee_open = position_size_asset * average_entry * self.market_fee_pct  # math checked
         fee_close = position_size_asset * sl_price * self.market_fee_pct  # math checked
         fees_paid = fee_open + fee_close  # math checked
-        possible_loss = int(pnl - fees_paid)
+        possible_loss = -int(pnl - fees_paid)
+        total_possible_loss = int(total_possible_loss + possible_loss)
 
-        logger.debug(f"possible_loss= {possible_loss}")
-
-        total_trades += 1
-        if total_trades > self.max_trades:
-            logger.warning(
-                f"Max trades reached total trades= {total_trades} max trades= {self.max_trades} possible_loss= {possible_loss}"
-            )
-            raise RejectedOrder
         logger.debug(
-            f"Max trades reached - total trades= {total_trades} max trades= {self.max_trades} possible_loss= {possible_loss}"
+            f"""
+Total trades= {total_trades}
+max trades= {self.max_trades}
+possible_loss= {possible_loss}
+total_possible_loss= {total_possible_loss}"""
         )
-        return possible_loss, total_trades
+        return total_possible_loss, total_trades
 
     def min_asset_amount(
         self,
@@ -196,7 +207,7 @@ class IncreasePosition:
         equity: float,
         position_size_asset: float,
         position_size_usd: float,
-        possible_loss: float,
+        total_possible_loss: float,
         sl_price: float,
         total_trades: int,
     ) -> tuple[float, float, float, float, float, float, int, int, float]:
@@ -217,8 +228,8 @@ class IncreasePosition:
             position_size_asset
         position_size_usd : float
             position_size_usd
-        possible_loss : float
-            possible_loss
+        total_possible_loss : float
+            total_possible_loss
         sl_price : float
             sl_price
         total_trades : int
@@ -233,7 +244,7 @@ class IncreasePosition:
             entry_size_usd,
             position_size_asset,
             position_size_usd,
-            possible_loss,
+            total_possible_loss,
             total_trades,
             sl_pct
         """
@@ -244,7 +255,7 @@ class IncreasePosition:
                 entry_price=entry_price,
                 position_size_asset=position_size_asset,
                 position_size_usd=position_size_usd,
-                possible_loss=possible_loss,
+                total_possible_loss=total_possible_loss,
                 sl_price=sl_price,
                 total_trades=total_trades,
             )
@@ -261,7 +272,7 @@ class IncreasePosition:
         entry_price: float,
         position_size_asset: float,
         position_size_usd: float,
-        possible_loss: float,
+        total_possible_loss: float,
         sl_price: float,
         total_trades: int,
     ) -> tuple[float, float, float, float, float, float, int, int, float]:
@@ -280,8 +291,8 @@ class IncreasePosition:
             position_size_asset
         position_size_usd : float
             position_size_usd
-        possible_loss : float
-            possible_loss
+        total_possible_loss : float
+            total_possible_loss
         sl_price : float
             sl_price
         total_trades : int
@@ -296,7 +307,7 @@ class IncreasePosition:
             entry_size_usd,
             position_size_asset,
             position_size_usd,
-            possible_loss,
+            total_possible_loss,
             total_trades,
             sl_pct
         """
@@ -322,14 +333,14 @@ class IncreasePosition:
         position_size_usd = round(entry_size_usd + position_size_usd, 3)
         logger.debug(f"position_size_usd= {position_size_usd}")
 
-        possible_loss, total_trades = self.c_total_trades(
+        total_possible_loss, total_trades = self.c_total_trades(
             average_entry=average_entry,
-            possible_loss=possible_loss,
+            total_possible_loss=total_possible_loss,
             total_trades=total_trades,
             position_size_asset=position_size_asset,
             sl_price=sl_price,
         )
-        logger.debug(f"possible_loss= {possible_loss} total_trades= {total_trades}")
+        logger.debug(f"total_possible_loss= {total_possible_loss} total_trades= {total_trades}")
 
         self.c_too_b_s(entry_size_asset=entry_size_asset)
         return (
@@ -339,7 +350,7 @@ class IncreasePosition:
             entry_size_usd,
             position_size_asset,
             position_size_usd,
-            possible_loss,
+            total_possible_loss,
             total_trades,
             sl_pct,
         )
@@ -370,7 +381,7 @@ class IncreasePosition:
             entry_size_usd,
             position_size_asset,
             position_size_usd,
-            possible_loss,
+            total_possible_loss,
             total_trades,
             sl_pct
         """
@@ -385,14 +396,14 @@ class IncreasePosition:
         sl_pct = round(abs(average_entry - sl_price) / average_entry, 3)
         logger.debug(f"sl_pct= {round(sl_pct*100, 3)}")
 
-        possible_loss, total_trades = self.c_total_trades(
+        total_possible_loss, total_trades = self.c_total_trades(
             average_entry=average_entry,
             position_size_asset=position_size_asset,
-            possible_loss=0,
+            total_possible_loss=0,
             sl_price=sl_price,
             total_trades=0,
         )
-        logger.debug(f"possible_loss= {possible_loss} total_trades {total_trades}")
+        logger.debug(f"total_possible_loss= {total_possible_loss} total_trades {total_trades}")
 
         self.c_too_b_s(
             entry_size_asset=entry_size_asset,
@@ -404,7 +415,7 @@ class IncreasePosition:
             entry_size_usd,
             position_size_asset,
             position_size_usd,
-            possible_loss,
+            total_possible_loss,
             total_trades,
             sl_pct,
         )
@@ -414,7 +425,7 @@ class IncreasePosition:
         average_entry: float,
         entry_price: float,
         position_size_usd: float,
-        possible_loss: float,
+        total_possible_loss: float,
         sl_price: float,
     ) -> float:
         """
@@ -434,8 +445,8 @@ class IncreasePosition:
             entry_price
         position_size_usd : float
             position_size_usd
-        possible_loss : float
-            possible_loss
+        total_possible_loss : float
+            total_possible_loss
         sl_price : float
             sl_price
 
@@ -448,7 +459,7 @@ class IncreasePosition:
         return round(
             -(
                 (
-                    entry_price * average_entry * possible_loss
+                    entry_price * average_entry * total_possible_loss
                     - entry_price * sl_price * position_size_usd
                     + entry_price * sl_price * self.market_fee_pct * position_size_usd
                     + entry_price * average_entry * position_size_usd
@@ -465,7 +476,7 @@ class IncreasePosition:
     def long_entry_size_np(
         self,
         entry_price: float,
-        possible_loss: float,
+        total_possible_loss: float,
         sl_price: float,
     ) -> float:
         """
@@ -481,8 +492,8 @@ class IncreasePosition:
         ----------
         entry_price : float
             entry_price
-        possible_loss : float
-            possible_loss
+        total_possible_loss : float
+            total_possible_loss
         sl_price : float
             sl_price
 
@@ -494,7 +505,7 @@ class IncreasePosition:
 
         return round(
             entry_price
-            * -possible_loss
+            * -total_possible_loss
             / (-sl_price + entry_price + entry_price * self.market_fee_pct + self.market_fee_pct * sl_price),
             3,
         )
@@ -504,7 +515,7 @@ class IncreasePosition:
         average_entry: float,
         entry_price: float,
         position_size_usd: float,
-        possible_loss: float,
+        total_possible_loss: float,
         sl_price: float,
     ) -> float:
         """
@@ -524,8 +535,8 @@ class IncreasePosition:
             entry_price
         position_size_usd : float
             position_size_usd
-        possible_loss : float
-            possible_loss
+        total_possible_loss : float
+            total_possible_loss
         sl_price : float
             sl_price
 
@@ -538,7 +549,7 @@ class IncreasePosition:
         return round(
             -(
                 (
-                    entry_price * average_entry * possible_loss
+                    entry_price * average_entry * total_possible_loss
                     - entry_price * average_entry * position_size_usd
                     + entry_price * sl_price * position_size_usd
                     + entry_price * sl_price * self.market_fee_pct * position_size_usd
@@ -554,7 +565,7 @@ class IncreasePosition:
 
     def short_entry_size_np(
         self,
-        possible_loss: float,
+        total_possible_loss: float,
         sl_price: float,
         entry_price: float,
     ) -> float:
@@ -571,8 +582,8 @@ class IncreasePosition:
         ----------
         entry_price : float
             entry_price
-        possible_loss : float
-            possible_loss
+        total_possible_loss : float
+            total_possible_loss
         sl_price : float
             sl_price
 
@@ -583,7 +594,7 @@ class IncreasePosition:
         """
         return -round(
             entry_price
-            * -possible_loss
+            * -total_possible_loss
             / (-entry_price + sl_price + entry_price * self.market_fee_pct + self.market_fee_pct * sl_price),
             3,
         )
@@ -595,7 +606,7 @@ class IncreasePosition:
         entry_price: float,
         position_size_asset: float,
         position_size_usd: float,
-        possible_loss: float,
+        total_possible_loss: float,
         sl_price: float,
         total_trades: int,
     ) -> tuple[float, float, float, float, float, float, int, int, float]:
@@ -616,8 +627,8 @@ class IncreasePosition:
             position_size_asset
         position_size_usd : float
             position_size_usd
-        possible_loss : float
-            possible_loss
+        total_possible_loss : float
+            total_possible_loss
         sl_price : float
             sl_price
         total_trades : int
@@ -632,7 +643,7 @@ class IncreasePosition:
             entry_size_usd,
             position_size_asset,
             position_size_usd,
-            possible_loss,
+            total_possible_loss,
             total_trades,
             sl_pct
         """
@@ -644,7 +655,7 @@ class IncreasePosition:
                 entry_price=entry_price,
                 position_size_asset=position_size_asset,
                 position_size_usd=position_size_usd,
-                possible_loss=possible_loss,
+                total_possible_loss=total_possible_loss,
                 sl_price=sl_price,
                 total_trades=total_trades,
             )
@@ -663,7 +674,7 @@ class IncreasePosition:
         equity: float,
         position_size_asset: float,
         position_size_usd: float,
-        possible_loss: float,
+        total_possible_loss: float,
         sl_price: float,
         total_trades: int,
     ) -> tuple[float, float, float, float, float, float, int, int, float]:
@@ -684,8 +695,8 @@ class IncreasePosition:
             position_size_asset
         position_size_usd : float
             position_size_usd
-        possible_loss : float
-            possible_loss
+        total_possible_loss : float
+            total_possible_loss
         sl_price : float
             sl_price
         total_trades : int
@@ -700,18 +711,18 @@ class IncreasePosition:
             entry_size_usd,
             position_size_asset,
             position_size_usd,
-            possible_loss,
+            total_possible_loss,
             total_trades,
             sl_pct
         """
-        possible_loss, total_trades = self.c_pl_ra_ps(
+        total_possible_loss, total_trades = self.c_pl_ra_ps(
             equity=equity,
-            possible_loss=possible_loss,
+            total_possible_loss=total_possible_loss,
             total_trades=total_trades,
         )
 
         entry_size_usd = self.entry_calc_p(
-            possible_loss=possible_loss,
+            total_possible_loss=total_possible_loss,
             sl_price=sl_price,
             entry_price=entry_price,
             average_entry=average_entry,
@@ -752,7 +763,7 @@ class IncreasePosition:
             entry_size_usd,
             position_size_asset,
             position_size_usd,
-            possible_loss,
+            total_possible_loss,
             total_trades,
             sl_pct,
         )
@@ -786,18 +797,18 @@ class IncreasePosition:
             entry_size_usd,
             position_size_asset,
             position_size_usd,
-            possible_loss,
+            total_possible_loss,
             total_trades,
             sl_pct
         """
-        possible_loss, total_trades = self.c_pl_ra_ps(
+        total_possible_loss, total_trades = self.c_pl_ra_ps(
             equity=equity,
-            possible_loss=0,
+            total_possible_loss=0,
             total_trades=0,
         )
 
         entry_size_usd = position_size_usd = self.entry_calc_np(
-            possible_loss=possible_loss,
+            total_possible_loss=total_possible_loss,
             sl_price=sl_price,
             entry_price=entry_price,
         )
@@ -819,7 +830,7 @@ class IncreasePosition:
             entry_size_usd,
             position_size_asset,
             position_size_usd,
-            possible_loss,
+            total_possible_loss,
             total_trades,
             sl_pct,
         )

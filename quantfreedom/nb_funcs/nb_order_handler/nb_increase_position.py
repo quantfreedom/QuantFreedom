@@ -11,7 +11,7 @@ class AccExOther(NamedTuple):
     market_fee_pct: float
     max_asset_size: float
     min_asset_size: float
-    possible_loss: float
+    total_possible_loss: float
     price_tick_step: float
     total_trades: int
 
@@ -24,7 +24,7 @@ class OrderInfo(NamedTuple):
     max_trades: int
     position_size_asset: float
     position_size_usd: float
-    risk_account_pct_size: float
+    account_pct_risk_per_trade: float
     sl_price: float
 
 
@@ -34,7 +34,7 @@ def nb_long_entry_size_p(
     entry_price: float,
     market_fee_pct: float,
     position_size_usd: float,
-    possible_loss: float,
+    total_possible_loss: float,
     sl_price: float,
 ):
     # math https://www.symbolab.com/solver/simplify-calculator/solve%20for%20u%2C%20%5Cleft(%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%5Cleft(n%20-%20%5Cleft(%5Cfrac%7B%5Cleft(p%2Bu%5Cright)%7D%7B%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%7D%5Cright)%5Cright)%5Cright)-%20%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%5Cleft(%5Cfrac%7B%5Cleft(p%2Bu%5Cright)%7D%7B%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%7D%5Cright)%5Ccdot%20m%5Cright)%20-%20%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%20n%5Ccdot%20m%5Cright)%20%5Cright)%3D-f?or=input
@@ -42,7 +42,7 @@ def nb_long_entry_size_p(
     return round(
         -(
             (
-                entry_price * average_entry * possible_loss
+                entry_price * average_entry * total_possible_loss
                 - entry_price * sl_price * position_size_usd
                 + entry_price * sl_price * market_fee_pct * position_size_usd
                 + entry_price * average_entry * position_size_usd
@@ -58,14 +58,14 @@ def nb_long_entry_size_p(
 def nb_long_entry_size_np(
     entry_price: float,
     market_fee_pct: float,
-    possible_loss: float,
+    total_possible_loss: float,
     sl_price: float,
 ):
     # math https://www.symbolab.com/solver/simplify-calculator/solve%20for%20u%2C%20%5Cleft(%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%5Cleft(x%20-%20e%5Cright)%5Cright)-%20%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%20e%5Ccdot%20m%5Cright)%20-%20%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%20x%5Ccdot%20m%5Cright)%20%5Cright)%3Dp?or=input
 
     return round(
         entry_price
-        * -possible_loss
+        * -total_possible_loss
         / (-sl_price + entry_price + entry_price * market_fee_pct + market_fee_pct * sl_price),
         3,
     )
@@ -77,7 +77,7 @@ def nb_short_entry_size_p(
     entry_price: float,
     market_fee_pct: float,
     position_size_usd: float,
-    possible_loss: float,
+    total_possible_loss: float,
     sl_price: float,
 ):
     # math https://www.symbolab.com/solver/simplify-calculator/solve%20for%20u%2C%20%5Cleft(%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%5Cleft(%5Cleft(%5Cfrac%7B%5Cleft(p%2Bu%5Cright)%7D%7B%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%7D%5Cright)-n%5Cright)%5Cright)-%20%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%5Cleft(%5Cfrac%7B%5Cleft(p%2Bu%5Cright)%7D%7B%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%7D%5Cright)%5Ccdot%20%20m%5Cright)%20-%20%5Cleft(%5Cleft(%5Cfrac%7Bp%7D%7Ba%7D%2B%5Cfrac%7Bu%7D%7Be%7D%5Cright)%5Ccdot%20%20n%5Ccdot%20%20m%5Cright)%20%5Cright)%3D-f?or=input
@@ -85,7 +85,7 @@ def nb_short_entry_size_p(
     return round(
         -(
             (
-                entry_price * average_entry * possible_loss
+                entry_price * average_entry * total_possible_loss
                 - entry_price * average_entry * position_size_usd
                 + entry_price * sl_price * position_size_usd
                 + entry_price * sl_price * market_fee_pct * position_size_usd
@@ -101,13 +101,13 @@ def nb_short_entry_size_p(
 def nb_short_entry_size_np(
     entry_price: float,
     market_fee_pct: float,
-    possible_loss: float,
+    total_possible_loss: float,
     sl_price: float,
 ):
     # math https://www.symbolab.com/solver/simplify-calculator/solve%20for%20u%2C%20%5Cleft(%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%5Cleft(e%20-%20x%5Cright)%5Cright)-%20%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%20e%5Ccdot%20m%5Cright)%20-%20%5Cleft(%5Cfrac%7Bu%7D%7Be%7D%5Ccdot%20x%5Ccdot%20m%5Cright)%20%5Cright)%3Dp?or=input
     return -round(
         entry_price
-        * -possible_loss
+        * -total_possible_loss
         / (-entry_price + sl_price + entry_price * market_fee_pct + market_fee_pct * sl_price),
         3,
     )
@@ -155,23 +155,23 @@ def nb_c_pl_ra_ps(
     equity: float,
     logger,
     max_equity_risk_pct: float,
-    possible_loss: float,
-    risk_account_pct_size: float,
+    total_possible_loss: float,
+    account_pct_risk_per_trade: float,
     total_trades: int,
 ):
     """
     Possible loss risk account percent size
     """
     logger("nb_increase_position.py - nb_c_pl_ra_ps() - Inside")
-    possible_loss = int(possible_loss - equity * risk_account_pct_size)
-    logger("nb_increase_position.py - nb_c_pl_ra_ps() -" + " possible_loss= " + str(possible_loss))
+    total_possible_loss = int(total_possible_loss - equity * account_pct_risk_per_trade)
+    logger("nb_increase_position.py - nb_c_pl_ra_ps() -" + " total_possible_loss= " + str(total_possible_loss))
     max_equity_risk = -round(equity * max_equity_risk_pct, 0)
     logger("nb_increase_position.py - nb_c_pl_ra_ps() -" + " max_equity_risk= " + str(int(max_equity_risk)))
-    if possible_loss < max_equity_risk:
+    if total_possible_loss < max_equity_risk:
         logger(
             "nb_increase_position.py - nb_c_pl_ra_ps() - Too big"
-            + " possible_loss= "
-            + str(int(possible_loss))
+            + " total_possible_loss= "
+            + str(int(total_possible_loss))
             + " max risk= "
             + str(int(max_equity_risk))
         )
@@ -179,14 +179,14 @@ def nb_c_pl_ra_ps(
     total_trades += 1
     logger(
         "nb_increase_position.py - nb_c_pl_ra_ps() - PL is fine"
-        + " possible_loss= "
-        + str(int(possible_loss))
+        + " total_possible_loss= "
+        + str(int(total_possible_loss))
         + " max risk= "
         + str(int(max_equity_risk))
         + " total trades= "
         + str(int(total_trades))
     )
-    return possible_loss, total_trades
+    return total_possible_loss, total_trades
 
 
 @njit(cache=True)
@@ -196,7 +196,7 @@ def nb_c_total_trades(
     market_fee_pct: float,
     max_trades: int,
     position_size_asset: float,
-    possible_loss: float,
+    total_possible_loss: float,
     sl_price: float,
     stringer,
     total_trades: int,
@@ -208,8 +208,8 @@ def nb_c_total_trades(
     fee_open = position_size_asset * average_entry * market_fee_pct  # math checked
     fee_close = position_size_asset * sl_price * market_fee_pct  # math checked
     fees_paid = fee_open + fee_close  # math checked
-    possible_loss = int(pnl - fees_paid)
-    logger("nb_increase_position.py - nb_c_total_trades() -" + " possible_loss= " + str(possible_loss))
+    total_possible_loss = int(pnl - fees_paid)
+    logger("nb_increase_position.py - nb_c_total_trades() -" + " total_possible_loss= " + str(total_possible_loss))
     total_trades += 1
     if total_trades > max_trades:
         logger(
@@ -218,8 +218,8 @@ def nb_c_total_trades(
             + str(total_trades)
             + " max trades= "
             + str(max_trades)
-            + " possible_loss= "
-            + str(possible_loss)
+            + " total_possible_loss= "
+            + str(total_possible_loss)
         )
         raise RejectedOrder
     logger(
@@ -228,10 +228,10 @@ def nb_c_total_trades(
         + str(total_trades)
         + " max trades= "
         + str(max_trades)
-        + " possible_loss= "
-        + str(possible_loss)
+        + " total_possible_loss= "
+        + str(total_possible_loss)
     )
-    return possible_loss, total_trades
+    return total_possible_loss, total_trades
 
 
 @njit(cache=True)
@@ -280,7 +280,7 @@ def nb_rpa_slbcb_p(
     market_fee_pct = acc_ex_other.market_fee_pct
     max_asset_size = acc_ex_other.max_asset_size
     min_asset_size = acc_ex_other.min_asset_size
-    possible_loss = acc_ex_other.possible_loss
+    total_possible_loss = acc_ex_other.total_possible_loss
     price_tick_step = acc_ex_other.price_tick_step
     total_trades = acc_ex_other.total_trades
 
@@ -289,16 +289,16 @@ def nb_rpa_slbcb_p(
     max_equity_risk_pct = order_info.max_equity_risk_pct
     position_size_asset = order_info.position_size_asset
     position_size_usd = order_info.position_size_usd
-    risk_account_pct_size = order_info.risk_account_pct_size
+    account_pct_risk_per_trade = order_info.account_pct_risk_per_trade
     sl_price = order_info.sl_price
 
     logger("nb_increase_position.py - nb_long_rpa_slbcb_p() - Calculating")
-    possible_loss, total_trades = nb_c_pl_ra_ps(
+    total_possible_loss, total_trades = nb_c_pl_ra_ps(
         equity=equity,
         logger=logger,
         max_equity_risk_pct=max_equity_risk_pct,
-        possible_loss=possible_loss,
-        risk_account_pct_size=risk_account_pct_size,
+        total_possible_loss=total_possible_loss,
+        account_pct_risk_per_trade=account_pct_risk_per_trade,
         total_trades=total_trades,
     )
 
@@ -307,7 +307,7 @@ def nb_rpa_slbcb_p(
         entry_price=entry_price,
         market_fee_pct=market_fee_pct,
         position_size_usd=position_size_usd,
-        possible_loss=possible_loss,
+        total_possible_loss=total_possible_loss,
         sl_price=sl_price,
     )
 
@@ -380,8 +380,8 @@ def nb_rpa_slbcb_p(
         + stringer[StringerFuncType.float_to_str](position_size_asset)
         + "\nposition_size_usd= "
         + stringer[StringerFuncType.float_to_str](position_size_usd)
-        + "\npossible_loss= "
-        + stringer[StringerFuncType.float_to_str](possible_loss)
+        + "\ntotal_possible_loss= "
+        + stringer[StringerFuncType.float_to_str](total_possible_loss)
         + "\ntotal_trades= "
         + stringer[StringerFuncType.float_to_str](total_trades)
         + "\nsl_pct= "
@@ -394,7 +394,7 @@ def nb_rpa_slbcb_p(
         entry_size_usd,
         position_size_asset,
         position_size_usd,
-        possible_loss,
+        total_possible_loss,
         total_trades,
         sl_pct,
     )
@@ -414,7 +414,7 @@ def nb_rpa_slbcb_np(
     market_fee_pct = acc_ex_other.market_fee_pct
     max_asset_size = acc_ex_other.max_asset_size
     min_asset_size = acc_ex_other.min_asset_size
-    possible_loss = acc_ex_other.possible_loss
+    total_possible_loss = acc_ex_other.total_possible_loss
     total_trades = acc_ex_other.total_trades
 
     average_entry = order_info.average_entry
@@ -422,23 +422,23 @@ def nb_rpa_slbcb_np(
     max_equity_risk_pct = order_info.max_equity_risk_pct
     position_size_asset = order_info.position_size_asset
     position_size_usd = order_info.position_size_usd
-    risk_account_pct_size = order_info.risk_account_pct_size
+    account_pct_risk_per_trade = order_info.account_pct_risk_per_trade
     sl_price = order_info.sl_price
 
     logger("nb_increase_position.py - nb_rpa_slbcb_np() - Calculating")
-    possible_loss, total_trades = nb_c_pl_ra_ps(
+    total_possible_loss, total_trades = nb_c_pl_ra_ps(
         equity=equity,
         logger=logger,
         max_equity_risk_pct=max_equity_risk_pct,
-        possible_loss=possible_loss,
-        risk_account_pct_size=risk_account_pct_size,
+        total_possible_loss=total_possible_loss,
+        account_pct_risk_per_trade=account_pct_risk_per_trade,
         total_trades=total_trades,
     )
 
     entry_size_usd = position_size_usd = nb_entry_calc_np(
         entry_price=entry_price,
         market_fee_pct=market_fee_pct,
-        possible_loss=possible_loss,
+        total_possible_loss=total_possible_loss,
         sl_price=sl_price,
     )
     logger(
@@ -481,8 +481,8 @@ def nb_rpa_slbcb_np(
         + stringer[StringerFuncType.float_to_str](position_size_asset)
         + "\nposition_size_usd= "
         + stringer[StringerFuncType.float_to_str](position_size_usd)
-        + "\npossible_loss= "
-        + stringer[StringerFuncType.float_to_str](possible_loss)
+        + "\ntotal_possible_loss= "
+        + stringer[StringerFuncType.float_to_str](total_possible_loss)
         + "\ntotal_trades= "
         + stringer[StringerFuncType.float_to_str](total_trades)
         + "\nsl_pct= "
@@ -495,7 +495,7 @@ def nb_rpa_slbcb_np(
         entry_size_usd,
         position_size_asset,
         position_size_usd,
-        possible_loss,
+        total_possible_loss,
         total_trades,
         sl_pct,
     )
@@ -542,7 +542,7 @@ def nb_min_amount_p(
     market_fee_pct = acc_ex_other.market_fee_pct
     max_asset_size = acc_ex_other.max_asset_size
     min_asset_size = acc_ex_other.min_asset_size
-    possible_loss = acc_ex_other.possible_loss
+    total_possible_loss = acc_ex_other.total_possible_loss
     price_tick_step = acc_ex_other.price_tick_step
     total_trades = acc_ex_other.total_trades
 
@@ -579,19 +579,19 @@ def nb_min_amount_p(
     position_size_usd = round(entry_size_usd + position_size_usd, 3)
     logger("nb_increase_position.py - nb_long_min_amount_p() - position_size_usd position_size_usd}")
 
-    possible_loss, total_trades = nb_c_total_trades(
+    total_possible_loss, total_trades = nb_c_total_trades(
         average_entry=average_entry,
         logger=logger,
         market_fee_pct=market_fee_pct,
         max_trades=max_trades,
         position_size_asset=position_size_asset,
-        possible_loss=possible_loss,
+        total_possible_loss=total_possible_loss,
         sl_price=sl_price,
         stringer=stringer,
         total_trades=total_trades,
     )
     logger(
-        "nb_increase_position.py - nb_long_min_amount_p() - possible_loss, total_trades {possible_loss, total_trades}"
+        "nb_increase_position.py - nb_long_min_amount_p() - total_possible_loss, total_trades {total_possible_loss, total_trades}"
     )
 
     nb_c_too_b_s(
@@ -615,8 +615,8 @@ def nb_min_amount_p(
         + stringer[StringerFuncType.float_to_str](position_size_asset)
         + "\nposition_size_usd= "
         + stringer[StringerFuncType.float_to_str](position_size_usd)
-        + "\npossible_loss= "
-        + stringer[StringerFuncType.float_to_str](possible_loss)
+        + "\ntotal_possible_loss= "
+        + stringer[StringerFuncType.float_to_str](total_possible_loss)
         + "\ntotal_trades= "
         + stringer[StringerFuncType.float_to_str](total_trades)
         + "\nsl_pct= "
@@ -629,7 +629,7 @@ def nb_min_amount_p(
         entry_size_usd,
         position_size_asset,
         position_size_usd,
-        possible_loss,
+        total_possible_loss,
         total_trades,
         sl_pct,
     )
@@ -645,7 +645,7 @@ def nb_min_amount_np(
     market_fee_pct = acc_ex_other.market_fee_pct
     max_asset_size = acc_ex_other.max_asset_size
     min_asset_size = acc_ex_other.min_asset_size
-    possible_loss = acc_ex_other.possible_loss
+    total_possible_loss = acc_ex_other.total_possible_loss
     total_trades = acc_ex_other.total_trades
 
     average_entry = order_info.average_entry
@@ -667,18 +667,18 @@ def nb_min_amount_np(
     sl_pct = round((average_entry - sl_price) / average_entry, 3)
     logger("sl_pct={round(sl_pct*100, 3))")
 
-    possible_loss, total_trades = nb_c_total_trades(
+    total_possible_loss, total_trades = nb_c_total_trades(
         average_entry=average_entry,
         logger=logger,
         market_fee_pct=market_fee_pct,
         max_trades=max_trades,
         position_size_asset=position_size_asset,
-        possible_loss=possible_loss,
+        total_possible_loss=total_possible_loss,
         sl_price=sl_price,
         stringer=stringer,
         total_trades=total_trades,
     )
-    logger("possible_loss, total_trades {possible_loss, total_trades}")
+    logger("total_possible_loss, total_trades {total_possible_loss, total_trades}")
 
     nb_c_too_b_s(
         entry_size_asset=entry_size_asset,
@@ -701,8 +701,8 @@ def nb_min_amount_np(
         + stringer[StringerFuncType.float_to_str](position_size_asset)
         + "\nposition_size_usd= "
         + stringer[StringerFuncType.float_to_str](position_size_usd)
-        + "\npossible_loss= "
-        + stringer[StringerFuncType.float_to_str](possible_loss)
+        + "\ntotal_possible_loss= "
+        + stringer[StringerFuncType.float_to_str](total_possible_loss)
         + "\ntotal_trades= "
         + stringer[StringerFuncType.float_to_str](total_trades)
         + "\nsl_pct= "
@@ -715,7 +715,7 @@ def nb_min_amount_np(
         entry_size_usd,
         position_size_asset,
         position_size_usd,
-        possible_loss,
+        total_possible_loss,
         total_trades,
         sl_pct,
     )

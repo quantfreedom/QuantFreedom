@@ -185,7 +185,7 @@ class AccountState(NamedTuple):
     cash_used: float
     equity: float
     fees_paid: float
-    possible_loss: int
+    total_possible_loss: int
     realized_pnl: float
     total_trades: int
 
@@ -214,9 +214,8 @@ class BacktestSettings(NamedTuple):
 
 
 class DynamicOrderSettingsArrays(NamedTuple):
-    max_equity_risk_pct: np.array
     max_trades: np.array
-    risk_account_pct_size: np.array
+    account_pct_risk_per_trade: np.array
     risk_reward: np.array
     sl_based_on_add_pct: np.array
     sl_based_on_lookback: np.array
@@ -229,9 +228,8 @@ class DynamicOrderSettingsArrays(NamedTuple):
 
 
 class DynamicOrderSettings(NamedTuple):
-    max_equity_risk_pct: float
     max_trades: int
-    risk_account_pct_size: float
+    account_pct_risk_per_trade: float
     risk_reward: float
     sl_based_on_add_pct: float
     sl_based_on_lookback: int
@@ -336,7 +334,7 @@ order_settings_array_dt = np.dtype(
         ("leverage_type", np.int_),
         ("max_equity_risk_pct", np.float_),
         ("long_or_short", np.int_),
-        ("risk_account_pct_size", np.float_),
+        ("account_pct_risk_per_trade", np.float_),
         ("risk_reward", np.float_),
         ("sl_based_on_add_pct", np.float_),
         ("sl_based_on_lookback", np.int_),
@@ -373,7 +371,7 @@ or_dt = np.dtype(
         ("fees_paid", np.float_),
         ("leverage", np.float_),
         ("liq_price", np.float_),
-        ("possible_loss", np.int_),
+        ("total_possible_loss", np.int_),
         ("total_trades", np.int_),
         ("entry_size_asset", np.float_),
         ("entry_size_usd", np.float_),

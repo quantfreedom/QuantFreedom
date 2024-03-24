@@ -169,7 +169,7 @@ def nb_move_stop_loss(
         cash_used=account_state.cash_used,
         equity=account_state.equity,
         fees_paid=account_state.fees_paid,
-        possible_loss=account_state.possible_loss,
+        total_possible_loss=account_state.total_possible_loss,
         realized_pnl=account_state.realized_pnl,
         total_trades=account_state.total_trades,
     )

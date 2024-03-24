@@ -72,7 +72,7 @@ class HTTP:
     def __init__(
         self,
         endpoint,
-        api_timeout=3000,  # TODO: Actually use this.
+        api_timeout=3000, 
         default_ethereum_address=None,
         eth_private_key=None,
         eth_send_options=None,
@@ -238,7 +238,6 @@ class HTTP:
         # Sort dictionary alphabetically to create querystring.
         _val = "&".join([str(k) + "=" + str(v) for k, v in sorted(params.items()) if (k != "sign") and (v is not None)])
 
-        # Bug fix. Replaces all capitalized booleans with lowercase.
         if method == "POST":
             _val = _val.replace("True", "true").replace("False", "false")
 

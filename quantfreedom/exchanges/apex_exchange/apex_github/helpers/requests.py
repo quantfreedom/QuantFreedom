@@ -5,7 +5,7 @@ import requests
 from quantfreedom.exchanges.apex_exchange.apex_github.errors import ApexproApiError
 from quantfreedom.exchanges.apex_exchange.apex_github.helpers.request_helpers import remove_nones
 
-# TODO: Use a separate session per client instance.
+
 session = requests.session()
 session.headers.update(
     {

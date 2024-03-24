@@ -75,7 +75,7 @@ def nb_decrease_position(
         cash_used=0.0,
         equity=equity,
         fees_paid=fees_paid,
-        possible_loss=0,
+        total_possible_loss=0,
         realized_pnl=realized_pnl,
         total_trades=0,
     )

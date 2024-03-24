@@ -82,15 +82,16 @@ class TakeProfit:
     ):
         candle_high = current_candle[CandleBodyType.High]
         logger.debug(f"candle_high= {candle_high}")
-        return tp_price < candle_high
+        result = tp_price < candle_high
+        return result
 
     def tp_rr(
         self,
         average_entry: float,
         position_size_usd: float,
-        possible_loss: float,
+        total_possible_loss: float,
     ):
-        profit = -possible_loss * self.risk_reward
+        profit = -total_possible_loss * self.risk_reward
         logger.debug(f"possible profit= {profit}")
         tp_price = self.get_tp_price(
             average_entry=average_entry,
@@ -118,7 +119,7 @@ class TakeProfit:
         self,
         average_entry: float,
         position_size_usd: float,
-        possible_loss: float,
+        total_possible_loss: float,
     ):
         can_move_sl_to_be = True
         tp_price = np.nan

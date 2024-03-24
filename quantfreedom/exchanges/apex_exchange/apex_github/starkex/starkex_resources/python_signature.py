@@ -84,7 +84,6 @@ def get_y_coordinate(stark_key_x_coordinate: int) -> int:
 
 
 def get_random_private_key() -> int:
-    # NOTE: It is IMPORTANT to use a strong random function here.
     return random.randint(1, EC_ORDER - 1)
 
 
@@ -125,7 +124,6 @@ def generate_k_rfc6979(msg_hash: int, priv_key: int, seed: Optional[int] = None)
  # Changes made by dYdX to function name only.
 
 def py_sign(msg_hash: int, priv_key: int, seed: Optional[int] = None) -> ECSignature:
-    # Note: msg_hash must be smaller than 2**N_ELEMENT_BITS_ECDSA.
     # Message whose hash is >= 2**N_ELEMENT_BITS_ECDSA cannot be signed.
     # This happens with a very small probability.
     assert 0 <= msg_hash < 2**N_ELEMENT_BITS_ECDSA, 'Message not signable.'

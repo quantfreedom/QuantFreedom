@@ -13,7 +13,6 @@ WITHDRAWAL_PADDING_BITS = 49
 WITHDRAWAL_PREFIX = 6
 WITHDRAWAL_TO_ADDRESS_PREFIX = 7
 
-# Note: Fees are not supported for conditional transfers or transfers.
 TRANSFER_FEE_ASSET_ID = 0
 TRANSFER_MAX_AMOUNT_FEE = 0
 

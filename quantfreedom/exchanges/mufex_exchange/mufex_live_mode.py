@@ -119,7 +119,7 @@ class MufexLiveMode:
                             self.order.average_entry = 0.0
                             self.order.equity = self.exchange.get_equity_of_asset(trading_with=self.trading_with)
                             self.order.available_balance = self.order.equity
-                            self.order.possible_loss = 0.0
+                            self.order.total_possible_loss = 0.0
                             self.order.cash_used = 0.0
                             self.order.cach_borrowed = 0.0
 
@@ -137,7 +137,7 @@ class MufexLiveMode:
                             entry_size_usd,
                             position_size_asset,
                             position_size_usd,
-                            possible_loss,
+                            total_possible_loss,
                             total_trades,
                             sl_pct,
                         ) = self.order.calculate_increase_position(
@@ -146,7 +146,7 @@ class MufexLiveMode:
                             equity=self.order.equity,
                             position_size_asset=self.order.position_size_asset,
                             position_size_usd=self.order.position_size_usd,
-                            possible_loss=self.order.possible_loss,
+                            total_possible_loss=self.order.total_possible_loss,
                             sl_price=sl_price,
                             total_trades=self.order.total_trades,
                         )
@@ -176,7 +176,7 @@ class MufexLiveMode:
                         ) = self.order.calculate_take_profit(
                             average_entry=average_entry,
                             position_size_usd=position_size_usd,
-                            possible_loss=possible_loss,
+                            total_possible_loss=total_possible_loss,
                         )
                         logger.debug("filling order result")
                         self.order.fill_order_result(
@@ -196,7 +196,7 @@ class MufexLiveMode:
                             order_status=OrderStatus.EntryFilled,
                             position_size_asset=position_size_asset,
                             position_size_usd=position_size_usd,
-                            possible_loss=possible_loss,
+                            total_possible_loss=total_possible_loss,
                             realized_pnl=np.nan,
                             sl_pct=sl_pct,
                             sl_price=sl_price,
@@ -324,7 +324,7 @@ class MufexLiveMode:
                                 tp_order_id=tp_order_id,
                             )
                             message = self.__create_entry_successful_message()
-                            print('Placed a new Trade')
+                            print("Placed a new Trade")
                             # entry_filename = self.__get_entry_plot_filename()
                             # strategy_filename = self.strategy.get_strategy_plot_filename(candles=self.candles)
                             # self.email_sender.email_new_order(
@@ -418,14 +418,14 @@ class MufexLiveMode:
         logger.debug(f"Setting average entry")
         self.order.average_entry = float(self.get_position_info(symbol=self.symbol)["entryPrice"])
 
-    def __set_ex_possible_loss(self):
+    def __set_ex_total_possible_loss(self):
         logger.debug(f"setting all exchange vars")
         coin_size = self.ex_position_size_asset
         pnl = coin_size * (self.ex_sl_price - self.ex_average_entry)
         fee_open = coin_size * self.ex_average_entry * self.exchange.exchange_settings.market_fee_pct  # math checked
         fee_close = coin_size * self.ex_sl_price * self.exchange.exchange_settings.market_fee_pct  # math checked
         self.fees_paid = fee_open + fee_close  # math checked
-        self.ex_possible_loss = round(abs(pnl - self.fees_paid), 3)
+        self.ex_total_possible_loss = round(abs(pnl - self.fees_paid), 3)
 
     def __set_ex_possible_profit(self):
         logger.debug(f"setting all exchange vars")
@@ -463,7 +463,7 @@ class MufexLiveMode:
         fee_open = coin_size * self.ex_average_entry * self.exchange.exchange_settings.market_fee_pct  # math checked
         fee_close = coin_size * self.ex_sl_price * self.exchange.exchange_settings.market_fee_pct  # math checked
         self.fees_paid = fee_open + fee_close  # math checked
-        self.ex_possible_loss = round(-(pnl - self.fees_paid), 3)
+        self.ex_total_possible_loss = round(-(pnl - self.fees_paid), 3)
 
     def __get_pct_difference(self, starting_num, diff_num):
         logger.debug(f"getting pct difference")
@@ -471,7 +471,7 @@ class MufexLiveMode:
 
     def __create_entry_successful_message(self):
         logger.debug(f"Creating message")
-        self.__set_ex_possible_loss()
+        self.__set_ex_total_possible_loss()
         self.__set_ex_possible_profit()
 
         message = f"An order was placed successfully\
@@ -500,8 +500,8 @@ class MufexLiveMode:
             \n[ex_take_profit_price={self.ex_tp_price}]\
             \n[tp_pct={round(self.order.tp_pct * 100, 3)}]\
             \n[ex_tp_pct={self.ex_tp_pct}]\
-            \n[possible loss={self.order.possible_loss}]\
-            \n[ex_possible loss={self.ex_possible_loss}]\
+            \n[possible loss={self.order.total_possible_loss}]\
+            \n[ex_possible loss={self.ex_total_possible_loss}]\
             \n[ex_possible profit={self.ex_possible_profit}]"
         return message
 

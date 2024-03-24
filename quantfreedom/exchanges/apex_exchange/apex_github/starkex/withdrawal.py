@@ -63,7 +63,6 @@ class SignableWithdrawal(Signable):
     def _calculate_hash(self):
         """Calculate the hash of the Starkware order."""
 
-        # TODO: Check values are in bounds
 
         packed = WITHDRAWAL_TO_ADDRESS_PREFIX
         packed <<= WITHDRAWAL_FIELD_BIT_LENGTHS["position_id"]

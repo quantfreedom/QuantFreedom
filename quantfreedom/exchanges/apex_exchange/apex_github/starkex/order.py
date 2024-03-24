@@ -67,7 +67,6 @@ class SignableOrder(Signable):
             synthetic_resolution,
         )
 
-        # Note: By creating the decimals outside the context and then
         # multiplying within the context, we ensure rounding does not occur
         # until after the multiplication is computed with full precision.
         if is_buying_synthetic:
@@ -128,7 +127,7 @@ class SignableOrder(Signable):
     def _calculate_hash(self):
         """Calculate the hash of the Starkware order."""
 
-        # TODO: Check values are in bounds
+        
 
         if self._message.is_buying_synthetic:
             asset_id_sell = self._message.asset_id_collateral

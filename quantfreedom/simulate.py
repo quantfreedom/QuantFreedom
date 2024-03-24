@@ -155,8 +155,7 @@ def run_df_backtest(
 
                     except Exception as e:
                         logger.error(f"Exception checking sl liq tp and move -> {e}")
-                        # raise Exception(f"Exception checking sl liq tp  and move -> {e}")
-                        pass
+                        raise Exception(f"Exception checking sl liq tp  and move -> {e}")
                 else:
                     logger.debug("Not in a pos so not checking SL Liq or TP")
 
@@ -178,7 +177,7 @@ def run_df_backtest(
                             entry_size_usd,
                             position_size_asset,
                             position_size_usd,
-                            possible_loss,
+                            total_possible_loss,
                             total_trades,
                             sl_pct,
                         ) = order.calculate_increase_position(
@@ -187,7 +186,7 @@ def run_df_backtest(
                             equity=order.equity,
                             position_size_asset=order.position_size_asset,
                             position_size_usd=order.position_size_usd,
-                            possible_loss=order.possible_loss,
+                            total_possible_loss=order.total_possible_loss,
                             sl_price=sl_price,
                             total_trades=order.total_trades,
                         )
@@ -217,7 +216,7 @@ def run_df_backtest(
                         ) = order.calculate_take_profit(
                             average_entry=average_entry,
                             position_size_usd=position_size_usd,
-                            possible_loss=possible_loss,
+                            total_possible_loss=total_possible_loss,
                         )
                         logger.debug("filling order result")
                         order.fill_order_result(
@@ -237,7 +236,7 @@ def run_df_backtest(
                             order_status=OrderStatus.EntryFilled,
                             position_size_asset=position_size_asset,
                             position_size_usd=position_size_usd,
-                            possible_loss=possible_loss,
+                            total_possible_loss=total_possible_loss,
                             realized_pnl=np.nan,
                             sl_pct=sl_pct,
                             sl_price=sl_price,
@@ -250,21 +249,21 @@ def run_df_backtest(
                         pass
                     except Exception as e:
                         logger.error(f"Exception hit in eval strat -> {e}")
-                        # raise Exception(f"Exception hit in eval strat -> {e}")
-                        pass
+                        raise Exception(f"Exception hit in eval strat -> {e}")
 
             # Checking if gains
             gains_pct = round(((order.equity - starting_equity) / starting_equity) * 100, 3)
             wins_and_losses_array = pnl_array[~np.isnan(pnl_array)]
             total_trades_closed = wins_and_losses_array.size
             logger.info(
-                f"Results from backtest\
-                \nind_set_index={ind_set_index}\
-                \ndos_index={dos_index}\
-                \nStarting eq={starting_equity}\
-                \nEnding eq={order.equity}\
-                \nGains pct={gains_pct}\
-                \ntotal_trades={total_trades_closed}"
+                f"""
+Results from backtest
+ind_set_index={ind_set_index}
+dos_index={dos_index}
+Starting eq={starting_equity}
+Ending eq={order.equity}
+Gains pct={gains_pct}
+total_trades={total_trades_closed}"""
             )
             if total_trades_closed > 0 and gains_pct > backtest_settings.gains_pct_filter:
                 if wins_and_losses_array.size > backtest_settings.total_trade_filter:
@@ -469,7 +468,7 @@ def or_backtest(
                     entry_size_usd,
                     position_size_asset,
                     position_size_usd,
-                    possible_loss,
+                    total_possible_loss,
                     total_trades,
                     sl_pct,
                 ) = order.calculate_increase_position(
@@ -478,7 +477,7 @@ def or_backtest(
                     equity=order.equity,
                     position_size_asset=order.position_size_asset,
                     position_size_usd=order.position_size_usd,
-                    possible_loss=order.possible_loss,
+                    total_possible_loss=order.total_possible_loss,
                     sl_price=sl_price,
                     total_trades=order.total_trades,
                 )
@@ -508,7 +507,7 @@ def or_backtest(
                 ) = order.calculate_take_profit(
                     average_entry=average_entry,
                     position_size_usd=position_size_usd,
-                    possible_loss=possible_loss,
+                    total_possible_loss=total_possible_loss,
                 )
 
                 logger.debug("calculate_take_profit")
@@ -529,7 +528,7 @@ def or_backtest(
                     order_status=OrderStatus.EntryFilled,
                     position_size_asset=position_size_asset,
                     position_size_usd=position_size_usd,
-                    possible_loss=possible_loss,
+                    total_possible_loss=total_possible_loss,
                     realized_pnl=np.nan,
                     sl_pct=sl_pct,
                     sl_price=sl_price,
@@ -551,6 +550,7 @@ def or_backtest(
                 pass
             except Exception as e:
                 if bar_index + 1 >= candles.shape[0]:
+                    raise Exception(f"Exception hit in eval strat -> {e}")
                     pass
                 else:
                     logger.error(f"Exception hit in eval strat -> {e}")

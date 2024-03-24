@@ -79,13 +79,13 @@ def nb_tp_rr(
     market_fee_pct: float,
     nb_get_tp_price,
     position_size_usd: float,
-    possible_loss: float,
+    total_possible_loss: float,
     price_tick_step: float,
     risk_reward: float,
     stringer,
     tp_fee_pct: float,
 ):
-    profit = -possible_loss * risk_reward
+    profit = -total_possible_loss * risk_reward
     logger("nb_take_profit.py - nb_tp_rr() - profit= " + stringer[StringerFuncType.float_to_str](profit))
     tp_price = nb_get_tp_price(
         average_entry=average_entry,

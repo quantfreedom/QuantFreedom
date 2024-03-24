@@ -86,7 +86,7 @@ class SignableTransfer(Signable):
 
     def _calculate_hash(self):
         """Calculate the hash of the Starkware order."""
-        # TODO: Check values are in bounds
+        
 
         asset_ids = get_hash(
             self.collateral_asset_id,

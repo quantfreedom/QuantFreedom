@@ -78,7 +78,7 @@ class SignableConditionalTransfer(Signable):
     def _calculate_hash(self):
         """Calculate the hash of the Starkware order."""
 
-        # TODO: Check values are in bounds
+        
 
         # The transfer asset and fee asset are always the collateral asset.
         # Fees are not supported for conditional transfers.

@@ -58,7 +58,7 @@ def nb_get_dos(
     return DynamicOrderSettings(
         max_equity_risk_pct=dos_cart_arrays.max_equity_risk_pct[dos_index],
         max_trades=dos_cart_arrays.max_trades[dos_index],
-        risk_account_pct_size=dos_cart_arrays.risk_account_pct_size[dos_index],
+        account_pct_risk_per_trade=dos_cart_arrays.account_pct_risk_per_trade[dos_index],
         risk_reward=dos_cart_arrays.risk_reward[dos_index],
         sl_based_on_add_pct=dos_cart_arrays.sl_based_on_add_pct[dos_index],
         sl_based_on_lookback=dos_cart_arrays.sl_based_on_lookback[dos_index],
@@ -87,7 +87,7 @@ def nb_create_ao(
         cash_used=0.0,
         equity=starting_equity,
         fees_paid=0.0,
-        possible_loss=0,
+        total_possible_loss=0,
         realized_pnl=0.0,
         total_trades=0,
     )
@@ -247,7 +247,7 @@ def nb_fill_order_records(
     order_records["leverage"] = order_result.leverage
     order_records["liq_price"] = order_result.liq_price
     order_records["order_status"] = order_result.order_status
-    order_records["possible_loss"] = account_state.possible_loss
+    order_records["total_possible_loss"] = account_state.total_possible_loss
     order_records["total_trades"] = account_state.total_trades
     order_records["entry_size_asset"] = order_result.entry_size_asset
     order_records["entry_size_usd"] = order_result.entry_size_usd
@@ -297,7 +297,7 @@ def order_records_to_df(order_records: np.array):
             "fees_paid",
             "leverage",
             "liq_price",
-            "possible_loss",
+            "total_possible_loss",
             "entry_size_asset",
             "entry_size_usd",
             "entry_price",
@@ -320,7 +320,7 @@ def order_records_to_df(order_records: np.array):
             "fees_paid",
             "leverage",
             "liq_price",
-            "possible_loss",
+            "total_possible_loss",
             "entry_size_asset",
             "entry_size_usd",
             "entry_price",
@@ -527,7 +527,7 @@ def order_records_to_df(order_records: np.array):
             "fees_paid",
             "leverage",
             "liq_price",
-            "possible_loss",
+            "total_possible_loss",
             "entry_size_asset",
             "entry_size_usd",
             "entry_price",
@@ -550,7 +550,7 @@ def order_records_to_df(order_records: np.array):
             "fees_paid",
             "leverage",
             "liq_price",
-            "possible_loss",
+            "total_possible_loss",
             "entry_size_asset",
             "entry_size_usd",
             "entry_price",

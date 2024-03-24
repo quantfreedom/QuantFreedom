@@ -9,7 +9,7 @@ logger = getLogger("info")
 class Leverage:
     def __init__(
         self,
-        leverage_strategy_type: LeverageStrategyType,
+        leverage_strategy_type: LeverageStrategyType, # type: ignore
         leverage_tick_step: float,
         long_short: str,
         market_fee_pct: float,
@@ -99,12 +99,13 @@ class Leverage:
         cash_used = initial_margin + fee_to_open + fee_to_close  # math checked
 
         logger.debug(
-            f"\ninitial_margin= {round(initial_margin, 3)}\
-            \nfee_to_open= {round(fee_to_open, 3)}\
-            \nbankruptcy_price= {round(bankruptcy_price, 3)}\
-            \nfee to close= {round(fee_to_close, 3)}\
-            \ncash_used= {round(cash_used, 3)}\
-            \nog_available_balance= {og_available_balance}"
+            f"""
+initial_margin= {round(initial_margin, 3)}
+fee_to_open= {round(fee_to_open, 3)}
+bankruptcy_price= {round(bankruptcy_price, 3)}
+fee to close= {round(fee_to_close, 3)}
+cash_used= {round(cash_used, 3)}
+og_available_balance= {og_available_balance}"""
         )
 
         if cash_used > og_available_balance:

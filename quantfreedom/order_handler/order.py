@@ -99,7 +99,7 @@ class OrderHandler:
         self.order_status = 0
         self.position_size_asset = 0.0
         self.position_size_usd = 0.0
-        self.possible_loss = 0.0
+        self.total_possible_loss = 0.0
         self.realized_pnl = 0.0
         self.sl_pct = 0.0
         self.sl_price = 0.0
@@ -113,7 +113,7 @@ class OrderHandler:
         dos_index: int,
         ind_set_index: int,
         order_records: np.array,
-        order_status: OrderStatus,
+        order_status: OrderStatus,  # type: ignore
         timestamp: int,
         equity: float = np.nan,
         exit_price: float = np.nan,
@@ -137,7 +137,7 @@ class OrderHandler:
         order_records["leverage"] = np.nan
         order_records["liq_price"] = np.nan
         order_records["order_status"] = order_status
-        order_records["possible_loss"] = 0
+        order_records["total_possible_loss"] = 0
         order_records["total_trades"] = 0
         order_records["entry_size_asset"] = np.nan
         order_records["entry_size_usd"] = np.nan
@@ -174,7 +174,7 @@ class OrderHandler:
         order_records["leverage"] = self.leverage
         order_records["liq_price"] = self.liq_price
         order_records["order_status"] = self.order_status
-        order_records["possible_loss"] = self.possible_loss
+        order_records["total_possible_loss"] = self.total_possible_loss
         order_records["total_trades"] = self.total_trades
         order_records["entry_size_asset"] = self.entry_size_asset
         order_records["entry_size_usd"] = self.entry_size_usd
@@ -235,8 +235,7 @@ class OrderHandler:
 
         # increase position
         self.obj_inc_pos.max_trades = dynamic_order_settings.max_trades
-        self.obj_inc_pos.risk_account_pct_size = dynamic_order_settings.risk_account_pct_size
-        self.obj_inc_pos.max_equity_risk_pct = dynamic_order_settings.max_equity_risk_pct
+        self.obj_inc_pos.account_pct_risk_per_trade = dynamic_order_settings.account_pct_risk_per_trade
 
         # stop loss updates
         self.obj_stop_loss.sl_based_on_add_pct = dynamic_order_settings.sl_based_on_add_pct
@@ -257,7 +256,7 @@ class OrderHandler:
             bar_index=bar_index,
             candles=candles,
         )
-        logger.info(f"\nsl price= {sl_price}")
+        logger.info(f"sl price= {sl_price}")
         return sl_price
 
     def calculate_increase_position(
@@ -267,7 +266,7 @@ class OrderHandler:
         entry_price: float,
         position_size_asset: float,
         position_size_usd: float,
-        possible_loss: float,
+        total_possible_loss: float,
         sl_price: float,
         total_trades: int,
     ):
@@ -278,7 +277,7 @@ class OrderHandler:
             entry_size_usd,
             position_size_asset,
             position_size_usd,
-            possible_loss,
+            total_possible_loss,
             total_trades,
             sl_pct,
         ) = self.obj_inc_pos.inc_pos_calculator(
@@ -287,21 +286,19 @@ class OrderHandler:
             entry_price=entry_price,
             position_size_asset=position_size_asset,
             position_size_usd=position_size_usd,
-            possible_loss=possible_loss,
+            total_possible_loss=total_possible_loss,
             sl_price=sl_price,
             total_trades=total_trades,
         )
         logger.info(
-            f"\
-            \naverage_entry= {average_entry}\
-            \nentry_price= {entry_price}\
-            \nentry_size_asset= {entry_size_asset}\
-            \nentry_size_usd= {entry_size_usd}\
-            \nposition_size_asset= {position_size_asset}\
-            \nposition_size_usd= {position_size_usd}\
-            \npossible_loss= {possible_loss}\
-            \ntotal_trades= {total_trades}\
-            \nsl_pct= {round(sl_pct*100, 3)}"
+            f"""
+average_entry= {average_entry}
+entry_price= {entry_price}
+entry_size_asset= {entry_size_asset}
+entry_size_usd= {entry_size_usd}
+position_size_asset= {position_size_asset}
+position_size_usd= {position_size_usd}
+sl_pct= {round(sl_pct*100, 3)}"""
         )
         return (
             average_entry,
@@ -310,7 +307,7 @@ class OrderHandler:
             entry_size_usd,
             position_size_asset,
             position_size_usd,
-            possible_loss,
+            total_possible_loss,
             total_trades,
             sl_pct,
         )
@@ -341,12 +338,12 @@ class OrderHandler:
             sl_price=sl_price,
         )
         logger.info(
-            f"\
-            \navailable_balance= {available_balance}\
-            \ncash_borrowed= {cash_borrowed}\
-            \ncash_used= {cash_used}\
-            \nleverage= {leverage}\
-            \nliq_price= {liq_price}"
+            f"""
+available_balance= {available_balance}
+cash_borrowed= {cash_borrowed}
+cash_used= {cash_used}
+leverage= {leverage}
+liq_price= {liq_price}"""
         )
         return (
             available_balance,
@@ -360,7 +357,7 @@ class OrderHandler:
         self,
         average_entry: float,
         position_size_usd: float,
-        possible_loss: float,
+        total_possible_loss: float,
     ):
         (
             can_move_sl_to_be,
@@ -369,12 +366,12 @@ class OrderHandler:
         ) = self.obj_take_profit.tp_calculator(
             average_entry=average_entry,
             position_size_usd=position_size_usd,
-            possible_loss=possible_loss,
+            total_possible_loss=total_possible_loss,
         )
         logger.info(
-            f"\
-            \ntp_price= {tp_price}\
-            \ntp_pct= {round(tp_pct * 100, 3)}"
+            f"""
+tp_price= {tp_price}
+tp_pct= {round(tp_pct * 100, 3)}"""
         )
         return (
             can_move_sl_to_be,
@@ -394,7 +391,7 @@ class OrderHandler:
         exit_price: float,
         equity: float,
         market_fee_pct: float,
-        order_status: OrderStatus,
+        order_status: OrderStatus,  # type: ignore
     ):
         pnl = self.pnl_calc(exit_price=exit_price)  # math checked
         logger.debug(f"pnl= {pnl}")
@@ -415,11 +412,11 @@ class OrderHandler:
         logger.debug(f"equity= {equity}")
 
         logger.info(
-            f"\
-            \nequity= {equity}\
-            \nfees_paid= {fees_paid}\
-            \norder_status= {OrderStatus._fields[order_status]}\
-            \nrealized_pnl= {realized_pnl}"
+            f"""
+equity= {equity}
+fees_paid= {fees_paid}
+order_status= {OrderStatus._fields[order_status]}
+realized_pnl= {realized_pnl}"""
         )
         return (
             equity,
@@ -445,7 +442,7 @@ class OrderHandler:
         order_status: float,
         position_size_asset: float,
         position_size_usd: float,
-        possible_loss: float,
+        total_possible_loss: float,
         realized_pnl: float,
         sl_pct: float,
         sl_price: float,
@@ -469,7 +466,7 @@ class OrderHandler:
         self.order_status = order_status
         self.position_size_asset = position_size_asset
         self.position_size_usd = position_size_usd
-        self.possible_loss = possible_loss
+        self.total_possible_loss = total_possible_loss
         self.realized_pnl = realized_pnl
         self.sl_pct = sl_pct
         self.sl_price = sl_price

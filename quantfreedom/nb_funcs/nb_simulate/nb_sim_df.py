@@ -98,8 +98,10 @@ def nb_run_df_backtest(
                 + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.max_equity_risk_pct * 100, 3))
                 + "\nmax_trades= "
                 + str(dynamic_order_settings.max_trades)
-                + "\nrisk_account_pct_size= "
-                + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.risk_account_pct_size * 100, 3))
+                + "\naccount_pct_risk_per_trade= "
+                + stringer[StringerFuncType.float_to_str](
+                    round(dynamic_order_settings.account_pct_risk_per_trade * 100, 3)
+                )
                 + "\nrisk_reward= "
                 + stringer[StringerFuncType.float_to_str](dynamic_order_settings.risk_reward)
                 + "\nsl_based_on_add_pct= "
@@ -352,7 +354,7 @@ def nb_run_df_backtest(
                             entry_size_usd,
                             position_size_asset,
                             position_size_usd,
-                            possible_loss,
+                            total_possible_loss,
                             total_trades,
                             sl_pct,
                         ) = nb_inc_pos_calculator(
@@ -362,7 +364,7 @@ def nb_run_df_backtest(
                                 market_fee_pct=market_fee_pct,
                                 max_asset_size=max_asset_size,
                                 min_asset_size=min_asset_size,
-                                possible_loss=account_state.possible_loss,
+                                total_possible_loss=account_state.total_possible_loss,
                                 price_tick_step=price_tick_step,
                                 total_trades=account_state.total_trades,
                             ),
@@ -374,7 +376,7 @@ def nb_run_df_backtest(
                                 max_trades=dynamic_order_settings.max_trades,
                                 position_size_asset=order_result.position_size_asset,
                                 position_size_usd=order_result.position_size_usd,
-                                risk_account_pct_size=dynamic_order_settings.risk_account_pct_size,
+                                account_pct_risk_per_trade=dynamic_order_settings.account_pct_risk_per_trade,
                                 sl_price=sl_price,
                             ),
                             logger=logger,
@@ -427,7 +429,7 @@ def nb_run_df_backtest(
                             market_fee_pct=market_fee_pct,
                             nb_get_tp_price=nb_get_tp_price,
                             position_size_usd=position_size_usd,
-                            possible_loss=possible_loss,
+                            total_possible_loss=total_possible_loss,
                             price_tick_step=price_tick_step,
                             risk_reward=dynamic_order_settings.risk_reward,
                             stringer=stringer,
@@ -447,7 +449,7 @@ def nb_run_df_backtest(
                             cash_used=cash_used,
                             equity=account_state.equity,
                             fees_paid=0.0,
-                            possible_loss=possible_loss,
+                            total_possible_loss=total_possible_loss,
                             realized_pnl=0.0,
                             total_trades=total_trades,
                         )
