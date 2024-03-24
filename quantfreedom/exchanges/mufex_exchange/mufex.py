@@ -1,5 +1,6 @@
 import hmac
 import hashlib
+import inspect
 import numpy as np
 from time import sleep, time
 from requests import get, post
@@ -495,8 +496,13 @@ class Mufex(Exchange):
         except Exception as e:
             raise Exception(f"Mufex get_open_orders = Data or List is empty {response['message']} -> {e}")
 
-    def get_open_order_by_order_id(self, symbol: str, order_id: str):
-        return dict(sorted(self.get_open_orders(symbol=symbol, order_id=order_id)[0].items()))
+    def get_open_order_by_order_id(
+        self,
+        symbol: str,
+        order_id: str,
+    ):
+        open_order = self.get_open_orders(symbol=symbol, order_id=order_id)[0]
+        return open_order
 
     def get_filled_orders(
         self,
@@ -542,7 +548,8 @@ class Mufex(Exchange):
         symbol: str,
         order_id: str,
     ):
-        return dict(sorted(self.get_filled_orders(symbol=symbol, order_id=order_id)[0].items()))
+        filled_order = self.get_filled_orders(symbol=symbol, order_id=order_id)[0]
+        return filled_order
 
     def get_position_info(
         self,
@@ -561,7 +568,6 @@ class Mufex(Exchange):
         response: dict = self.__HTTP_get_request(end_point=end_point, params=params)
         try:
             data_list = response["data"]["list"]
-            data_list = [dict(sorted(data_list[0].items())), dict(sorted(data_list[1].items()))]
 
             return data_list
         except Exception as e:
@@ -685,14 +691,20 @@ class Mufex(Exchange):
         trading_with: str,
         symbol: str,
     ):
-        wallet_balance = float(self.get_wallet_info(trading_with=trading_with)[0]["coin"]["walletBalance"])
-        market_fee_pct = self.get_fee_pcts(symbol=symbol)[0]
+        coins = self.get_wallet_info(trading_with=trading_with)
+        for coin in coins:
+            if coin["coin"] == trading_with:
+                wallet_balance = float(coin["walletBalance"])
+                break
 
+        market_fee_pct = self.get_fee_pcts(symbol=symbol)[0]
         pos_info = self.get_position_info(symbol=symbol)
+
         long_fees = float(pos_info[0]["positionValue"]) * market_fee_pct
         short_fees = float(pos_info[1]["positionValue"]) * market_fee_pct
+
         total_fees = long_fees + short_fees
-        no_fee_wallet_balance += total_fees
+        no_fee_wallet_balance = wallet_balance + total_fees
 
         return no_fee_wallet_balance
 
@@ -1039,4 +1051,14 @@ class Mufex(Exchange):
         self,
         symbol: str,
     ):
-        return dict(sorted(self.get_position_info(symbol=symbol)[0].items()))
+        pos_info = self.get_position_info(symbol=symbol)[0]
+        return pos_info
+
+    def list_of_functions(self):
+        func_list = inspect.getmembers(Mufex, predicate=inspect.isfunction)
+        new_list = []
+        for func in func_list:
+            func_name = func[0]
+            if not "_" in func_name[0]:
+                new_list.append(func[0])
+        return new_list

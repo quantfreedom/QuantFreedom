@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import inspect
 import numpy as np
 from time import sleep, time
 from datetime import datetime, timezone
@@ -325,7 +326,6 @@ class Bybit(Exchange):
         try:
 
             data_list = response["result"]["list"]
-            data_list = [dict(sorted(data_list[0].items())), dict(sorted(data_list[1].items()))]
 
             return data_list
         except Exception as e:
@@ -335,7 +335,8 @@ class Bybit(Exchange):
         self,
         symbol: str,
     ):
-        return dict(sorted(self.get_position_info(symbol=symbol)[0].items()))
+        pos_info = self.get_position_info(symbol=symbol)[0]
+        return pos_info
 
     def get_wallet_info(
         self,
@@ -358,6 +359,33 @@ class Bybit(Exchange):
             return data_list
         except Exception as e:
             raise Exception(f"Bybit get_wallet_info = Data or List is empty {response['retMsg']} -> {e}")
+
+    def get_no_fees_balance_of_asset_market_in_only(
+        self,
+        trading_with: str,
+        symbol: str,
+        accountType: str = "UNIFIED",
+    ):
+        coins = self.get_wallet_info(accountType=accountType, trading_with=trading_with)[0]["coin"]
+        for coin in coins:
+            if coin["coin"] == trading_with:
+                wallet_balance = float(coin["walletBalance"])
+                break
+
+        market_fee_pct = self.get_fee_pcts(symbol=symbol)[0]
+        pos_info = self.get_position_info(symbol=symbol)
+
+        long_pos_value = pos_info[0]["positionValue"]
+        long_fees = float(long_pos_value) * market_fee_pct if long_pos_value else 0
+
+        short_pos_value = pos_info[1]["positionValue"]
+        short_fees = float(short_pos_value) * market_fee_pct if short_pos_value else 0
+
+        total_fees = long_fees + short_fees
+
+        no_fee_wallet_balance = wallet_balance + total_fees
+
+        return no_fee_wallet_balance
 
     def get_no_fees_balance_of_asset(
         self,
@@ -518,7 +546,7 @@ class Bybit(Exchange):
         order_id: str,
         symbol: str = None,
     ):
-        data_list = self.get_open_orders(order_id=order_id)
+        data_list = self.get_open_orders(order_id=order_id, symbol=symbol)
         try:
             if data_list[0]["orderId"] == order_id:
                 return True
@@ -532,21 +560,23 @@ class Bybit(Exchange):
         order_id: str,
         symbol: str = None,
     ):
-        return dict(sorted(self.get_open_orders(order_id=order_id)[0].items()))
+        filled_order = self.get_open_orders(order_id=order_id, symbol=symbol)[0]
+        return filled_order
 
     def get_open_order_by_order_id(
         self,
         order_id: str,
         symbol: str = None,
     ):
-        return dict(sorted(self.get_open_orders(order_id=order_id)[0].items()))
+        open_order = self.get_open_orders(order_id=order_id, symbol=symbol)[0]
+        return open_order
 
     def check_if_order_filled(
         self,
         order_id: str,
         symbol: str = None,
     ):
-        data_dict = self.get_filled_order_by_order_id(order_id=order_id)
+        data_dict = self.get_filled_order_by_order_id(order_id=order_id, symbol=symbol)
         try:
             if data_dict["orderId"] == order_id:
                 return True
@@ -889,9 +919,10 @@ class Bybit(Exchange):
         baseCoin: str = None,
         category: str = "linear",
     ):
-        return dict(sorted(self.get_trading_fee_rates(symbol=symbol, baseCoin=baseCoin, category=category)[0].items()))
+        trading_fee_rates = self.get_trading_fee_rates(symbol=symbol, baseCoin=baseCoin, category=category)[0]
+        return trading_fee_rates
 
-    def __get_fee_pcts(
+    def get_fee_pcts(
         self,
         symbol: str,
     ):
@@ -944,7 +975,7 @@ class Bybit(Exchange):
         else:
             self.set_leverage_mode_cross()
 
-        market_fee_pct, limit_fee_pct = self.__get_fee_pcts(symbol=symbol)
+        market_fee_pct, limit_fee_pct = self.get_fee_pcts(symbol=symbol)
         (
             max_leverage,
             min_leverage,
@@ -969,3 +1000,12 @@ class Bybit(Exchange):
             price_tick_step=price_tick_step,
             leverage_tick_step=leverage_tick_step,
         )
+
+    def list_of_functions(self):
+        func_list = inspect.getmembers(Bybit, predicate=inspect.isfunction)
+        new_list = []
+        for func in func_list:
+            func_name = func[0]
+            if not "_" in func_name[0]:
+                new_list.append(func[0])
+        return new_list

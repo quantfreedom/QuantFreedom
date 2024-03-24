@@ -3,7 +3,6 @@ import pandas as pd
 
 from datetime import timedelta
 from time import time
-
 from datetime import datetime, timezone
 
 from quantfreedom.enums import ExchangeSettings
@@ -30,6 +29,16 @@ class Exchange:
     ):
         self.api_key = api_key
         self.secret_key = secret_key
+
+    def sort_dict(self, data: dict):
+        sorted_data = dict(sorted(data.items()))
+        return sorted_data
+
+    def sort_list_of_dicts(self, data_list: list):
+        new_list = []
+        for element in data_list:
+            new_list.append(dict(sorted(element.items())))
+        return new_list
 
     def get_current_time_sec(self):
         return int(time())
@@ -152,9 +161,6 @@ class Exchange:
         pass
 
     def check_if_order_open(self, **kwargs):
-        pass
-
-    def get_no_fees_balance_of_asset(self, **kwargs):
         pass
 
     def move_stop_order(self, **kwargs):

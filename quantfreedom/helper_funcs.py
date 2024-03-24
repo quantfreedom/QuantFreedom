@@ -1,4 +1,3 @@
-from time import time
 from typing import NamedTuple
 import numpy as np
 import pandas as pd
