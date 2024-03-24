@@ -266,7 +266,6 @@ class OrderHandler:
         entry_price: float,
         position_size_asset: float,
         position_size_usd: float,
-        total_possible_loss: float,
         sl_price: float,
         total_trades: int,
     ):
@@ -286,7 +285,6 @@ class OrderHandler:
             entry_price=entry_price,
             position_size_asset=position_size_asset,
             position_size_usd=position_size_usd,
-            total_possible_loss=total_possible_loss,
             sl_price=sl_price,
             total_trades=total_trades,
         )

@@ -186,7 +186,6 @@ def run_df_backtest(
                             equity=order.equity,
                             position_size_asset=order.position_size_asset,
                             position_size_usd=order.position_size_usd,
-                            total_possible_loss=order.total_possible_loss,
                             sl_price=sl_price,
                             total_trades=order.total_trades,
                         )
@@ -477,7 +476,6 @@ def or_backtest(
                     equity=order.equity,
                     position_size_asset=order.position_size_asset,
                     position_size_usd=order.position_size_usd,
-                    total_possible_loss=order.total_possible_loss,
                     sl_price=sl_price,
                     total_trades=order.total_trades,
                 )

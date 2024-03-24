@@ -403,23 +403,6 @@ class Bybit(Exchange):
 
         return no_fee_wallet_balance
 
-    def get_no_fees_balance_of_asset(
-        self,
-        symbol: str,
-        accountType: str = "UNIFIED",
-        trading_with: str = None,
-    ):
-        coins = self.get_wallet_info(accountType=accountType, trading_with=trading_with)[0]["coin"]
-        for coin in coins:
-            if coin["coin"] == trading_with:
-                wallet_balance = float(coin["walletBalance"])
-        pos_info = self.get_position_info(symbol=symbol)
-        long_fees = -float(pos_info[0]["curRealisedPnl"])
-        short_fees = -float(pos_info[1]["curRealisedPnl"])
-        total_fees = long_fees + short_fees
-        equity = wallet_balance + total_fees
-        return equity
-
     def upgrade_to_unified_trading_account(self):
         end_point = "/v5/account/upgrade-to-uta"
         params = {}
@@ -516,6 +499,7 @@ class Bybit(Exchange):
 
     def get_open_orders(
         self,
+        symbol: str,
         baseCoin: str = None,
         category: str = "linear",
         custom_order_id: str = None,
@@ -525,7 +509,6 @@ class Bybit(Exchange):
         order_id: str = None,
         settleCoin: str = None,
         since_datetime: datetime = None,
-        symbol: str = None,
         until_datetime: datetime = None,
     ):
         """
@@ -974,7 +957,7 @@ class Bybit(Exchange):
 
         return true_false
 
-    def set_exchange_settings(
+    def set_and_get_exchange_settings(
         self,
         leverage_mode: int,
         position_mode: int,
@@ -1002,7 +985,7 @@ class Bybit(Exchange):
             leverage_tick_step,
         ) = self.__get_min_max_leverage_and_asset_size(symbol=symbol)
 
-        self.exchange_settings = ExchangeSettings(
+        return ExchangeSettings(
             asset_tick_step=asset_tick_step,
             market_fee_pct=market_fee_pct,
             limit_fee_pct=limit_fee_pct,

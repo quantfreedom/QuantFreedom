@@ -101,7 +101,6 @@ class IncreasePosition:
     def c_pl_ra_ps(
         self,
         equity: float,
-        total_possible_loss: float,
         total_trades: int,
     ) -> tuple[int, int]:
         """
@@ -124,6 +123,7 @@ class IncreasePosition:
             total_possible_loss, total_trades
         """
         total_trades += 1
+
         if total_trades > self.max_trades:
             logger.warning(f"Max trades reached - total trades= {total_trades} max trades= {self.max_trades}")
             raise RejectedOrder
@@ -144,7 +144,6 @@ total_possible_loss= {total_possible_loss}"""
     def c_total_trades(
         self,
         average_entry: float,
-        total_possible_loss: float,
         position_size_asset: float,
         sl_price: float,
         total_trades: int,
@@ -173,6 +172,7 @@ total_possible_loss= {total_possible_loss}"""
             total_possible_loss, total_trades
         """
         total_trades += 1
+
         if total_trades > self.max_trades:
             logger.warning(
                 f"""
@@ -207,7 +207,6 @@ total_possible_loss= {total_possible_loss}"""
         equity: float,
         position_size_asset: float,
         position_size_usd: float,
-        total_possible_loss: float,
         sl_price: float,
         total_trades: int,
     ) -> tuple[float, float, float, float, float, float, int, int, float]:
@@ -255,7 +254,6 @@ total_possible_loss= {total_possible_loss}"""
                 entry_price=entry_price,
                 position_size_asset=position_size_asset,
                 position_size_usd=position_size_usd,
-                total_possible_loss=total_possible_loss,
                 sl_price=sl_price,
                 total_trades=total_trades,
             )
@@ -272,7 +270,6 @@ total_possible_loss= {total_possible_loss}"""
         entry_price: float,
         position_size_asset: float,
         position_size_usd: float,
-        total_possible_loss: float,
         sl_price: float,
         total_trades: int,
     ) -> tuple[float, float, float, float, float, float, int, int, float]:
@@ -425,8 +422,8 @@ total_possible_loss= {total_possible_loss}"""
         average_entry: float,
         entry_price: float,
         position_size_usd: float,
-        total_possible_loss: float,
         sl_price: float,
+        total_possible_loss: float,
     ) -> float:
         """
         Summary
@@ -456,7 +453,7 @@ total_possible_loss= {total_possible_loss}"""
             entry_size_usd
         """
 
-        return round(
+        entry_size = round(
             -(
                 (
                     entry_price * average_entry * total_possible_loss
@@ -472,12 +469,13 @@ total_possible_loss= {total_possible_loss}"""
             ),
             3,
         )
+        return entry_size
 
     def long_entry_size_np(
         self,
         entry_price: float,
-        total_possible_loss: float,
         sl_price: float,
+        total_possible_loss: float,
     ) -> float:
         """
         Summary
@@ -502,21 +500,18 @@ total_possible_loss= {total_possible_loss}"""
         float
             entry_size_usd
         """
-
-        return round(
-            entry_price
-            * -total_possible_loss
-            / (-sl_price + entry_price + entry_price * self.market_fee_pct + self.market_fee_pct * sl_price),
-            3,
-        )
+        price_mult_loss = entry_price * -total_possible_loss
+        div_by = -sl_price + entry_price + entry_price * self.market_fee_pct + self.market_fee_pct * sl_price
+        entry_size_usd = round(price_mult_loss / div_by, 3)
+        return entry_size_usd
 
     def short_entry_size_p(
         self,
         average_entry: float,
         entry_price: float,
         position_size_usd: float,
-        total_possible_loss: float,
         sl_price: float,
+        total_possible_loss: float,
     ) -> float:
         """
         Summary
@@ -545,8 +540,7 @@ total_possible_loss= {total_possible_loss}"""
         float
             entry_size_usd
         """
-
-        return round(
+        entry_size_usd = round(
             -(
                 (
                     entry_price * average_entry * total_possible_loss
@@ -562,12 +556,13 @@ total_possible_loss= {total_possible_loss}"""
             ),
             3,
         )
+        return entry_size_usd
 
     def short_entry_size_np(
         self,
-        total_possible_loss: float,
         sl_price: float,
         entry_price: float,
+        total_possible_loss: float,
     ) -> float:
         """
         Summary
@@ -592,12 +587,10 @@ total_possible_loss= {total_possible_loss}"""
         float
             entry_size_usd
         """
-        return -round(
-            entry_price
-            * -total_possible_loss
-            / (-entry_price + sl_price + entry_price * self.market_fee_pct + self.market_fee_pct * sl_price),
-            3,
-        )
+        price_mult_loss = entry_price * -total_possible_loss
+        div_by = -entry_price + sl_price + entry_price * self.market_fee_pct + self.market_fee_pct * sl_price
+        entry_size_usd = round(price_mult_loss / div_by, 3)
+        return entry_size_usd
 
     def rpa_slbcb(
         self,
@@ -606,7 +599,6 @@ total_possible_loss= {total_possible_loss}"""
         entry_price: float,
         position_size_asset: float,
         position_size_usd: float,
-        total_possible_loss: float,
         sl_price: float,
         total_trades: int,
     ) -> tuple[float, float, float, float, float, float, int, int, float]:
@@ -655,7 +647,6 @@ total_possible_loss= {total_possible_loss}"""
                 entry_price=entry_price,
                 position_size_asset=position_size_asset,
                 position_size_usd=position_size_usd,
-                total_possible_loss=total_possible_loss,
                 sl_price=sl_price,
                 total_trades=total_trades,
             )
@@ -674,7 +665,6 @@ total_possible_loss= {total_possible_loss}"""
         equity: float,
         position_size_asset: float,
         position_size_usd: float,
-        total_possible_loss: float,
         sl_price: float,
         total_trades: int,
     ) -> tuple[float, float, float, float, float, float, int, int, float]:
@@ -717,7 +707,6 @@ total_possible_loss= {total_possible_loss}"""
         """
         total_possible_loss, total_trades = self.c_pl_ra_ps(
             equity=equity,
-            total_possible_loss=total_possible_loss,
             total_trades=total_trades,
         )
 
@@ -803,14 +792,13 @@ total_possible_loss= {total_possible_loss}"""
         """
         total_possible_loss, total_trades = self.c_pl_ra_ps(
             equity=equity,
-            total_possible_loss=0,
             total_trades=0,
         )
 
         entry_size_usd = position_size_usd = self.entry_calc_np(
-            total_possible_loss=total_possible_loss,
             sl_price=sl_price,
             entry_price=entry_price,
+            total_possible_loss=total_possible_loss,
         )
         logger.debug(f"entry_size_usd= {entry_size_usd}")
         entry_size_asset = position_size_asset = round_size_by_tick_step(

@@ -17,7 +17,6 @@ class Exchange:
     volume_yes_no_start = None
     volume_yes_no_end = None
     position_mode = None
-    exchange_settings: ExchangeSettings = None
     timeframe_in_ms = None
     last_fetched_ms_time = None
 
@@ -190,7 +189,7 @@ class Exchange:
     def get_exchange_timeframe(self, **kwargs):
         pass
 
-    def set_exchange_settings(self, **kwargs):
+    def set_and_get_exchange_settings(self, **kwargs):
         pass
 
     def get_no_fees_balance_of_asset_market_in_only(self, **kwargs):

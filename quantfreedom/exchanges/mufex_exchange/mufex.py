@@ -900,7 +900,7 @@ class Mufex(Exchange):
             leverage_tick_step,
         )
 
-    def set_exchange_settings(
+    def set_and_get_exchange_settings(
         self,
         leverage_mode: LeverageModeType,  # type: ignore
         position_mode: PositionModeType,  # type: ignore
@@ -928,7 +928,7 @@ class Mufex(Exchange):
             leverage_tick_step,
         ) = self.__get_min_max_leverage_and_asset_size(symbol=symbol)
 
-        self.exchange_settings = ExchangeSettings(
+        return ExchangeSettings(
             asset_tick_step=asset_tick_step,
             market_fee_pct=market_fee_pct,
             limit_fee_pct=limit_fee_pct,
