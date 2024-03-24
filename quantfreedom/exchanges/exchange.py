@@ -195,3 +195,6 @@ class Exchange:
 
     def get_no_fees_balance_of_asset_market_in_only(self, **kwargs):
         pass
+
+    def create_long_hedge_mode_entry_market_order_stoploss(self, **kwargs):
+        pass
