@@ -1005,7 +1005,7 @@ class Mufex(Exchange):
     ):
         return self.create_order(
             symbol=symbol,
-            position_mode=1,
+            position_mode=PositionModeType.BuySide,
             buy_sell="Buy",
             order_type="Market",
             asset_size=asset_size,
@@ -1020,7 +1020,7 @@ class Mufex(Exchange):
     ):
         return self.create_order(
             symbol=symbol,
-            position_mode=1,
+            position_mode=PositionModeType.BuySide,
             buy_sell="Sell",
             order_type="Limit",
             asset_size=asset_size,
@@ -1037,7 +1037,7 @@ class Mufex(Exchange):
     ):
         return self.create_order(
             symbol=symbol,
-            position_mode=1,
+            position_mode=PositionModeType.BuySide,
             buy_sell="Sell",
             order_type="Market",
             asset_size=asset_size,

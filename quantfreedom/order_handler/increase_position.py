@@ -130,7 +130,7 @@ class IncreasePosition:
 
         possible_loss = -int(equity * self.account_pct_risk_per_trade)
 
-        total_possible_loss = int(total_possible_loss + possible_loss)
+        total_possible_loss = int(total_trades * possible_loss)
 
         logger.debug(
             f"""
@@ -189,7 +189,7 @@ total_possible_loss= {total_possible_loss}"""
         fee_close = position_size_asset * sl_price * self.market_fee_pct  # math checked
         fees_paid = fee_open + fee_close  # math checked
         possible_loss = -int(pnl - fees_paid)
-        total_possible_loss = int(total_possible_loss + possible_loss)
+        total_possible_loss = int(total_trades * possible_loss)
 
         logger.debug(
             f"""
