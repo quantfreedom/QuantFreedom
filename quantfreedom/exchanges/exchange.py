@@ -126,6 +126,16 @@ class Exchange:
         else:
             return step_size.index("1") - step_size.index(".")
 
+    def get_sleep_time_to_next_bar(self):
+        ms_to_next_candle = max(
+            0,
+            (self.last_fetched_ms_time + self.timeframe_in_ms * 2) - self.get_current_time_ms(),
+        )
+        td = str(timedelta(seconds=ms_to_next_candle / 1000)).split(":")
+        print(f"Will sleep for {td[0]} hrs {td[1]} mins and {td[2]} seconds till next bar\n")
+
+        return int(ms_to_next_candle / 1000)
+
     def create_order(self, **kwargs):
         pass
 
