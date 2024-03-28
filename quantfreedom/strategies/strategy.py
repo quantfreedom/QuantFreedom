@@ -1,13 +1,9 @@
-from typing import NamedTuple
 import numpy as np
-
-
-class IndicatorSettingsArrays(NamedTuple):
-    pass
 
 
 class Strategy:
     current_ind_settings = None
+    empty_ind_tup = None
     entries = None
     entry_message = None
     exit_prices = None
@@ -19,6 +15,9 @@ class Strategy:
     set_entries_exits_array = None
 
     def __init__(self) -> None:
+        pass
+
+    def change_ind_settings_to_ints(self) -> None:
         pass
 
     #######################################################

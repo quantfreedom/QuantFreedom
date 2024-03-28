@@ -1,3 +1,4 @@
+from collections import namedtuple
 import os
 import numpy as np
 from numpy.core.multiarray import array as array
@@ -16,12 +17,6 @@ from quantfreedom.strategies.strategy import Strategy
 logger = getLogger("info")
 
 
-class IndicatorSettingsArrays(NamedTuple):
-    rsi_is_above: np.array
-    rsi_is_below: np.array
-    rsi_length: np.array
-
-
 class RSIRisingFalling(Strategy):
     def __init__(
         self,
@@ -30,21 +25,22 @@ class RSIRisingFalling(Strategy):
         rsi_is_above: np.array = np.array([0]),
         rsi_is_below: np.array = np.array([0]),
     ) -> None:
+        
         self.long_short = long_short
         self.log_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
-        cart_arrays = cart_product(
-            named_tuple=IndicatorSettingsArrays(
-                rsi_is_above=rsi_is_above,
-                rsi_is_below=rsi_is_below,
-                rsi_length=rsi_length,
-            )
+        self.empty_ind_tup = namedtuple(
+            typename="IndicatorSettingsArrays",
+            field_names=[
+                "rsi_is_above",
+                "rsi_is_below",
+                "rsi_length",
+            ],
         )
-
-        self.indicator_settings_arrays: IndicatorSettingsArrays = IndicatorSettingsArrays(
-            rsi_is_above=cart_arrays[0],
-            rsi_is_below=cart_arrays[1],
-            rsi_length=cart_arrays[2].astype(np.int_),
+        self.indicator_settings_arrays = self.empty_ind_tup(
+            rsi_is_above=rsi_is_above,
+            rsi_is_below=rsi_is_below,
+            rsi_length=rsi_length,
         )
 
         if long_short == "long":
@@ -59,6 +55,23 @@ class RSIRisingFalling(Strategy):
             self.entry_message = self.short_entry_message
             self.live_evalutate = self.short_live_evaluate
             self.chart_title = "short Signal"
+
+    #######################################################
+    #######################################################
+    #######################################################
+    ##################      Utils     #####################
+    ##################      Utils     #####################
+    ##################      Utils     #####################
+    #######################################################
+    #######################################################
+    #######################################################
+
+    def change_ind_settings_to_ints(self):
+        self.indicator_settings_arrays = self.empty_ind_tup(
+            rsi_is_above=self.indicator_settings_arrays.rsi_is_above.astype(np.int_),
+            rsi_is_below=self.indicator_settings_arrays.rsi_is_below.astype(np.int_),
+            rsi_length=self.indicator_settings_arrays.rsi_length.astype(np.int_),
+        )
 
     #######################################################
     #######################################################
@@ -79,8 +92,10 @@ class RSIRisingFalling(Strategy):
             self.rsi_is_below = self.indicator_settings_arrays.rsi_is_below[ind_set_index]
             self.rsi_length = self.indicator_settings_arrays.rsi_length[ind_set_index]
             self.h_line = self.rsi_is_below
-            self.current_ind_settings = IndicatorSettingsArrays(
-                rsi_is_above=np.nan, rsi_is_below=self.rsi_is_below, rsi_length=self.rsi_length
+            self.current_ind_settings = self.empty_ind_tup(
+                rsi_is_above=np.nan,
+                rsi_is_below=self.rsi_is_below,
+                rsi_length=self.rsi_length,
             )
 
             rsi = rsi_tv(
@@ -148,7 +163,7 @@ class RSIRisingFalling(Strategy):
             self.rsi_is_above = self.indicator_settings_arrays.rsi_is_above[ind_set_index]
             self.h_line = self.rsi_is_above
             self.rsi_length = self.indicator_settings_arrays.rsi_length[ind_set_index]
-            self.current_ind_settings = IndicatorSettingsArrays(
+            self.current_ind_settings = self.empty_ind_tup(
                 rsi_is_above=self.rsi_is_above,
                 rsi_is_below=np.nan,
                 rsi_length=self.rsi_length,

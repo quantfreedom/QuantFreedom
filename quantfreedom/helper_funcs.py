@@ -1,3 +1,4 @@
+from collections import namedtuple
 from typing import NamedTuple
 import numpy as np
 import pandas as pd
@@ -9,6 +10,7 @@ from quantfreedom.exchanges.binance_exchange.binance_us import BinanceUS
 from quantfreedom.exchanges.binance_exchange.binance_usdm import BinanceUSDM
 from quantfreedom.exchanges.bybit_exchange.bybit import Bybit
 from quantfreedom.exchanges.mufex_exchange.mufex import Mufex
+from quantfreedom.strategies.strategy import Strategy
 
 logger = getLogger("info")
 
@@ -175,31 +177,36 @@ def get_dos(
 
 
 def cart_product(
-    named_tuple: NamedTuple,
+    comb_tuples: NamedTuple,
 ) -> np.array:
     n = 1
-    for x in named_tuple:
+    for x in comb_tuples:
         n *= x.size
-    out = np.empty((n, len(named_tuple)))
+    out = np.empty((n, len(comb_tuples)))
 
-    for i in range(len(named_tuple)):
-        m = int(n / named_tuple[i].size)
-        out[:n, i] = np.repeat(named_tuple[i], m)
-        n //= named_tuple[i].size
+    for i in range(len(comb_tuples)):
+        m = int(n / comb_tuples[i].size)
+        out[:n, i] = np.repeat(comb_tuples[i], m)
+        n //= comb_tuples[i].size
 
-    n = named_tuple[-1].size
-    for k in range(len(named_tuple) - 2, -1, -1):
-        n *= named_tuple[k].size
-        m = int(n / named_tuple[k].size)
-        for j in range(1, named_tuple[k].size):
+    n = comb_tuples[-1].size
+    for k in range(len(comb_tuples) - 2, -1, -1):
+        n *= comb_tuples[k].size
+        m = int(n / comb_tuples[k].size)
+        for j in range(1, comb_tuples[k].size):
             out[j * m : (j + 1) * m, k + 1 :] = out[0:m, k + 1 :]
     return out.T
 
 
 def dos_cart_product(
     dos_arrays: DynamicOrderSettingsArrays,
+    strategy: Strategy,
 ) -> DynamicOrderSettingsArrays:
-    cart_arrays = cart_product(named_tuple=dos_arrays)
+    cart_arrays = cart_product(comb_tuples=(dos_arrays + strategy.indicator_settings_arrays))
+
+    strategy.indicator_settings_arrays = strategy.empty_ind_tup(*tuple(cart_arrays[11:, :]))
+    strategy.change_ind_settings_to_ints()
+
     return DynamicOrderSettingsArrays(
         max_trades=cart_arrays[0].astype(np.int_),
         account_pct_risk_per_trade=cart_arrays[1] / 100,
