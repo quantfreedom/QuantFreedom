@@ -255,7 +255,7 @@ class Bybit(Exchange):
         except Exception as e:
             raise Exception(f"Bybit create_order {response['retMsg']} -> {e}")
 
-    def create_long_hedge_mode_entry_market_order_stoploss(
+    def create_long_hedge_mode_entry_market_order_with_stoploss(
         self,
         asset_size: float,
         symbol: str,
