@@ -125,8 +125,9 @@ class IncreasePosition:
         total_trades += 1
 
         if total_trades > self.max_trades:
-            logger.warning(f"Max trades reached - total trades= {total_trades} max trades= {self.max_trades}")
-            raise RejectedOrder
+            msg = f"Max trades reached - total trades= {total_trades} max trades= {self.max_trades}"
+            logger.warning(msg)
+            raise RejectedOrder(msg)
 
         possible_loss = -int(equity * self.account_pct_risk_per_trade)
 
@@ -174,15 +175,14 @@ total_possible_loss= {total_possible_loss}"""
         total_trades += 1
 
         if total_trades > self.max_trades:
-            logger.warning(
-                f"""
+            msg = f"""
 Max trades reached
 Total trades= {total_trades}
 max trades= {self.max_trades}
 possible_loss= {possible_loss}
 total_possible_loss= {total_possible_loss}"""
-            )
-            raise RejectedOrder
+            logger.warning(msg)
+            raise RejectedOrder(msg)
 
         pnl = -abs(average_entry - sl_price) * position_size_asset  # math checked
         fee_open = position_size_asset * average_entry * self.market_fee_pct  # math checked

@@ -67,6 +67,7 @@ def main(
     p.close()
     p.join()
     end = time.perf_counter()
+    print(f"Main took: ", end - start)
     return results
 
 
