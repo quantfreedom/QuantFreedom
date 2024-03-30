@@ -86,15 +86,15 @@ class IncreasePosition:
 
         """
         if entry_size_asset < self.min_asset_size:
-            logger.warning(
-                f"entry size too small entry_size_asset= {entry_size_asset} < self.min_asset_size= {self.min_asset_size}"
-            )
-            raise RejectedOrder
+            msg = f"entry size too small entry_size_asset= {entry_size_asset} < self.min_asset_size= {self.min_asset_size}"
+            logger.warning(msg)
+            raise RejectedOrder(msg)
         elif entry_size_asset > self.max_asset_size:
-            logger.warning(
+            msg = (
                 f"entry size too big entry_size_asset= {entry_size_asset} > self.max_asset_size= {self.max_asset_size}"
             )
-            raise RejectedOrder
+            logger.warning(msg)
+            raise RejectedOrder(msg)
 
         logger.debug(f"Entry size is fine entry_size_asset= {entry_size_asset}")
 
