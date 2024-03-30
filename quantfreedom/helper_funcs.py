@@ -5,7 +5,6 @@ import pandas as pd
 from logging import getLogger
 from datetime import datetime
 from quantfreedom.enums import AccountState, DynamicOrderSettings, DynamicOrderSettingsArrays, OrderResult
-from quantfreedom.exchanges.apex_exchange.apex import Apex
 from quantfreedom.exchanges.binance_exchange.binance_us import BinanceUS
 from quantfreedom.exchanges.binance_exchange.binance_usdm import BinanceUSDM
 from quantfreedom.exchanges.bybit_exchange.bybit import Bybit
@@ -32,8 +31,6 @@ def dl_ex_candles(
         binance us = 'binance_us' | default candles to dl is 1500
 
         binance futures = 'binance_usdm' | default candles to dl is 1500
-
-        apex = 'apex' | default candles to dl is 200
 
         mufex = 'mufex' | default candles to dl is 1500
 
@@ -70,14 +67,6 @@ def dl_ex_candles(
             until_datetime=until_datetime,
             candles_to_dl=1500 if candles_to_dl is None else candles_to_dl,
         )
-    elif exchange.lower() == "apex":
-        return Apex(use_test_net=False).get_candles(
-            symbol=symbol,
-            timeframe=timeframe,
-            since_datetime=since_datetime,
-            until_datetime=until_datetime,
-            candles_to_dl=200 if candles_to_dl is None else candles_to_dl,
-        )
     elif exchange.lower() == "mufex":
         return Mufex(use_test_net=False).get_candles(
             symbol=symbol,
@@ -95,7 +84,7 @@ def dl_ex_candles(
             candles_to_dl=1000 if candles_to_dl is None else candles_to_dl,
         )
     else:
-        raise Exception("You need to pick an exchange from this list apex, binance_usdm, mufex, binance_us, bybit")
+        raise Exception("You need to pick an exchange from this list binance_usdm, mufex, binance_us, bybit")
 
 
 def candles_to_df(
