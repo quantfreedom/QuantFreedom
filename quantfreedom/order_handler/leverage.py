@@ -9,7 +9,7 @@ logger = getLogger("info")
 class Leverage:
     def __init__(
         self,
-        leverage_strategy_type: LeverageStrategyType, # type: ignore
+        leverage_strategy_type: LeverageStrategyType,  # type: ignore
         leverage_tick_step: float,
         long_short: str,
         market_fee_pct: float,
@@ -109,8 +109,9 @@ og_available_balance= {og_available_balance}"""
         )
 
         if cash_used > og_available_balance:
-            logger.warning("Cash used bigger than available balance AKA position size too big")
-            raise RejectedOrder
+            msg = "Cash used bigger than available balance AKA position size too big"
+            logger.warning(msg)
+            raise RejectedOrder(msg)
         else:
             available_balance = round(og_available_balance - cash_used, 3)
             cash_used = round(og_cash_used + cash_used, 3)
