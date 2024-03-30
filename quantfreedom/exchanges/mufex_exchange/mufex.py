@@ -998,7 +998,7 @@ class Mufex(Exchange):
         else:
             return False
 
-    def create_long_hedge_mode_entry_market_order_stoploss(
+    def create_long_hedge_mode_entry_market_order_with_stoploss(
         self,
         asset_size: float,
         symbol: str,
@@ -1010,7 +1010,7 @@ class Mufex(Exchange):
             buy_sell="Buy",
             order_type="Market",
             asset_size=asset_size,
-            time_in_force="GTC",
+            time_in_force="GoodTillCancel",
             stopLoss=sl_price,
         )
 

@@ -7,7 +7,7 @@ from typing import Callable, NamedTuple
 from quantfreedom.enums import CandleBodyType, LoggerFuncType, StringerFuncType
 
 
-class IndicatorSettingsArrays(NamedTuple):
+class IndicatorSettings(NamedTuple):
     rsi_is_below: np.array
     rsi_period: np.array
 
@@ -17,14 +17,14 @@ class IndicatorSettings(NamedTuple):
     rsi_period: int
 
 
-ind_set_arrays = IndicatorSettingsArrays(
+ind_set_arrays = IndicatorSettings(
     rsi_is_below=np.array([40, 60, 80]),
     rsi_period=np.array([14, 20]),
 )
 
 
 def strat_create_ind_cart_product(
-    ind_set_arrays: IndicatorSettingsArrays,
+    ind_set_arrays: IndicatorSettings,
 ):
     n = 1
     for x in ind_set_arrays:
@@ -43,7 +43,7 @@ def strat_create_ind_cart_product(
         for j in range(1, ind_set_arrays[k].size):
             out[j * m : (j + 1) * m, k + 1 :] = out[0:m, k + 1 :]
 
-    return IndicatorSettingsArrays(
+    return IndicatorSettings(
         rsi_is_below=out.T[0],
         rsi_period=out.T[1].astype(np.int_),
     )

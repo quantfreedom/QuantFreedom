@@ -4,7 +4,7 @@ from quantfreedom.enums import (
     AccountState,
     BacktestSettings,
     CandleBodyType,
-    DynamicOrderSettingsArrays,
+    DynamicOrderSettings,
     ExchangeSettings,
     OrderResult,
     StaticOrderSettings,
@@ -25,7 +25,7 @@ from quantfreedom.nb_funcs.nb_order_handler.nb_leverage import LevOrderInfo, nb_
 def nb_run_df_backtest(
     backtest_settings: BacktestSettings,
     candles: np.array,
-    dos_cart_arrays: DynamicOrderSettingsArrays,
+    dos_cart_arrays: DynamicOrderSettings,
     exchange_settings: ExchangeSettings,
     exit_fee_pct: float,
     logger: Callable,

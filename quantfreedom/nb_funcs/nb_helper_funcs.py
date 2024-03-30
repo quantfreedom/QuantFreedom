@@ -2,7 +2,7 @@ import numpy as np
 from numba import njit
 import pandas as pd
 
-from quantfreedom.enums import AccountState, DynamicOrderSettings, DynamicOrderSettingsArrays, OrderResult, OrderStatus
+from quantfreedom.enums import AccountState, DynamicOrderSettings, DynamicOrderSettings, OrderResult, OrderStatus
 from numba.cpython.unicode import _empty_string, _set_code_point, PY_UNICODE_1BYTE_KIND
 
 DIGITS_START = 48
@@ -52,7 +52,7 @@ def nb_get_qf_score(
 
 @njit(cache=True)
 def nb_get_dos(
-    dos_cart_arrays: DynamicOrderSettingsArrays,
+    dos_cart_arrays: DynamicOrderSettings,
     dos_index: int,
 ):
     return DynamicOrderSettings(

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from logging import getLogger
 from datetime import datetime
-from quantfreedom.enums import AccountState, DynamicOrderSettings, DynamicOrderSettingsArrays, OrderResult
+from quantfreedom.enums import AccountState, DynamicOrderSettings, DynamicOrderSettings, OrderResult
 from quantfreedom.exchanges.binance_exchange.binance_us import BinanceUS
 from quantfreedom.exchanges.binance_exchange.binance_usdm import BinanceUSDM
 from quantfreedom.exchanges.bybit_exchange.bybit import Bybit
@@ -147,7 +147,7 @@ def get_qf_score(
 
 
 def get_dos(
-    dos_cart_arrays: DynamicOrderSettingsArrays,
+    dos_cart_arrays: DynamicOrderSettings,
     dos_index: int,
 ):
     return DynamicOrderSettings(
@@ -188,27 +188,29 @@ def cart_product(
 
 
 def dos_cart_product(
-    dos_arrays: DynamicOrderSettingsArrays,
+    dos_arrays: DynamicOrderSettings,
     strategy: Strategy,
-) -> DynamicOrderSettingsArrays:
-    cart_arrays = cart_product(comb_tuples=(dos_arrays + strategy.indicator_settings_arrays))
+) -> DynamicOrderSettings:
+    cart_arrays = cart_product(comb_tuples=(dos_arrays + strategy.indicator_settings))
 
-    strategy.indicator_settings_arrays = strategy.empty_ind_tup(*tuple(cart_arrays[11:, :]))
+    strategy.indicator_settings = strategy.indicator_settings(*tuple(cart_arrays[11:, :]))
     strategy.change_ind_settings_to_ints()
 
-    return DynamicOrderSettingsArrays(
-        max_trades=cart_arrays[0].astype(np.int_),
-        account_pct_risk_per_trade=cart_arrays[1] / 100,
-        risk_reward=cart_arrays[2],
-        sl_based_on_add_pct=cart_arrays[3] / 100,
-        sl_based_on_lookback=cart_arrays[4].astype(np.int_),
-        sl_bcb_type=cart_arrays[5].astype(np.int_),
-        sl_to_be_cb_type=cart_arrays[6].astype(np.int_),
-        sl_to_be_when_pct=cart_arrays[7] / 100,
-        trail_sl_bcb_type=cart_arrays[8].astype(np.int_),
-        trail_sl_by_pct=cart_arrays[9] / 100,
-        trail_sl_when_pct=cart_arrays[10] / 100,
+    dos_array = DynamicOrderSettings(*tuple(cart_arrays[:10, :]))
+    dos_arrays = DynamicOrderSettings(
+        max_trades=dos_array.max_trades.astype(np.int_),
+        account_pct_risk_per_trade=dos_array.account_pct_risk_per_trade / 100,
+        risk_reward=dos_array.risk_reward,
+        sl_based_on_add_pct=dos_array.sl_based_on_add_pct / 100,
+        sl_based_on_lookback=dos_array.sl_based_on_lookback.astype(np.int_),
+        sl_bcb_type=dos_array.sl_bcb_type.astype(np.int_),
+        sl_to_be_cb_type=dos_array.sl_to_be_cb_type.astype(np.int_),
+        sl_to_be_when_pct=dos_array.sl_to_be_when_pct / 100,
+        trail_sl_bcb_type=dos_array.trail_sl_bcb_type.astype(np.int_),
+        trail_sl_by_pct=dos_array.trail_sl_by_pct / 100,
+        trail_sl_when_pct=dos_array.trail_sl_when_pct / 100,
     )
+    return dos_arrays
 
 
 def round_size_by_tick_step(
@@ -257,7 +259,7 @@ def fill_order_records(
 
 def log_dynamic_order_settings(
     dos_index: int,
-    dynamic_order_settings: DynamicOrderSettingsArrays,
+    dynamic_order_settings: DynamicOrderSettings,
 ):
     logger.info(
         f"""

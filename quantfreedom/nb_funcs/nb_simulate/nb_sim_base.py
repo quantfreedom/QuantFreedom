@@ -4,7 +4,7 @@ from numba import typed, types
 
 from quantfreedom.enums import (
     BacktestSettings,
-    DynamicOrderSettingsArrays,
+    DynamicOrderSettings,
     ExchangeSettings,
     IncreasePositionType,
     LeverageStrategyType,
@@ -29,7 +29,7 @@ from quantfreedom.utils import pretty_qf
 def nb_sim_backtest(
     backtest_settings: BacktestSettings,
     candles: np.array,
-    dos_arrays: DynamicOrderSettingsArrays,
+    dos_arrays: DynamicOrderSettings,
     exchange_settings: ExchangeSettings,
     logger_bool: bool,
     long_short: str,

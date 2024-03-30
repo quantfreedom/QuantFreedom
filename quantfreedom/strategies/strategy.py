@@ -1,13 +1,17 @@
+from typing import NamedTuple
 import numpy as np
+
+
+class IndicatorSettings(NamedTuple):
+    pass
 
 
 class Strategy:
     current_ind_settings = None
-    empty_ind_tup = None
     entries = None
     entry_message = None
     exit_prices = None
-    indicator_settings_arrays = None
+    indicator_settings = None
     live_evaluate = None
     log_folder = None
     log_indicator_settings = None

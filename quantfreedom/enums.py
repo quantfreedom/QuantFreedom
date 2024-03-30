@@ -213,9 +213,9 @@ class BacktestSettings(NamedTuple):
     record_size: int = 10000
 
 
-class DynamicOrderSettingsArrays(NamedTuple):
-    max_trades: np.array
+class DynamicOrderSettings(NamedTuple):
     account_pct_risk_per_trade: np.array
+    max_trades: np.array
     risk_reward: np.array
     sl_based_on_add_pct: np.array
     sl_based_on_lookback: np.array
@@ -225,20 +225,6 @@ class DynamicOrderSettingsArrays(NamedTuple):
     trail_sl_bcb_type: np.array
     trail_sl_by_pct: np.array
     trail_sl_when_pct: np.array
-
-
-class DynamicOrderSettings(NamedTuple):
-    max_trades: int
-    account_pct_risk_per_trade: float
-    risk_reward: float
-    sl_based_on_add_pct: float
-    sl_based_on_lookback: int
-    sl_bcb_type: int
-    sl_to_be_cb_type: int
-    sl_to_be_when_pct: float
-    trail_sl_bcb_type: int
-    trail_sl_by_pct: float
-    trail_sl_when_pct: float
 
 
 class ExchangeSettings(NamedTuple):

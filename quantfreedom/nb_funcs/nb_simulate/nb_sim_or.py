@@ -3,7 +3,7 @@ import numpy as np
 from quantfreedom.enums import (
     AccountState,
     CandleBodyType,
-    DynamicOrderSettingsArrays,
+    DynamicOrderSettings,
     ExchangeSettings,
     OrderResult,
     StaticOrderSettings,
@@ -23,7 +23,7 @@ from quantfreedom.nb_funcs.nb_order_handler.nb_leverage import LevOrderInfo, nb_
 @njit(cache=True)
 def nb_run_or_backtest(
     candles: np.array,
-    dos_cart_arrays: DynamicOrderSettingsArrays,
+    dos_cart_arrays: DynamicOrderSettings,
     dos_index: int,
     exchange_settings: ExchangeSettings,
     exit_fee_pct: float,

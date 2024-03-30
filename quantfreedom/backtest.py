@@ -1,3 +1,6 @@
+from multiprocessing import Pool, cpu_count
+from time import perf_counter, sleep
+
 import numpy as np
 import pandas as pd
 from logging import getLogger
@@ -11,7 +14,7 @@ from quantfreedom.enums import (
     BacktestSettings,
     CandleBodyType,
     DecreasePosition,
-    DynamicOrderSettingsArrays,
+    DynamicOrderSettings,
     ExchangeSettings,
     OrderStatus,
     RejectedOrder,
@@ -24,62 +27,21 @@ from quantfreedom.utils import pretty_qf
 logger = getLogger("info")
 
 
-def run_df_backtest(
+def multiprocess_backtest(
     backtest_settings: BacktestSettings,
     candles: np.array,
-    dos_arrays: DynamicOrderSettingsArrays,
+    dos_cart_arrays: DynamicOrderSettings,
     exchange_settings: ExchangeSettings,
+    order: OrderHandler,
+    range_end: int,
+    range_start: int,
+    record_results: np.array,
+    starting_equity: float,
     static_os: StaticOrderSettings,
     strategy: Strategy,
-    thread_num: int,
+    total_bars: int,
 ):
-    logger.disabled = True
-    # logger.disabled = False
-    # set_loggers(log_folder=strategy.log_folder)
-
-    starting_equity = static_os.starting_equity
-
-    dos_cart_arrays = dos_cart_product(dos_arrays, strategy=strategy)
-
-    order = OrderHandler(
-        long_short=strategy.long_short,
-        static_os=static_os,
-        exchange_settings=exchange_settings,
-    )
-
-    # Creating Settings Vars
-    total_order_settings = dos_cart_arrays[0].size
-
-    total_indicator_settings = strategy.indicator_settings_arrays[0].size
-
-    total_bars = candles.shape[0]
-
-    # logger.infoing out total numbers of things
-    print("Starting the backtest now ... and also here are some stats for your backtest.\n")
-    print(f"Total indicator settings to test: {total_indicator_settings:,}")
-    print(f"Total order settings to test: {total_order_settings:,}")
-    print(f"Total combinations of settings to test: {total_indicator_settings * total_order_settings:,}")
-    print(f"Total candles: {total_bars:,}")
-    print(f"Total candles to test: {total_indicator_settings * total_order_settings * total_bars:,}")
-
-    logger.info("Starting the backtest now ... and also here are some stats for your backtest.\n")
-    logger.info(f"Total indicator settings to test: {total_indicator_settings:,}")
-    logger.info(f"Total order settings to test: {total_order_settings:,}")
-    logger.info(f"Total combinations of settings to test: {total_indicator_settings * total_order_settings:,}")
-    logger.info(f"Total candles: {total_bars:,}")
-    logger.info(f"Total candles to test: {total_indicator_settings * total_order_settings * total_bars:,}")
-
-    strategy_result_records = np.empty(
-        backtest_settings.record_size,
-        dtype=strat_df_array_dt,
-    )
-    result_records_filled = 0
-    num_loops = 6
-
-    loop_start = num_loops * thread_num
-    loop_end = num_loops * (thread_num + 1)
-
-    for set_idx in range(loop_start, loop_end):
+    for set_idx in range(range_start, range_end):
         strategy.log_indicator_settings(ind_set_index=set_idx)
         strategy.set_entries_exits_array(
             candles=candles,
@@ -284,31 +246,129 @@ total_trades={total_trades_closed}"""
 
                     total_pnl = wins_and_losses_array.sum()
 
-                    # strat array
-                    record = strategy_result_records[result_records_filled]
-
-                    record["set_idx"] = set_idx
-                    record["total_trades"] = wins_and_losses_array.size
-                    record["wins"] = wins
-                    record["losses"] = losses
-                    record["gains_pct"] = gains_pct
-                    record["win_rate"] = win_rate
-                    record["qf_score"] = qf_score
-                    record["fees_paid"] = round(total_fees_paid, 3)
-                    record["total_pnl"] = total_pnl
-                    record["ending_eq"] = order.equity
-
-                    result_records_filled += 1
+                    record_results[set_idx]["set_idx"] = set_idx
+                    record_results[set_idx]["total_trades"] = wins_and_losses_array.size
+                    record_results[set_idx]["wins"] = wins
+                    record_results[set_idx]["losses"] = losses
+                    record_results[set_idx]["gains_pct"] = gains_pct
+                    record_results[set_idx]["win_rate"] = win_rate
+                    record_results[set_idx]["qf_score"] = qf_score
+                    record_results[set_idx]["fees_paid"] = round(total_fees_paid, 3)
+                    record_results[set_idx]["total_pnl"] = total_pnl
+                    record_results[set_idx]["ending_eq"] = order.equity
         logger.info(
             f"Starting New Loop\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
         )
-    return pd.DataFrame(strategy_result_records[:result_records_filled])
+    return record_results, range_start, range_end
+
+
+def run_df_backtest(
+    backtest_settings: BacktestSettings,
+    candles: np.array,
+    dos_arrays: DynamicOrderSettings,
+    exchange_settings: ExchangeSettings,
+    static_os: StaticOrderSettings,
+    strategy: Strategy,
+    threads: int,
+):
+    global strategy_result_records
+    start = perf_counter()
+
+    logger.disabled = True
+    # logger.disabled = False
+    # set_loggers(log_folder=strategy.log_folder)
+
+    starting_equity = static_os.starting_equity
+
+    dos_cart_arrays = dos_cart_product(dos_arrays=dos_arrays, strategy=strategy)
+
+    order = OrderHandler(
+        long_short=strategy.long_short,
+        static_os=static_os,
+        exchange_settings=exchange_settings,
+    )
+
+    # Creating Settings Vars
+    total_order_settings = dos_cart_arrays[0].size
+
+    total_indicator_settings = strategy.indicator_settings[0].size
+
+    total_bars = candles.shape[0]
+
+    total_settings = total_order_settings * total_indicator_settings
+
+    # logger.infoing out total numbers of things
+    print("Starting the backtest now ... and also here are some stats for your backtest.\n")
+    print(f"Total indicator settings to test: {total_indicator_settings:,}")
+    print(f"Total order settings to test: {total_order_settings:,}")
+    print(f"Total combinations of settings to test: {total_indicator_settings * total_order_settings:,}")
+    print(f"Total candles: {total_bars:,}")
+    print(f"Total candles to test: {total_indicator_settings * total_order_settings * total_bars:,}")
+
+    logger.info("Starting the backtest now ... and also here are some stats for your backtest.\n")
+    logger.info(f"Total indicator settings to test: {total_indicator_settings:,}")
+    logger.info(f"Total order settings to test: {total_order_settings:,}")
+    logger.info(f"Total combinations of settings to test: {total_settings:,}")
+    logger.info(f"Total candles: {total_bars:,}")
+    logger.info(f"Total candles to test: {total_indicator_settings * total_order_settings * total_bars:,}")
+
+    record_results = np.empty(
+        shape=total_settings,
+        dtype=strat_df_array_dt,
+    )
+    strategy_result_records = record_results.copy()
+
+    range_multiplier = total_settings / threads
+    p = Pool()
+    results = []
+    for thread in threads:
+        range_start = int(thread * range_multiplier)
+        range_end = int((thread + 1) * range_multiplier)
+
+        r = p.apply_async(
+            func=multiprocess_backtest,
+            args=[
+                backtest_settings,
+                candles,
+                dos_cart_arrays,
+                exchange_settings,
+                order,
+                range_end,
+                range_start,
+                record_results[range_start:range_end],
+                starting_equity,
+                static_os,
+                strategy,
+                total_bars,
+            ],
+            callback=proc_results,
+            error_callback=handler,
+        )
+        results.append(r)
+    p.close()
+    p.join()
+    end = perf_counter()
+    print(f"Main took: ", end - start)
+    return pd.DataFrame(results)
+
+
+def proc_results(results):
+    # print("Results: ", results)
+    begin = results[1]
+    length = results[2] - results[1]
+    for i in range(length):
+        strategy_result_records[begin + i] = results[0][i - length]
+
+
+# error callback function
+def handler(error):
+    print(f"Error: {error}", flush=True)
 
 
 def or_backtest(
     backtest_settings: BacktestSettings,
     candles: np.array,
-    dos_arrays: DynamicOrderSettingsArrays,
+    dos_arrays: DynamicOrderSettings,
     exchange_settings: ExchangeSettings,
     logger_bool: bool,
     static_os: StaticOrderSettings,
