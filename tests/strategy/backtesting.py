@@ -1,3 +1,17 @@
+import sys, os
+
+sys.path.insert(0, os.path.abspath("E:\Coding\my_stuff"))
+from my_keys import MufexKeys  # type: ignore
+import numpy as np
+from datetime import datetime
+
+from strat import RSIRisingFalling
+from quantfreedom.enums import CandleBodyType
+
+from quantfreedom.enums import *
+from quantfreedom.helper_funcs import dl_ex_candles
+
+from quantfreedom.exchanges.mufex_exchange.mufex import Mufex
 from multiprocessing import Pool, cpu_count
 from time import perf_counter, sleep
 
@@ -25,9 +39,10 @@ from quantfreedom.enums import (
 from quantfreedom.utils import pretty_qf
 
 logger = getLogger("info")
+logger.disabled = True
 
 
-async def multiprocess_backtest(
+def multiprocess_backtest(
     backtest_settings_tuple: BacktestSettings,
     candles: np.array,
     exchange_settings_tuple: ExchangeSettings,
@@ -41,11 +56,11 @@ async def multiprocess_backtest(
     total_bars: int,
 ):
     for set_idx in range(range_start, range_end):
-        strategy.log_indicator_settings(ind_set_index=set_idx)
         strategy.set_entries_exits_array(
             candles=candles,
             ind_set_index=set_idx,
         )
+        strategy.log_indicator_settings(ind_set_index=set_idx)
 
         dynamic_order_settings = get_dos(
             dos_cart_arrays=strategy.dos_tuple,
@@ -318,6 +333,11 @@ def run_df_backtest(
     for thread in range(threads):
         range_start = int(thread * range_multiplier)
         range_end = int((thread + 1) * range_multiplier)
+        record_results = np.full(
+            shape=range_end - range_start,
+            fill_value=np.nan,
+            dtype=strat_df_array_dt,
+        )
 
         r = p.apply_async(
             func=multiprocess_backtest,
@@ -328,7 +348,8 @@ def run_df_backtest(
                 order,
                 range_end,
                 range_start,
-                record_results[range_start:range_end],
+                # record_results[range_start:range_end],
+                record_results,
                 starting_equity,
                 static_os_tuple,
                 strategy,
@@ -338,11 +359,16 @@ def run_df_backtest(
             error_callback=handler,
         )
         results.append(r)
+    for r in results:
+        r.wait()
+
     p.close()
     p.join()
     end = perf_counter()
     print(f"Main took: ", end - start)
-    return pd.DataFrame(results)
+    for result in results:
+        print(result._value[0])
+    return results
 
 
 def proc_results(results):
@@ -358,258 +384,91 @@ def handler(error):
     print(f"Error: {error}", flush=True)
 
 
-def or_backtest(
-    backtest_settings_tuple: BacktestSettings,
-    candles: np.array,
-    dos_arrays: DynamicOrderSettings,
-    exchange_settings_tuple: ExchangeSettings,
-    logger_bool: bool,
-    static_os_tuple: StaticOrderSettings,
-    strategy: Strategy,
-    dos_index: int,
-    ind_set_index: int,
-    plot_results: bool = False,
-):
-    if logger_bool == False:
-        logger.disabled = True
-    else:
-        logger.disabled = False
-        set_loggers(log_folder=strategy.log_folder)
+if __name__ == "__main__":
+    mufex_main = Mufex(
+        api_key=MufexKeys.mainnet_neo_api_key,
+        secret_key=MufexKeys.mainnet_neo_secret_key,
+        use_test_net=False,
+    )
+    symbol = "BTCUSDT"
 
-    starting_equity = static_os_tuple.starting_equity
+    np.set_printoptions(formatter={"float_kind": "{:0.2f}".format})
 
-    dos_cart_arrays = dos_cart_product(
-        dos_arrays=dos_arrays,
+    candles = dl_ex_candles(
+        exchange="mufex",
+        symbol="BTCUSDT",
+        timeframe="5m",
+        candles_to_dl=3000,
     )
 
-    order = OrderHandler(
-        exchange_settings_tuple=exchange_settings_tuple,
-        long_short=strategy.long_short,
-        static_os_tuple=static_os_tuple,
+    backtest_settings_tuple = BacktestSettings()
+
+    dos_tuple = DynamicOrderSettings(
+        account_pct_risk_per_trade=np.array([3]),
+        max_trades=np.array([4]),
+        risk_reward=np.array([2, 5]),
+        sl_based_on_add_pct=np.array([0.1]),
+        sl_based_on_lookback=np.array([20]),
+        sl_bcb_type=np.array([CandleBodyType.Low]),
+        sl_to_be_cb_type=np.array([CandleBodyType.Nothing]),
+        sl_to_be_when_pct=np.array([0]),
+        trail_sl_bcb_type=np.array([CandleBodyType.Low]),
+        trail_sl_by_pct=np.array([0.5, 1.0]),
+        trail_sl_when_pct=np.array([1, 2]),
     )
 
-    strategy.set_entries_exits_array(
+    exchange_settings_tuple = mufex_main.set_and_get_exchange_settings_tuple(
+        leverage_mode=LeverageModeType.Isolated,
+        position_mode=PositionModeType.HedgeMode,
+        symbol=symbol,
+    )
+
+    static_os_tuple = StaticOrderSettings(
+        increase_position_type=IncreasePositionType.RiskPctAccountEntrySize,
+        leverage_strategy_type=LeverageStrategyType.Dynamic,
+        pg_min_max_sl_bcb="min",
+        sl_strategy_type=StopLossStrategyType.SLBasedOnCandleBody,
+        sl_to_be_bool=False,
+        starting_bar=50,
+        starting_equity=1000.0,
+        static_leverage=None,
+        tp_fee_type="limit",
+        tp_strategy_type=TakeProfitStrategyType.RiskReward,
+        trail_sl_bool=True,
+        z_or_e_type=None,
+    )
+
+    long_strat = RSIRisingFalling(
+        long_short="long",
+        dos_tuple=dos_tuple,
+        rsi_length=np.array([14]),
+        rsi_is_below=np.array([40, 60, 80]),
+    )
+
+    backtest_results = run_df_backtest(
+        backtest_settings_tuple=backtest_settings_tuple,
         candles=candles,
-        ind_set_index=ind_set_index,
-    )
-    strategy.log_indicator_settings(ind_set_index=ind_set_index)
-
-    dynamic_order_settings = get_dos(
-        dos_cart_arrays=dos_cart_arrays,
-        dos_index=dos_index,
-    )
-    log_dynamic_order_settings(
-        dos_index=dos_index,
-        dynamic_order_settings=dynamic_order_settings,
+        exchange_settings_tuple=exchange_settings_tuple,
+        static_os_tuple=static_os_tuple,
+        strategy=long_strat,
+        threads=4,
     )
 
-    order.update_class_dos(dynamic_order_settings=dynamic_order_settings)
-    order.set_order_variables(equity=starting_equity)
+    print(backtest_results)
 
-    total_bars = candles.shape[0]
+    # backtest_results.sort_values(by=["qf_score"], ascending=False).head(10)
 
-    or_filled = 0
-    order_records = np.empty(shape=int(total_bars / 3), dtype=or_dt)
+    # order_records_df = or_backtest(
+    #     backtest_settings_tuple=backtest_settings_tuple,
+    #     candles=candles,
+    #     dos_arrays=dos_arrays,
+    #     exchange_settings_tuple=exchange_settings_tuple,
+    #     static_os_tuple=static_os_tuple,
+    #     strategy=long_strat,
+    #     ind_set_index=2,
+    #     dos_index=0,
+    #     plot_results=False,
+    #     logger_bool=True,
+    # )
 
-    for bar_index in range(static_os_tuple.starting_bar - 1, total_bars):
-        logger.info("\n\n")
-        pd_timestamp = pd.to_datetime(candles[bar_index, CandleBodyType.Timestamp], unit="ms")
-        logger.info(f"ind_idx= {ind_set_index} dos_idx= {dos_index} bar_idx= {bar_index} timestamp= {pd_timestamp}")
-
-        if order.position_size_usd > 0:
-            try:
-                current_candle = candles[bar_index, :]
-                logger.debug("Checking stop loss hit")
-                order.check_stop_loss_hit(current_candle=current_candle)
-                logger.debug("Checking liq hit")
-                order.check_liq_hit(current_candle=current_candle)
-                logger.debug("Checking take profit hit")
-                order.check_take_profit_hit(
-                    current_candle=current_candle,
-                    exit_price=strategy.exit_prices[bar_index],
-                )
-
-                logger.debug("Checking to move stop to break even")
-                sl_to_be_price, sl_to_be_pct = order.check_move_sl_to_be(current_candle=current_candle)
-                if sl_to_be_price:
-                    order.sl_pct = sl_to_be_pct
-                    order.sl_price = sl_to_be_price
-                    logger.debug(f"Filling order for move sl to be")
-                    order.fill_or_exit_move(
-                        bar_index=bar_index,
-                        dos_index=dos_index,
-                        ind_set_index=ind_set_index,
-                        order_records=order_records[or_filled],
-                        order_status=OrderStatus.MovedSLToBE,
-                        timestamp=current_candle[CandleBodyType.Timestamp],
-                        sl_price=sl_to_be_price,
-                        sl_pct=sl_to_be_pct,
-                    )
-                    or_filled += 1
-                    logger.debug(f"Filled sl to be order records")
-                logger.debug("Checking to move trailing stop loss")
-                tsl_price, tsl_pct = order.check_move_tsl(current_candle=current_candle)
-                if tsl_price:
-                    order.sl_pct = tsl_pct
-                    order.sl_price = tsl_price
-                    logger.debug(f"Filling order for tsl")
-                    order.fill_or_exit_move(
-                        bar_index=bar_index,
-                        dos_index=dos_index,
-                        ind_set_index=ind_set_index,
-                        order_records=order_records[or_filled],
-                        order_status=OrderStatus.MovedTSL,
-                        timestamp=current_candle[CandleBodyType.Timestamp],
-                        sl_pct=tsl_pct,
-                        sl_price=tsl_price,
-                    )
-                    or_filled += 1
-                    logger.debug(f"Filled move tsl order records")
-            except DecreasePosition as e:
-                (
-                    equity,
-                    fees_paid,
-                    realized_pnl,
-                ) = order.calculate_decrease_position(
-                    exit_fee_pct=e.exit_fee_pct,
-                    exit_price=e.exit_price,
-                    order_status=e.order_status,
-                    market_fee_pct=exchange_settings_tuple.market_fee_pct,
-                    equity=order.equity,
-                )
-                logger.debug(f"Filling or for decrease postiion {OrderStatus._fields[e.order_status]}")
-                order.fill_or_exit_move(
-                    bar_index=bar_index,
-                    dos_index=dos_index,
-                    ind_set_index=ind_set_index,
-                    order_records=order_records[or_filled],
-                    order_status=e.order_status,
-                    timestamp=current_candle[CandleBodyType.Timestamp],
-                    equity=equity,
-                    exit_price=e.exit_price,
-                    fees_paid=fees_paid,
-                    realized_pnl=realized_pnl,
-                )
-                or_filled += 1
-                logger.debug(f"Filled decrease postiion order records for {OrderStatus._fields[e.order_status]}")
-
-                order.set_order_variables(equity=equity)
-                logger.debug("reset order variables")
-
-            except Exception as e:
-                logger.error(f"Exception checking sl liq tp and move -> {e}")
-                raise Exception(f"Exception checking sl liq tp and move -> {e}")
-        else:
-            logger.debug("Not in a pos so not checking SL Liq or TP")
-
-        logger.debug("strategy evaluate")
-        if strategy.entries[bar_index]:
-            strategy.entry_message(bar_index=bar_index)
-            try:
-                logger.debug("calculate_stop_loss")
-                sl_price = order.calculate_stop_loss(
-                    bar_index=bar_index,
-                    candles=candles,
-                )
-
-                logger.debug("calculate_increase_position")
-                (
-                    average_entry,
-                    entry_price,
-                    entry_size_asset,
-                    entry_size_usd,
-                    position_size_asset,
-                    position_size_usd,
-                    total_possible_loss,
-                    total_trades,
-                    sl_pct,
-                ) = order.calculate_increase_position(
-                    average_entry=order.average_entry,
-                    entry_price=candles[bar_index, CandleBodyType.Close],
-                    equity=order.equity,
-                    position_size_asset=order.position_size_asset,
-                    position_size_usd=order.position_size_usd,
-                    sl_price=sl_price,
-                    total_trades=order.total_trades,
-                )
-
-                logger.debug("calculate_leverage")
-                (
-                    available_balance,
-                    cash_borrowed,
-                    cash_used,
-                    leverage,
-                    liq_price,
-                ) = order.calculate_leverage(
-                    available_balance=order.available_balance,
-                    average_entry=average_entry,
-                    cash_borrowed=order.cash_borrowed,
-                    cash_used=order.cash_used,
-                    position_size_usd=position_size_usd,
-                    position_size_asset=position_size_asset,
-                    sl_price=sl_price,
-                )
-
-                logger.debug("calculate_take_profit")
-                (
-                    can_move_sl_to_be,
-                    tp_price,
-                    tp_pct,
-                ) = order.calculate_take_profit(
-                    average_entry=average_entry,
-                    position_size_usd=position_size_usd,
-                    total_possible_loss=total_possible_loss,
-                )
-
-                logger.debug("calculate_take_profit")
-                order.fill_order_result(
-                    available_balance=available_balance,
-                    average_entry=average_entry,
-                    can_move_sl_to_be=can_move_sl_to_be,
-                    cash_borrowed=cash_borrowed,
-                    cash_used=cash_used,
-                    entry_price=entry_price,
-                    entry_size_asset=entry_size_asset,
-                    entry_size_usd=entry_size_usd,
-                    equity=order.equity,
-                    exit_price=np.nan,
-                    fees_paid=np.nan,
-                    leverage=leverage,
-                    liq_price=liq_price,
-                    order_status=OrderStatus.EntryFilled,
-                    position_size_asset=position_size_asset,
-                    position_size_usd=position_size_usd,
-                    total_possible_loss=total_possible_loss,
-                    realized_pnl=np.nan,
-                    sl_pct=sl_pct,
-                    sl_price=sl_price,
-                    total_trades=total_trades,
-                    tp_pct=tp_pct,
-                    tp_price=tp_price,
-                )
-                logger.debug("filling entry order records")
-                order.fill_or_entry(
-                    bar_index=bar_index + 1,
-                    dos_index=dos_index,
-                    ind_set_index=ind_set_index,
-                    order_records=order_records[or_filled],
-                    timestamp=candles[bar_index + 1, CandleBodyType.Timestamp],
-                )
-                or_filled += 1
-                logger.info("We are in a position and filled the result")
-            except RejectedOrder:
-                pass
-            except Exception as e:
-                if bar_index + 1 >= candles.shape[0]:
-                    raise Exception(f"Exception hit in eval strat -> {e}")
-                    pass
-                else:
-                    logger.error(f"Exception hit in eval strat -> {e}")
-                    raise Exception(f"Exception hit in eval strat -> {e}")
-    order_records_df = order_records_to_df(order_records[:or_filled])
-    pretty_qf(dynamic_order_settings)
-    pretty_qf(strategy.current_ind_settings)
-    if plot_results:
-        strategy.plot_signals(candles=candles)
-        plot_or_results(candles=candles, order_records_df=order_records_df)
-    return order_records_df
+    # order_records_df

@@ -957,7 +957,7 @@ class Bybit(Exchange):
 
         return true_false
 
-    def set_and_get_exchange_settings(
+    def set_and_get_exchange_settings_tuple(
         self,
         leverage_mode: int,
         position_mode: int,

@@ -27,10 +27,10 @@ from quantfreedom.utils import pretty_qf
 
 
 def nb_sim_backtest(
-    backtest_settings: BacktestSettings,
+    backtest_settings_tuple: BacktestSettings,
     candles: np.array,
     dos_arrays: DynamicOrderSettings,
-    exchange_settings: ExchangeSettings,
+    exchange_settings_tuple: ExchangeSettings,
     logger_bool: bool,
     long_short: str,
     nb_strat_evaluate: Callable,
@@ -38,7 +38,7 @@ def nb_sim_backtest(
     nb_strat_get_ind_set_str: Callable,
     nb_strat_get_total_ind_settings: Callable,
     nb_strat_ind_creator: Callable,
-    static_os: StaticOrderSettings,
+    static_os_tuple: StaticOrderSettings,
     dos_index: int = None,
     ind_set_index: int = None,
     plot_results: bool = False,
@@ -154,12 +154,12 @@ def nb_sim_backtest(
     """
 
     # stop loss
-    if static_os.sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
+    if static_os_tuple.sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
         nb_sl_calculator = nb_sl_based_on_candle_body
         nb_checker_sl_hit = nb_check_sl_hit
-        if static_os.pg_min_max_sl_bcb == "min":
+        if static_os_tuple.pg_min_max_sl_bcb == "min":
             nb_sl_bcb_price_getter = nb_min_price_getter
-        elif static_os.pg_min_max_sl_bcb == "max":
+        elif static_os_tuple.pg_min_max_sl_bcb == "max":
             nb_sl_bcb_price_getter = nb_max_price_getter
         else:
             raise Exception("min or max are the only options for pg_min_max_sl_bcb")
@@ -169,12 +169,12 @@ def nb_sim_backtest(
         nb_sl_bcb_price_getter = nb_price_getter_pass
 
     # SL break even
-    if static_os.sl_to_be_bool:
+    if static_os_tuple.sl_to_be_bool:
         nb_checker_sl_to_be = nb_check_move_sl_to_be
         # setting up stop loss be zero or entry
-        if static_os.z_or_e_type == "entry":
+        if static_os_tuple.z_or_e_type == "entry":
             nb_zero_or_entry_calc = nb_sl_to_entry
-        if static_os.z_or_e_type == "zero":
+        if static_os_tuple.z_or_e_type == "zero":
             if long_short == "long":
                 nb_zero_or_entry_calc = nb_long_sl_to_zero
             elif long_short == "short":
@@ -186,46 +186,46 @@ def nb_sim_backtest(
         nb_zero_or_entry_calc = nb_sl_to_z_e_pass
 
     # Trailing stop loss
-    if static_os.trail_sl_bool:
+    if static_os_tuple.trail_sl_bool:
         nb_checker_tsl = nb_check_move_tsl
     else:
         nb_checker_tsl = nb_cm_tsl_pass
 
-    if static_os.trail_sl_bool or static_os.sl_to_be_bool:
+    if static_os_tuple.trail_sl_bool or static_os_tuple.sl_to_be_bool:
         nb_sl_mover = nb_move_stop_loss
     else:
         nb_sl_mover = nb_move_stop_loss_pass
 
     # Increase Position
-    if static_os.sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
-        if static_os.increase_position_type == IncreasePositionType.RiskPctAccountEntrySize:
+    if static_os_tuple.sl_strategy_type == StopLossStrategyType.SLBasedOnCandleBody:
+        if static_os_tuple.increase_position_type == IncreasePositionType.RiskPctAccountEntrySize:
             nb_inc_pos_calculator = nb_rpa_slbcb
-        elif static_os.increase_position_type == IncreasePositionType.SmalletEntrySizeAsset:
+        elif static_os_tuple.increase_position_type == IncreasePositionType.SmalletEntrySizeAsset:
             nb_inc_pos_calculator = nb_min_asset_amount
 
     # Leverage
-    if static_os.leverage_strategy_type == LeverageStrategyType.Dynamic:
+    if static_os_tuple.leverage_strategy_type == LeverageStrategyType.Dynamic:
         nb_lev_calculator = nb_dynamic_lev
 
     # Take Profit
-    if static_os.tp_strategy_type == TakeProfitStrategyType.RiskReward:
+    if static_os_tuple.tp_strategy_type == TakeProfitStrategyType.RiskReward:
         nb_tp_calculator = nb_tp_rr
         nb_checker_tp_hit = nb_c_tp_hit_regular
 
-    if static_os.tp_fee_type == "market":
-        exit_fee_pct = exchange_settings.market_fee_pct
+    if static_os_tuple.tp_fee_type == "market":
+        exit_fee_pct = exchange_settings_tuple.market_fee_pct
     else:
-        exit_fee_pct = exchange_settings.limit_fee_pct
+        exit_fee_pct = exchange_settings_tuple.limit_fee_pct
 
     # logger.infoing out total numbers of things
     print("Starting the backtest now ... and also here are some stats for your backtest.\n")
 
     if ind_set_index is not None and dos_index is not None:
-        order_records, indicator_settings, dynamic_order_settings = nb_run_or_backtest(
+        order_records, indicator_settings_tuple, dynamic_order_settings = nb_run_or_backtest(
             candles=candles,
             dos_cart_arrays=dos_cart_arrays,
             dos_index=dos_index,
-            exchange_settings=exchange_settings,
+            exchange_settings_tuple=exchange_settings_tuple,
             exit_fee_pct=exit_fee_pct,
             ind_set_index=ind_set_index,
             logger=logger,
@@ -256,10 +256,10 @@ def nb_sim_backtest(
             nb_tp_calculator=nb_tp_calculator,
             nb_tp_hit_bool=nb_tp_hit_bool,
             nb_zero_or_entry_calc=nb_zero_or_entry_calc,
-            static_os=static_os,
+            static_os_tuple=static_os_tuple,
             stringer=stringer,
         )
-        pretty_qf(indicator_settings)
+        pretty_qf(indicator_settings_tuple)
         pretty_qf(dynamic_order_settings)
         order_records_df = order_records_to_df(order_records)
         if order_records_df.bar_idx.iloc[-1] >= total_bars:
@@ -276,10 +276,10 @@ def nb_sim_backtest(
         print(f"Total candles: {total_bars:,}")
         print(f"Total candles to test: {total_indicator_settings * total_order_settings * total_bars:,}")
         strategy_result_records = nb_run_df_backtest(
-            backtest_settings=backtest_settings,
+            backtest_settings_tuple=backtest_settings_tuple,
             candles=candles,
             dos_cart_arrays=dos_cart_arrays,
-            exchange_settings=exchange_settings,
+            exchange_settings_tuple=exchange_settings_tuple,
             exit_fee_pct=exit_fee_pct,
             logger=logger,
             nb_calc_dynamic_lev=nb_calc_dynamic_lev,
@@ -309,7 +309,7 @@ def nb_sim_backtest(
             nb_tp_calculator=nb_tp_calculator,
             nb_tp_hit_bool=nb_tp_hit_bool,
             nb_zero_or_entry_calc=nb_zero_or_entry_calc,
-            static_os=static_os,
+            static_os_tuple=static_os_tuple,
             stringer=stringer,
             total_bars=total_bars,
             total_indicator_settings=total_indicator_settings,

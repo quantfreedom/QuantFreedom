@@ -23,10 +23,10 @@ from quantfreedom.nb_funcs.nb_order_handler.nb_leverage import LevOrderInfo, nb_
 
 @njit(cache=True)
 def nb_run_df_backtest(
-    backtest_settings: BacktestSettings,
+    backtest_settings_tuple: BacktestSettings,
     candles: np.array,
     dos_cart_arrays: DynamicOrderSettings,
-    exchange_settings: ExchangeSettings,
+    exchange_settings_tuple: ExchangeSettings,
     exit_fee_pct: float,
     logger: Callable,
     nb_calc_dynamic_lev: Callable,
@@ -56,37 +56,37 @@ def nb_run_df_backtest(
     nb_tp_calculator: Callable,
     nb_tp_hit_bool: Callable,
     nb_zero_or_entry_calc: Callable,
-    static_os: StaticOrderSettings,
+    static_os_tuple: StaticOrderSettings,
     stringer: list,
     total_bars: int,
     total_indicator_settings: int,
     total_order_settings: int,
 ):
-    market_fee_pct = exchange_settings.market_fee_pct
-    leverage_tick_step = exchange_settings.leverage_tick_step
-    price_tick_step = exchange_settings.price_tick_step
-    asset_tick_step = exchange_settings.asset_tick_step
-    min_asset_size = exchange_settings.min_asset_size
-    max_asset_size = exchange_settings.max_asset_size
-    max_leverage = exchange_settings.max_leverage
-    min_leverage = exchange_settings.min_leverage
-    mmr_pct = exchange_settings.mmr_pct
+    market_fee_pct = exchange_settings_tuple.market_fee_pct
+    leverage_tick_step = exchange_settings_tuple.leverage_tick_step
+    price_tick_step = exchange_settings_tuple.price_tick_step
+    asset_tick_step = exchange_settings_tuple.asset_tick_step
+    min_asset_size = exchange_settings_tuple.min_asset_size
+    max_asset_size = exchange_settings_tuple.max_asset_size
+    max_leverage = exchange_settings_tuple.max_leverage
+    min_leverage = exchange_settings_tuple.min_leverage
+    mmr_pct = exchange_settings_tuple.mmr_pct
 
     strategy_result_records = np.empty(
-        backtest_settings.array_size,
+        backtest_settings_tuple.array_size,
         dtype=strat_df_array_dt,
     )
     result_records_filled = 0
 
     for ind_set_index in range(total_indicator_settings):
-        indicator_settings = nb_strat_get_current_ind_settings(
+        indicator_settings_tuple = nb_strat_get_current_ind_settings(
             ind_set_index=ind_set_index,
             logger=logger,
         )
 
         for dos_index in range(total_order_settings):
             logger("nb_simulate.py - nb_run_backtest() - Indicator settings index=" + str(ind_set_index))
-            logger(nb_strat_get_ind_set_str(indicator_settings=indicator_settings, stringer=stringer))
+            logger(nb_strat_get_ind_set_str(indicator_settings_tuple=indicator_settings_tuple, stringer=stringer))
             dynamic_order_settings = nb_get_dos(
                 dos_cart_arrays=dos_cart_arrays,
                 dos_index=dos_index,
@@ -122,10 +122,10 @@ def nb_run_df_backtest(
                 + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_when_pct * 100, 3))
             )
 
-            logger("nb_simulate.py - nb_run_backtest() - Starting Bar=" + str(static_os.starting_bar))
+            logger("nb_simulate.py - nb_run_backtest() - Starting Bar=" + str(static_os_tuple.starting_bar))
 
             account_state, order_result = nb_create_ao(
-                starting_equity=static_os.starting_equity,
+                starting_equity=static_os_tuple.starting_equity,
             )
 
             pnl_array = np.full(shape=round(total_bars / 3), fill_value=np.nan)
@@ -133,7 +133,7 @@ def nb_run_df_backtest(
 
             total_fees_paid = 0
             logger("nb_simulate.py - nb_run_backtest() - account state order results pnl array all set to default")
-            for bar_index in range(static_os.starting_bar - 1, total_bars):
+            for bar_index in range(static_os_tuple.starting_bar - 1, total_bars):
                 logger("\n\n")
                 logger(
                     (
@@ -323,9 +323,9 @@ def nb_run_df_backtest(
                 logger("nb_simulate.py - nb_run_backtest() - strategy evaluate")
                 eval_bool = nb_strat_evaluate(
                     bar_index=bar_index,
-                    candle_group_size=static_os.starting_bar,
+                    candle_group_size=static_os_tuple.starting_bar,
                     candles=candles,
-                    indicator_settings=indicator_settings,
+                    indicator_settings_tuple=indicator_settings_tuple,
                     nb_strat_ind_creator=nb_strat_ind_creator,
                     logger=logger,
                     stringer=stringer,
@@ -409,7 +409,7 @@ def nb_run_df_backtest(
                                 position_size_asset=position_size_asset,
                                 position_size_usd=position_size_usd,
                                 sl_price=sl_price,
-                                static_leverage=static_os.static_leverage,
+                                static_leverage=static_os_tuple.static_leverage,
                             ),
                             logger=logger,
                             nb_calc_dynamic_lev=nb_calc_dynamic_lev,
@@ -480,7 +480,9 @@ def nb_run_df_backtest(
                         logger("nb_simulate.py - nb_run_backtest() - Exception hit in eval strat")
                         pass
             # Checking if gains
-            gains_pct = round(((account_state.equity - static_os.starting_equity) / static_os.starting_equity) * 100, 3)
+            gains_pct = round(
+                ((account_state.equity - static_os_tuple.starting_equity) / static_os_tuple.starting_equity) * 100, 3
+            )
             wins_and_losses_array = pnl_array[~np.isnan(pnl_array)]
             total_trades_closed = wins_and_losses_array.size
             logger(
@@ -490,7 +492,7 @@ def nb_run_df_backtest(
                 + "\ndos_index= "
                 + str(dos_index)
                 + "\nStarting eq= "
-                + stringer[StringerFuncType.float_to_str](static_os.starting_equity)
+                + stringer[StringerFuncType.float_to_str](static_os_tuple.starting_equity)
                 + "\nEnding eq= "
                 + stringer[StringerFuncType.float_to_str](account_state.equity)
                 + "\nGains pct= "
@@ -499,8 +501,8 @@ def nb_run_df_backtest(
                 + str(total_trades_closed)
                 + "\n"
             )
-            if total_trades_closed > 0 and gains_pct > backtest_settings.gains_pct_filter:
-                if wins_and_losses_array.size > backtest_settings.total_trade_filter:
+            if total_trades_closed > 0 and gains_pct > backtest_settings_tuple.gains_pct_filter:
+                if wins_and_losses_array.size > backtest_settings_tuple.total_trade_filter:
                     wins_and_losses_array_no_be = wins_and_losses_array[
                         (wins_and_losses_array < -0.009) | (wins_and_losses_array > 0.009)
                     ]
@@ -510,7 +512,7 @@ def nb_run_df_backtest(
                     )
 
                     # Checking to the upside filter
-                    if qf_score > backtest_settings.qf_filter:
+                    if qf_score > backtest_settings_tuple.qf_filter:
                         win_loss = np.where(wins_and_losses_array_no_be < 0, 0, 1)
                         wins = np.count_nonzero(win_loss)
                         losses = win_loss.size - wins

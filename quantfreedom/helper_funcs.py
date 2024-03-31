@@ -165,52 +165,6 @@ def get_dos(
     )
 
 
-def cart_product(
-    comb_tuples: NamedTuple,
-) -> np.array:
-    n = 1
-    for x in comb_tuples:
-        n *= x.size
-    out = np.empty((n, len(comb_tuples)))
-
-    for i in range(len(comb_tuples)):
-        m = int(n / comb_tuples[i].size)
-        out[:n, i] = np.repeat(comb_tuples[i], m)
-        n //= comb_tuples[i].size
-
-    n = comb_tuples[-1].size
-    for k in range(len(comb_tuples) - 2, -1, -1):
-        n *= comb_tuples[k].size
-        m = int(n / comb_tuples[k].size)
-        for j in range(1, comb_tuples[k].size):
-            out[j * m : (j + 1) * m, k + 1 :] = out[0:m, k + 1 :]
-    return out.T
-
-
-def dos_cart_product(
-    dos_arrays: DynamicOrderSettings,
-    strategy: Strategy,
-) -> DynamicOrderSettings:
-    cart_arrays = cart_product(comb_tuples=(dos_arrays + strategy.indicator_settings))
-
-    strategy.indicator_settings = strategy.indicator_settings(*tuple(cart_arrays[11:, :]))
-    strategy.change_ind_settings_to_ints()
-
-    dos_array = DynamicOrderSettings(*tuple(cart_arrays[:10, :]))
-    dos_arrays = DynamicOrderSettings(
-        max_trades=dos_array.max_trades.astype(np.int_),
-        account_pct_risk_per_trade=dos_array.account_pct_risk_per_trade / 100,
-        risk_reward=dos_array.risk_reward,
-        sl_based_on_add_pct=dos_array.sl_based_on_add_pct / 100,
-        sl_based_on_lookback=dos_array.sl_based_on_lookback.astype(np.int_),
-        sl_bcb_type=dos_array.sl_bcb_type.astype(np.int_),
-        sl_to_be_cb_type=dos_array.sl_to_be_cb_type.astype(np.int_),
-        sl_to_be_when_pct=dos_array.sl_to_be_when_pct / 100,
-        trail_sl_bcb_type=dos_array.trail_sl_bcb_type.astype(np.int_),
-        trail_sl_by_pct=dos_array.trail_sl_by_pct / 100,
-        trail_sl_when_pct=dos_array.trail_sl_when_pct / 100,
-    )
-    return dos_arrays
 
 
 def round_size_by_tick_step(

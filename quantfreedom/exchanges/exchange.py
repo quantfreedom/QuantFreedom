@@ -196,7 +196,7 @@ class Exchange:
     def get_exchange_timeframe(self, **kwargs):
         pass
 
-    def set_and_get_exchange_settings(self, **kwargs):
+    def set_and_get_exchange_settings_tuple(self, **kwargs):
         pass
 
     def get_no_fees_balance_of_asset_market_in_only(self, **kwargs):

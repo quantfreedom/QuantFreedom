@@ -900,7 +900,7 @@ class Mufex(Exchange):
             leverage_tick_step,
         )
 
-    def set_and_get_exchange_settings(
+    def set_and_get_exchange_settings_tuple(
         self,
         leverage_mode: LeverageModeType,  # type: ignore
         position_mode: PositionModeType,  # type: ignore

@@ -422,8 +422,10 @@ class BybitLiveMode:
         logger.debug(f"setting all exchange vars")
         coin_size = self.ex_position_size_asset
         pnl = coin_size * (self.ex_sl_price - self.ex_average_entry)
-        fee_open = coin_size * self.ex_average_entry * self.exchange.exchange_settings.market_fee_pct  # math checked
-        fee_close = coin_size * self.ex_sl_price * self.exchange.exchange_settings.market_fee_pct  # math checked
+        fee_open = (
+            coin_size * self.ex_average_entry * self.exchange.exchange_settings_tuple.market_fee_pct
+        )  # math checked
+        fee_close = coin_size * self.ex_sl_price * self.exchange.exchange_settings_tuple.market_fee_pct  # math checked
         self.fees_paid = fee_open + fee_close  # math checked
         self.ex_total_possible_loss = round(abs(pnl - self.fees_paid), 3)
 
@@ -431,8 +433,10 @@ class BybitLiveMode:
         logger.debug(f"setting all exchange vars")
         coin_size = self.ex_position_size_asset
         pnl = coin_size * (self.ex_tp_price - self.ex_average_entry)
-        fee_open = coin_size * self.ex_average_entry * self.exchange.exchange_settings.market_fee_pct  # math checked
-        fee_close = coin_size * self.ex_tp_price * self.exchange.exchange_settings.limit_fee_pct  # math checked
+        fee_open = (
+            coin_size * self.ex_average_entry * self.exchange.exchange_settings_tuple.market_fee_pct
+        )  # math checked
+        fee_close = coin_size * self.ex_tp_price * self.exchange.exchange_settings_tuple.limit_fee_pct  # math checked
         self.fees_paid = fee_open + fee_close  # math checked
         self.ex_possible_profit = round(abs(pnl - self.fees_paid), 3)
 
@@ -460,8 +464,10 @@ class BybitLiveMode:
         self.ex_sl_pct = self.__get_pct_difference(starting_num=self.ex_average_entry, diff_num=self.ex_sl_price)
         coin_size = self.ex_position_size_asset
         pnl = coin_size * (self.ex_sl_price - self.ex_average_entry)
-        fee_open = coin_size * self.ex_average_entry * self.exchange.exchange_settings.market_fee_pct  # math checked
-        fee_close = coin_size * self.ex_sl_price * self.exchange.exchange_settings.market_fee_pct  # math checked
+        fee_open = (
+            coin_size * self.ex_average_entry * self.exchange.exchange_settings_tuple.market_fee_pct
+        )  # math checked
+        fee_close = coin_size * self.ex_sl_price * self.exchange.exchange_settings_tuple.market_fee_pct  # math checked
         self.fees_paid = fee_open + fee_close  # math checked
         self.ex_total_possible_loss = round(-(pnl - self.fees_paid), 3)
 

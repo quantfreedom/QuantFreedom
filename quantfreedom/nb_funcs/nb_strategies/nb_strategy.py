@@ -57,14 +57,14 @@ def nb_strat_bt_create_ind(
     bar_index: int,
     candles: np.array,
     candle_group_size: int,
-    indicator_settings: IndicatorSettings,
+    indicator_settings_tuple: IndicatorSettings,
     logger: Callable,
 ):
     start = max(bar_index - candle_group_size, 0)
     try:
         rsi = nb_rsi_tv(
             source=candles[start : bar_index + 1, CandleBodyType.Close],
-            length=indicator_settings.rsi_period,
+            length=indicator_settings_tuple.rsi_period,
         )
         rsi = np.around(rsi, 3)
         logger("nb_strategy.py - nb_strat_bt_create_ind() - Created RSI")
@@ -79,13 +79,13 @@ def nb_strat_liv_create_ind(
     bar_index: int,
     candle_group_size: int,
     candles: int,
-    indicator_settings: IndicatorSettings,
+    indicator_settings_tuple: IndicatorSettings,
     logger: Callable,
 ):
     try:
         rsi = nb_rsi_tv(
             source=candles[:, CandleBodyType.Close],
-            length=indicator_settings.rsi_period,
+            length=indicator_settings_tuple.rsi_period,
         )
         rsi = np.around(rsi, 3)
         logger("nb_strategy.py - nb_strat_liv_create_ind() - Created RSI")
@@ -105,25 +105,25 @@ def nb_strat_get_current_ind_settings(
     ind_set_index: int,
     logger: Callable,
 ):
-    indicator_settings = IndicatorSettings(
+    indicator_settings_tuple = IndicatorSettings(
         rsi_is_below=ind_set_arrays.rsi_is_below[ind_set_index],
         rsi_period=ind_set_arrays.rsi_period[ind_set_index],
     )
     logger("nb_strategy.py - nb_get_current_ind_settings() - Created indicator settings")
-    return indicator_settings
+    return indicator_settings_tuple
 
 
 @njit(cache=True)
 def nb_strat_get_ind_set_str(
-    indicator_settings: IndicatorSettings,
+    indicator_settings_tuple: IndicatorSettings,
     stringer: list,
 ):
     msg = (
         "nb_strategy.py - nb_strat_get_ind_set_str() - "
         + "RSI Period= "
-        + str(indicator_settings.rsi_period)
+        + str(indicator_settings_tuple.rsi_period)
         + " RSI is below= "
-        + stringer[StringerFuncType.float_to_str](indicator_settings.rsi_is_below)
+        + stringer[StringerFuncType.float_to_str](indicator_settings_tuple.rsi_is_below)
     )
     return msg
 
@@ -133,7 +133,7 @@ def nb_strat_long_evaluate(
     bar_index: int,
     candles: np.array,
     candle_group_size: int,
-    indicator_settings: IndicatorSettings,
+    indicator_settings_tuple: IndicatorSettings,
     logger: Callable,
     nb_strat_ind_creator: Callable,
     stringer: list,
@@ -142,12 +142,12 @@ def nb_strat_long_evaluate(
         bar_index=bar_index,
         candle_group_size=candle_group_size,
         candles=candles,
-        indicator_settings=indicator_settings,
+        indicator_settings_tuple=indicator_settings_tuple,
         logger=logger,
     )
     try:
         current_rsi = rsi[-1]
-        rsi_is_below = indicator_settings.rsi_is_below
+        rsi_is_below = indicator_settings_tuple.rsi_is_below
 
         if current_rsi < rsi_is_below:
             logger("\n\n")

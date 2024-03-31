@@ -25,7 +25,7 @@ def nb_run_or_backtest(
     candles: np.array,
     dos_cart_arrays: DynamicOrderSettings,
     dos_index: int,
-    exchange_settings: ExchangeSettings,
+    exchange_settings_tuple: ExchangeSettings,
     exit_fee_pct: float,
     ind_set_index: int,
     logger: Callable,
@@ -56,26 +56,26 @@ def nb_run_or_backtest(
     nb_tp_calculator: Callable,
     nb_tp_hit_bool: Callable,
     nb_zero_or_entry_calc: Callable,
-    static_os: StaticOrderSettings,
+    static_os_tuple: StaticOrderSettings,
     stringer: list,
 ):
-    market_fee_pct = exchange_settings.market_fee_pct
-    leverage_tick_step = exchange_settings.leverage_tick_step
-    price_tick_step = exchange_settings.price_tick_step
-    asset_tick_step = exchange_settings.asset_tick_step
-    min_asset_size = exchange_settings.min_asset_size
-    max_asset_size = exchange_settings.max_asset_size
-    max_leverage = exchange_settings.max_leverage
-    min_leverage = exchange_settings.min_leverage
-    mmr_pct = exchange_settings.mmr_pct
+    market_fee_pct = exchange_settings_tuple.market_fee_pct
+    leverage_tick_step = exchange_settings_tuple.leverage_tick_step
+    price_tick_step = exchange_settings_tuple.price_tick_step
+    asset_tick_step = exchange_settings_tuple.asset_tick_step
+    min_asset_size = exchange_settings_tuple.min_asset_size
+    max_asset_size = exchange_settings_tuple.max_asset_size
+    max_leverage = exchange_settings_tuple.max_leverage
+    min_leverage = exchange_settings_tuple.min_leverage
+    mmr_pct = exchange_settings_tuple.mmr_pct
 
-    indicator_settings = nb_strat_get_current_ind_settings(
+    indicator_settings_tuple = nb_strat_get_current_ind_settings(
         ind_set_index=ind_set_index,
         logger=logger,
     )
 
     logger("nb_simulate.py - nb_run_backtest() - Indicator settings index=" + str(ind_set_index))
-    logger(nb_strat_get_ind_set_str(indicator_settings=indicator_settings, stringer=stringer))
+    logger(nb_strat_get_ind_set_str(indicator_settings_tuple=indicator_settings_tuple, stringer=stringer))
     dynamic_order_settings = nb_get_dos(
         dos_cart_arrays=dos_cart_arrays,
         dos_index=dos_index,
@@ -109,16 +109,16 @@ def nb_run_or_backtest(
         + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_when_pct * 100, 3))
     )
 
-    logger("nb_simulate.py - nb_run_backtest() - Starting Bar=" + str(static_os.starting_bar))
+    logger("nb_simulate.py - nb_run_backtest() - Starting Bar=" + str(static_os_tuple.starting_bar))
 
     account_state, order_result = nb_create_ao(
-        starting_equity=static_os.starting_equity,
+        starting_equity=static_os_tuple.starting_equity,
     )
     logger("nb_sim_ordder_records.py - nb_run_backtest() - account state order results pnl array all set to default")
     total_bars = candles.shape[0]
     order_records = np.empty(total_bars, dtype=or_dt)
     or_index = 0
-    for bar_index in range(static_os.starting_bar - 1, total_bars):
+    for bar_index in range(static_os_tuple.starting_bar - 1, total_bars):
         logger("\n\n")
         logger(
             (
@@ -329,9 +329,9 @@ def nb_run_or_backtest(
         logger("nb_simulate.py - nb_run_backtest() - strategy evaluate")
         eval_bool = nb_strat_evaluate(
             bar_index=bar_index,
-            candle_group_size=static_os.starting_bar,
+            candle_group_size=static_os_tuple.starting_bar,
             candles=candles,
-            indicator_settings=indicator_settings,
+            indicator_settings_tuple=indicator_settings_tuple,
             nb_strat_ind_creator=nb_strat_ind_creator,
             logger=logger,
             stringer=stringer,
@@ -415,7 +415,7 @@ def nb_run_or_backtest(
                         position_size_asset=position_size_asset,
                         position_size_usd=position_size_usd,
                         sl_price=sl_price,
-                        static_leverage=static_os.static_leverage,
+                        static_leverage=static_os_tuple.static_leverage,
                     ),
                     logger=logger,
                     nb_calc_dynamic_lev=nb_calc_dynamic_lev,
@@ -489,4 +489,4 @@ def nb_run_or_backtest(
             except Exception:
                 logger("nb_simulate.py - nb_run_backtest() - Exception hit in eval strat")
                 pass
-    return order_records[:or_index], indicator_settings, dynamic_order_settings
+    return order_records[:or_index], indicator_settings_tuple, dynamic_order_settings

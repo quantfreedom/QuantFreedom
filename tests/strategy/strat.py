@@ -7,7 +7,6 @@ from datetime import datetime
 from logging import getLogger
 from typing import NamedTuple
 
-from quantfreedom.helper_funcs import cart_product
 from quantfreedom.indicators.tv_indicators import rsi_tv
 from quantfreedom.enums import CandleBodyType, DynamicOrderSettings
 from quantfreedom.strategies.strategy import Strategy
@@ -25,7 +24,7 @@ class IndicatorSettings(NamedTuple):
 class RSIRisingFalling(Strategy):
     def __init__(
         self,
-        dos_arrays: DynamicOrderSettings,
+        dos_tuple: DynamicOrderSettings,
         long_short: str,
         rsi_length: int,
         rsi_is_above: np.array = np.array([0]),
@@ -35,10 +34,20 @@ class RSIRisingFalling(Strategy):
         self.long_short = long_short
         self.log_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
-        self.indicator_settings = IndicatorSettings(
+        indicator_settings_tuple = IndicatorSettings(
             rsi_is_above=rsi_is_above,
             rsi_is_below=rsi_is_below,
             rsi_length=rsi_length,
+        )
+
+        indicator_settings_tuple = IndicatorSettings(
+            *self.get_ind_set_dos_cart_product(
+                dos_tuple=dos_tuple,
+                indicator_settings_tuple=indicator_settings_tuple,
+            )
+        )
+        self.set_ind_settings_tuple(
+            indicator_settings_tuple=indicator_settings_tuple,
         )
 
         if long_short == "long":
@@ -64,11 +73,14 @@ class RSIRisingFalling(Strategy):
     #######################################################
     #######################################################
 
-    def change_ind_settings_to_ints(self):
-        self.indicator_settings = IndicatorSettings(
-            rsi_is_above=self.indicator_settings.rsi_is_above.astype(np.int_),
-            rsi_is_below=self.indicator_settings.rsi_is_below.astype(np.int_),
-            rsi_length=self.indicator_settings.rsi_length.astype(np.int_),
+    def set_ind_settings_tuple(
+        self,
+        indicator_settings_tuple: IndicatorSettings,
+    ) -> None:
+        self.indicator_settings_tuple = IndicatorSettings(
+            rsi_is_above=indicator_settings_tuple.rsi_is_above.astype(np.int_),
+            rsi_is_below=indicator_settings_tuple.rsi_is_below.astype(np.int_),
+            rsi_length=indicator_settings_tuple.rsi_length.astype(np.int_),
         )
 
     #######################################################
@@ -87,14 +99,9 @@ class RSIRisingFalling(Strategy):
         ind_set_index: int,
     ):
         try:
-            self.rsi_is_below = self.indicator_settings.rsi_is_below[ind_set_index]
-            self.rsi_length = self.indicator_settings.rsi_length[ind_set_index]
+            self.rsi_is_below = self.indicator_settings_tuple.rsi_is_below[ind_set_index]
+            self.rsi_length = self.indicator_settings_tuple.rsi_length[ind_set_index]
             self.h_line = self.rsi_is_below
-            self.current_ind_settings = self.indicator_settings(
-                rsi_is_above=np.nan,
-                rsi_is_below=self.rsi_is_below,
-                rsi_length=self.rsi_length,
-            )
 
             rsi = rsi_tv(
                 source=candles[:, CandleBodyType.Close],
@@ -158,14 +165,9 @@ class RSIRisingFalling(Strategy):
         ind_set_index: int,
     ):
         try:
-            self.rsi_is_above = self.indicator_settings.rsi_is_above[ind_set_index]
+            self.rsi_is_above = self.indicator_settings_tuple.rsi_is_above[ind_set_index]
             self.h_line = self.rsi_is_above
-            self.rsi_length = self.indicator_settings.rsi_length[ind_set_index]
-            self.current_ind_settings = self.empty_ind_tup(
-                rsi_is_above=self.rsi_is_above,
-                rsi_is_below=np.nan,
-                rsi_length=self.rsi_length,
-            )
+            self.rsi_length = self.indicator_settings_tuple.rsi_length[ind_set_index]
 
             rsi = rsi_tv(
                 source=candles[:, CandleBodyType.Close],
