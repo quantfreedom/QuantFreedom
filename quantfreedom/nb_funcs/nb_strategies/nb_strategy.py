@@ -101,7 +101,7 @@ def nb_strat_get_total_ind_settings():
 
 
 @njit(cache=True)
-def nb_strat_get_current_ind_settings(
+def nb_strat_get_current_ind_settings_tuple(
     ind_set_index: int,
     logger: Callable,
 ):
@@ -109,7 +109,7 @@ def nb_strat_get_current_ind_settings(
         rsi_is_below=ind_set_arrays.rsi_is_below[ind_set_index],
         rsi_period=ind_set_arrays.rsi_period[ind_set_index],
     )
-    logger("nb_strategy.py - nb_get_current_ind_settings() - Created indicator settings")
+    logger("nb_strategy.py - nb_get_current_ind_settings_tuple() - Created indicator settings")
     return indicator_settings_tuple
 
 

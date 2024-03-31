@@ -9,7 +9,7 @@ class IndicatorSettings(NamedTuple):
 
 
 class Strategy:
-    current_ind_settings = None
+    current_ind_settings_tuple = None
     entries = None
     entry_message = None
     exit_prices = None

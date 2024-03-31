@@ -52,22 +52,22 @@ def nb_get_qf_score(
 
 @njit(cache=True)
 def nb_get_dos(
-    dos_cart_arrays: DynamicOrderSettings,
+    dos_tuple: DynamicOrderSettings,
     dos_index: int,
 ):
     return DynamicOrderSettings(
-        max_equity_risk_pct=dos_cart_arrays.max_equity_risk_pct[dos_index],
-        max_trades=dos_cart_arrays.max_trades[dos_index],
-        account_pct_risk_per_trade=dos_cart_arrays.account_pct_risk_per_trade[dos_index],
-        risk_reward=dos_cart_arrays.risk_reward[dos_index],
-        sl_based_on_add_pct=dos_cart_arrays.sl_based_on_add_pct[dos_index],
-        sl_based_on_lookback=dos_cart_arrays.sl_based_on_lookback[dos_index],
-        sl_bcb_type=dos_cart_arrays.sl_bcb_type[dos_index],
-        sl_to_be_cb_type=dos_cart_arrays.sl_to_be_cb_type[dos_index],
-        sl_to_be_when_pct=dos_cart_arrays.sl_to_be_when_pct[dos_index],
-        trail_sl_bcb_type=dos_cart_arrays.trail_sl_bcb_type[dos_index],
-        trail_sl_by_pct=dos_cart_arrays.trail_sl_by_pct[dos_index],
-        trail_sl_when_pct=dos_cart_arrays.trail_sl_when_pct[dos_index],
+        max_equity_risk_pct=dos_tuple.max_equity_risk_pct[dos_index],
+        max_trades=dos_tuple.max_trades[dos_index],
+        account_pct_risk_per_trade=dos_tuple.account_pct_risk_per_trade[dos_index],
+        risk_reward=dos_tuple.risk_reward[dos_index],
+        sl_based_on_add_pct=dos_tuple.sl_based_on_add_pct[dos_index],
+        sl_based_on_lookback=dos_tuple.sl_based_on_lookback[dos_index],
+        sl_bcb_type=dos_tuple.sl_bcb_type[dos_index],
+        sl_to_be_cb_type=dos_tuple.sl_to_be_cb_type[dos_index],
+        sl_to_be_when_pct=dos_tuple.sl_to_be_when_pct[dos_index],
+        trail_sl_bcb_type=dos_tuple.trail_sl_bcb_type[dos_index],
+        trail_sl_by_pct=dos_tuple.trail_sl_by_pct[dos_index],
+        trail_sl_when_pct=dos_tuple.trail_sl_when_pct[dos_index],
     )
 
 

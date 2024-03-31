@@ -278,7 +278,7 @@ class StaticOrderSettings(NamedTuple):
 class RejectedOrder(Exception):
     def __init__(
         self,
-        order_status: OrderStatus = None,
+        order_status: OrderStatus = None, # type: ignore
         msg: str = None,
     ):
         self.order_status = order_status
@@ -288,7 +288,7 @@ class RejectedOrder(Exception):
 class DecreasePosition(Exception):
     def __init__(
         self,
-        order_status: OrderStatus = None,
+        order_status: OrderStatus = None, # type: ignore
         exit_price: float = None,
         exit_fee_pct: float = None,
         msg: str = None,
@@ -302,7 +302,7 @@ class DecreasePosition(Exception):
 class MoveStopLoss(Exception):
     def __init__(
         self,
-        order_status: OrderStatus = None,
+        order_status: OrderStatus = None, # type: ignore
         sl_price: float = None,
         can_move_sl_to_be: bool = None,
         msg: str = None,

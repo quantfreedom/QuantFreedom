@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "quantfreedom"
-version = "0.1.4.6"
+version = "0.2.0.0"
 description = ""
 authors = ["Neo <quantfreedom1022@gmail.com>"]
 readme = "README.md"
@@ -17,6 +17,7 @@ jupyter-dash = "0.4.2"
 notebook = "6.5.6"
 pandas = "2.1.1"
 plotly = "5.17.0"
+tables = "3.9.2"
 kaleido = [
 {version="0.1.0.post1", markers="sys_platform != 'darwin'", source = "pypi"},
 {version="0.2.1.post1", markers="sys_platform == 'darwin'", source = "pypi"},

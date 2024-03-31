@@ -29,12 +29,12 @@ from quantfreedom.utils import pretty_qf
 def nb_sim_backtest(
     backtest_settings_tuple: BacktestSettings,
     candles: np.array,
-    dos_arrays: DynamicOrderSettings,
+    dos_tuple: DynamicOrderSettings,
     exchange_settings_tuple: ExchangeSettings,
     logger_bool: bool,
     long_short: str,
     nb_strat_evaluate: Callable,
-    nb_strat_get_current_ind_settings: Callable,
+    nb_strat_get_current_ind_settings_tuple: Callable,
     nb_strat_get_ind_set_str: Callable,
     nb_strat_get_total_ind_settings: Callable,
     nb_strat_ind_creator: Callable,
@@ -43,12 +43,12 @@ def nb_sim_backtest(
     ind_set_index: int = None,
     plot_results: bool = False,
 ):
-    dos_cart_arrays = dos_cart_product(
-        dos_arrays=dos_arrays,
+    dos_tuple = dos_cart_product(
+        dos_tuple=dos_tuple,
     )
 
     # Creating Settings Vars
-    total_order_settings = dos_cart_arrays[0].size
+    total_order_settings = dos_tuple[0].size
 
     total_indicator_settings = nb_strat_get_total_ind_settings()
 
@@ -223,7 +223,7 @@ def nb_sim_backtest(
     if ind_set_index is not None and dos_index is not None:
         order_records, indicator_settings_tuple, dynamic_order_settings = nb_run_or_backtest(
             candles=candles,
-            dos_cart_arrays=dos_cart_arrays,
+            dos_tuple=dos_tuple,
             dos_index=dos_index,
             exchange_settings_tuple=exchange_settings_tuple,
             exit_fee_pct=exit_fee_pct,
@@ -250,7 +250,7 @@ def nb_sim_backtest(
             nb_sl_mover=nb_sl_mover,
             nb_sl_price_calc=nb_sl_price_calc,
             nb_strat_evaluate=nb_strat_evaluate,
-            nb_strat_get_current_ind_settings=nb_strat_get_current_ind_settings,
+            nb_strat_get_current_ind_settings_tuple=nb_strat_get_current_ind_settings_tuple,
             nb_strat_get_ind_set_str=nb_strat_get_ind_set_str,
             nb_strat_ind_creator=nb_strat_ind_creator,
             nb_tp_calculator=nb_tp_calculator,
@@ -278,7 +278,7 @@ def nb_sim_backtest(
         strategy_result_records = nb_run_df_backtest(
             backtest_settings_tuple=backtest_settings_tuple,
             candles=candles,
-            dos_cart_arrays=dos_cart_arrays,
+            dos_tuple=dos_tuple,
             exchange_settings_tuple=exchange_settings_tuple,
             exit_fee_pct=exit_fee_pct,
             logger=logger,
@@ -303,7 +303,7 @@ def nb_sim_backtest(
             nb_sl_mover=nb_sl_mover,
             nb_sl_price_calc=nb_sl_price_calc,
             nb_strat_evaluate=nb_strat_evaluate,
-            nb_strat_get_current_ind_settings=nb_strat_get_current_ind_settings,
+            nb_strat_get_current_ind_settings_tuple=nb_strat_get_current_ind_settings_tuple,
             nb_strat_get_ind_set_str=nb_strat_get_ind_set_str,
             nb_strat_ind_creator=nb_strat_ind_creator,
             nb_tp_calculator=nb_tp_calculator,

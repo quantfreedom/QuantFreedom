@@ -110,11 +110,10 @@ class OrderHandler:
     def fill_or_exit_move(
         self,
         bar_index: int,
-        dos_index: int,
-        ind_set_index: int,
         order_records: np.array,
         order_status: OrderStatus,  # type: ignore
         timestamp: int,
+        set_idx: int,
         equity: float = np.nan,
         exit_price: float = np.nan,
         fees_paid: float = np.nan,
@@ -122,8 +121,7 @@ class OrderHandler:
         sl_pct: float = np.nan,
         sl_price: float = np.nan,
     ):
-        order_records["ind_set_idx"] = ind_set_index
-        order_records["or_set_idx"] = dos_index
+        order_records["set_idx"] = set_idx
         order_records["bar_idx"] = bar_index
         order_records["timestamp"] = timestamp
 
@@ -154,13 +152,11 @@ class OrderHandler:
     def fill_or_entry(
         self,
         bar_index: int,
-        dos_index: int,
-        ind_set_index: int,
+        set_idx: int,
         order_records: np.array,
         timestamp: int,
     ):
-        order_records["ind_set_idx"] = ind_set_index
-        order_records["or_set_idx"] = dos_index
+        order_records["set_idx"] = set_idx
         order_records["bar_idx"] = bar_index
         order_records["timestamp"] = timestamp
 

@@ -25,7 +25,7 @@ from quantfreedom.nb_funcs.nb_order_handler.nb_leverage import LevOrderInfo, nb_
 def nb_run_df_backtest(
     backtest_settings_tuple: BacktestSettings,
     candles: np.array,
-    dos_cart_arrays: DynamicOrderSettings,
+    dos_tuple: DynamicOrderSettings,
     exchange_settings_tuple: ExchangeSettings,
     exit_fee_pct: float,
     logger: Callable,
@@ -50,7 +50,7 @@ def nb_run_df_backtest(
     nb_sl_mover: Callable,
     nb_sl_price_calc: Callable,
     nb_strat_evaluate: Callable,
-    nb_strat_get_current_ind_settings: Callable,
+    nb_strat_get_current_ind_settings_tuple: Callable,
     nb_strat_get_ind_set_str: Callable,
     nb_strat_ind_creator: Callable,
     nb_tp_calculator: Callable,
@@ -79,7 +79,7 @@ def nb_run_df_backtest(
     result_records_filled = 0
 
     for ind_set_index in range(total_indicator_settings):
-        indicator_settings_tuple = nb_strat_get_current_ind_settings(
+        indicator_settings_tuple = nb_strat_get_current_ind_settings_tuple(
             ind_set_index=ind_set_index,
             logger=logger,
         )
@@ -88,7 +88,7 @@ def nb_run_df_backtest(
             logger("nb_simulate.py - nb_run_backtest() - Indicator settings index=" + str(ind_set_index))
             logger(nb_strat_get_ind_set_str(indicator_settings_tuple=indicator_settings_tuple, stringer=stringer))
             dynamic_order_settings = nb_get_dos(
-                dos_cart_arrays=dos_cart_arrays,
+                dos_tuple=dos_tuple,
                 dos_index=dos_index,
             )
             logger("nb_simulate.py - nb_run_backtest() - Dynamic Order settings index=" + str(dos_index))

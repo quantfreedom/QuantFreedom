@@ -1,6 +1,4 @@
-from multiprocessing import Pool, cpu_count
-from time import perf_counter, sleep
-
+from multiprocessing import Pool
 import numpy as np
 import pandas as pd
 from logging import getLogger
@@ -27,7 +25,7 @@ from quantfreedom.utils import pretty_qf
 logger = getLogger("info")
 
 
-async def multiprocess_backtest(
+def multiprocess_backtest(
     backtest_settings_tuple: BacktestSettings,
     candles: np.array,
     exchange_settings_tuple: ExchangeSettings,
@@ -40,15 +38,17 @@ async def multiprocess_backtest(
     strategy: Strategy,
     total_bars: int,
 ):
+    logger.disabled = True
+    rec_idx = 0
     for set_idx in range(range_start, range_end):
-        strategy.log_indicator_settings(ind_set_index=set_idx)
         strategy.set_entries_exits_array(
             candles=candles,
             ind_set_index=set_idx,
         )
+        strategy.log_indicator_settings(ind_set_index=set_idx)
 
         dynamic_order_settings = get_dos(
-            dos_cart_arrays=strategy.dos_tuple,
+            dos_tuple=strategy.dos_tuple,
             dos_index=set_idx,
         )
         log_dynamic_order_settings(
@@ -245,16 +245,17 @@ total_trades={total_trades_closed}"""
 
                     total_pnl = wins_and_losses_array.sum()
 
-                    record_results[set_idx]["set_idx"] = set_idx
-                    record_results[set_idx]["total_trades"] = wins_and_losses_array.size
-                    record_results[set_idx]["wins"] = wins
-                    record_results[set_idx]["losses"] = losses
-                    record_results[set_idx]["gains_pct"] = gains_pct
-                    record_results[set_idx]["win_rate"] = win_rate
-                    record_results[set_idx]["qf_score"] = qf_score
-                    record_results[set_idx]["fees_paid"] = round(total_fees_paid, 3)
-                    record_results[set_idx]["total_pnl"] = total_pnl
-                    record_results[set_idx]["ending_eq"] = order.equity
+                    record_results[rec_idx]["set_idx"] = set_idx
+                    record_results[rec_idx]["total_trades"] = wins_and_losses_array.size
+                    record_results[rec_idx]["wins"] = wins
+                    record_results[rec_idx]["losses"] = losses
+                    record_results[rec_idx]["gains_pct"] = gains_pct
+                    record_results[rec_idx]["win_rate"] = win_rate
+                    record_results[rec_idx]["qf_score"] = qf_score
+                    record_results[rec_idx]["fees_paid"] = round(total_fees_paid, 3)
+                    record_results[rec_idx]["total_pnl"] = total_pnl
+                    record_results[rec_idx]["ending_eq"] = order.equity
+                    rec_idx += 1
         logger.info(
             f"Starting New Loop\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
         )
@@ -269,7 +270,6 @@ def run_df_backtest(
     strategy: Strategy,
     threads: int,
 ):
-    start = perf_counter()
     global strategy_result_records
 
     logger.disabled = True
@@ -305,12 +305,11 @@ def run_df_backtest(
     logger.info(f"Total candles: {total_bars:,}")
     logger.info(f"Total candles to test: {total_settings * total_bars:,}")
 
-    record_results = np.full(
+    strategy_result_records = np.full(
         shape=total_settings,
         fill_value=np.nan,
         dtype=strat_df_array_dt,
     )
-    strategy_result_records = record_results.copy()
 
     range_multiplier = total_settings / threads
     p = Pool()
@@ -318,6 +317,11 @@ def run_df_backtest(
     for thread in range(threads):
         range_start = int(thread * range_multiplier)
         range_end = int((thread + 1) * range_multiplier)
+        record_results = np.full(
+            shape=range_end - range_start,
+            fill_value=np.nan,
+            dtype=strat_df_array_dt,
+        )
 
         r = p.apply_async(
             func=multiprocess_backtest,
@@ -328,7 +332,7 @@ def run_df_backtest(
                 order,
                 range_end,
                 range_start,
-                record_results[range_start:range_end],
+                record_results,
                 starting_equity,
                 static_os_tuple,
                 strategy,
@@ -338,19 +342,20 @@ def run_df_backtest(
             error_callback=handler,
         )
         results.append(r)
+    for r in results:
+        r.wait()
+
     p.close()
     p.join()
-    end = perf_counter()
-    print(f"Main took: ", end - start)
-    return pd.DataFrame(results)
+    data_frame = pd.DataFrame(strategy_result_records)
+    return data_frame
 
 
 def proc_results(results):
     # print("Results: ", results)
-    begin = results[1]
-    length = results[2] - results[1]
-    for i in range(length):
-        strategy_result_records[begin + i] = results[0][i - length]
+    start = results[1]
+    end = results[2]
+    strategy_result_records[start:end] = results[0]
 
 
 # error callback function
@@ -361,13 +366,12 @@ def handler(error):
 def or_backtest(
     backtest_settings_tuple: BacktestSettings,
     candles: np.array,
-    dos_arrays: DynamicOrderSettings,
+    dos_tuple: DynamicOrderSettings,
     exchange_settings_tuple: ExchangeSettings,
     logger_bool: bool,
     static_os_tuple: StaticOrderSettings,
     strategy: Strategy,
-    dos_index: int,
-    ind_set_index: int,
+    set_idx: int,
     plot_results: bool = False,
 ):
     if logger_bool == False:
@@ -378,10 +382,6 @@ def or_backtest(
 
     starting_equity = static_os_tuple.starting_equity
 
-    dos_cart_arrays = dos_cart_product(
-        dos_arrays=dos_arrays,
-    )
-
     order = OrderHandler(
         exchange_settings_tuple=exchange_settings_tuple,
         long_short=strategy.long_short,
@@ -390,16 +390,16 @@ def or_backtest(
 
     strategy.set_entries_exits_array(
         candles=candles,
-        ind_set_index=ind_set_index,
+        ind_set_index=set_idx,
     )
-    strategy.log_indicator_settings(ind_set_index=ind_set_index)
+    strategy.log_indicator_settings(ind_set_index=set_idx)
 
     dynamic_order_settings = get_dos(
-        dos_cart_arrays=dos_cart_arrays,
-        dos_index=dos_index,
+        dos_tuple=strategy.dos_tuple,
+        dos_index=set_idx,
     )
     log_dynamic_order_settings(
-        dos_index=dos_index,
+        dos_index=set_idx,
         dynamic_order_settings=dynamic_order_settings,
     )
 
@@ -413,8 +413,8 @@ def or_backtest(
 
     for bar_index in range(static_os_tuple.starting_bar - 1, total_bars):
         logger.info("\n\n")
-        pd_timestamp = pd.to_datetime(candles[bar_index, CandleBodyType.Timestamp], unit="ms")
-        logger.info(f"ind_idx= {ind_set_index} dos_idx= {dos_index} bar_idx= {bar_index} timestamp= {pd_timestamp}")
+        timestamp = pd.to_datetime(candles[bar_index, CandleBodyType.Timestamp], unit="ms")
+        logger.info(f"set_idx= {set_idx} bar_idx= {bar_index} timestamp= {timestamp}")
 
         if order.position_size_usd > 0:
             try:
@@ -437,8 +437,7 @@ def or_backtest(
                     logger.debug(f"Filling order for move sl to be")
                     order.fill_or_exit_move(
                         bar_index=bar_index,
-                        dos_index=dos_index,
-                        ind_set_index=ind_set_index,
+                        set_idx=set_idx,
                         order_records=order_records[or_filled],
                         order_status=OrderStatus.MovedSLToBE,
                         timestamp=current_candle[CandleBodyType.Timestamp],
@@ -455,8 +454,7 @@ def or_backtest(
                     logger.debug(f"Filling order for tsl")
                     order.fill_or_exit_move(
                         bar_index=bar_index,
-                        dos_index=dos_index,
-                        ind_set_index=ind_set_index,
+                        set_idx=set_idx,
                         order_records=order_records[or_filled],
                         order_status=OrderStatus.MovedTSL,
                         timestamp=current_candle[CandleBodyType.Timestamp],
@@ -480,8 +478,7 @@ def or_backtest(
                 logger.debug(f"Filling or for decrease postiion {OrderStatus._fields[e.order_status]}")
                 order.fill_or_exit_move(
                     bar_index=bar_index,
-                    dos_index=dos_index,
-                    ind_set_index=ind_set_index,
+                    set_idx=set_idx,
                     order_records=order_records[or_filled],
                     order_status=e.order_status,
                     timestamp=current_candle[CandleBodyType.Timestamp],
@@ -590,8 +587,7 @@ def or_backtest(
                 logger.debug("filling entry order records")
                 order.fill_or_entry(
                     bar_index=bar_index + 1,
-                    dos_index=dos_index,
-                    ind_set_index=ind_set_index,
+                    set_idx=set_idx,
                     order_records=order_records[or_filled],
                     timestamp=candles[bar_index + 1, CandleBodyType.Timestamp],
                 )
@@ -608,7 +604,7 @@ def or_backtest(
                     raise Exception(f"Exception hit in eval strat -> {e}")
     order_records_df = order_records_to_df(order_records[:or_filled])
     pretty_qf(dynamic_order_settings)
-    pretty_qf(strategy.current_ind_settings)
+    pretty_qf(strategy.current_ind_settings_tuple)
     if plot_results:
         strategy.plot_signals(candles=candles)
         plot_or_results(candles=candles, order_records_df=order_records_df)

@@ -1,18 +1,74 @@
-import os
+import sys, os
+
+sys.path.insert(0, os.path.abspath("E:\Coding\my_stuff"))
+from my_keys import MufexKeys  # type: ignore
+
 import numpy as np
 from numpy.core.multiarray import array as array
 import plotly.graph_objects as go
-
-from datetime import datetime
 from logging import getLogger
 from typing import NamedTuple
-
+from quantfreedom.exchanges.mufex_exchange.mufex import Mufex
 from quantfreedom.indicators.tv_indicators import rsi_tv
-from quantfreedom.enums import CandleBodyType, DynamicOrderSettings
 from quantfreedom.strategies.strategy import Strategy
-
+from quantfreedom.enums import (
+    LeverageModeType,
+    PositionModeType,
+    IncreasePositionType,
+    LeverageStrategyType,
+    StaticOrderSettings,
+    BacktestSettings,
+    CandleBodyType,
+    DynamicOrderSettings,
+    StopLossStrategyType,
+    TakeProfitStrategyType,
+)
 
 logger = getLogger("info")
+
+
+mufex_main = Mufex(
+    api_key=MufexKeys.mainnet_neo_api_key,
+    secret_key=MufexKeys.mainnet_neo_secret_key,
+    use_test_net=False,
+)
+
+backtest_settings_tuple = BacktestSettings()
+
+dos_tuple = DynamicOrderSettings(
+    account_pct_risk_per_trade=np.array([3, 6]),
+    max_trades=np.array([4, 6]),
+    risk_reward=np.array([2, 5]),
+    sl_based_on_add_pct=np.array([0.1, 0.5]),
+    sl_based_on_lookback=np.array([20, 50]),
+    sl_bcb_type=np.array([CandleBodyType.Low]),
+    sl_to_be_cb_type=np.array([CandleBodyType.Nothing]),
+    sl_to_be_when_pct=np.array([0]),
+    trail_sl_bcb_type=np.array([CandleBodyType.Low]),
+    trail_sl_by_pct=np.array([0.5, 1.0, 1.5, 2.0]),
+    trail_sl_when_pct=np.array([1, 2, 3, 4]),
+)
+
+exchange_settings_tuple = mufex_main.set_and_get_exchange_settings_tuple(
+    leverage_mode=LeverageModeType.Isolated,
+    position_mode=PositionModeType.HedgeMode,
+    symbol="BTCUSDT",
+)
+
+static_os_tuple = StaticOrderSettings(
+    increase_position_type=IncreasePositionType.RiskPctAccountEntrySize,
+    leverage_strategy_type=LeverageStrategyType.Dynamic,
+    pg_min_max_sl_bcb="min",
+    sl_strategy_type=StopLossStrategyType.SLBasedOnCandleBody,
+    sl_to_be_bool=False,
+    starting_bar=50,
+    starting_equity=1000.0,
+    static_leverage=None,
+    tp_fee_type="limit",
+    tp_strategy_type=TakeProfitStrategyType.RiskReward,
+    trail_sl_bool=True,
+    z_or_e_type=None,
+)
 
 
 class IndicatorSettings(NamedTuple):
@@ -102,6 +158,11 @@ class RSIRisingFalling(Strategy):
             self.rsi_is_below = self.indicator_settings_tuple.rsi_is_below[ind_set_index]
             self.rsi_length = self.indicator_settings_tuple.rsi_length[ind_set_index]
             self.h_line = self.rsi_is_below
+            self.current_ind_settings_tuple = IndicatorSettings(
+                rsi_is_above=0,
+                rsi_is_below=self.rsi_is_below,
+                rsi_length=self.rsi_length,
+            )
 
             rsi = rsi_tv(
                 source=candles[:, CandleBodyType.Close],
@@ -168,7 +229,11 @@ class RSIRisingFalling(Strategy):
             self.rsi_is_above = self.indicator_settings_tuple.rsi_is_above[ind_set_index]
             self.h_line = self.rsi_is_above
             self.rsi_length = self.indicator_settings_tuple.rsi_length[ind_set_index]
-
+            self.current_ind_settings_tuple = IndicatorSettings(
+                rsi_is_above=self.rsi_is_above,
+                rsi_is_below=0,
+                rsi_length=self.rsi_length,
+            )
             rsi = rsi_tv(
                 source=candles[:, CandleBodyType.Close],
                 length=self.rsi_length,
@@ -271,3 +336,11 @@ class RSIRisingFalling(Strategy):
             ),
         )
         fig.show()
+
+
+long_strat = RSIRisingFalling(
+    long_short="long",
+    dos_tuple=dos_tuple,
+    rsi_length=np.array([14]),
+    rsi_is_below=np.array([40, 60, 80]),
+)
