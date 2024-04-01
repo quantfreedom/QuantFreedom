@@ -292,18 +292,14 @@ def run_df_backtest(
 
     # logger.infoing out total numbers of things
     print("Starting the backtest now ... and also here are some stats for your backtest.\n")
+    print(f"Total threads to use: {threads:,}")
     print(f"Total indicator settings to test: {strategy.total_indicator_settings:,}")
     print(f"Total order settings to test: {strategy.total_order_settings:,}")
-    print(f"Total combinations of settings to test: {total_settings:,}")
+    print(f"Total settings combinations to test: {total_settings:,}")
+    print(f"Total settings combination chunks to process at the same time: {total_settings // threads:,}\n")
     print(f"Total candles: {total_bars:,}")
     print(f"Total candles to test: {total_settings * total_bars:,}")
-
-    logger.info("Starting the backtest now ... and also here are some stats for your backtest.\n")
-    logger.info(f"Total indicator settings to test: {strategy.total_indicator_settings:,}")
-    logger.info(f"Total order settings to test: {strategy.total_order_settings:,}")
-    logger.info(f"Total combinations of settings to test: {total_settings:,}")
-    logger.info(f"Total candles: {total_bars:,}")
-    logger.info(f"Total candles to test: {total_settings * total_bars:,}")
+    print(f"Total candle chunks to be processed at the same time: {(total_settings * total_bars) // threads:,}")
 
     strategy_result_records = np.full(
         shape=total_settings,

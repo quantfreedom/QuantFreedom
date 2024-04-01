@@ -666,34 +666,6 @@ class Bybit(Exchange):
         except Exception as e:
             raise Exception(f"Bybit set_leverage_mode = Data or List is empty {response['retMsg']} -> {e}")
 
-    # def set_leverage_mode(
-    #     self,
-    #     symbol: str,
-    #     leverage_mode: int,
-    #     category: str = "linear",
-    #     leverage: int = 5,
-    # ):
-    #     """
-    #     https://bybit-exchange.github.io/docs/v5/position/cross-isolate
-    #     Cross/isolated mode. 0: cross margin mode; 1: isolated margin mode
-    #     """
-    #     end_point = "/v5/position/switch-isolated"
-    #     leverage_str = str(leverage)
-    #     params = {}
-    #     params["symbol"] = symbol
-    #     params["category"] = category
-    #     params["tradeMode"] = leverage_mode
-    #     params["buyLeverage"] = leverage_str
-    #     params["sellLeverage"] = leverage_str
-    #     response: dict = self.__HTTP_post_request(end_point=end_point, params=params)
-    #     try:
-    #         if response["retMsg"] in ["OK", "Cross/isolated margin mode is not modified"]:
-    #             return True
-    #         else:
-    #             raise Exception
-    #     except Exception as e:
-    #         raise Exception(f"Bybit set_leverage_mode = Data or List is empty {response['retMsg']} -> {e}")
-
     def adjust_order(
         self,
         symbol: str,
