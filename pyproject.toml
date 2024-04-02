@@ -34,6 +34,8 @@ fastapi = "0.110.0"
 mangum = "0.17.0"
 httpx = "0.27.0"
 cryptography = "42.0.5"
+discord-py = {version = "2.3.2", extras = ["voice"]}
+pyjwt = "2.8.0"
 
 [tool.poetry.group.docs]
 optional = true

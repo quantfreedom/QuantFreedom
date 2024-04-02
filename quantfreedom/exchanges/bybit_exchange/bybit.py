@@ -535,10 +535,9 @@ class Bybit(Exchange):
         response: dict = self.__HTTP_get_request(end_point=end_point, params=params)
         try:
             data_list = response["result"]["list"]
-            data_list[0]  # try this to see if anything is in here
             return data_list
         except Exception as e:
-            raise Exception(f"Bybit get_open_orders = Data or List is empty {response['retMsg']} -> {e}")
+            raise Exception(f"Bybit get_open_orders = {response['retMsg']} -> {e}")
 
     def check_if_order_open(
         self,

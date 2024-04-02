@@ -490,11 +490,10 @@ class Mufex(Exchange):
         params["orderFilter"] = orderFilter
         response: dict = self.__HTTP_get_request(end_point=end_point, params=params)
         try:
-            response["data"]["list"][0]
             data_list = response["data"]["list"]
             return data_list
         except Exception as e:
-            raise Exception(f"Mufex get_open_orders = Data or List is empty {response['message']} -> {e}")
+            raise Exception(f"Mufex get_open_orders = {response['message']} -> {e}")
 
     def get_open_order_by_order_id(
         self,
@@ -1078,3 +1077,52 @@ class Mufex(Exchange):
             if not "_" in func_name[0]:
                 new_list.append(func[0])
         return new_list
+
+    def close_orders_and_hedge_positions(
+        self,
+        symbol: str,
+    ):
+        """
+        Parameters
+        ----------
+        symbol : str
+        """
+
+        position_info = self.get_position_info(symbol=symbol)
+
+        order_type = "Market"
+
+        asset_size_0 = float(position_info[0]["size"])
+        asset_size_1 = float(position_info[1]["size"])
+
+        # Return buy or sale based on pos side (if in a short, side == sell)
+        if asset_size_0 > 0:
+            buy_sell = position_info[1]["side"]
+            position_mode = int(position_info[0]["positionIdx"])  # position_inf()
+            self.create_order(
+                symbol=symbol,
+                order_type=order_type,
+                asset_size=asset_size_0,
+                buy_sell=buy_sell,
+                position_mode=position_mode,
+            )
+
+        if asset_size_1 > 0:
+            buy_sell = position_info[0]["side"]
+            position_mode = int(position_info[1]["positionIdx"])  # position_inf()
+            self.create_order(
+                symbol=symbol,
+                order_type=order_type,
+                asset_size=asset_size_1,
+                buy_sell=buy_sell,
+                position_mode=position_mode,
+            )
+
+        self.cancel_all_open_orders_per_symbol(symbol=symbol)
+
+        sleep(1)
+        # TODO check if there are any open orders
+        self.get_open_orders(symbol=symbol)
+
+        # TODO check if we are in a position
+        self.get_position_info(symbol=symbol)
