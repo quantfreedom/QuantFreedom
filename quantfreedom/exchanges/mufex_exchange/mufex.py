@@ -1048,7 +1048,7 @@ class Mufex(Exchange):
         self,
         asset_size: float,
         symbol: str,
-        trigger_price: float,
+        sl_price: float,
     ):
         return self.create_order(
             symbol=symbol,
@@ -1056,7 +1056,7 @@ class Mufex(Exchange):
             buy_sell="Sell",
             order_type="Market",
             asset_size=asset_size,
-            triggerPrice=trigger_price,
+            triggerPrice=sl_price,
             reduce_only=True,
             triggerDirection=TriggerDirectionType.Fall,
             time_in_force="GoodTillCancel",

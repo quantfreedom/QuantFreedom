@@ -71,6 +71,7 @@ class BSC_Scan:
     ):
         """
         [Get a list of 'Normal' Transactions By Address](https://docs.bscscan.com/api-endpoints/accounts#get-a-list-of-bep-20-token-transfer-events-by-address)
+        
         Default address is quantfreedom wallet
         Default contract address is USDT
         """
@@ -111,7 +112,15 @@ class BSC_Scan:
         Default address is quantfreedom wallet
         Default contract address is USDT
         """
-        transactions = self.get_transactions()
+        transactions = self.get_transactions(
+            address=address,
+            contractaddress=contractaddress,
+            startblock=startblock,
+            endblock=endblock,
+            page=page,
+            offset=offset,
+            sort=sort,
+        )
         for event in transactions:
             if event["hash"] == tx_hash:
                 return event
@@ -133,7 +142,16 @@ class BSC_Scan:
         Default contract address is USDT
         """
         try:
-            transaction = self.get_transaction_by_hash(tx_hash=tx_hash)
+            transaction = self.get_transaction_by_hash(
+                tx_hash=tx_hash,
+                address=address,
+                contractaddress=contractaddress,
+                startblock=startblock,
+                endblock=endblock,
+                page=page,
+                offset=offset,
+                sort=sort,
+            )
             value = round(float(transaction["value"]) / 10 ** int(transaction["tokenDecimal"]), 2)
             return value
         except:
@@ -154,7 +172,15 @@ class BSC_Scan:
         Default address is quantfreedom wallet
         Default contract address is USDT
         """
-        transactions = self.get_transactions()
+        transactions = self.get_transactions(
+            address=address,
+            contractaddress=contractaddress,
+            startblock=startblock,
+            endblock=endblock,
+            page=page,
+            offset=offset,
+            sort=sort,
+        )
         for event in transactions:
             if event["from"] == from_address:
                 return event
@@ -176,7 +202,16 @@ class BSC_Scan:
         Default contract address is USDT
         """
         try:
-            transaction = self.get_transaction_by_from_address(from_address=from_address)
+            transaction = self.get_transaction_by_from_address(
+                from_address=from_address,
+                address=address,
+                contractaddress=contractaddress,
+                startblock=startblock,
+                endblock=endblock,
+                page=page,
+                offset=offset,
+                sort=sort,
+            )
             value = round(float(transaction["value"]) / 10 ** int(transaction["tokenDecimal"]), 2)
             return value
         except:

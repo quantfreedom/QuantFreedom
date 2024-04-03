@@ -36,6 +36,8 @@ httpx = "0.27.0"
 cryptography = "42.0.5"
 discord-py = {version = "2.3.2", extras = ["voice"]}
 pyjwt = "2.8.0"
+aiogram = "3.4.1"
+email-validator = "2.1.1"
 
 [tool.poetry.group.docs]
 optional = true
