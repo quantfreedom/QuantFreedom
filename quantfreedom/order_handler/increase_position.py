@@ -92,7 +92,6 @@ class IncreasePosition:
             # raise RejectedOrder(msg)
         elif entry_size_asset > self.max_asset_size:
             msg = (
-            msg = (
                 f"entry size too big entry_size_asset= {entry_size_asset} > self.max_asset_size= {self.max_asset_size}"
             )
             logger.warning(msg)
@@ -179,7 +178,7 @@ total_possible_loss= {total_possible_loss}"""
         total_trades += 1
 
         if total_trades > self.max_trades:
-            msg = f"""
+
             msg = f"""
 Max trades reached
 Total trades= {total_trades}
