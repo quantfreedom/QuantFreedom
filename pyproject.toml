@@ -33,6 +33,7 @@ cryptography = { version = "42.0.5", optional = true }
 discord-interactions = { version = "0.4.0", optional = true }
 discord-py = { version = "2.3.2", optional = true }
 email-validator = { version = "2.1.1", optional = true }
+fastapi = { version = "0.110.0", optional = true }
 httpx = { version = "0.27.0", optional = true }
 mangum = { version = "0.17.0", optional = true }
 mysql-connector-python = { version = "8.3.0", optional = true }
@@ -49,7 +50,7 @@ mkdocs-open-in-new-tab = { version = "1.0.3", optional = true }
 
 
 [tool.poetry.extras]
-dev = ["mysql-connector-python", "aws-cdk-lib", "constructs", "mangum", "httpx", "cryptography", "discord-py", "pyjwt", "aiogram", "email-validator", "uvicorn", "pyyaml", "discord-interactions", "asgiref"]
+dev = ["mysql-connector-python", "aws-cdk-lib", "constructs", "fastapi", "mangum", "httpx", "cryptography", "discord-py", "pyjwt", "aiogram", "email-validator", "uvicorn", "pyyaml", "discord-interactions", "asgiref"]
 docs = ["mkdocs", "griffe", "mkdocs-material", "mkdocstrings", "mkdocs-gen-files", "mkdocs-open-in-new-tab"]
 
 [build-system]
