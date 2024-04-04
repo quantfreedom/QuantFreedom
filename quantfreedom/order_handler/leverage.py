@@ -10,6 +10,7 @@ class Leverage:
     def __init__(
         self,
         leverage_strategy_type: LeverageStrategyType,  # type: ignore
+        leverage_strategy_type: LeverageStrategyType,  # type: ignore
         leverage_tick_step: float,
         long_short: str,
         market_fee_pct: float,
