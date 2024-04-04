@@ -7,14 +7,14 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.13"
-numpy = "1.26.1"
-numba = "0.58.1"
-ipykernel = "6.25.0"
 dash = "2.9.1"
 dash-bootstrap-templates = "1.1.1"
+ipykernel = "6.25.0"
 ipywidgets = "8.1.1"
 jupyter-dash = "0.4.2"
 notebook = "6.5.6"
+numba = "0.58.1"
+numpy = "1.26.1"
 pandas = "2.1.1"
 plotly = "5.17.0"
 tables = "3.9.2"
@@ -24,36 +24,34 @@ kaleido = [
 {version="0.2.1", markers="sys_platform == 'linux'", source = "pypi"},
 ]
 
-[tool.poetry.group.dev]
-optional = true
 
-[tool.poetry.group.dev.dependencies]
-mysql-connector-python = "8.3.0"
-aws-cdk-lib = "2.133.0"
-constructs = "10.0.0"
-fastapi = "0.110.0"
-mangum = "0.17.0"
-httpx = "0.27.0"
-cryptography = "42.0.5"
-discord-py = {version = "2.3.2", extras = ["voice"]}
-pyjwt = "2.8.0"
-aiogram = "3.4.1"
-email-validator = "2.1.1"
-uvicorn = "0.29.0"
-pyyaml = "6.0.1"
-discord-interactions = "0.4.0"
-asgiref = "3.8.1"
+aiogram = { version = "3.4.1", optional = true }
+asgiref = { version = "3.8.1", optional = true }
+aws-cdk-lib = { version = "2.133.0", optional = true }
+constructs = { version = "10.0.0", optional = true }
+cryptography = { version = "42.0.5", optional = true }
+discord-interactions = { version = "0.4.0", optional = true }
+discord-py = { version = "2.3.2", optional = true }
+email-validator = { version = "2.1.1", optional = true }
+fastapi = { version = "0.110.0", optional = true }
+httpx = { version = "0.27.0", optional = true }
+mangum = { version = "0.17.0", optional = true }
+mysql-connector-python = { version = "8.3.0", optional = true }
+pyjwt = { version = "2.8.0", optional = true }
+pyyaml = { version = "6.0.1", optional = true }
+uvicorn = { version = "0.29.0", optional = true }
 
-[tool.poetry.group.docs]
-optional = true
+griffe = { version = "0.38.0", optional = true }
+mkdocs = { version = "1.5.3", optional = true }
+mkdocstrings = { version = "0.24.0", optional = true }
+mkdocs-gen-files = { version = "0.5.0", optional = true }
+mkdocs-material = { version = "9.4.14", optional = true }
+mkdocs-open-in-new-tab = { version = "1.0.3", optional = true }
 
-[tool.poetry.group.docs.dependencies]
-mkdocs = "1.5.3"
-griffe = "0.38.0"
-mkdocs-material = "9.4.14"
-mkdocstrings = "0.24.0"
-mkdocs-gen-files = "0.5.0"
-mkdocs-open-in-new-tab = "1.0.3"
+
+[tool.poetry.extras]
+dev = ["mysql-connector-python", "aws-cdk-lib", "constructs", "fastapi", "mangum", "httpx", "cryptography", "discord-py", "pyjwt", "aiogram", "email-validator", "uvicorn", "pyyaml", "discord-interactions", "asgiref"]
+docs = ["mkdocs", "griffe", "mkdocs-material", "mkdocstrings", "mkdocs-gen-files", "mkdocs-open-in-new-tab"]
 
 [build-system]
 requires = ["poetry-core"]
