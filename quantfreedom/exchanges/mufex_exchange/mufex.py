@@ -1080,7 +1080,8 @@ class Mufex(Exchange):
 
     def close_orders_and_hedge_positions(
         self,
-        symbol: str,
+        symbol: str = None,
+        settleCoin: str = None,
     ):
         """
         Parameters
@@ -1088,17 +1089,15 @@ class Mufex(Exchange):
         symbol : str
         """
 
-        position_info = self.get_position_info(symbol=symbol)
+        position_info = self.get_position_info(symbol=symbol, settleCoin=settleCoin)
 
         order_type = "Market"
 
         asset_size_0 = float(position_info[0]["size"])
-        asset_size_1 = float(position_info[1]["size"])
-
         # Return buy or sale based on pos side (if in a short, side == sell)
         if asset_size_0 > 0:
-            buy_sell = position_info[1]["side"]
-            position_mode = int(position_info[0]["positionIdx"])  # position_inf()
+            position_mode = int(position_info[0]["positionIdx"])
+            buy_sell = "Sell" if position_mode == 1 else "Buy"
             self.create_order(
                 symbol=symbol,
                 order_type=order_type,
@@ -1107,9 +1106,10 @@ class Mufex(Exchange):
                 position_mode=position_mode,
             )
 
+        asset_size_1 = float(position_info[1]["size"])
         if asset_size_1 > 0:
-            buy_sell = position_info[0]["side"]
-            position_mode = int(position_info[1]["positionIdx"])  # position_inf()
+            position_mode = int(position_info[1]["positionIdx"])
+            buy_sell = "Buy" if position_mode == 2 else "Sell"
             self.create_order(
                 symbol=symbol,
                 order_type=order_type,
@@ -1121,8 +1121,15 @@ class Mufex(Exchange):
         self.cancel_all_open_orders_per_symbol(symbol=symbol)
 
         sleep(1)
-        # TODO check if there are any open orders
-        self.get_open_orders(symbol=symbol)
 
-        # TODO check if we are in a position
-        self.get_position_info(symbol=symbol)
+        open_order_list = self.get_open_orders(symbol=symbol)
+
+        position_info = self.get_position_info(symbol=symbol)
+
+        asset_size_0 = float(position_info[0]["size"])
+        asset_size_1 = float(position_info[1]["size"])
+
+        if open_order_list or asset_size_0 > 0 or asset_size_1 > 0:
+            return False
+        else:
+            return True
