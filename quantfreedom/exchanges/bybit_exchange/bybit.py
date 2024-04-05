@@ -980,7 +980,7 @@ class Bybit(Exchange):
                 new_list.append(func[0])
         return new_list
 
-    def close_orders_and_hedge_positions(
+    def close_hedge_positions_and_orders(
         self,
         symbol: str = None,
         settleCoin: str = None,
@@ -1032,6 +1032,8 @@ class Bybit(Exchange):
         asset_size_1 = float(position_info[1]["size"])
 
         if open_order_list or asset_size_0 > 0 or asset_size_1 > 0:
+            sleep(2)
+            self.
             return False
         else:
             return True

@@ -10,18 +10,18 @@ class IndicatorSettings(NamedTuple):
 
 class Strategy:
     current_ind_settings_tuple = None
+    dos_tuple = None
     entries = None
     entry_message = None
     exit_prices = None
     indicator_settings_tuple = None
     live_evaluate = None
-    dos_tuple = None
     log_folder = None
     log_indicator_settings = None
     long_short = None
     set_entries_exits_array = None
-    total_order_settings = 1
     total_indicator_settings = 1
+    total_order_settings = 1
 
     def __init__(self) -> None:
         pass

@@ -204,3 +204,6 @@ class Exchange:
 
     def create_long_hedge_mode_entry_market_order_with_stoploss(self, **kwargs):
         pass
+
+    def close_hedge_positions_and_orders(self, **kwargs):
+        pass

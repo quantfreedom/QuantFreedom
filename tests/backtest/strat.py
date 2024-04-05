@@ -1,10 +1,6 @@
-import sys, os
-
-sys.path.insert(0, os.path.abspath("E:\Coding\my_stuff"))
-from my_keys import MufexKeys  # type: ignore
-
+from my_keys import MufexKeys
+import os
 import numpy as np
-from numpy.core.multiarray import array as array
 import plotly.graph_objects as go
 from logging import getLogger
 from typing import NamedTuple
@@ -80,7 +76,6 @@ class IndicatorSettings(NamedTuple):
 class RSIRisingFalling(Strategy):
     def __init__(
         self,
-        dos_tuple: DynamicOrderSettings,
         long_short: str,
         rsi_length: int,
         rsi_is_above: np.array = np.array([0]),
@@ -195,10 +190,11 @@ class RSIRisingFalling(Strategy):
         ind_set_index: int,
     ):
         logger.info(
-            f"Indicator Settings\
-        \nIndicator Settings Index= {ind_set_index}\
-        \nrsi_length= {self.rsi_length}\
-        \nrsi_is_below= {self.rsi_is_below}"
+            f"""
+Indicator Settings
+Indicator Settings Index= {ind_set_index}
+rsi_length= {self.rsi_length}
+rsi_is_above= {self.rsi_is_above}"""
         )
 
     def long_entry_message(
@@ -265,10 +261,11 @@ class RSIRisingFalling(Strategy):
         ind_set_index: int,
     ):
         logger.info(
-            f"Indicator Settings\
-        \nIndicator Settings Index= {ind_set_index}\
-        \nrsi_length= {self.rsi_length}\
-        \nrsi_is_above= {self.rsi_is_above}"
+            f"""
+Indicator Settings
+Indicator Settings Index= {ind_set_index}
+rsi_length= {self.rsi_length}
+rsi_is_above= {self.rsi_is_above}"""
         )
 
     def short_entry_message(
@@ -340,7 +337,6 @@ class RSIRisingFalling(Strategy):
 
 long_strat = RSIRisingFalling(
     long_short="long",
-    dos_tuple=dos_tuple,
     rsi_length=np.array([14]),
     rsi_is_below=np.array([40, 60, 80]),
 )
