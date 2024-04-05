@@ -35,11 +35,11 @@ class Strategy:
         indicator_settings_tuple: IndicatorSettings,
     ) -> None:
 
-        for x in dos_tuple:
-            self.total_order_settings *= x.size
+        for array in dos_tuple:
+            self.total_order_settings *= array.size
 
-        for x in indicator_settings_tuple:
-            self.total_indicator_settings *= x.size
+        for array in indicator_settings_tuple:
+            self.total_indicator_settings *= array.size
 
         the_tuple = dos_tuple + indicator_settings_tuple
         array_size = self.total_order_settings * self.total_indicator_settings

@@ -60,13 +60,13 @@ class BinanceUSDM(Exchange):
 
         end_point = "/fapi/v1/klines"
         ex_timeframe = self.get_exchange_timeframe(timeframe=timeframe)
-        timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
-        candles_to_dl_ms = candles_to_dl * timeframe_in_ms
+        self.timeframe_in_ms = self.get_timeframe_in_ms(timeframe=timeframe)
+        candles_to_dl_ms = candles_to_dl * self.timeframe_in_ms
 
         since_timestamp, until_timestamp = self.get_since_until_timestamp(
             candles_to_dl_ms=candles_to_dl_ms,
             since_datetime=since_datetime,
-            timeframe_in_ms=timeframe_in_ms,
+            timeframe_in_ms=self.timeframe_in_ms,
             until_datetime=until_datetime,
         )
 
@@ -79,7 +79,7 @@ class BinanceUSDM(Exchange):
             "limit": 1500,
         }
 
-        while params["startTime"] + timeframe_in_ms < until_timestamp:
+        while params["startTime"] + self.timeframe_in_ms < until_timestamp:
             try:
                 b_data = get(url=self.url_start + end_point, params=params).json()
                 last_candle_timestamp = b_data[-1][0]
@@ -90,8 +90,9 @@ class BinanceUSDM(Exchange):
                     params["startTime"] = last_candle_timestamp + 2000
             except Exception as e:
                 raise Exception(f"get_candles -> {e}")
-        candles_np = np.array(b_candles, dtype=np.float_)[:, :6]
-        return candles_np
+        candles = np.array(b_candles, dtype=np.float_)[:, :6]
+        self.last_fetched_ms_time = int(candles[-1, 0])
+        return candles
 
     def get_exchange_info(self):
         """
