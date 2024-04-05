@@ -1032,8 +1032,6 @@ class Bybit(Exchange):
         asset_size_1 = float(position_info[1]["size"])
 
         if open_order_list or asset_size_0 > 0 or asset_size_1 > 0:
-            sleep(2)
-            self.
             return False
         else:
             return True
