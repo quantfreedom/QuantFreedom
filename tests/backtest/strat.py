@@ -8,6 +8,7 @@ from quantfreedom.exchanges.mufex_exchange.mufex import Mufex
 from quantfreedom.indicators.tv_indicators import rsi_tv
 from quantfreedom.strategies.strategy import Strategy
 from quantfreedom.enums import (
+    ExchangeSettings,
     LeverageModeType,
     PositionModeType,
     IncreasePositionType,
@@ -23,32 +24,47 @@ from quantfreedom.enums import (
 logger = getLogger("info")
 
 
-mufex_main = Mufex(
-    api_key=MufexKeys.mainnet_neo_api_key,
-    secret_key=MufexKeys.mainnet_neo_secret_key,
-    use_test_net=False,
-)
+# mufex_main = Mufex(
+#     api_key=MufexKeys.mainnet_neo_api_key,
+#     secret_key=MufexKeys.mainnet_neo_secret_key,
+#     use_test_net=False,
+# )
 
-backtest_settings_tuple = BacktestSettings()
+
+# exchange_settings_tuple = mufex_main.set_and_get_exchange_settings_tuple(
+#     leverage_mode=LeverageModeType.Isolated,
+#     position_mode=PositionModeType.HedgeMode,
+#     symbol="BTCUSDT",
+# )
+
+exchange_settings_tuple = ExchangeSettings(
+    asset_tick_step=3,
+    leverage_mode=1,
+    leverage_tick_step=2,
+    limit_fee_pct=0.0003,
+    market_fee_pct=0.0006,
+    max_asset_size=100.0,
+    max_leverage=150.0,
+    min_asset_size=0.001,
+    min_leverage=1.0,
+    mmr_pct=0.004,
+    position_mode=3,
+    price_tick_step=1,
+)
+backtest_settings_tuple = BacktestSettings(qf_filter=0.06)
 
 dos_tuple = DynamicOrderSettings(
-    account_pct_risk_per_trade=np.array([3, 6]),
-    max_trades=np.array([4, 6]),
+    account_pct_risk_per_trade=np.array([3]),
+    max_trades=np.array([4]),
     risk_reward=np.array([2, 5]),
-    sl_based_on_add_pct=np.array([0.1, 0.5]),
+    sl_based_on_add_pct=np.array([0.1, 0.2, 0.3, 0.5]),
     sl_based_on_lookback=np.array([20, 50]),
     sl_bcb_type=np.array([CandleBodyType.Low]),
     sl_to_be_cb_type=np.array([CandleBodyType.Nothing]),
     sl_to_be_when_pct=np.array([0]),
     trail_sl_bcb_type=np.array([CandleBodyType.Low]),
-    trail_sl_by_pct=np.array([0.5, 1.0, 1.5, 2.0]),
+    trail_sl_by_pct=np.array([0.5, 1.0, 2.0, 3, 4]),
     trail_sl_when_pct=np.array([1, 2, 3, 4]),
-)
-
-exchange_settings_tuple = mufex_main.set_and_get_exchange_settings_tuple(
-    leverage_mode=LeverageModeType.Isolated,
-    position_mode=PositionModeType.HedgeMode,
-    symbol="BTCUSDT",
 )
 
 static_os_tuple = StaticOrderSettings(
@@ -194,7 +210,7 @@ class RSIRisingFalling(Strategy):
 Indicator Settings
 Indicator Settings Index= {ind_set_index}
 rsi_length= {self.rsi_length}
-rsi_is_above= {self.rsi_is_above}"""
+rsi_is_below= {self.rsi_is_below}"""
         )
 
     def long_entry_message(

@@ -202,15 +202,12 @@ class BacktestSettings(NamedTuple):
         Will not record any strategies whos qf score result is below the qf filter. qf_score is between -1 to 1,
     total_trade_filter : int = -1
         Will not record any strategies whos total trades result is below total trades filter.
-    record_size : int = 10000
-        The amount of records you want to to save. Keep this number as low as possible to save memory.
 
     """
 
     gains_pct_filter: float = -np.inf
     qf_filter: float = -np.inf
     total_trade_filter: int = -1
-    record_size: int = 10000
 
 
 class DynamicOrderSettings(NamedTuple):
@@ -286,7 +283,7 @@ class RejectedOrder(Exception):
 class DecreasePosition(Exception):
     def __init__(
         self,
-        order_status: OrderStatus = None, # type: ignore
+        order_status: OrderStatus = None,  # type: ignore
         exit_price: float = None,
         exit_fee_pct: float = None,
         msg: str = None,
@@ -295,6 +292,7 @@ class DecreasePosition(Exception):
         self.exit_price = exit_price
         self.exit_fee_pct = exit_fee_pct
         self.msg = msg
+
 
 order_settings_array_dt = np.dtype(
     [
@@ -366,8 +364,8 @@ strat_df_array_dt = np.dtype(
         ("win_rate", np.float_),
         ("qf_score", np.float_),
         ("fees_paid", np.float_),
-        ("ending_eq", np.float_),
         ("total_pnl", np.float_),
+        ("ending_eq", np.float_),
     ],
     align=True,
 )

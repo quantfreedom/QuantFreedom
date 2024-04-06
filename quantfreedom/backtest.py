@@ -269,7 +269,7 @@ def run_df_backtest(
     static_os_tuple: StaticOrderSettings,
     strategy: Strategy,
     threads: int,
-):
+) -> pd.DataFrame:
     global strategy_result_records
 
     logger.disabled = True
@@ -343,8 +343,9 @@ def run_df_backtest(
 
     p.close()
     p.join()
-    data_frame = pd.DataFrame(strategy_result_records)
-    return data_frame
+    backtest_df = pd.DataFrame(strategy_result_records).dropna()
+    backtest_df.set_index("set_idx", inplace=True)
+    return backtest_df
 
 
 def proc_results(results):
@@ -360,9 +361,7 @@ def handler(error):
 
 
 def or_backtest(
-    backtest_settings_tuple: BacktestSettings,
     candles: np.array,
-    dos_tuple: DynamicOrderSettings,
     exchange_settings_tuple: ExchangeSettings,
     logger_bool: bool,
     static_os_tuple: StaticOrderSettings,
