@@ -14,12 +14,12 @@ logger = getLogger("info")
 
 
 def dl_ex_candles(
-    symbol: str,
     exchange: str,
+    symbol: str,
     timeframe: str,
+    candles_to_dl: int = None,
     since_datetime: datetime = None,
     until_datetime: datetime = None,
-    candles_to_dl: int = None,
 ):
     """
     Download candles from the exchange of your choice
@@ -133,25 +133,6 @@ def get_qf_score(
     if gains_pct <= 0:
         qf_score = -(qf_score)
     return round(qf_score, 3)
-
-
-def get_dos(
-    dos_tuple: DynamicOrderSettings,
-    dos_index: int,
-):
-    return DynamicOrderSettings(
-        max_trades=dos_tuple.max_trades[dos_index],
-        account_pct_risk_per_trade=dos_tuple.account_pct_risk_per_trade[dos_index],
-        risk_reward=dos_tuple.risk_reward[dos_index],
-        sl_based_on_add_pct=dos_tuple.sl_based_on_add_pct[dos_index],
-        sl_based_on_lookback=dos_tuple.sl_based_on_lookback[dos_index],
-        sl_bcb_type=dos_tuple.sl_bcb_type[dos_index],
-        sl_to_be_cb_type=dos_tuple.sl_to_be_cb_type[dos_index],
-        sl_to_be_when_pct=dos_tuple.sl_to_be_when_pct[dos_index],
-        trail_sl_bcb_type=dos_tuple.trail_sl_bcb_type[dos_index],
-        trail_sl_by_pct=dos_tuple.trail_sl_by_pct[dos_index],
-        trail_sl_when_pct=dos_tuple.trail_sl_when_pct[dos_index],
-    )
 
 
 def round_size_by_tick_step(

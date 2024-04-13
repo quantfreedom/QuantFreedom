@@ -62,7 +62,7 @@ class Mufex(Exchange):
             "MF-ACCESS-SIGN-TYPE": "2",
             "MF-ACCESS-TIMESTAMP": timestamp,
             "MF-ACCESS-RECV-WINDOW": "5000",
-            "X-Referer": "A6JVVHCXZ",
+            "X-Referer": "AKF3CWKDT",
             "Content-Type": "application/json",
         }
 
@@ -176,10 +176,10 @@ class Mufex(Exchange):
             "end": until_timestamp,
             "limit": 1500,
         }
-        # start_time = self.get_current_time_sec()
+        the_url = self.url_start + end_point
         while params["start"] + self.timeframe_in_ms < until_timestamp:
             try:
-                response: dict = get(url=self.url_start + end_point, params=params).json()
+                response: dict = get(url=the_url, params=params).json()
                 new_candles = response["data"]["list"]
                 last_candle_timestamp = int(new_candles[-1][0])
                 if last_candle_timestamp == params["start"]:
@@ -570,7 +570,7 @@ class Mufex(Exchange):
 
             return data_list
         except Exception as e:
-            raise Exception(f"Mufex get_account_position_info = Data or List is empty {response['message']} -> {e}")
+            raise Exception(f"Mufex get_account_position_info = {response['message']} -> {e}")
 
     def cancel_open_order(
         self,

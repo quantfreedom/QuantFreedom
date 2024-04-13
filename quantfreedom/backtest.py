@@ -47,20 +47,18 @@ def multiprocess_backtest(
         )
         strategy.log_indicator_settings(ind_set_index=set_idx)
 
-        dynamic_order_settings = get_dos(
-            dos_tuple=strategy.dos_tuple,
-            dos_index=set_idx,
-        )
+        strategy.set_current_dos_tuple(dos_index=set_idx)
+
         log_dynamic_order_settings(
             dos_index=set_idx,
-            dynamic_order_settings=dynamic_order_settings,
+            dynamic_order_settings=strategy.current_dos_tuple,
         )
 
         pnl_array = np.full(shape=round(total_bars / 3), fill_value=np.nan)
         filled_pnl_counter = 0
         total_fees_paid = 0
 
-        order.update_class_dos(dynamic_order_settings=dynamic_order_settings)
+        order.update_class_dos(dynamic_order_settings=strategy.current_dos_tuple)
         order.set_order_variables(equity=starting_equity)
 
         logger.debug("Set order variables, class dos and pnl array")

@@ -186,12 +186,12 @@ class Bybit(Exchange):
                 new_candles = response["result"]["list"]
                 last_candle_timestamp = int(new_candles[-1][0])
                 if last_candle_timestamp == params["start"]:
+                    print("sleeping .2 seconds")
                     sleep(0.2)
                 else:
                     candles_list.extend(new_candles)
                     # add 2 sec so we don't download the same candle two times
                     params["end"] = last_candle_timestamp - 2000
-                1 + 1
 
             except Exception as e:
                 raise Exception(f"Bybit get_candles {response.get('message')} - > {e}")

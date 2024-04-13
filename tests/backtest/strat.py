@@ -354,5 +354,5 @@ rsi_is_above= {self.rsi_is_above}"""
 long_strat = RSIRisingFalling(
     long_short="long",
     rsi_length=np.array([14]),
-    rsi_is_below=np.array([40, 60, 80]),
+    rsi_is_below=np.array([80]),
 )

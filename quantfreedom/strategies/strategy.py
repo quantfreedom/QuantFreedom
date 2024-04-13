@@ -9,7 +9,7 @@ class IndicatorSettings(NamedTuple):
 
 
 class Strategy:
-    current_ind_settings_tuple = None
+    current_ind_settings_tuple: NamedTuple = None
     dos_tuple = None
     entries = None
     entry_message = None
@@ -22,6 +22,7 @@ class Strategy:
     set_entries_exits_array = None
     total_indicator_settings = 1
     total_order_settings = 1
+    current_dos_tuple: NamedTuple = None
 
     def __init__(self) -> None:
         pass
@@ -76,6 +77,24 @@ class Strategy:
         )
 
         return tuple(cart_arrays[11:, :])
+
+    def set_current_dos_tuple(
+        self,
+        dos_index: int,
+    ):
+        self.current_dos_tuple = DynamicOrderSettings(
+            account_pct_risk_per_trade=self.dos_tuple.account_pct_risk_per_trade[dos_index],
+            max_trades=self.dos_tuple.max_trades[dos_index],
+            risk_reward=self.dos_tuple.risk_reward[dos_index],
+            sl_based_on_add_pct=self.dos_tuple.sl_based_on_add_pct[dos_index],
+            sl_based_on_lookback=self.dos_tuple.sl_based_on_lookback[dos_index],
+            sl_bcb_type=self.dos_tuple.sl_bcb_type[dos_index],
+            sl_to_be_cb_type=self.dos_tuple.sl_to_be_cb_type[dos_index],
+            sl_to_be_when_pct=self.dos_tuple.sl_to_be_when_pct[dos_index],
+            trail_sl_bcb_type=self.dos_tuple.trail_sl_bcb_type[dos_index],
+            trail_sl_by_pct=self.dos_tuple.trail_sl_by_pct[dos_index],
+            trail_sl_when_pct=self.dos_tuple.trail_sl_when_pct[dos_index],
+        )
 
     #######################################################
     #######################################################
