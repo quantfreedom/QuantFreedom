@@ -2,7 +2,7 @@ from typing import Callable, NamedTuple
 import numpy as np
 from numba import njit
 
-from quantfreedom.enums import CandleBodyType, LoggerFuncType, StringerFuncType
+from quantfreedom.core.enums import CandleBodyType, LoggerFuncType, StringerFuncType
 from quantfreedom.nb_funcs.nb_helper_funcs import nb_round_size_by_tick_step
 
 

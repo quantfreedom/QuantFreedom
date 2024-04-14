@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from numba import typed, types
 
-from quantfreedom.enums import (
+from quantfreedom.core.enums import (
     BacktestSettings,
     DynamicOrderSettings,
     ExchangeSettings,
@@ -22,7 +22,7 @@ from quantfreedom.nb_funcs.nb_order_handler.nb_stop_loss import *
 from quantfreedom.nb_funcs.nb_order_handler.nb_take_profit import *
 from quantfreedom.nb_funcs.nb_simulate.nb_sim_df import nb_run_df_backtest
 from quantfreedom.nb_funcs.nb_simulate.nb_sim_or import nb_run_or_backtest
-from quantfreedom.plotting.plotting_base import plot_or_results
+from quantfreedom.core.plotting_base import plot_or_results
 from quantfreedom.utils import pretty_qf
 
 

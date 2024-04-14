@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from quantfreedom.enums import CandleBodyType
+from quantfreedom.core.enums import CandleBodyType
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 

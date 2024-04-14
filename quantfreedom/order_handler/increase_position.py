@@ -1,10 +1,10 @@
 from logging import getLogger
-from quantfreedom.enums import (
+from quantfreedom.core.enums import (
     IncreasePositionType,
     RejectedOrder,
     StopLossStrategyType,
 )
-from quantfreedom.helper_funcs import round_size_by_tick_step
+from quantfreedom.helpers.helper_funcs import round_size_by_tick_step
 
 logger = getLogger("info")
 

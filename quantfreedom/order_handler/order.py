@@ -1,16 +1,18 @@
-from logging import getLogger
 import numpy as np
-from quantfreedom.enums import (
-    OrderStatus,
-    DynamicOrderSettings,
-    ExchangeSettings,
-    StaticOrderSettings,
-)
+
+from logging import getLogger
+
 from quantfreedom.order_handler.increase_position import IncreasePosition
 from quantfreedom.order_handler.leverage import Leverage
 from quantfreedom.order_handler.stop_loss import StopLoss
 from quantfreedom.order_handler.take_profit import TakeProfit
 
+from quantfreedom.core.enums import (
+    OrderStatus,
+    DynamicOrderSettings,
+    ExchangeSettings,
+    StaticOrderSettings,
+)
 
 logger = getLogger("info")
 

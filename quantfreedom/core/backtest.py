@@ -2,13 +2,13 @@ from multiprocessing import Pool
 import numpy as np
 import pandas as pd
 from logging import getLogger
-from quantfreedom.custom_logger import set_loggers
-from quantfreedom.helper_funcs import get_dos, get_qf_score, log_dynamic_order_settings
+from quantfreedom.helpers.custom_logger import set_loggers
+from quantfreedom.helpers.helper_funcs import get_dos, get_qf_score, log_dynamic_order_settings
 from quantfreedom.nb_funcs.nb_helper_funcs import order_records_to_df
 from quantfreedom.order_handler.order import OrderHandler
-from quantfreedom.plotting.plotting_base import plot_or_results
-from quantfreedom.strategies.strategy import Strategy
-from quantfreedom.enums import (
+from quantfreedom.core.plotting_base import plot_or_results
+from quantfreedom.core.strategy import Strategy
+from quantfreedom.core.enums import (
     BacktestSettings,
     CandleBodyType,
     DecreasePosition,
@@ -20,7 +20,7 @@ from quantfreedom.enums import (
     strat_df_array_dt,
     or_dt,
 )
-from quantfreedom.utils import pretty_qf
+from quantfreedom.helpers.utils import pretty_qf
 
 logger = getLogger("info")
 

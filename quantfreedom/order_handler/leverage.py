@@ -1,7 +1,7 @@
 import numpy as np
 from logging import getLogger
-from quantfreedom.enums import CandleBodyType, DecreasePosition, LeverageStrategyType, OrderStatus, RejectedOrder
-from quantfreedom.helper_funcs import round_size_by_tick_step
+from quantfreedom.core.enums import CandleBodyType, DecreasePosition, LeverageStrategyType, OrderStatus, RejectedOrder
+from quantfreedom.helpers.helper_funcs import round_size_by_tick_step
 
 logger = getLogger("info")
 

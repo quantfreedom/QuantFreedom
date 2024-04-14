@@ -2,7 +2,7 @@ import numpy as np
 from numba import njit
 import pandas as pd
 
-from quantfreedom.enums import AccountState, DynamicOrderSettings, DynamicOrderSettings, OrderResult, OrderStatus
+from quantfreedom.core.enums import AccountState, DynamicOrderSettings, DynamicOrderSettings, OrderResult, OrderStatus
 from numba.cpython.unicode import _empty_string, _set_code_point, PY_UNICODE_1BYTE_KIND
 
 DIGITS_START = 48

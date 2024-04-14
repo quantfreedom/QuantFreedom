@@ -6,7 +6,7 @@ from time import sleep, time
 from requests import get, post
 from datetime import datetime, timezone
 
-from quantfreedom.enums import (
+from quantfreedom.core.enums import (
     ExchangeSettings,
     LeverageModeType,
     PositionModeType,

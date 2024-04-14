@@ -1,7 +1,7 @@
 from typing import Callable, NamedTuple
 from numba import njit
 
-from quantfreedom.enums import LoggerFuncType, RejectedOrder, StringerFuncType
+from quantfreedom.core.enums import LoggerFuncType, RejectedOrder, StringerFuncType
 from quantfreedom.nb_funcs.nb_helper_funcs import nb_round_size_by_tick_step
 
 

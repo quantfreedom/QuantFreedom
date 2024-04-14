@@ -1,7 +1,7 @@
 from typing import Callable
 import numpy as np
 
-from quantfreedom.enums import CandleBodyType
+from quantfreedom.core.enums import CandleBodyType
 
 
 def wma_tv(

@@ -1,7 +1,7 @@
 import sys, os
 from time import perf_counter
-from quantfreedom.backtest import run_df_backtest
-from quantfreedom.helper_funcs import dl_ex_candles
+from quantfreedom.core.backtest import run_df_backtest
+from quantfreedom.helpers.helper_funcs import dl_ex_candles
 from strat import long_strat, backtest_settings_tuple, exchange_settings_tuple, static_os_tuple
 from datetime import datetime
 from time import gmtime, strftime

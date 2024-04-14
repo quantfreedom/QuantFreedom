@@ -4,10 +4,10 @@ import numpy as np
 import plotly.graph_objects as go
 from logging import getLogger
 from typing import NamedTuple
-from quantfreedom.exchanges.mufex_exchange.mufex import Mufex
+from quantfreedom.exchanges.mufex import Mufex
 from quantfreedom.indicators.tv_indicators import rsi_tv
-from quantfreedom.strategies.strategy import Strategy
-from quantfreedom.enums import (
+from quantfreedom.core.strategy import Strategy
+from quantfreedom.core.enums import (
     ExchangeSettings,
     LeverageModeType,
     PositionModeType,

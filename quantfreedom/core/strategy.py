@@ -1,7 +1,7 @@
 from typing import NamedTuple
 import numpy as np
 
-from quantfreedom.enums import DynamicOrderSettings
+from quantfreedom.core.enums import DynamicOrderSettings
 
 
 class IndicatorSettings(NamedTuple):

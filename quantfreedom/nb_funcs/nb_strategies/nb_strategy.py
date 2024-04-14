@@ -4,7 +4,7 @@ from quantfreedom.nb_funcs.nb_indicators.nb_indicators import nb_rsi_tv
 
 from typing import Callable, NamedTuple
 
-from quantfreedom.enums import CandleBodyType, LoggerFuncType, StringerFuncType
+from quantfreedom.core.enums import CandleBodyType, LoggerFuncType, StringerFuncType
 
 
 class IndicatorSettings(NamedTuple):

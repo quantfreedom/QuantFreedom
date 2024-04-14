@@ -5,7 +5,7 @@ import numpy as np
 from time import sleep, time
 from datetime import datetime, timezone
 from requests import get, post
-from quantfreedom.enums import ExchangeSettings, LeverageModeType, PositionModeType, TriggerDirectionType
+from quantfreedom.core.enums import ExchangeSettings, LeverageModeType, PositionModeType, TriggerDirectionType
 
 from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES, Exchange
 

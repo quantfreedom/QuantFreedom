@@ -1,7 +1,7 @@
 from typing import Callable
 from numba import njit
 
-from quantfreedom.enums import AccountState, LoggerFuncType, OrderResult, StringerFuncType
+from quantfreedom.core.enums import AccountState, LoggerFuncType, OrderResult, StringerFuncType
 
 
 @njit(cache=True)

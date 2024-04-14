@@ -1,6 +1,6 @@
 from typing import Callable
 import numpy as np
-from quantfreedom.enums import (
+from quantfreedom.core.enums import (
     AccountState,
     CandleBodyType,
     DynamicOrderSettings,

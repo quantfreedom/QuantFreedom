@@ -1,8 +1,8 @@
 import numpy as np
 from logging import getLogger
 
-from quantfreedom.helper_funcs import round_size_by_tick_step
-from quantfreedom.enums import (
+from quantfreedom.helpers.helper_funcs import round_size_by_tick_step
+from quantfreedom.core.enums import (
     CandleBodyType,
     DecreasePosition,
     OrderStatus,
@@ -28,7 +28,7 @@ class StopLoss:
         market_fee_pct: float,
         pg_min_max_sl_bcb: str,
         price_tick_step: float,
-        sl_strategy_type: StopLossStrategyType,
+        sl_strategy_type: StopLossStrategyType, # type: ignore
         sl_to_be_bool: bool,
         trail_sl_bool: bool,
         z_or_e_type: str,
