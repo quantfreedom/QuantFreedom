@@ -98,7 +98,9 @@ class Exchange:
     ) -> tuple[int, int]:
         if until_datetime is None:
             if since_datetime is None:
-                until_timestamp = self.get_current_time_ms() - timeframe_in_ms
+                until_timestamp = self.get_current_time_ms() - timeframe_in_ms + 5000 # note below
+                # add 5 seconds because if it is currently 0:02:00 and we are getting min candles we will subtract 1 min and get 0:01:00 which means we will return 0:00:00 when getting candles which is not what we want ... so if we add 5 seconds we will get 0:01:05 which means we will return 0:01:00 which is what we want
+                
                 since_timestamp = until_timestamp - candles_to_dl_ms
             else:
                 since_timestamp = int(since_datetime.replace(tzinfo=timezone.utc).timestamp() * 1000)

@@ -2,7 +2,7 @@ from pathlib import Path
 import griffe
 import mkdocs_gen_files
 
-from quantfreedom.utils import delete_dir
+from quantfreedom.helpers.utils import delete_dir
 
 nav = mkdocs_gen_files.Nav()
 

@@ -36,15 +36,16 @@ uvicorn = { version = "0.29.0", optional = true}
 
 griffe = { version = "0.38.0", optional = true }
 mkdocs = { version = "1.5.3", optional = true }
-mkdocstrings = { version = "0.24.0", optional = true }
+mkdocstrings = {version = "0.24.0", optional = true, extras = ["python"]}
 mkdocs-gen-files = { version = "0.5.0", optional = true }
 mkdocs-material = { version = "9.4.14", optional = true }
 mkdocs-open-in-new-tab = { version = "1.0.3", optional = true }
 python-multipart = {version = "0.0.9", optional = true}
+mkdocs-literate-nav = {version = "0.6.1", optional = true}
 
 [tool.poetry.extras]
 dev = ["aws-cdk-lib", "bcrypt", "cryptography", "fastapi", "httpx", "mangum", "mysql-connector-python", "pyjwt", "uvicorn"]
-docs = ["mkdocs", "griffe", "mkdocs-material", "mkdocstrings", "mkdocs-gen-files", "mkdocs-open-in-new-tab"]
+docs = ["mkdocs", "griffe", "mkdocs-material", "mkdocstrings", "mkdocs-gen-files", "mkdocs-open-in-new-tab", "mkdocs-literate-nav", "python-multipart"]
 
 [build-system]
 requires = ["poetry-core"]
