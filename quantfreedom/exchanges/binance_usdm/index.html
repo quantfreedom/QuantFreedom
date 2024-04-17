@@ -9,20 +9,22 @@
       
       
       
-        <link rel="prev" href="../simulate/">
+        <link rel="prev" href="../../core/enums/">
       
       
+        <link rel="next" href="../bybit/">
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.14">
     
     
       
-        <title>utils - QuantFreedom Docs</title>
+        <title>binance_usdm - QuantFreedom Docs</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.fad675c6.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.fad675c6.min.css">
       
       
 
@@ -41,11 +43,11 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../stylesheets/extra.css">
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -67,7 +69,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#quantfreedom.utils" class="md-skip">
+        <a href="#quantfreedom.exchanges.binance_usdm" class="md-skip">
           Skip to content
         </a>
       
@@ -83,7 +85,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="QuantFreedom Docs" class="md-header__button md-logo" aria-label="QuantFreedom Docs" data-md-component="logo">
+    <a href="../../.." title="QuantFreedom Docs" class="md-header__button md-logo" aria-label="QuantFreedom Docs" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
@@ -103,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              utils
+              binance_usdm
             
           </span>
         </div>
@@ -175,7 +177,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href="../../.." class="md-tabs__link">
         
   
     
@@ -192,7 +194,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../free_trading_bots/" class="md-tabs__link">
+      <a href="../../../free_trading_bots/" class="md-tabs__link">
         
   
     
@@ -209,7 +211,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../beginners/" class="md-tabs__link">
+      <a href="../../../beginners/" class="md-tabs__link">
         
   
     
@@ -229,8 +231,16 @@
   
     
     
+      
+  
+  
+    
+  
+  
+    
+    
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../enums/" class="md-tabs__link">
+        <a href="../../core/backtest/" class="md-tabs__link">
           
   
     
@@ -239,6 +249,9 @@
 
         </a>
       </li>
+    
+  
+
     
   
 
@@ -271,7 +284,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="QuantFreedom Docs" class="md-nav__button md-logo" aria-label="QuantFreedom Docs" data-md-component="logo">
+    <a href="../../.." title="QuantFreedom Docs" class="md-nav__button md-logo" aria-label="QuantFreedom Docs" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
@@ -301,7 +314,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -321,7 +334,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../free_trading_bots/" class="md-nav__link">
+      <a href="../../../free_trading_bots/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -341,7 +354,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../beginners/" class="md-nav__link">
+      <a href="../../../beginners/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -364,12 +377,6 @@
   
     
     
-      
-        
-      
-        
-      
-        
       
         
       
@@ -420,8 +427,72 @@
   
   
   
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_1" id="__nav_4_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    core
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_1">
+            <span class="md-nav__icon md-icon"></span>
+            core
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
-      <a href="../enums/" class="md-nav__link">
+      <a href="../../core/backtest/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    backtest
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../core/enums/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -435,12 +506,22 @@
 
               
             
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
               
                 
   
   
+    
   
   
+  
     
     
       
@@ -450,18 +531,16 @@
       
         
       
-        
-      
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" checked>
         
           
           <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
@@ -475,7 +554,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4_2">
             <span class="md-nav__icon md-icon"></span>
             exchanges
@@ -486,144 +565,28 @@
                 
   
   
+    
   
   
-    
-    
+  
+    <li class="md-nav__item md-nav__item--active">
       
-        
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
       
-        
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2_1" >
-        
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
           
-          <label class="md-nav__link" for="__nav_4_2_1" id="__nav_4_2_1_label" tabindex="0">
-            
   
   <span class="md-ellipsis">
-    apex_exchange
+    binance_usdm
   </span>
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_2_1_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_2_1">
-            <span class="md-nav__icon md-icon"></span>
-            apex_exchange
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../exchanges/apex_exchange/apex/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    apex
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_2_2" id="__nav_4_2_2_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    binance_exchange
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_2_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_2_2">
-            <span class="md-nav__icon md-icon"></span>
-            binance_exchange
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../exchanges/binance_exchange/binance_us/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    binance_us
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../exchanges/binance_exchange/binance_usdm/" class="md-nav__link">
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -632,59 +595,142 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.binance_usdm" class="md-nav__link">
+    <span class="md-ellipsis">
+      binance_usdm
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.binance_usdm-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Classes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM" class="md-nav__link">
+    <span class="md-ellipsis">
+      BinanceUSDM
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="BinanceUSDM">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Functions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_all_symbols_info" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_all_symbols_info
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_candles" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_candles
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="get_candles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_candles--summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_candles--explainer-video" class="md-nav__link">
+    <span class="md-ellipsis">
+      Explainer Video
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_exchange_info" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_exchange_info
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_symbols_list" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_symbols_list
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
               
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_2_3" id="__nav_4_2_3_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    bybit_exchange
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_2_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_2_3">
-            <span class="md-nav__icon md-icon"></span>
-            bybit_exchange
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -693,7 +739,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../exchanges/bybit_exchange/bybit/" class="md-nav__link">
+      <a href="../bybit/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -707,55 +753,6 @@
 
               
             
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_2_4" id="__nav_4_2_4_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    mufex_exchange
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_2_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_2_4">
-            <span class="md-nav__icon md-icon"></span>
-            mufex_exchange
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
               
                 
   
@@ -763,7 +760,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../exchanges/mufex_exchange/mufex/" class="md-nav__link">
+      <a href="../mufex/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -785,9 +782,67 @@
 
               
             
-          </ul>
-        </nav>
+              
+                
+  
+  
+  
+  
+    
+    
       
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    helpers
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            helpers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../helpers/bsc_scan/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    bsc_scan
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -800,7 +855,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../helper_funcs/" class="md-nav__link">
+      <a href="../../helpers/helper_funcs/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -809,6 +864,35 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../helpers/utils/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    utils
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -862,7 +946,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../indicators/tv_indicators/" class="md-nav__link">
+      <a href="../../indicators/tv_indicators/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -899,8 +983,6 @@
       
         
       
-        
-      
     
     
     
@@ -917,7 +999,7 @@
             
   
   <span class="md-ellipsis">
-    nb_funcs
+    order_handler
   </span>
   
 
@@ -926,385 +1008,6 @@
         
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4_5">
-            <span class="md-nav__icon md-icon"></span>
-            nb_funcs
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_5_1" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_5_1" id="__nav_4_5_1_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    nb_indicators
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_5_1_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_5_1">
-            <span class="md-nav__icon md-icon"></span>
-            nb_indicators
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../nb_funcs/nb_indicators/nb_indicators/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    nb_indicators
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_5_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_5_2" id="__nav_4_5_2_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    nb_order_handler
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_5_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_5_2">
-            <span class="md-nav__icon md-icon"></span>
-            nb_order_handler
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../nb_funcs/nb_order_handler/nb_increase_position/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    nb_increase_position
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../nb_funcs/nb_order_handler/nb_stop_loss/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    nb_stop_loss
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_5_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_5_3" id="__nav_4_5_3_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    nb_simulate
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_5_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_5_3">
-            <span class="md-nav__icon md-icon"></span>
-            nb_simulate
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../nb_funcs/nb_simulate/nb_sim_base/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    nb_sim_base
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../nb_funcs/nb_simulate/nb_sim_df/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    nb_sim_df
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_5_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_5_4" id="__nav_4_5_4_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    nb_strategies
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_5_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_5_4">
-            <span class="md-nav__icon md-icon"></span>
-            nb_strategies
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../nb_funcs/nb_strategies/nb_strategy/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    nb_strategy
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    order_handler
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_6">
             <span class="md-nav__icon md-icon"></span>
             order_handler
           </label>
@@ -1317,7 +1020,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../order_handler/increase_position/" class="md-nav__link">
+      <a href="../../order_handler/increase_position/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1338,7 +1041,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../order_handler/order/" class="md-nav__link">
+      <a href="../../order_handler/order/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1359,7 +1062,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../order_handler/stop_loss/" class="md-nav__link">
+      <a href="../../order_handler/stop_loss/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1375,144 +1078,6 @@
             
           </ul>
         </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../simulate/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    simulate
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    utils
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  <span class="md-ellipsis">
-    utils
-  </span>
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#quantfreedom.utils" class="md-nav__link">
-    <span class="md-ellipsis">
-      utils
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#quantfreedom.utils-functions" class="md-nav__link">
-    <span class="md-ellipsis">
-      Functions
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Functions">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#quantfreedom.utils.clear_cache" class="md-nav__link">
-    <span class="md-ellipsis">
-      clear_cache()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#quantfreedom.utils.delete_dir" class="md-nav__link">
-    <span class="md-ellipsis">
-      delete_dir()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#quantfreedom.utils.generate_candles" class="md-nav__link">
-    <span class="md-ellipsis">
-      generate_candles()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#quantfreedom.utils.pretty_qf" class="md-nav__link">
-    <span class="md-ellipsis">
-      pretty_qf()
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
       
     </li>
   
@@ -1551,16 +1116,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#quantfreedom.utils" class="md-nav__link">
+  <a href="#quantfreedom.exchanges.binance_usdm" class="md-nav__link">
     <span class="md-ellipsis">
-      utils
+      binance_usdm
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#quantfreedom.utils-functions" class="md-nav__link">
+  <a href="#quantfreedom.exchanges.binance_usdm-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Classes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM" class="md-nav__link">
+    <span class="md-ellipsis">
+      BinanceUSDM
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="BinanceUSDM">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM-functions" class="md-nav__link">
     <span class="md-ellipsis">
       Functions
     </span>
@@ -1570,38 +1155,72 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#quantfreedom.utils.clear_cache" class="md-nav__link">
+  <a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_all_symbols_info" class="md-nav__link">
     <span class="md-ellipsis">
-      clear_cache()
+      get_all_symbols_info
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#quantfreedom.utils.delete_dir" class="md-nav__link">
+  <a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_candles" class="md-nav__link">
     <span class="md-ellipsis">
-      delete_dir()
+      get_candles
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="get_candles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_candles--summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#quantfreedom.utils.generate_candles" class="md-nav__link">
+  <a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_candles--explainer-video" class="md-nav__link">
     <span class="md-ellipsis">
-      generate_candles()
+      Explainer Video
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_exchange_info" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_exchange_info
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#quantfreedom.utils.pretty_qf" class="md-nav__link">
+  <a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_symbols_list" class="md-nav__link">
     <span class="md-ellipsis">
-      pretty_qf()
+      get_symbols_list
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1628,13 +1247,13 @@
   
 
 
-  <h1>utils</h1>
+  <h1>binance_usdm</h1>
 
 <div class="doc doc-object doc-module">
 
 
 
-<a id="quantfreedom.utils"></a>
+<a id="quantfreedom.exchanges.binance_usdm"></a>
   <div class="doc doc-contents first">
 
   
@@ -1646,50 +1265,53 @@
 
 
 
+<h2 id="quantfreedom.exchanges.binance_usdm-classes">Classes<a href="#quantfreedom.exchanges.binance_usdm-classes" class="headerlink" title="Permanent link">&para;</a></h2>
 
-<h2 id="quantfreedom.utils-functions">Functions<a href="#quantfreedom.utils-functions" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="quantfreedom.exchanges.binance_usdm.BinanceUSDM" class="doc doc-heading">
+          <span class="doc doc-object-name doc-class-name">BinanceUSDM</span>
+
+
+<a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+  <div class="doc doc-contents ">
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="quantfreedom.exchanges.exchange.Exchange">Exchange</span></code></p>
+
+
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<h4 id="quantfreedom.exchanges.binance_usdm.BinanceUSDM-functions">Functions<a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM-functions" class="headerlink" title="Permanent link">&para;</a></h4>
 
 
 <div class="doc doc-object doc-function">
 
 
 
+<h5 id="quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_all_symbols_info" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">get_all_symbols_info</span>
 
-<h3 id="quantfreedom.utils.clear_cache" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">clear_cache</span>
 
-
-<a href="#quantfreedom.utils.clear_cache" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">clear_cache</span><span class="p">()</span>
+<a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_all_symbols_info" class="headerlink" title="Permanent link">&para;</a></h5>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_all_symbols_info</span><span class="p">()</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
-      <p>clears the python cache and numba cache</p>
-
-  </div>
-
-</div>
-
-
-<div class="doc doc-object doc-function">
-
-
-
-
-<h3 id="quantfreedom.utils.delete_dir" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">delete_dir</span>
-
-
-<a href="#quantfreedom.utils.delete_dir" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">delete_dir</span><span class="p">(</span>
-    <span class="n">p</span><span class="p">,</span>
-<span class="p">)</span>
-</code></pre></div>
-
-  <div class="doc doc-contents ">
-  
-      <p>Delete info in directory</p>
+      <p><a href="https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/Exchange-Information">Binance Exchange Information</a></p>
 
 
 
@@ -1705,101 +1327,16 @@
     </thead>
     <tbody>
         <tr>
-          <td><code>p</code></td>
+          <td><code>None</code></td>
           <td>
-                <code>path</code>
           </td>
           <td>
             <div class="doc-md-description">
-              <p>path to directory</p>
+              
             </div>
           </td>
           <td>
               <em>required</em>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-  </div>
-
-</div>
-
-
-<div class="doc doc-object doc-function">
-
-
-
-
-<h3 id="quantfreedom.utils.generate_candles" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">generate_candles</span>
-
-
-<a href="#quantfreedom.utils.generate_candles" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">generate_candles</span><span class="p">(</span>
-    <span class="n">number_of_candles</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-    <span class="n">plot_candles</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span>
-</code></pre></div>
-
-  <div class="doc doc-contents ">
-  
-      <p>Generate a dataframe filled with random candles</p>
-
-
-
-  <p><strong>Parameters:</strong></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td><code>number_of_candles</code></td>
-          <td>
-                <code>(int, 100)</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>number of candles you want to create</p>
-            </div>
-          </td>
-          <td>
-                <code>100</code>
-          </td>
-        </tr>
-        <tr>
-          <td><code>seed</code></td>
-          <td>
-                <code>(int, None)</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>random seed number</p>
-            </div>
-          </td>
-          <td>
-                <code>None</code>
-          </td>
-        </tr>
-        <tr>
-          <td><code>plot_candles</code></td>
-          <td>
-                <code>(bool, False)</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>If the candles should be graphed or not.</p>
-            </div>
-          </td>
-          <td>
-                <code>False</code>
           </td>
         </tr>
     </tbody>
@@ -1818,11 +1355,11 @@
     <tbody>
         <tr>
           <td>
-                <code>pdFrame</code>
+                <code>Dictionary</code>
           </td>
           <td>
             <div class="doc-md-description">
-              <p>Dataframe of open high low close</p>
+              <p>dictionary of info about the symbols</p>
             </div>
           </td>
         </tr>
@@ -1838,20 +1375,20 @@
 
 
 
+<h5 id="quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_candles" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">get_candles</span>
 
-<h3 id="quantfreedom.utils.pretty_qf" class="doc doc-heading">
-          <span class="doc doc-object-name doc-function-name">pretty_qf</span>
 
-
-<a href="#quantfreedom.utils.pretty_qf" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">pretty_qf</span><span class="p">(</span>
-    <span class="n">named_tuple</span><span class="p">,</span>
-<span class="p">)</span>
+<a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_candles" class="headerlink" title="Permanent link">&para;</a></h5>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_candles</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">timeframe</span><span class="p">,</span> <span class="n">since_datetime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">until_datetime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">candles_to_dl</span><span class="o">=</span><span class="mi">1500</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
-      <p>Prints named tuples in a pretty way</p>
+      <h6 id="quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_candles--summary">Summary<a class="headerlink" href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_candles--summary" title="Permanent link">&para;</a></h6>
+<p><a href="https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data">Biance USDM candle docs</a></p>
+<h6 id="quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_candles--explainer-video">Explainer Video<a class="headerlink" href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_candles--explainer-video" title="Permanent link">&para;</a></h6>
+<p>Coming Soon but if you want/need it now please let me know in discord or telegram and i will make it for you</p>
 
 
 
@@ -1867,13 +1404,143 @@
     </thead>
     <tbody>
         <tr>
-          <td><code>named_tuple</code></td>
+          <td><code>symbol</code></td>
           <td>
-                <code>namedtuple</code>
+                <code>str</code>
           </td>
           <td>
             <div class="doc-md-description">
-              <p>must only be a named tuple</p>
+              <p>Use get_symbols_list if you need to know the symbols</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>timeframe</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>"1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w"</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>since_datetime</code></td>
+          <td>
+                <code><span title="datetime.datetime">datetime</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The start date, in datetime format, of candles you want to download. EX: datetime(year, month, day, hour, minute)</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>until_datetime</code></td>
+          <td>
+                <code><span title="datetime.datetime">datetime</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The until date, in datetime format, of candles you want to download minus one candle so if you are on the 5 min if you say your until date is 1200 your last candle will be 1155. EX: datetime(year, month, day, hour, minute)</p>
+            </div>
+          </td>
+          <td>
+                <code>None</code>
+          </td>
+        </tr>
+        <tr>
+          <td><code>candles_to_dl</code></td>
+          <td>
+                <code>int</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The amount of candles you want to download</p>
+            </div>
+          </td>
+          <td>
+                <code>1500</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="numpy.array">array</span></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>a 2 dim array with the following columns "timestamp", "open", "high", "low", "close", "volume"</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h5 id="quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_exchange_info" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">get_exchange_info</span>
+
+
+<a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_exchange_info" class="headerlink" title="Permanent link">&para;</a></h5>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_exchange_info</span><span class="p">()</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p><a href="https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/Exchange-Information">Binance Exchange Information</a></p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>None</code></td>
+          <td>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              
             </div>
           </td>
           <td>
@@ -1883,9 +1550,117 @@
     </tbody>
   </table>
 
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>Dictionary</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>dictionary of info about the exchange</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
   </div>
 
 </div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h5 id="quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_symbols_list" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">get_symbols_list</span>
+
+
+<a href="#quantfreedom.exchanges.binance_usdm.BinanceUSDM.get_symbols_list" class="headerlink" title="Permanent link">&para;</a></h5>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_symbols_list</span><span class="p">()</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p><a href="https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/Exchange-Information">Binance Exchange Information</a></p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>None</code></td>
+          <td>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>List</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>List of exchange symbols</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+
+</div>
+
 
 
 
@@ -1932,12 +1707,12 @@
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.path", "navigation.indexes"], "search": "../../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.path", "navigation.indexes"], "search": "../../../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.cd18aaf1.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.cd18aaf1.min.js"></script>
       
-        <script src="../../js/open_in_new_tab.js"></script>
+        <script src="../../../js/open_in_new_tab.js"></script>
       
     
   </body>
