@@ -9,7 +9,7 @@ from quantfreedom.core.enums import (
     StopLossStrategyType,
 )
 
-logger = getLogger("info")
+logger = getLogger()
 
 
 class StopLoss:
@@ -28,7 +28,7 @@ class StopLoss:
         market_fee_pct: float,
         pg_min_max_sl_bcb: str,
         price_tick_step: float,
-        sl_strategy_type: StopLossStrategyType, # type: ignore
+        sl_strategy_type: StopLossStrategyType,  # type: ignore
         sl_to_be_bool: bool,
         trail_sl_bool: bool,
         z_or_e_type: str,

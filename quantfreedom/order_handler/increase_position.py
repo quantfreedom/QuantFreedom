@@ -6,7 +6,7 @@ from quantfreedom.core.enums import (
 )
 from quantfreedom.helpers.helper_funcs import round_size_by_tick_step
 
-logger = getLogger("info")
+logger = getLogger()
 
 
 class IncreasePosition:

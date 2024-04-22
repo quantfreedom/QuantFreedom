@@ -16,7 +16,7 @@ class Bybit(Exchange):
     def __init__(
         # Exchange Vars
         self,
-        use_test_net: bool,
+        use_testnet: bool,
         api_key: str = None,
         secret_key: str = None,
     ):
@@ -28,7 +28,7 @@ class Bybit(Exchange):
             self.api_key = api_key
             self.secret_key = secret_key
 
-        if use_test_net:
+        if use_testnet:
             self.url_start = "https://api-testnet.bybit.com"
         else:
             self.url_start = "https://api.bybit.com"

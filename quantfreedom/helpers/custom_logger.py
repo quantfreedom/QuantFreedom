@@ -21,7 +21,7 @@ def set_loggers(
     if not isExist:
         os.makedirs(complete_path)
     filename = os.path.join(complete_path, f'info_{datetime.utcnow().strftime("%m-%d-%Y_%H-%M-%S")}.log')
-    logger = logging.getLogger("info")
+    logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     logger.addHandler(create_logging_handler(filename, FORMATTER))
     logger.info("Testing info log")

@@ -14,7 +14,7 @@ from quantfreedom.core.enums import (
     StaticOrderSettings,
 )
 
-logger = getLogger("info")
+logger = getLogger()
 
 
 class OrderHandler:

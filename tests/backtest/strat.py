@@ -21,13 +21,13 @@ from quantfreedom.core.enums import (
     TakeProfitStrategyType,
 )
 
-logger = getLogger("info")
+logger = getLogger()
 
 
 # mufex_main = Mufex(
 #     api_key=MufexKeys.mainnet_neo_api_key,
 #     secret_key=MufexKeys.mainnet_neo_secret_key,
-#     use_test_net=False,
+#     use_testnet=False,
 # )
 
 

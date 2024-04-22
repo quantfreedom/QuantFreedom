@@ -7,7 +7,7 @@ from quantfreedom.exchanges.binance_usdm import BinanceUSDM
 from quantfreedom.exchanges.bybit import Bybit
 from quantfreedom.exchanges.mufex import Mufex
 
-logger = getLogger("info")
+logger = getLogger()
 
 
 def dl_ex_candles(
@@ -54,7 +54,7 @@ def dl_ex_candles(
             candles_to_dl=1500 if candles_to_dl is None else candles_to_dl,
         )
     elif exchange.lower() == "mufex":
-        return Mufex(use_test_net=False).get_candles(
+        return Mufex(use_testnet=False).get_candles(
             symbol=symbol,
             timeframe=timeframe,
             since_datetime=since_datetime,
@@ -62,7 +62,7 @@ def dl_ex_candles(
             candles_to_dl=1500 if candles_to_dl is None else candles_to_dl,
         )
     elif exchange.lower() == "bybit":
-        return Bybit(use_test_net=False).get_candles(
+        return Bybit(use_testnet=False).get_candles(
             symbol=symbol,
             timeframe=timeframe,
             since_datetime=since_datetime,

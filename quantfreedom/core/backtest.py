@@ -22,7 +22,7 @@ from quantfreedom.core.enums import (
 )
 from quantfreedom.helpers.utils import pretty_qf
 
-logger = getLogger("info")
+logger = getLogger()
 
 
 def multiprocess_backtest(

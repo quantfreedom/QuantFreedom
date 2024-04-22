@@ -90,7 +90,7 @@ class BSC_Scan:
         response = get(url=self.url, params=params).json()
         try:
             data_list = response["result"]
-            sorted_list = Exchange(use_test_net=False).sort_list_of_dicts(data_list)
+            sorted_list = Exchange(use_testnet=False).sort_list_of_dicts(data_list)
             return sorted_list
         except Exception as e:
             raise Exception(
