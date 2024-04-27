@@ -24,7 +24,7 @@ kaleido = [
 {version="0.2.1", markers="sys_platform == 'linux'", source = "pypi"},
 ]
 
-aws-cdk-lib = { version = "2.133.0", optional = true }
+aws-cdk-lib = { version = "2.139.0", optional = true }
 bcrypt = {version = "4.1.2", optional = true}
 cryptography = {version = "42.0.5", optional = true}
 fastapi = { version = "0.110.0", optional = true }

@@ -214,10 +214,14 @@ class BSC_Scan:
                 offset=offset,
                 sort=sort,
             )
-            if transaction["from"] == from_address:
-                value = round(float(transaction["value"]) / 10 ** int(transaction["tokenDecimal"]), 2)
-                return value
-            return -10000
+            if transaction:
+                if transaction["from"] == from_address:
+                    value = round(float(transaction["value"]) / 10 ** int(transaction["tokenDecimal"]), 2)
+                    return value
+                else:
+                    return f"Transaction not from {from_address}"
+            else:
+                return f"Couldn't find transaction with hash {tx_hash}"
         except:
             return -10000
 
