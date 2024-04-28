@@ -1,51 +1,53 @@
-from datetime import datetime
-import os, logging
-import time
-
-FORMATTER = "%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s() - %(lineno)d - %(message)s"
+from datetime import datetime, timezone
+import logging
+from os.path import dirname, join, abspath, exists
+from os import makedirs
+from time import gmtime
 
 
 def set_loggers(
-    log_folder: str,
+    disable_logger: bool,
+    log_path: str,
 ):
-    logging.Formatter.converter = time.gmtime
-    # creating images folder
-    complete_path = os.path.join(log_folder, "logs", "images")
-    isExist = os.path.exists(complete_path)
-    if not isExist:
-        os.makedirs(complete_path)
+    if disable_logger:
+        logging.getLogger().disabled = True
+    else:
+        try:
+            logging.Formatter.converter = gmtime
+            log_folder_path = join(log_path, "zlogs")
 
-    # Info logs
-    complete_path = os.path.join(log_folder, "logs")
-    isExist = os.path.exists(complete_path)
-    if not isExist:
-        os.makedirs(complete_path)
-    filename = os.path.join(complete_path, f'info_{datetime.utcnow().strftime("%m-%d-%Y_%H-%M-%S")}.log')
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(create_logging_handler(filename, FORMATTER))
-    logger.info("Testing info log")
+            isExist = exists(log_folder_path)
+            if not isExist:
+                makedirs(log_folder_path)
 
-    complete_path = os.path.join(log_folder, "logs", "trades")
-    isExist = os.path.exists(complete_path)
-    if not isExist:
-        os.makedirs(complete_path)
-    filename = os.path.join(complete_path, f'trades_{datetime.utcnow().strftime("%m-%d-%Y_%H-%M-%S")}.log')
-    logger = logging.getLogger("trades")
-    logger.setLevel(logging.INFO)
-    logger.addHandler(create_logging_handler(filename, FORMATTER))
-    logger.info("Testing trades log")
+            file_format = f'info_{datetime.now(tz=timezone.utc).strftime("%Y-%m-%d_%H-%M-%S")}.log'
+            filename = join(log_folder_path, file_format)
+
+            logger = logging.getLogger()
+            logger.disabled = False
+            logger.setLevel(logging.INFO)
+            logger.addHandler(create_logging_handler(filename=filename))
+            logger.info("Testing info log")
+
+        except:  # this is for the aws lambda function
+            logger = logging.getLogger()
+            logger.disabled = False
+            logger.setLevel(logging.INFO)
+
+            log_handler = logger.handlers[0]
+            log_format = "\n%(levelname)s - %(filename)s - %(funcName)s() - %(lineno)d - %(message)s"
+            log_handler.setFormatter(logging.Formatter(fmt=log_format))
+
+            pass
 
 
-def create_logging_handler(filename: str, FORMATTER: str):
+def create_logging_handler(filename: str):
     handler = None
     try:
-        handler = logging.FileHandler(
-            filename=filename,
-            mode="w",
-        )
-        handler.setFormatter(logging.Formatter(fmt=FORMATTER))
+        handler = logging.FileHandler(filename=filename, mode="w")
+        log_format = "%(asctime)s - %(levelname)s - %(filename)s - %(funcName)s() - %(lineno)d - %(message)s"
+        handler.setFormatter(logging.Formatter(fmt=log_format, datefmt="%Y-%m-%d %H:%M:%S"))
     except Exception as e:
-        print(f"Couldnt init logging system with file [{filename}]. Desc=[{e}]")
+        raise Exception(f"Couldnt create logging handler. Desc=[{e}]")
 
     return handler
