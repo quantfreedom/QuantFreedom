@@ -16,6 +16,7 @@ thinking.txt
 *.todo
 .todo
 todo
+zlogs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

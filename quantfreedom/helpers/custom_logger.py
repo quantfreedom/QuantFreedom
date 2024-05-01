@@ -14,7 +14,7 @@ def set_loggers(
     else:
         try:
             logging.Formatter.converter = gmtime
-            log_folder_path = join(log_path, "zlogs")
+            log_folder_path = join(log_path, "z_logs")
 
             isExist = exists(log_folder_path)
             if not isExist:

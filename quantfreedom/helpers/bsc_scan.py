@@ -215,15 +215,15 @@ class BSC_Scan:
                 sort=sort,
             )
             if transaction:
-                if transaction["from"] == from_address:
+                if transaction["from"].lower() == from_address.lower():
                     value = round(float(transaction["value"]) / 10 ** int(transaction["tokenDecimal"]), 2)
                     return value
                 else:
                     return f"Transaction not from {from_address}"
             else:
                 return f"Couldn't find transaction with hash {tx_hash}"
-        except:
-            return -10000
+        except Exception as e:
+            raise Exception(f"Exception for get_user_payment_amount -> {e}")
 
     def get_bnb_balance_for_address(
         self,
