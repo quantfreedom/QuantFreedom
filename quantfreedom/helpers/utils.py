@@ -36,6 +36,8 @@ def clear_cache():
         delete_dir(p)
     for p in Path(__file__).parent.parent.rglob("__pycache__"):
         delete_dir(p)
+    for p in Path(__file__).parent.parent.rglob("cdk.out"):
+        delete_dir(p)
     for p in Path(__file__).parent.parent.rglob("*.py[co]"):
         p.unlink()
 
