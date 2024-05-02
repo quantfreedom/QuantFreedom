@@ -61,7 +61,7 @@ class BSC_Scan:
 
     def get_transactions(
         self,
-        address: str = "0x7192b3AA5878293075951b53dEcefb09F3C6F37c",
+        address: str,
         contractaddress: str = "0x55d398326f99059fF775485246999027B3197955",
         startblock: int = 0,
         endblock: int = 99999999,
@@ -72,7 +72,6 @@ class BSC_Scan:
         """
         [Get a list of 'Normal' Transactions By Address](https://docs.bscscan.com/api-endpoints/accounts#get-a-list-of-bep-20-token-transfer-events-by-address)
 
-        Default address is quantfreedom wallet
         Default contract address is USDT
         """
         params = {
@@ -100,7 +99,7 @@ class BSC_Scan:
     def get_transaction_by_hash(
         self,
         tx_hash: str,
-        address: str = "0x7192b3AA5878293075951b53dEcefb09F3C6F37c",
+        address: str,
         contractaddress: str = "0x55d398326f99059fF775485246999027B3197955",
         startblock: int = 0,
         endblock: int = 99999999,
@@ -109,7 +108,6 @@ class BSC_Scan:
         sort="desc",
     ):
         """
-        Default address is quantfreedom wallet
         Default contract address is USDT
         """
         transactions = self.get_transactions(
@@ -129,7 +127,7 @@ class BSC_Scan:
     def get_transaction_value_by_hash(
         self,
         tx_hash: str,
-        address: str = "0x7192b3AA5878293075951b53dEcefb09F3C6F37c",
+        address: str,
         contractaddress: str = "0x55d398326f99059fF775485246999027B3197955",
         startblock: int = 0,
         endblock: int = 99999999,
@@ -138,7 +136,6 @@ class BSC_Scan:
         sort="desc",
     ):
         """
-        Default address is quantfreedom wallet
         Default contract address is USDT
         """
         try:
@@ -160,7 +157,7 @@ class BSC_Scan:
     def get_transactions_by_from_address(
         self,
         from_address: str,
-        address: str = "0x7192b3AA5878293075951b53dEcefb09F3C6F37c",
+        address: str,
         contractaddress: str = "0x55d398326f99059fF775485246999027B3197955",
         startblock: int = 0,
         endblock: int = 99999999,
@@ -169,7 +166,6 @@ class BSC_Scan:
         sort="desc",
     ):
         """
-        Default address is quantfreedom wallet
         Default contract address is USDT
         """
         transactions = self.get_transactions(
@@ -191,7 +187,7 @@ class BSC_Scan:
         self,
         tx_hash: str,
         from_address: str,
-        address: str = "0x7192b3AA5878293075951b53dEcefb09F3C6F37c",
+        address: str,
         contractaddress: str = "0x55d398326f99059fF775485246999027B3197955",
         startblock: int = 0,
         endblock: int = 99999999,
@@ -200,7 +196,6 @@ class BSC_Scan:
         sort="desc",
     ):
         """
-        Default address is quantfreedom wallet
         Default contract address is USDT
         """
         try:
