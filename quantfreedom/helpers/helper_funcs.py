@@ -174,24 +174,3 @@ def fill_order_records(
     order_records["tp_pct"] = round(order_result.tp_pct * 100, 3)
     order_records["tp_price"] = order_result.tp_price
     return or_index + 1
-
-
-def log_dynamic_order_settings(
-    dos_index: int,
-    dynamic_order_settings: DynamicOrderSettings,
-):
-    logger.info(
-        f"""
-Dynamic Order settings index= {dos_index}
-max_trades={dynamic_order_settings.max_trades}
-account_pct_risk_per_trade={round(dynamic_order_settings.account_pct_risk_per_trade * 100, 3)}
-risk_reward={dynamic_order_settings.risk_reward}
-sl_based_on_add_pct={round(dynamic_order_settings.sl_based_on_add_pct * 100, 3)}
-sl_based_on_lookback={dynamic_order_settings.sl_based_on_lookback}
-sl_bcb_type={dynamic_order_settings.sl_bcb_type}
-sl_to_be_cb_type={dynamic_order_settings.sl_to_be_cb_type}
-sl_to_be_when_pct={round(dynamic_order_settings.sl_to_be_when_pct * 100, 3)}
-trail_sl_bcb_type={dynamic_order_settings.trail_sl_bcb_type}
-trail_sl_by_pct={round(dynamic_order_settings.trail_sl_by_pct * 100, 3)}
-trail_sl_when_pct={round(dynamic_order_settings.trail_sl_when_pct * 100, 3)}"""
-    )

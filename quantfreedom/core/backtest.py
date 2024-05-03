@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from logging import getLogger
 from quantfreedom.helpers.custom_logger import set_loggers
-from quantfreedom.helpers.helper_funcs import get_dos, get_qf_score, log_dynamic_order_settings
+from quantfreedom.helpers.helper_funcs import get_qf_score
 from quantfreedom.nb_funcs.nb_helper_funcs import order_records_to_df
 from quantfreedom.order_handler.order import OrderHandler
 from quantfreedom.core.plotting_base import plot_or_results
@@ -48,11 +48,6 @@ def multiprocess_backtest(
         strategy.log_indicator_settings(ind_set_index=set_idx)
 
         strategy.set_current_dos_tuple(dos_index=set_idx)
-
-        log_dynamic_order_settings(
-            dos_index=set_idx,
-            dynamic_order_settings=strategy.current_dos_tuple,
-        )
 
         pnl_array = np.full(shape=round(total_bars / 3), fill_value=np.nan)
         filled_pnl_counter = 0
@@ -361,17 +356,21 @@ def handler(error):
 def or_backtest(
     candles: np.array,
     exchange_settings_tuple: ExchangeSettings,
-    logger_bool: bool,
+    disable_logger: bool,
     static_os_tuple: StaticOrderSettings,
     strategy: Strategy,
     set_idx: int,
     plot_results: bool = False,
 ):
-    if logger_bool == False:
-        logger.disabled = True
+    if disable_logger:
+        set_loggers(
+            disable_logger=disable_logger,
+        )
     else:
-        logger.disabled = False
-        set_loggers(log_folder=strategy.log_folder)
+        set_loggers(
+            disable_logger=disable_logger,
+            log_path=strategy.log_folder,
+        )
 
     starting_equity = static_os_tuple.starting_equity
 
@@ -387,16 +386,9 @@ def or_backtest(
     )
     strategy.log_indicator_settings(ind_set_index=set_idx)
 
-    dynamic_order_settings = get_dos(
-        dos_tuple=strategy.dos_tuple,
-        dos_index=set_idx,
-    )
-    log_dynamic_order_settings(
-        dos_index=set_idx,
-        dynamic_order_settings=dynamic_order_settings,
-    )
+    strategy.set_current_dos_tuple(dos_index=set_idx)
 
-    order.update_class_dos(dynamic_order_settings=dynamic_order_settings)
+    order.update_class_dos(dynamic_order_settings=strategy.current_dos_tuple)
     order.set_order_variables(equity=starting_equity)
 
     total_bars = candles.shape[0]
@@ -596,7 +588,7 @@ def or_backtest(
                     logger.error(f"Exception hit in eval strat -> {e}")
                     raise Exception(f"Exception hit in eval strat -> {e}")
     order_records_df = order_records_to_df(order_records[:or_filled])
-    pretty_qf(dynamic_order_settings)
+    pretty_qf(strategy.current_dos_tuple)
     pretty_qf(strategy.current_ind_settings_tuple)
     if plot_results:
         strategy.plot_signals(candles=candles)

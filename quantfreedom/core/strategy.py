@@ -1,7 +1,9 @@
 from typing import NamedTuple
 import numpy as np
-
+from logging import getLogger
 from quantfreedom.core.enums import DynamicOrderSettings
+
+logger = getLogger()
 
 
 class IndicatorSettings(NamedTuple):
@@ -94,6 +96,23 @@ class Strategy:
             trail_sl_bcb_type=self.dos_tuple.trail_sl_bcb_type[dos_index],
             trail_sl_by_pct=self.dos_tuple.trail_sl_by_pct[dos_index],
             trail_sl_when_pct=self.dos_tuple.trail_sl_when_pct[dos_index],
+        )
+
+        logger.info(
+            f"""
+Dynamic Order settings index= {dos_index}
+max_trades={self.current_dos_tuple.max_trades}
+account_pct_risk_per_trade={round(self.current_dos_tuple.account_pct_risk_per_trade * 100, 3)}
+risk_reward={self.current_dos_tuple.risk_reward}
+sl_based_on_add_pct={round(self.current_dos_tuple.sl_based_on_add_pct * 100, 3)}
+sl_based_on_lookback={self.current_dos_tuple.sl_based_on_lookback}
+sl_bcb_type={self.current_dos_tuple.sl_bcb_type}
+sl_to_be_cb_type={self.current_dos_tuple.sl_to_be_cb_type}
+sl_to_be_when_pct={round(self.current_dos_tuple.sl_to_be_when_pct * 100, 3)}
+trail_sl_bcb_type={self.current_dos_tuple.trail_sl_bcb_type}
+trail_sl_by_pct={round(self.current_dos_tuple.trail_sl_by_pct * 100, 3)}
+trail_sl_when_pct={round(self.current_dos_tuple.trail_sl_when_pct * 100, 3)
+}"""
         )
 
     #######################################################

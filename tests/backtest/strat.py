@@ -1,5 +1,5 @@
 from my_keys import MufexKeys
-import os
+from os.path import dirname, join, abspath
 import numpy as np
 import plotly.graph_objects as go
 from logging import getLogger
@@ -51,12 +51,12 @@ exchange_settings_tuple = ExchangeSettings(
     position_mode=3,
     price_tick_step=1,
 )
-backtest_settings_tuple = BacktestSettings(qf_filter=0.06)
+backtest_settings_tuple = BacktestSettings(qf_filter=0.02)
 
 dos_tuple = DynamicOrderSettings(
     account_pct_risk_per_trade=np.array([3]),
-    max_trades=np.array([4]),
-    risk_reward=np.array([2, 5]),
+    max_trades=np.array([2, 4, 6]),
+    risk_reward=np.array([3, 5]),
     sl_based_on_add_pct=np.array([0.1, 0.2, 0.3, 0.5]),
     sl_based_on_lookback=np.array([20, 50]),
     sl_bcb_type=np.array([CandleBodyType.Low]),
@@ -99,7 +99,7 @@ class RSIRisingFalling(Strategy):
     ) -> None:
 
         self.long_short = long_short
-        self.log_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        self.log_folder = abspath(join(dirname(__file__)))
 
         indicator_settings_tuple = IndicatorSettings(
             rsi_is_above=rsi_is_above,
@@ -113,6 +113,7 @@ class RSIRisingFalling(Strategy):
                 indicator_settings_tuple=indicator_settings_tuple,
             )
         )
+
         self.set_ind_settings_tuple(
             indicator_settings_tuple=indicator_settings_tuple,
         )
@@ -354,5 +355,5 @@ rsi_is_above= {self.rsi_is_above}"""
 long_strat = RSIRisingFalling(
     long_short="long",
     rsi_length=np.array([14]),
-    rsi_is_below=np.array([80]),
+    rsi_is_below=np.array([80, 60, 40]),
 )

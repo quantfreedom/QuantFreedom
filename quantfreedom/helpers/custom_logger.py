@@ -7,7 +7,7 @@ from time import gmtime
 
 def set_loggers(
     disable_logger: bool,
-    log_path: str,
+    log_path: str = None,
 ):
     if disable_logger:
         logging.getLogger().disabled = True
