@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 import logging
-from os.path import dirname, join, abspath, exists
+from os.path import join, exists
 from os import makedirs
 from time import gmtime
 

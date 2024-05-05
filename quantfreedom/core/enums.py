@@ -2,6 +2,36 @@ from typing import NamedTuple
 import numpy as np
 
 
+class FootprintCandlesTuple(NamedTuple):
+    candle_open_times: np.array = None
+    candle_close_times: np.array = None
+    candle_durations_s: np.array = None
+    candle_open_prices: np.array = None
+    candle_high_prices: np.array = None
+    candle_low_prices: np.array = None
+    candle_close_prices: np.array = None
+    candle_volumes: np.array = None
+    candle_trade_counts: np.array = None
+    candle_deltas: np.array = None
+    candle_delta_percents: np.array = None
+    candle_buy_volumes: np.array = None
+    candle_buy_counts: np.array = None
+    candle_sell_volumes: np.array = None
+    candle_sell_counts: np.array = None
+    candle_cvds: np.array = None
+    candle_pocs: np.array = None
+    candle_high_lows: np.array = None
+    prices_tuple: tuple = None
+    prices_buy_vol_tuple: tuple = None
+    prices_buy_count_tuple: tuple = None
+    prices_sell_vol_tuple: tuple = None
+    prices_sell_count_tuple: tuple = None
+    prices_delta_tuple: tuple = None
+    prices_delta_percent_tuple: tuple = None
+    prices_volume_tuple: tuple = None
+    prices_trade_count_tuple: tuple = None
+
+
 class CandleBodyTypeT(NamedTuple):
     Timestamp: int = 0
     Open: int = 1
