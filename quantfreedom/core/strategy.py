@@ -1,7 +1,7 @@
 from typing import NamedTuple
 import numpy as np
 from logging import getLogger
-from quantfreedom.core.enums import DynamicOrderSettings
+from quantfreedom.core.enums import DynamicOrderSettings, FootprintCandlesTuple
 
 logger = getLogger()
 
@@ -125,7 +125,7 @@ trail_sl_when_pct={round(self.current_dos_tuple.trail_sl_when_pct * 100, 3)
     #######################################################
     #######################################################
 
-    def long_set_entries_exits_array(self, candles: np.array, ind_set_index: int):
+    def long_set_entries_exits_array(self, candles: FootprintCandlesTuple, ind_set_index: int):
         pass
 
     def long_log_indicator_settings(self, ind_set_index: int):
@@ -144,7 +144,7 @@ trail_sl_when_pct={round(self.current_dos_tuple.trail_sl_when_pct * 100, 3)
     #######################################################
     #######################################################
 
-    def short_set_entries_exits_array(self, candles: np.array, ind_set_index: int):
+    def short_set_entries_exits_array(self, candles: FootprintCandlesTuple, ind_set_index: int):
         pass
 
     def short_log_indicator_settings(self, ind_set_index: int):
@@ -166,10 +166,10 @@ trail_sl_when_pct={round(self.current_dos_tuple.trail_sl_when_pct * 100, 3)
     def live_set_indicator(self, ind_set_index: int):
         pass
 
-    def long_live_evaluate(self, candles: np.array):
+    def long_live_evaluate(self, candles: FootprintCandlesTuple):
         pass
 
-    def short_live_evaluate(self, candles: np.array):
+    def short_live_evaluate(self, candles: FootprintCandlesTuple):
         pass
 
     #######################################################
@@ -182,8 +182,8 @@ trail_sl_when_pct={round(self.current_dos_tuple.trail_sl_when_pct * 100, 3)
     #######################################################
     #######################################################
 
-    def plot_signals(self, candles: np.array):
+    def plot_signals(self, candles: FootprintCandlesTuple):
         pass
 
-    def get_strategy_plot_filename(self, candles: np.array):
+    def get_strategy_plot_filename(self, candles: FootprintCandlesTuple):
         pass

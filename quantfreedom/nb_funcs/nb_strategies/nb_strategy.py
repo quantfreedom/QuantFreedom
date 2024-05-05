@@ -55,7 +55,7 @@ ind_set_arrays = strat_create_ind_cart_product(ind_set_arrays=ind_set_arrays)
 @njit(cache=True)
 def nb_strat_bt_create_ind(
     bar_index: int,
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     candle_group_size: int,
     indicator_settings_tuple: IndicatorSettings,
     logger: Callable,
@@ -131,7 +131,7 @@ def nb_strat_get_ind_set_str(
 @njit(cache=True)
 def nb_strat_long_evaluate(
     bar_index: int,
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     candle_group_size: int,
     indicator_settings_tuple: IndicatorSettings,
     logger: Callable,

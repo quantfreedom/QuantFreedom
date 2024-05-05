@@ -183,7 +183,7 @@ def nb_bb_tv(
 
 @njit(cache=True)
 def nb_true_range_tv(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
 ):
     """
     https://www.tradingview.com/pine-script-reference/v5/#fun_ta.tr
@@ -204,7 +204,7 @@ def nb_true_range_tv(
 
 @njit(cache=True)
 def nb_atr_tv(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     length: int,
     smoothing_type=nb_rma_tv,
 ):
@@ -247,7 +247,7 @@ def nb_rsi_tv(
 
 @njit(cache=True)
 def nb_supertrend_tv(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     atr_length: int,
     factor: int,
 ):
@@ -303,7 +303,7 @@ def nb_supertrend_tv(
 
 @njit(cache=True)
 def nb_vwap_tv(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
 ):
     """
     https://blog.quantinsti.com/vwap-strategy/
@@ -343,7 +343,7 @@ def nb_vwap_tv(
 
 @njit(cache=True)
 def nb_squeeze_momentum_lazybear_tv(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     length_bb: int,
     length_kc: int,
     multi_bb: int,

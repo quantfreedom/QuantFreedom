@@ -1,17 +1,17 @@
 import numpy as np
 import pandas as pd
-from quantfreedom.core.enums import CandleBodyType
+from quantfreedom.core.enums import CandleBodyType, FootprintCandlesTuple
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 
 def plot_candles_1_ind_same_pane(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     indicator: np.array,
     ind_name: str,
     ind_color: str = "yellow",
 ):
-    datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
+    datetimes = candles[:, CandleBodyType.OpenTimestamp].astype("datetime64[ms]")
     fig = go.Figure()
     fig.add_candlestick(
         x=datetimes,
@@ -32,12 +32,12 @@ def plot_candles_1_ind_same_pane(
 
 
 def plot_candles_1_ind_dif_pane(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     indicator: np.array,
     ind_name: str,
     ind_color: str = "yellow",
 ):
-    datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
+    datetimes = candles[:, CandleBodyType.OpenTimestamp].astype("datetime64[ms]")
     fig = make_subplots(
         cols=1,
         rows=2,
@@ -74,7 +74,7 @@ def plot_candles_1_ind_dif_pane(
 
 
 def plot_vwap(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     indicator: np.array,
     ind_color: str = "yellow",
 ):
@@ -98,7 +98,7 @@ def plot_vwap(
 
 
 def plot_rma(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     indicator: np.array,
     ind_color: str = "yellow",
 ):
@@ -123,7 +123,7 @@ def plot_rma(
 
 
 def plot_wma(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     indicator: np.array,
     ind_color: str = "yellow",
 ):
@@ -148,7 +148,7 @@ def plot_wma(
 
 
 def plot_sma(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     indicator: np.array,
     ind_color: str = "yellow",
 ):
@@ -173,7 +173,7 @@ def plot_sma(
 
 
 def plot_ema(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     indicator: np.array,
     ind_color: str = "yellow",
 ):
@@ -198,7 +198,7 @@ def plot_ema(
 
 
 def plot_rsi(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     indicator: np.array,
     ind_color: str = "yellow",
 ):
@@ -211,7 +211,7 @@ def plot_rsi(
 
 
 def plot_atr(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     indicator: np.array,
     ind_color: str = "red",
 ):
@@ -224,7 +224,7 @@ def plot_atr(
 
 
 def plot_stdev(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     indicator: np.array,
     ind_color: str = "yellow",
 ):
@@ -237,12 +237,12 @@ def plot_stdev(
 
 
 def plot_bollinger_bands(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     indicator: np.array,
     ul_rgb: str = "48, 123, 255",
     basis_color_rgb: str = "255, 176, 0",
 ):
-    datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
+    datetimes = candles[:, CandleBodyType.OpenTimestamp].astype("datetime64[ms]")
     fig = go.Figure(
         data=[
             go.Scatter(
@@ -291,12 +291,12 @@ def plot_bollinger_bands(
 
 
 def plot_macd(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     signal: np.array,
     histogram: np.array,
     macd: np.array,
 ):
-    datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
+    datetimes = candles[:, CandleBodyType.OpenTimestamp].astype("datetime64[ms]")
     fig = make_subplots(
         cols=1,
         rows=2,
@@ -356,10 +356,10 @@ def plot_macd(
 
 
 def plot_squeeze_mom_lazybear(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     indicator: np.array,
 ):
-    datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
+    datetimes = candles[:, CandleBodyType.OpenTimestamp].astype("datetime64[ms]")
     fig = make_subplots(
         cols=1,
         rows=2,
@@ -404,7 +404,7 @@ def plot_squeeze_mom_lazybear(
 
 
 def plot_or_results(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     order_records_df: pd.DataFrame,
 ):
     fig = make_subplots(
@@ -420,11 +420,11 @@ def plot_or_results(
         # Candles
         fig.add_trace(
             go.Candlestick(
-                x=candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]"),
-                open=candles[:, 1],
-                high=candles[:, 2],
-                low=candles[:, 3],
-                close=candles[:, 4],
+                x=candles.candle_open_datetimes,
+                open=candles.candle_open_prices,
+                high=candles.candle_high_prices,
+                low=candles.candle_low_prices,
+                close=candles.candle_close_prices,
                 name="Candles",
             ),
             col=1,
@@ -583,9 +583,13 @@ def plot_or_results(
     try:
         pnl_dt_df = order_records_df[~order_records_df["realized_pnl"].isna()]["datetime"]
         dt_list = pnl_dt_df.to_list()
-        dt_list.insert(0, candles[0, 0].astype("datetime64[ms]"))
+        dt_list.insert(
+            0,
+            candles.candle_open_datetimes[0],
+        )
 
-        pnl_df = order_records_df[~order_records_df["realized_pnl"].isna()]["realized_pnl"]
+        pnl_df_no_nan = order_records_df[~order_records_df["realized_pnl"].isna()]
+        pnl_df = pnl_df_no_nan["realized_pnl"]
         pnl_list = pnl_df.to_list()
         pnl_list.insert(0, 0)
         cumulative_pnl = np.array(pnl_list).cumsum()
@@ -608,10 +612,10 @@ def plot_or_results(
 
 
 def plot_supertrend(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     indicator: np.array,
 ):
-    datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
+    datetimes = candles[:, CandleBodyType.OpenTimestamp].astype("datetime64[ms]")
     lower = np.where(indicator[:, 1] < 0, indicator[:, 0], np.nan)
     upper = np.where(indicator[:, 1] > 0, indicator[:, 0], np.nan)
     fig = go.Figure(
@@ -652,10 +656,10 @@ def plot_supertrend(
 
 
 def plot_linear_regression_candles_ugurvu_tv(
-    lin_reg_candles: np.array,
+    lin_reg_candles: FootprintCandlesTuple,
     signal: np.array,
 ):
-    datetimes = lin_reg_candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
+    datetimes = lin_reg_candles[:, CandleBodyType.OpenTimestamp].astype("datetime64[ms]")
     fig = go.Figure(
         data=[
             go.Candlestick(
@@ -679,14 +683,14 @@ def plot_linear_regression_candles_ugurvu_tv(
 
 
 def plot_revolution_volatility_bands_tv(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     upper_smooth: np.array,
     upper_falling: np.array,
     lower_smooth: np.array,
     lower_rising: np.array,
     ind_color: str = "yellow",
 ):
-    datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
+    datetimes = candles[:, CandleBodyType.OpenTimestamp].astype("datetime64[ms]")
     fig = go.Figure()
     fig.add_candlestick(
         x=datetimes,
@@ -725,10 +729,10 @@ def plot_revolution_volatility_bands_tv(
 
 
 def plot_volume(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     moving_average: np.array = None,
 ):
-    datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
+    datetimes = candles[:, CandleBodyType.OpenTimestamp].astype("datetime64[ms]")
     close_prices = candles[:, CandleBodyType.Close]
     open_prices = candles[:, CandleBodyType.Open]
     volume = candles[:, CandleBodyType.Volume]
@@ -751,11 +755,11 @@ def plot_volume(
 
 """
 def plot_range_detextor_LuxAlgo(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     box_x: np.array,
     box_y: np.array,
 ):
-    datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
+    datetimes = candles[:, CandleBodyType.OpenTimestamp].astype("datetime64[ms]")
     fig = go.Figure(
         data=[
             go.Candlestick(

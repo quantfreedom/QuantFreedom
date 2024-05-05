@@ -8,6 +8,8 @@ from quantfreedom.order_handler.stop_loss import StopLoss
 from quantfreedom.order_handler.take_profit import TakeProfit
 
 from quantfreedom.core.enums import (
+    CurrentFootprintCandleTuple,
+    FootprintCandlesTuple,
     OrderStatus,
     DynamicOrderSettings,
     ExchangeSettings,
@@ -186,14 +188,20 @@ class OrderHandler:
         order_records["tp_pct"] = round(self.tp_pct * 100, 3)
         order_records["tp_price"] = self.tp_price
 
-    def check_move_tsl(self, current_candle: np.array):
+    def check_move_tsl(
+        self,
+        current_candle: CurrentFootprintCandleTuple,
+    ):
         return self.obj_stop_loss.checker_tsl(
             average_entry=self.average_entry,
             current_candle=current_candle,
             sl_price=self.sl_price,
         )
 
-    def check_move_sl_to_be(self, current_candle: np.array):
+    def check_move_sl_to_be(
+        self,
+        current_candle: CurrentFootprintCandleTuple,
+    ):
         return self.obj_stop_loss.checker_sl_to_be(
             average_entry=self.average_entry,
             can_move_sl_to_be=self.can_move_sl_to_be,
@@ -201,7 +209,10 @@ class OrderHandler:
             sl_price=self.sl_price,
         )
 
-    def check_liq_hit(self, current_candle: np.array):
+    def check_liq_hit(
+        self,
+        current_candle: CurrentFootprintCandleTuple,
+    ):
         self.obj_leverage.checker_liq_hit(
             current_candle=current_candle,
             liq_price=self.liq_price,
@@ -209,7 +220,7 @@ class OrderHandler:
 
     def check_take_profit_hit(
         self,
-        current_candle: np.array,
+        current_candle: CurrentFootprintCandleTuple,
         exit_price: float,
     ):
         self.obj_take_profit.checker_tp_hit(
@@ -218,7 +229,10 @@ class OrderHandler:
             tp_price=self.tp_price,
         )
 
-    def check_stop_loss_hit(self, current_candle: np.array):
+    def check_stop_loss_hit(
+        self,
+        current_candle: CurrentFootprintCandleTuple,
+    ):
         self.obj_stop_loss.checker_sl_hit(
             current_candle=current_candle,
             sl_price=self.sl_price,
@@ -248,7 +262,7 @@ class OrderHandler:
     def calculate_stop_loss(
         self,
         bar_index: int,
-        candles: np.array,
+        candles: FootprintCandlesTuple,
     ):
         sl_price = self.obj_stop_loss.sl_calculator(
             bar_index=bar_index,

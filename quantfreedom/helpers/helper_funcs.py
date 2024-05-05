@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from logging import getLogger
 from datetime import datetime
-from quantfreedom.core.enums import AccountState, DynamicOrderSettings, DynamicOrderSettings, OrderResult
+from quantfreedom.core.enums import AccountState, FootprintCandlesTuple, OrderResult
 from quantfreedom.exchanges.binance_usdm import BinanceUSDM
 from quantfreedom.exchanges.bybit import Bybit
 from quantfreedom.exchanges.mufex import Mufex
@@ -17,7 +17,7 @@ def dl_ex_candles(
     candles_to_dl: int = None,
     since_datetime: datetime = None,
     until_datetime: datetime = None,
-):
+) -> FootprintCandlesTuple:
     """
     Download candles from the exchange of your choice
 
@@ -74,7 +74,7 @@ def dl_ex_candles(
 
 
 def candles_to_df(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
 ) -> pd.DataFrame:
     """
     Converts your numpy array candles to a pandas dataframe

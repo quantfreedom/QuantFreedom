@@ -11,9 +11,11 @@ from quantfreedom.core.strategy import Strategy
 from quantfreedom.core.enums import (
     BacktestSettings,
     CandleBodyType,
+    CurrentFootprintCandleTuple,
     DecreasePosition,
     DynamicOrderSettings,
     ExchangeSettings,
+    FootprintCandlesTuple,
     OrderStatus,
     RejectedOrder,
     StaticOrderSettings,
@@ -27,7 +29,7 @@ logger = getLogger()
 
 def multiprocess_backtest(
     backtest_settings_tuple: BacktestSettings,
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     exchange_settings_tuple: ExchangeSettings,
     order: OrderHandler,
     range_end: int,
@@ -60,16 +62,24 @@ def multiprocess_backtest(
 
         for bar_index in range(static_os_tuple.starting_bar - 1, total_bars):
             logger.info("\n\n")
-            timestamp = pd.to_datetime(candles[bar_index, CandleBodyType.Timestamp], unit="ms")
-            logger.info(f"set_idx= {set_idx} bar_idx= {bar_index} timestamp= {timestamp}")
+            logger.info(f"set_idx= {set_idx} bar_idx= {bar_index} datetime= {candles.candle_open_datetimes[bar_index]}")
 
             if order.position_size_usd > 0:
                 try:
-                    current_candle = candles[bar_index, :]
+                    current_candle = CurrentFootprintCandleTuple(
+                        open_price=candles.candle_open_prices[bar_index],
+                        high_price=candles.candle_high_prices[bar_index],
+                        low_price=candles.candle_low_prices[bar_index],
+                        close_price=candles.candle_close_prices[bar_index],
+                    )
                     logger.debug("Checking stop loss hit")
-                    order.check_stop_loss_hit(current_candle=current_candle)
+                    order.check_stop_loss_hit(
+                        current_candle=current_candle,
+                    )
                     logger.debug("Checking liq hit")
-                    order.check_liq_hit(current_candle=current_candle)
+                    order.check_liq_hit(
+                        current_candle=current_candle,
+                    )
                     logger.debug("Checking take profit hit")
                     order.check_take_profit_hit(
                         current_candle=current_candle,
@@ -77,13 +87,17 @@ def multiprocess_backtest(
                     )
 
                     logger.debug("Checking to move stop to break even")
-                    sl_to_be_price, sl_to_be_pct = order.check_move_sl_to_be(current_candle=current_candle)
+                    sl_to_be_price, sl_to_be_pct = order.check_move_sl_to_be(
+                        current_candle=current_candle,
+                    )
                     if sl_to_be_price:
                         order.sl_pct = sl_to_be_pct
                         order.sl_price = sl_to_be_price
 
                     logger.debug("Checking to move trailing stop loss")
-                    tsl_price, tsl_pct = order.check_move_tsl(current_candle=current_candle)
+                    tsl_price, tsl_pct = order.check_move_tsl(
+                        current_candle=current_candle,
+                    )
                     if tsl_price:
                         order.sl_pct = tsl_pct
                         order.sl_price = tsl_price
@@ -138,7 +152,7 @@ def multiprocess_backtest(
                         sl_pct,
                     ) = order.calculate_increase_position(
                         average_entry=order.average_entry,
-                        entry_price=candles[bar_index, CandleBodyType.Close],
+                        entry_price=candles.candle_close_prices[bar_index],
                         equity=order.equity,
                         position_size_asset=order.position_size_asset,
                         position_size_usd=order.position_size_usd,
@@ -257,7 +271,7 @@ total_trades={total_trades_closed}"""
 
 def run_df_backtest(
     backtest_settings_tuple: BacktestSettings,
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     exchange_settings_tuple: ExchangeSettings,
     static_os_tuple: StaticOrderSettings,
     strategy: Strategy,
@@ -279,7 +293,7 @@ def run_df_backtest(
 
     # Creating Settings Vars
 
-    total_bars = candles.shape[0]
+    total_bars = candles.candle_open_timestamps.size
 
     total_settings = strategy.total_order_settings * strategy.total_indicator_settings
 
@@ -354,7 +368,7 @@ def handler(error):
 
 
 def or_backtest(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     exchange_settings_tuple: ExchangeSettings,
     disable_logger: bool,
     static_os_tuple: StaticOrderSettings,
@@ -391,23 +405,33 @@ def or_backtest(
     order.update_class_dos(dynamic_order_settings=strategy.current_dos_tuple)
     order.set_order_variables(equity=starting_equity)
 
-    total_bars = candles.shape[0]
+    total_bars = candles.candle_open_timestamps.size
 
     or_filled = 0
     order_records = np.empty(shape=int(total_bars / 3), dtype=or_dt)
 
     for bar_index in range(static_os_tuple.starting_bar - 1, total_bars):
         logger.info("\n\n")
-        timestamp = pd.to_datetime(candles[bar_index, CandleBodyType.Timestamp], unit="ms")
-        logger.info(f"set_idx= {set_idx} bar_idx= {bar_index} timestamp= {timestamp}")
+        datetime = candles.candle_open_datetimes[bar_index]
+        logger.info(f"set_idx= {set_idx} bar_idx= {bar_index} datetime= {datetime}")
 
         if order.position_size_usd > 0:
             try:
-                current_candle = candles[bar_index, :]
+                current_candle = CurrentFootprintCandleTuple(
+                    open_timestamp=candles.candle_open_timestamps[bar_index],
+                    open_price=candles.candle_open_prices[bar_index],
+                    high_price=candles.candle_high_prices[bar_index],
+                    low_price=candles.candle_low_prices[bar_index],
+                    close_price=candles.candle_close_prices[bar_index],
+                )
                 logger.debug("Checking stop loss hit")
-                order.check_stop_loss_hit(current_candle=current_candle)
+                order.check_stop_loss_hit(
+                    current_candle=current_candle,
+                )
                 logger.debug("Checking liq hit")
-                order.check_liq_hit(current_candle=current_candle)
+                order.check_liq_hit(
+                    current_candle=current_candle,
+                )
                 logger.debug("Checking take profit hit")
                 order.check_take_profit_hit(
                     current_candle=current_candle,
@@ -415,7 +439,9 @@ def or_backtest(
                 )
 
                 logger.debug("Checking to move stop to break even")
-                sl_to_be_price, sl_to_be_pct = order.check_move_sl_to_be(current_candle=current_candle)
+                sl_to_be_price, sl_to_be_pct = order.check_move_sl_to_be(
+                    current_candle=current_candle,
+                )
                 if sl_to_be_price:
                     order.sl_pct = sl_to_be_pct
                     order.sl_price = sl_to_be_price
@@ -425,29 +451,34 @@ def or_backtest(
                         set_idx=set_idx,
                         order_records=order_records[or_filled],
                         order_status=OrderStatus.MovedSLToBE,
-                        timestamp=current_candle[CandleBodyType.Timestamp],
+                        timestamp=current_candle.open_timestamp,
                         sl_price=sl_to_be_price,
                         sl_pct=sl_to_be_pct,
                     )
                     or_filled += 1
                     logger.debug(f"Filled sl to be order records")
+
                 logger.debug("Checking to move trailing stop loss")
-                tsl_price, tsl_pct = order.check_move_tsl(current_candle=current_candle)
+                tsl_price, tsl_pct = order.check_move_tsl(
+                    current_candle=current_candle,
+                )
                 if tsl_price:
                     order.sl_pct = tsl_pct
                     order.sl_price = tsl_price
                     logger.debug(f"Filling order for tsl")
+
                     order.fill_or_exit_move(
                         bar_index=bar_index,
                         set_idx=set_idx,
                         order_records=order_records[or_filled],
                         order_status=OrderStatus.MovedTSL,
-                        timestamp=current_candle[CandleBodyType.Timestamp],
+                        timestamp=current_candle.open_timestamp,
                         sl_pct=tsl_pct,
                         sl_price=tsl_price,
                     )
                     or_filled += 1
                     logger.debug(f"Filled move tsl order records")
+
             except DecreasePosition as e:
                 (
                     equity,
@@ -466,7 +497,7 @@ def or_backtest(
                     set_idx=set_idx,
                     order_records=order_records[or_filled],
                     order_status=e.order_status,
-                    timestamp=current_candle[CandleBodyType.Timestamp],
+                    timestamp=current_candle.open_timestamp,
                     equity=equity,
                     exit_price=e.exit_price,
                     fees_paid=fees_paid,
@@ -507,7 +538,7 @@ def or_backtest(
                     sl_pct,
                 ) = order.calculate_increase_position(
                     average_entry=order.average_entry,
-                    entry_price=candles[bar_index, CandleBodyType.Close],
+                    entry_price=candles.candle_close_prices[bar_index],
                     equity=order.equity,
                     position_size_asset=order.position_size_asset,
                     position_size_usd=order.position_size_usd,
@@ -574,14 +605,14 @@ def or_backtest(
                     bar_index=bar_index + 1,
                     set_idx=set_idx,
                     order_records=order_records[or_filled],
-                    timestamp=candles[bar_index + 1, CandleBodyType.Timestamp],
+                    timestamp=candles.candle_open_timestamps[bar_index + 1],
                 )
                 or_filled += 1
                 logger.info("We are in a position and filled the result")
             except RejectedOrder:
                 pass
             except Exception as e:
-                if bar_index + 1 >= candles.shape[0]:
+                if bar_index + 1 >= candles.candle_open_timestamps.size:
                     raise Exception(f"Exception hit in eval strat -> {e}")
                     pass
                 else:
@@ -591,6 +622,11 @@ def or_backtest(
     pretty_qf(strategy.current_dos_tuple)
     pretty_qf(strategy.current_ind_settings_tuple)
     if plot_results:
-        strategy.plot_signals(candles=candles)
-        plot_or_results(candles=candles, order_records_df=order_records_df)
+        strategy.plot_signals(
+            candles=candles,
+        )
+        plot_or_results(
+            candles=candles,
+            order_records_df=order_records_df,
+        )
     return order_records_df

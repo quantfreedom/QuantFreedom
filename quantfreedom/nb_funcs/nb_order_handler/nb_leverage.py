@@ -48,7 +48,7 @@ def nb_long_get_liq_price(
 
 @njit(cache=True)
 def nb_long_liq_hit_bool(
-    current_candle: np.array,
+    current_candle: CurrentFootprintCandleTuple,
     liq_price: float,
     logger,
     stringer,
@@ -104,13 +104,16 @@ def nb_short_get_liq_price(
 
 @njit(cache=True)
 def nb_short_liq_hit_bool(
-    current_candle: np.array,
+    current_candle: CurrentFootprintCandleTuple,
     liq_price: float,
     logger,
     stringer,
 ):
     candle_high = current_candle[CandleBodyType.High]
-    logger("nb_leverage.py - nb_short_liq_hit_bool() - candle_high= " + stringer[StringerFuncType.float_to_str](candle_high))
+    logger(
+        "nb_leverage.py - nb_short_liq_hit_bool() - candle_high= "
+        + stringer[StringerFuncType.float_to_str](candle_high)
+    )
     return liq_price < candle_high
 
 
@@ -314,7 +317,7 @@ def nb_dynamic_lev(
 
 @njit(cache=True)
 def nb_check_liq_hit(
-    current_candle: np.array,
+    current_candle: CurrentFootprintCandleTuple,
     liq_price: float,
     logger,
     nb_liq_hit_bool,

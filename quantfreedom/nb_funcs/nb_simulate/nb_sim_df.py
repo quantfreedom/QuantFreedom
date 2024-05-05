@@ -24,7 +24,7 @@ from quantfreedom.nb_funcs.nb_order_handler.nb_leverage import LevOrderInfo, nb_
 @njit(cache=True)
 def nb_run_df_backtest(
     backtest_settings_tuple: BacktestSettings,
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     dos_tuple: DynamicOrderSettings,
     exchange_settings_tuple: ExchangeSettings,
     exit_fee_pct: float,
@@ -144,7 +144,7 @@ def nb_run_df_backtest(
                         + " bar_idx="
                         + str(bar_index)
                         + " timestamp= "
-                        + stringer[StringerFuncType.log_datetime](candles[bar_index, CandleBodyType.Timestamp])
+                        + stringer[StringerFuncType.log_datetime](candles[bar_index, CandleBodyType.OpenTimestamp])
                     )
                 )
 
@@ -175,7 +175,7 @@ def nb_run_df_backtest(
                                 order_status=OrderStatus.StopLossFilled,
                                 position_size_asset=order_result.position_size_asset,
                                 stringer=stringer,
-                                timestamp=int(candles[bar_index, CandleBodyType.Timestamp]),
+                                timestamp=int(candles[bar_index, CandleBodyType.OpenTimestamp]),
                             )
                             pnl_array[filled_pnl_counter] = account_state.realized_pnl
                             filled_pnl_counter += 1
@@ -207,7 +207,7 @@ def nb_run_df_backtest(
                                 order_status=OrderStatus.LiquidationFilled,
                                 position_size_asset=order_result.position_size_asset,
                                 stringer=stringer,
-                                timestamp=int(candles[bar_index, CandleBodyType.Timestamp]),
+                                timestamp=int(candles[bar_index, CandleBodyType.OpenTimestamp]),
                             )
                             pnl_array[filled_pnl_counter] = account_state.realized_pnl
                             filled_pnl_counter += 1
@@ -239,7 +239,7 @@ def nb_run_df_backtest(
                                 order_status=OrderStatus.TakeProfitFilled,
                                 position_size_asset=order_result.position_size_asset,
                                 stringer=stringer,
-                                timestamp=int(candles[bar_index, CandleBodyType.Timestamp]),
+                                timestamp=int(candles[bar_index, CandleBodyType.OpenTimestamp]),
                             )
                             pnl_array[filled_pnl_counter] = account_state.realized_pnl
                             filled_pnl_counter += 1
@@ -276,7 +276,7 @@ def nb_run_df_backtest(
                                 order_status=OrderStatus.MovedSLToBE,
                                 sl_price=temp_sl,
                                 sl_pct=temp_sl_pct,
-                                timestamp=int(candles[bar_index, CandleBodyType.Timestamp]),
+                                timestamp=int(candles[bar_index, CandleBodyType.OpenTimestamp]),
                             )
 
                         # Checking to move trailing stop loss
@@ -308,7 +308,7 @@ def nb_run_df_backtest(
                                 order_status=OrderStatus.MovedTSL,
                                 sl_price=temp_tsl,
                                 sl_pct=temp_tsl_pct,
-                                timestamp=int(candles[bar_index, CandleBodyType.Timestamp]),
+                                timestamp=int(candles[bar_index, CandleBodyType.OpenTimestamp]),
                             )
                     # except Exception as e:
                     #     logger(
@@ -442,7 +442,7 @@ def nb_run_df_backtest(
                             ind_set_index=ind_set_index,
                             dos_index=dos_index,
                             bar_index=bar_index + 1,  # put plus 1 because we need to place entry on next bar
-                            timestamp=int(candles[bar_index + 1, CandleBodyType.Timestamp]),
+                            timestamp=int(candles[bar_index + 1, CandleBodyType.OpenTimestamp]),
                             # account info
                             available_balance=available_balance,
                             cash_borrowed=cash_borrowed,

@@ -1,6 +1,13 @@
 import numpy as np
 from logging import getLogger
-from quantfreedom.core.enums import CandleBodyType, DecreasePosition, LeverageStrategyType, OrderStatus, RejectedOrder
+from quantfreedom.core.enums import (
+    CandleBodyType,
+    CurrentFootprintCandleTuple,
+    DecreasePosition,
+    LeverageStrategyType,
+    OrderStatus,
+    RejectedOrder,
+)
 from quantfreedom.helpers.helper_funcs import round_size_by_tick_step
 
 logger = getLogger()
@@ -234,7 +241,7 @@ og_available_balance= {og_available_balance}"""
 
     def long_liq_hit_bool(
         self,
-        current_candle: np.array,
+        current_candle: CurrentFootprintCandleTuple,
         liq_price: float,
     ):
         candle_low = current_candle[CandleBodyType.Low]
@@ -243,7 +250,7 @@ og_available_balance= {og_available_balance}"""
 
     def short_liq_hit_bool(
         self,
-        current_candle: np.array,
+        current_candle: CurrentFootprintCandleTuple,
         liq_price: float,
     ):
         candle_high = current_candle[CandleBodyType.High]
@@ -252,10 +259,13 @@ og_available_balance= {og_available_balance}"""
 
     def check_liq_hit(
         self,
-        current_candle: np.array,
+        current_candle: CurrentFootprintCandleTuple,
         liq_price: float,
     ):
-        if self.liq_hit_bool(current_candle=current_candle, liq_price=liq_price):
+        if self.liq_hit_bool(
+            current_candle=current_candle,
+            liq_price=liq_price,
+        ):
             logger.debug("Liq Hit")
             raise DecreasePosition(
                 exit_fee_pct=self.market_fee_pct,

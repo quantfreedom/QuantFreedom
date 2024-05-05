@@ -28,7 +28,7 @@ from quantfreedom.utils import pretty_qf
 
 def nb_sim_backtest(
     backtest_settings_tuple: BacktestSettings,
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     dos_tuple: DynamicOrderSettings,
     exchange_settings_tuple: ExchangeSettings,
     logger_bool: bool,

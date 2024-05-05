@@ -9,6 +9,7 @@ from quantfreedom.indicators.tv_indicators import rsi_tv
 from quantfreedom.core.strategy import Strategy
 from quantfreedom.core.enums import (
     ExchangeSettings,
+    FootprintCandlesTuple,
     LeverageModeType,
     PositionModeType,
     IncreasePositionType,
@@ -163,7 +164,7 @@ class RSIRisingFalling(Strategy):
 
     def long_set_entries_exits_array(
         self,
-        candles: np.array,
+        candles: FootprintCandlesTuple,
         ind_set_index: int,
     ):
         try:
@@ -177,7 +178,7 @@ class RSIRisingFalling(Strategy):
             )
 
             rsi = rsi_tv(
-                source=candles[:, CandleBodyType.Close],
+                source=candles.candle_close_prices,
                 length=self.rsi_length,
             )
 
@@ -235,7 +236,7 @@ rsi_is_below= {self.rsi_is_below}"""
 
     def short_set_entries_exits_array(
         self,
-        candles: np.array,
+        candles: FootprintCandlesTuple,
         ind_set_index: int,
     ):
         try:
@@ -248,7 +249,7 @@ rsi_is_below= {self.rsi_is_below}"""
                 rsi_length=self.rsi_length,
             )
             rsi = rsi_tv(
-                source=candles[:, CandleBodyType.Close],
+                source=candles.candle_close_prices,
                 length=self.rsi_length,
             )
 
@@ -306,9 +307,9 @@ rsi_is_above= {self.rsi_is_above}"""
 
     def plot_signals(
         self,
-        candles: np.array,
+        candles: FootprintCandlesTuple,
     ):
-        datetimes = candles[:, CandleBodyType.Timestamp].astype("datetime64[ms]")
+        datetimes = candles.candle_open_datetimes
 
         fig = go.Figure()
         fig.add_scatter(

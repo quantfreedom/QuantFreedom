@@ -3,6 +3,13 @@ from dash_bootstrap_templates import load_figure_template
 from jupyter_dash import JupyterDash
 from IPython import get_ipython
 import dash_bootstrap_components as dbc
+from quantfreedom.helpers.utils import pretty_qf
+from quantfreedom.helpers.helper_funcs import dl_ex_candles
+
+__all__ = [
+    "pretty_qf",
+    "dl_ex_candles",
+]
 
 load_figure_template("darkly")
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"

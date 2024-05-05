@@ -4,7 +4,9 @@ from logging import getLogger
 from quantfreedom.helpers.helper_funcs import round_size_by_tick_step
 from quantfreedom.core.enums import (
     CandleBodyType,
+    CurrentFootprintCandleTuple,
     DecreasePosition,
+    FootprintCandlesTuple,
     OrderStatus,
     StopLossStrategyType,
 )
@@ -85,17 +87,21 @@ class StopLoss:
 
     # Long Functions
 
-    def long_sl_price_calc(self, candle_body: float, add_pct: float):
+    def long_sl_price_calc(
+        self,
+        candle_body: float,
+        add_pct: float,
+    ):
         sl_price = candle_body - (candle_body * add_pct)
         return sl_price
 
     def long_sl_hit_bool(
         self,
-        current_candle: np.array,
+        current_candle: CurrentFootprintCandleTuple,
         sl_price: float,
     ):
         logger.debug("Starting")
-        candle_low = current_candle[CandleBodyType.Low]
+        candle_low = current_candle.low_price
         logger.debug(f"candle_low= {candle_low}")
         return sl_price > candle_low
 
@@ -110,42 +116,63 @@ class StopLoss:
 
     def short_sl_hit_bool(
         self,
-        current_candle: np.array,
+        current_candle: CurrentFootprintCandleTuple,
         sl_price: float,
     ):
         logger.debug("Starting")
-        candle_high = current_candle[CandleBodyType.High]
+        candle_high = current_candle.high_price
         logger.debug(f"candle_high= {candle_high}")
         return sl_price < candle_high
 
-    def short_sl_price_calc(self, candle_body: float, add_pct: float):
+    def short_sl_price_calc(
+        self,
+        candle_body: float,
+        add_pct: float,
+    ):
         sl_price = candle_body + (candle_body * add_pct)
         return sl_price
 
-    def short_sl_to_zero_price(self, average_entry: float):
-        sl_price = (average_entry - self.market_fee_pct * average_entry) / (1 + self.market_fee_pct)
+    def short_sl_to_zero_price(
+        self,
+        average_entry: float,
+    ):
+        numerator = average_entry - self.market_fee_pct * average_entry
+        denominator = 1 + self.market_fee_pct
+        sl_price = numerator / denominator
         return sl_price
 
-    def num_less_than_num(self, num_1: float, num_2: float):
+    def num_less_than_num(
+        self,
+        num_1: float,
+        num_2: float,
+    ):
         return num_1 < num_2
 
     # Main Functions
-    def sl_to_zero(self, average_entry: float):
-        sl_price = self.sl_to_zero_price(average_entry=average_entry)
+    def sl_to_zero(
+        self,
+        average_entry: float,
+    ):
+        sl_price = self.sl_to_zero_price(
+            average_entry=average_entry,
+        )
         sl_price = round_size_by_tick_step(
             user_num=sl_price,
             exchange_num=self.price_tick_step,
         )
         return sl_price
 
-    def sl_to_entry(self, average_entry: float):
+    def sl_to_entry(
+        self,
+        average_entry: float,
+    ):
         sl_price = average_entry
         return sl_price
 
     def sl_based_on_candle_body(
         self,
         bar_index: int,
-        candles: np.array,
+        candles: FootprintCandlesTuple,
     ) -> float:
         """
         Long Stop Loss Based on Candle Body Calculator
@@ -176,7 +203,7 @@ class StopLoss:
 
     def check_sl_hit(
         self,
-        current_candle: np.array,
+        current_candle: CurrentFootprintCandleTuple,
         sl_price: float,
     ):
         if self.get_sl_hit(
@@ -197,7 +224,7 @@ class StopLoss:
         self,
         average_entry: float,
         can_move_sl_to_be: bool,
-        current_candle: np.array,
+        current_candle: CurrentFootprintCandleTuple,
         sl_price: float,
     ):
         """
@@ -226,7 +253,7 @@ class StopLoss:
     def check_move_tsl(
         self,
         average_entry: float,
-        current_candle: np.array,
+        current_candle: CurrentFootprintCandleTuple,
         sl_price: float,
     ):
         """
@@ -258,22 +285,26 @@ class StopLoss:
     def min_price_getter(
         self,
         bar_index: int,
-        candles: np.array,
+        candles: FootprintCandlesTuple,
         lookback: int,
         candle_body_type: int,
     ) -> float:
-        price = candles[lookback : bar_index + 1, candle_body_type].min()
-        return price
+        the_prices = candles[candle_body_type]
+        lb_the_prices = the_prices[lookback : bar_index + 1]
+        final_the_prices = lb_the_prices.min()
+        return final_the_prices
 
     def max_price_getter(
         self,
         bar_index: int,
-        candles: np.array,
+        candles: FootprintCandlesTuple,
         lookback: int,
         candle_body_type: int,
     ) -> float:
-        price = candles[lookback : bar_index + 1, candle_body_type].max()
-        return price
+        the_prices = candles[candle_body_type]
+        lb_the_prices = the_prices[lookback : bar_index + 1]
+        final_the_prices = lb_the_prices.max()
+        return final_the_prices
 
     def pass_func(self, **kwargs):
         return None, None

@@ -30,7 +30,7 @@ def nb_sl_to_entry(
 @njit(cache=True)
 def nb_sl_based_on_candle_body(
     bar_index: int,
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     logger,
     nb_sl_bcb_price_getter,
     nb_sl_price_calc,
@@ -67,7 +67,7 @@ def nb_sl_based_on_candle_body(
 
 @njit(cache=True)
 def nb_check_sl_hit(
-    current_candle: np.array,
+    current_candle: CurrentFootprintCandleTuple,
     logger,
     nb_sl_hit_bool,
     sl_price: float,
@@ -91,7 +91,7 @@ def nb_check_sl_hit(
 def nb_check_move_sl_to_be(
     average_entry: float,
     can_move_sl_to_be: bool,
-    current_candle: np.array,
+    current_candle: CurrentFootprintCandleTuple,
     logger,
     market_fee_pct: float,
     nb_move_sl_bool,
@@ -199,7 +199,7 @@ def nb_move_stop_loss(
 @njit(cache=True)
 def nb_check_move_tsl(
     average_entry: float,
-    current_candle: np.array,
+    current_candle: CurrentFootprintCandleTuple,
     logger,
     nb_move_sl_bool,
     nb_sl_price_calc,
@@ -306,7 +306,7 @@ def nb_num_greater_than_num(
 
 @njit(cache=True)
 def nb_long_sl_hit_bool(
-    current_candle: np.array,
+    current_candle: CurrentFootprintCandleTuple,
     logger,
     sl_price: float,
     stringer,
@@ -354,7 +354,7 @@ def nb_short_sl_to_zero(
 
 @njit(cache=True)
 def nb_short_sl_hit_bool(
-    current_candle: np.array,
+    current_candle: CurrentFootprintCandleTuple,
     logger,
     sl_price: float,
     stringer,
@@ -389,7 +389,7 @@ def nb_num_less_than_num(
 @njit(cache=True)
 def nb_min_price_getter(
     bar_index: int,
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     candle_body_type: CandleBodyType,
     lookback: int,
 ):
@@ -400,7 +400,7 @@ def nb_min_price_getter(
 @njit(cache=True)
 def nb_max_price_getter(
     bar_index: int,
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     candle_body_type: CandleBodyType,
     lookback: int,
 ):
@@ -434,7 +434,7 @@ def nb_sl_to_z_e_pass(
 def nb_cm_sl_to_be_pass(
     average_entry: float,
     can_move_sl_to_be: bool,
-    current_candle: np.array,
+    current_candle: CurrentFootprintCandleTuple,
     logger,
     market_fee_pct: float,
     nb_move_sl_bool,
@@ -454,7 +454,7 @@ def nb_cm_sl_to_be_pass(
 @njit(cache=True)
 def nb_cm_tsl_pass(
     average_entry: float,
-    current_candle: np.array,
+    current_candle: CurrentFootprintCandleTuple,
     logger,
     nb_move_sl_bool,
     nb_sl_price_calc,
@@ -488,7 +488,7 @@ def nb_move_stop_loss_pass(
 @njit(cache=True)
 def nb_sl_calculator_pass(
     bar_index: int,
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     logger,
     nb_sl_bcb_price_getter,
     nb_sl_price_calc,
@@ -503,7 +503,7 @@ def nb_sl_calculator_pass(
 
 @njit(cache=True)
 def nb_check_sl_hit_pass(
-    current_candle: np.array,
+    current_candle: CurrentFootprintCandleTuple,
     logger,
     nb_sl_hit_bool,
     sl_price: float,
@@ -515,7 +515,7 @@ def nb_check_sl_hit_pass(
 @njit(cache=True)
 def nb_price_getter_pass(
     bar_index: int,
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     candle_body_type: CandleBodyType,
     lookback: int,
 ):

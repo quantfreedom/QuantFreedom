@@ -22,7 +22,7 @@ from quantfreedom.nb_funcs.nb_order_handler.nb_leverage import LevOrderInfo, nb_
 
 @njit(cache=True)
 def nb_run_or_backtest(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     dos_tuple: DynamicOrderSettings,
     dos_index: int,
     exchange_settings_tuple: ExchangeSettings,
@@ -129,7 +129,7 @@ def nb_run_or_backtest(
                 + " bar_idx="
                 + str(bar_index)
                 + " timestamp= "
-                + stringer[StringerFuncType.log_datetime](candles[bar_index, CandleBodyType.Timestamp])
+                + stringer[StringerFuncType.log_datetime](candles[bar_index, CandleBodyType.OpenTimestamp])
             )
         )
 
@@ -160,7 +160,7 @@ def nb_run_or_backtest(
                         order_status=OrderStatus.StopLossFilled,
                         position_size_asset=order_result.position_size_asset,
                         stringer=stringer,
-                        timestamp=int(candles[bar_index, CandleBodyType.Timestamp]),
+                        timestamp=int(candles[bar_index, CandleBodyType.OpenTimestamp]),
                     )
                     or_index = nb_fill_order_records(
                         account_state=account_state,
@@ -195,7 +195,7 @@ def nb_run_or_backtest(
                         order_status=OrderStatus.LiquidationFilled,
                         position_size_asset=order_result.position_size_asset,
                         stringer=stringer,
-                        timestamp=int(candles[bar_index, CandleBodyType.Timestamp]),
+                        timestamp=int(candles[bar_index, CandleBodyType.OpenTimestamp]),
                     )
                     or_index = nb_fill_order_records(
                         account_state=account_state,
@@ -230,7 +230,7 @@ def nb_run_or_backtest(
                         order_status=OrderStatus.TakeProfitFilled,
                         position_size_asset=order_result.position_size_asset,
                         stringer=stringer,
-                        timestamp=int(candles[bar_index, CandleBodyType.Timestamp]),
+                        timestamp=int(candles[bar_index, CandleBodyType.OpenTimestamp]),
                     )
                     or_index = nb_fill_order_records(
                         account_state=account_state,
@@ -270,7 +270,7 @@ def nb_run_or_backtest(
                         order_status=OrderStatus.MovedSLToBE,
                         sl_price=temp_sl,
                         sl_pct=temp_sl_pct,
-                        timestamp=int(candles[bar_index, CandleBodyType.Timestamp]),
+                        timestamp=int(candles[bar_index, CandleBodyType.OpenTimestamp]),
                     )
                     or_index = nb_fill_order_records(
                         account_state=account_state,
@@ -308,7 +308,7 @@ def nb_run_or_backtest(
                         order_status=OrderStatus.MovedTSL,
                         sl_price=temp_tsl,
                         sl_pct=temp_tsl_pct,
-                        timestamp=int(candles[bar_index, CandleBodyType.Timestamp]),
+                        timestamp=int(candles[bar_index, CandleBodyType.OpenTimestamp]),
                     )
                     or_index = nb_fill_order_records(
                         account_state=account_state,
@@ -448,7 +448,7 @@ def nb_run_or_backtest(
                     ind_set_index=ind_set_index,
                     dos_index=dos_index,
                     bar_index=bar_index + 1,  # put plus 1 because we need to place entry on next bar
-                    timestamp=int(candles[bar_index + 1, CandleBodyType.Timestamp]),
+                    timestamp=int(candles[bar_index + 1, CandleBodyType.OpenTimestamp]),
                     # account info
                     available_balance=available_balance,
                     cash_borrowed=cash_borrowed,

@@ -26,7 +26,7 @@ def nb_short_tp_price(
 
 @njit(cache=True)
 def nb_short_tp_hit_bool(
-    current_candle: np.array,
+    current_candle: CurrentFootprintCandleTuple,
     logger,
     stringer,
     tp_price: float,
@@ -59,7 +59,7 @@ def nb_long_tp_price(
 
 @njit(cache=True)
 def nb_long_tp_hit_bool(
-    current_candle: np.array,
+    current_candle: CurrentFootprintCandleTuple,
     logger,
     stringer,
     tp_price: float,
@@ -116,7 +116,7 @@ def nb_tp_rr(
 
 @njit(cache=True)
 def nb_c_tp_hit_regular(
-    current_candle: np.array,
+    current_candle: CurrentFootprintCandleTuple,
     logger,
     nb_tp_hit_bool,
     stringer,
@@ -137,7 +137,7 @@ def nb_c_tp_hit_regular(
 
 @njit(cache=True)
 def nb_c_tp_hit_provided(
-    current_candle: np.array,
+    current_candle: CurrentFootprintCandleTuple,
     logger,
     nb_tp_hit_bool,
     stringer,

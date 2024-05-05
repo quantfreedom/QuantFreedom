@@ -1,16 +1,32 @@
-from typing import NamedTuple
 import numpy as np
+from typing import NamedTuple
+
+
+class CurrentFootprintCandleTuple(NamedTuple):
+    open_dateime: np.datetime64 = None
+    open_timestamp: int = None
+    close_dateime: np.datetime64 = None
+    close_timestamp: int = None
+    open_price: float = None
+    high_price: float = None
+    low_price: float = None
+    close_price: float = None
+    asset_volume: float = None
+    usdt_volume: float = None
 
 
 class FootprintCandlesTuple(NamedTuple):
-    candle_open_times: np.array = None
-    candle_close_times: np.array = None
-    candle_durations_s: np.array = None
+    candle_open_datetimes: np.array = None
+    candle_open_timestamps: np.array = None
+    candle_close_datetimes: np.array = None
+    candle_close_timestamps: np.array = None
+    candle_durations_seconds: np.array = None
     candle_open_prices: np.array = None
     candle_high_prices: np.array = None
     candle_low_prices: np.array = None
     candle_close_prices: np.array = None
-    candle_volumes: np.array = None
+    candle_asset_volumes: np.array = None
+    candle_usdt_volumes: np.array = None
     candle_trade_counts: np.array = None
     candle_deltas: np.array = None
     candle_delta_percents: np.array = None
@@ -33,13 +49,17 @@ class FootprintCandlesTuple(NamedTuple):
 
 
 class CandleBodyTypeT(NamedTuple):
-    Timestamp: int = 0
-    Open: int = 1
-    High: int = 2
-    Low: int = 3
-    Close: int = 4
-    Volume: int = 5
-    Nothing: int = 6
+    OpenDatetime: int = 0
+    OpenTimestamp: int = 1
+    CloseDatetime: int = 2
+    CloseTimestamp: int = 3
+    Open: int = 4
+    High: int = 5
+    Low: int = 6
+    Close: int = 7
+    AssetVolume: int = 8
+    UsdtVolume: int = 9
+    Nothing: int = 10
 
 
 CandleBodyType = CandleBodyTypeT()

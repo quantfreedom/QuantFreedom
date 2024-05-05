@@ -5,7 +5,13 @@ import numpy as np
 from time import sleep, time
 from datetime import datetime, timezone
 from requests import get, post
-from quantfreedom.core.enums import ExchangeSettings, LeverageModeType, PositionModeType, TriggerDirectionType
+from quantfreedom.core.enums import (
+    ExchangeSettings,
+    FootprintCandlesTuple,
+    LeverageModeType,
+    PositionModeType,
+    TriggerDirectionType,
+)
 
 from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES, Exchange
 
@@ -128,7 +134,7 @@ class Bybit(Exchange):
         until_datetime: datetime = None,
         candles_to_dl: int = 1000,
         category: str = "linear",
-    ):
+    ) -> FootprintCandlesTuple:
         """
         Summary
         -------
@@ -197,9 +203,22 @@ class Bybit(Exchange):
                 raise Exception(f"Bybit get_candles {response.get('message')} - > {e}")
 
         candles = np.flip(np.array(candles_list, dtype=np.float_)[:, :-1], axis=0)
+        open_timestamps = candles[:, 0].astype(np.int64)
+
+        Footprint_Candles_Tuple = FootprintCandlesTuple(
+            candle_open_datetimes=open_timestamps.astype("datetime64[ms]"),
+            candle_open_timestamps=open_timestamps,
+            candle_durations_seconds=np.full(candles.shape[0], int(self.timeframe_in_ms / 1000)),
+            candle_open_prices=candles[:, 1],
+            candle_high_prices=candles[:, 2],
+            candle_low_prices=candles[:, 3],
+            candle_close_prices=candles[:, 4],
+            candle_asset_volumes=candles[:, 5],
+            candle_usdt_volumes=np.around(a=candles[:, 5] * candles[:, 4], decimals=3),
+        )
         self.last_fetched_ms_time = int(candles[-1, 0])
 
-        return candles
+        return Footprint_Candles_Tuple
 
     def create_order(
         self,

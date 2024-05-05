@@ -5,6 +5,8 @@ from datetime import timedelta
 from time import time
 from datetime import datetime, timezone
 
+from quantfreedom.core.enums import FootprintCandlesTuple
+
 UNIVERSAL_SIDES = ["buy", "sell"]
 UNIVERSAL_TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "d", "w"]
 TIMEFRAMES_IN_MINUTES = [1, 5, 15, 30, 60, 120, 240, 360, 720, 1440, 10080]
@@ -139,7 +141,7 @@ class Exchange:
     def create_order(self, **kwargs):
         pass
 
-    def get_candles(self, **kwargs):
+    def get_candles(self, **kwargs) -> FootprintCandlesTuple:
         pass
 
     def cancel_open_order(self, **kwargs):

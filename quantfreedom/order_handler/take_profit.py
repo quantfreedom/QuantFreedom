@@ -3,7 +3,7 @@ import numpy as np
 from logging import getLogger
 
 from quantfreedom.helpers.helper_funcs import round_size_by_tick_step
-from quantfreedom.core.enums import CandleBodyType, DecreasePosition, OrderStatus, TakeProfitStrategyType
+from quantfreedom.core.enums import CandleBodyType, CurrentFootprintCandleTuple, DecreasePosition, OrderStatus, TakeProfitStrategyType
 
 logger = getLogger()
 
@@ -57,7 +57,7 @@ class TakeProfit:
 
     def short_c_tp_candle(
         self,
-        current_candle: np.array,
+        current_candle: CurrentFootprintCandleTuple,
         tp_price: float,
     ):
         candle_low = current_candle[CandleBodyType.Low]
@@ -79,7 +79,7 @@ class TakeProfit:
 
     def long_c_tp_candle(
         self,
-        current_candle: np.array,
+        current_candle: CurrentFootprintCandleTuple,
         tp_price: float,
     ):
         candle_high = current_candle[CandleBodyType.High]
@@ -135,7 +135,7 @@ class TakeProfit:
 
     def c_tp_hit_regular(
         self,
-        current_candle: np.array,
+        current_candle: CurrentFootprintCandleTuple,
         exit_price: float,
         tp_price: float,
     ):
@@ -155,7 +155,7 @@ class TakeProfit:
 
     def c_tp_hit_nothing(
         self,
-        current_candle: np.array,
+        current_candle: CurrentFootprintCandleTuple,
         exit_price: float,
         tp_price: float,
     ):
@@ -163,7 +163,7 @@ class TakeProfit:
 
     def c_tp_hit_provided(
         self,
-        current_candle: np.array,
+        current_candle: CurrentFootprintCandleTuple,
         exit_price: float,
         tp_price: float,
     ):

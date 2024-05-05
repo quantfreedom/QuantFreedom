@@ -1,7 +1,7 @@
 from typing import Callable
 import numpy as np
 
-from quantfreedom.core.enums import CandleBodyType
+from quantfreedom.core.enums import CandleBodyType, FootprintCandlesTuple
 
 
 def wma_tv(
@@ -287,7 +287,7 @@ def bb_tv(
 
 
 def true_range_tv(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
 ) -> np.array:
     """
     [True Range from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.tr)
@@ -317,7 +317,7 @@ def true_range_tv(
 
 
 def atr_tv(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     length: int,
     smoothing_type: Callable = rma_tv,
 ) -> np.array:
@@ -384,7 +384,7 @@ def rsi_tv(
 
 
 def supertrend_tv(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     atr_length: int,
     factor: int,
 ) -> tuple[np.array, np.array]:
@@ -452,7 +452,7 @@ def supertrend_tv(
 
 
 def vwap_tv(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
 ) -> np.array:
     """
     [Volume Weighted Average Price](https://blog.quantinsti.com/vwap-strategy/)
@@ -467,7 +467,7 @@ def vwap_tv(
     np.array
         vwap
     """
-    timestamps = candles[:, CandleBodyType.Timestamp]
+    timestamps = candles[:, CandleBodyType.OpenTimestamp]
     high = candles[:, CandleBodyType.High]
     low = candles[:, CandleBodyType.Low]
     close = candles[:, CandleBodyType.Close]
@@ -501,7 +501,7 @@ def vwap_tv(
 
 
 def donchain_channels_tv(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     length: int,
 ):
     """
@@ -536,7 +536,7 @@ def donchain_channels_tv(
 
 
 def squeeze_momentum_lazybear_tv(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     length_bb: int,
     length_kc: int,
     multi_bb: int,
@@ -604,7 +604,7 @@ def squeeze_momentum_lazybear_tv(
 
 
 def linear_regression_candles_ugurvu_tv(
-    candles: np.array,
+    candles: FootprintCandlesTuple,
     lin_reg_length: int,
     smoothing_length: int,
     smoothing_type: Callable = sma_tv,
@@ -658,7 +658,7 @@ def linear_regression_candles_ugurvu_tv(
         length=smoothing_length,
     )
 
-    lin_reg_candles[:, CandleBodyType.Timestamp] = candles[:, CandleBodyType.Timestamp]
+    lin_reg_candles[:, CandleBodyType.OpenTimestamp] = candles[:, CandleBodyType.OpenTimestamp]
     lin_reg_candles[:, CandleBodyType.Volume] = candles[:, CandleBodyType.Volume]
 
     return lin_reg_candles, signal
@@ -702,7 +702,7 @@ def revolution_volatility_bands_tv(
 
 
 # def range_detextor_lux_algo_tv(
-#     candles: np.array,
+#     candles: FootprintCandlesTuple,
 #     min_range_length: int,
 #     atr_multi: int,
 #     atr_length: int,
@@ -711,7 +711,7 @@ def revolution_volatility_bands_tv(
 #     https://www.tradingview.com/script/QOuZIuvH-Range-Detector-LuxAlgo/
 #     """
 #     close = candles[:, CandleBodyType.Close]
-#     timestamp = candles[:, CandleBodyType.Timestamp]
+#     timestamp = candles[:, CandleBodyType.OpenTimestamp]
 #     box_y = np.full(close.size * 2, np.nan)
 #     box_x = np.full(close.size * 2, np.nan)
 #     atr = atr_tv(candles=candles, length=atr_length) * atr_multi

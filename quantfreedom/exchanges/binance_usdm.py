@@ -2,6 +2,7 @@ import numpy as np
 from time import sleep
 from requests import get
 from datetime import datetime
+from quantfreedom.core.enums import FootprintCandlesTuple
 from quantfreedom.exchanges.exchange import UNIVERSAL_TIMEFRAMES, Exchange
 
 BINANCE_USDM_TIMEFRAMES = ["1m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "1d", "1w"]
@@ -29,7 +30,7 @@ class BinanceUSDM(Exchange):
         since_datetime: datetime = None,
         until_datetime: datetime = None,
         candles_to_dl: int = 1500,
-    ):
+    ) -> FootprintCandlesTuple:
         """
         Summary
         -------
@@ -91,8 +92,21 @@ class BinanceUSDM(Exchange):
             except Exception as e:
                 raise Exception(f"get_candles -> {e}")
         candles = np.array(b_candles, dtype=np.float_)[:, :6]
+        open_timestamps = candles[:, 0].astype(np.int64)
+
+        Footprint_Candles_Tuple = FootprintCandlesTuple(
+            candle_open_datetimes=open_timestamps.astype("datetime64[ms]"),
+            candle_open_timestamps=open_timestamps,
+            candle_durations_seconds=np.full(candles.shape[0], int(self.timeframe_in_ms / 1000)),
+            candle_open_prices=candles[:, 1],
+            candle_high_prices=candles[:, 2],
+            candle_low_prices=candles[:, 3],
+            candle_close_prices=candles[:, 4],
+            candle_asset_volumes=candles[:, 5],
+            candle_usdt_volumes=np.around(a=candles[:, 5] * candles[:, 4], decimals=3),
+        )
         self.last_fetched_ms_time = int(candles[-1, 0])
-        return candles
+        return Footprint_Candles_Tuple
 
     def get_exchange_info(self):
         """

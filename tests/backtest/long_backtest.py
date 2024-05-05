@@ -17,8 +17,8 @@ if __name__ == "__main__":
         exchange="mufex",
         symbol="BTCUSDT",
         timeframe="5m",
-        since_datetime=datetime(2023, 10, 11),
-        until_datetime=datetime(2023, 12, 11),
+        since_datetime=datetime(2023, 10, 1),
+        until_datetime=datetime(2023, 11, 1),
     )
     backtest_results = run_df_backtest(
         backtest_settings_tuple=backtest_settings_tuple,

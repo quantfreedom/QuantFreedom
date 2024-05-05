@@ -2,7 +2,14 @@ import numpy as np
 from numba import njit
 import pandas as pd
 
-from quantfreedom.core.enums import AccountState, DynamicOrderSettings, DynamicOrderSettings, OrderResult, OrderStatus
+from quantfreedom.core.enums import (
+    AccountState,
+    DynamicOrderSettings,
+    DynamicOrderSettings,
+    FootprintCandlesTuple,
+    OrderResult,
+    OrderStatus,
+)
 from numba.cpython.unicode import _empty_string, _set_code_point, PY_UNICODE_1BYTE_KIND
 
 DIGITS_START = 48
@@ -339,7 +346,10 @@ def order_records_to_df(order_records: np.array):
     return order_records_df
 
 
-def get_data_for_plotting(order_records_df: pd.DataFrame, candles: np.array):
+def get_data_for_plotting(
+    order_records_df: pd.DataFrame,
+    candles: FootprintCandlesTuple,
+):
     data = {
         "candles": candles.tolist(),
     }
@@ -411,7 +421,7 @@ def get_data_for_plotting(order_records_df: pd.DataFrame, candles: np.array):
     return data
 
 
-def get_data_for_plotting(order_records_df: pd.DataFrame, candles: np.array):
+def get_data_for_plotting(order_records_df: pd.DataFrame, candles: FootprintCandlesTuple):
     data = {
         "candles": candles.tolist(),
     }
