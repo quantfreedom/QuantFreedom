@@ -3,12 +3,13 @@ from dash_bootstrap_templates import load_figure_template
 from jupyter_dash import JupyterDash
 from IPython import get_ipython
 import dash_bootstrap_components as dbc
-from quantfreedom.helpers.utils import pretty_qf
+from quantfreedom.helpers.utils import pretty_qf, pretty_qf_string
 from quantfreedom.helpers.helper_funcs import dl_ex_candles
 
 __all__ = [
     "pretty_qf",
     "dl_ex_candles",
+    "pretty_qf_string",
 ]
 
 load_figure_template("darkly")

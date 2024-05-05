@@ -64,6 +64,28 @@ def pretty_qf(
         return named_tuple
 
 
+def pretty_qf_string(
+    named_tuple: NamedTuple,
+):
+    """
+    Prints named tuples in a pretty way
+
+    Parameters
+    ----------
+    named_tuple : namedtuple
+        must only be a named tuple
+    """
+    try:
+        named_tuple._fields[0]
+        items = []
+        indent = str("    ")
+        for x in range(len(named_tuple)):
+            items.append(indent + named_tuple._fields[x] + " = " + str(named_tuple[x]) + ",\n")
+        return type(named_tuple).__name__ + "(" + "\n" + "".join(items) + ")"
+    except:
+        return named_tuple
+
+
 def generate_candles(
     number_of_candles: int = 100,
     plot_candles: bool = False,
