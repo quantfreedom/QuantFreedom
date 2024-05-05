@@ -1,3 +1,5 @@
+z_logs/
+*.pkl
 logs/
 docs/
 site/
