@@ -14,7 +14,7 @@ if __name__ == "__main__":
         remove("backtest_results.h5")
 
     print("Downloading candles")
-    with open('thing.pkl', 'rb') as f:
+    with open('Volume_Candles_Tuple_mar_apr.pkl', 'rb') as f:
         candles = pickle.load(f) 
     backtest_results = run_df_backtest(
         backtest_settings_tuple=backtest_settings_tuple,
