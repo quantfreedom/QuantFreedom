@@ -1,4 +1,5 @@
 from multiprocessing import Pool
+from multiprocessing.pool import ApplyResult
 import numpy as np
 import pandas as pd
 from logging import getLogger
@@ -39,10 +40,11 @@ def multiprocess_backtest(
     static_os_tuple: StaticOrderSettings,
     strategy: Strategy,
     total_bars: int,
+    step_by: int,
 ):
     logger.disabled = True
     rec_idx = 0
-    for set_idx in range(range_start, range_end):
+    for set_idx in range(range_start, range_end, step_by):
         strategy.set_entries_exits_array(
             candles=candles,
             ind_set_index=set_idx,
@@ -276,6 +278,7 @@ def run_df_backtest(
     static_os_tuple: StaticOrderSettings,
     strategy: Strategy,
     threads: int,
+    step_by: int,
 ) -> pd.DataFrame:
     global strategy_result_records
 
@@ -305,8 +308,11 @@ def run_df_backtest(
     print(f"Total settings combinations to test: {total_settings:,}")
     print(f"Total settings combination chunks to process at the same time: {total_settings // threads:,}\n")
     print(f"Total candles: {total_bars:,}")
-    print(f"Total candles to test: {total_settings * total_bars:,}")
-    print(f"Total candle chunks to be processed at the same time: {(total_settings * total_bars) // threads:,}")
+    total_candles = total_settings * total_bars
+    print(f"Total candles to test: {total_candles:,}")
+    chunks = total_candles // threads
+    print(f"Total candle chunks to be processed at the same time: {chunks:,}")
+    print(f"Total chunks with step by: {chunks // step_by:,}")
 
     strategy_result_records = np.full(
         shape=total_settings,
@@ -326,7 +332,7 @@ def run_df_backtest(
             dtype=strat_df_array_dt,
         )
 
-        r = p.apply_async(
+        r: ApplyResult = p.apply_async(
             func=multiprocess_backtest,
             args=[
                 backtest_settings_tuple,
@@ -340,16 +346,19 @@ def run_df_backtest(
                 static_os_tuple,
                 strategy,
                 total_bars,
+                step_by,
             ],
             callback=proc_results,
             error_callback=handler,
         )
         results.append(r)
+    print("looping through results")
     for r in results:
         r.wait()
 
     p.close()
     p.join()
+    print("creating datafram")
     backtest_df = pd.DataFrame(strategy_result_records).dropna()
     backtest_df.set_index("set_idx", inplace=True)
     return backtest_df

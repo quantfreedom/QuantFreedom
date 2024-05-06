@@ -1,3 +1,4 @@
+from typing import Optional
 import hmac
 import hashlib
 import inspect
@@ -355,15 +356,15 @@ class Mufex(Exchange):
         order_type: str,
         asset_size: float,
         time_in_force: str = "GoodTillCancel",
-        price: float = None,
+        price: Optional[float] = None,
         triggerDirection: TriggerDirectionType = None,  # type: ignore
         triggerPrice: str = None,
         triggerBy: str = None,
         tpTriggerBy: str = None,
         slTriggerBy: str = None,
         custom_order_id: str = None,
-        takeProfit: float = None,
-        stopLoss: float = None,
+        takeProfit: Optional[float] = None,
+        stopLoss: Optional[float] = None,
         reduce_only: bool = None,
         closeOnTrigger: bool = None,
     ):

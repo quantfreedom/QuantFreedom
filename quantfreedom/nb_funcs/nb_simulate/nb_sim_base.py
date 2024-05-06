@@ -23,7 +23,7 @@ from quantfreedom.nb_funcs.nb_order_handler.nb_take_profit import *
 from quantfreedom.nb_funcs.nb_simulate.nb_sim_df import nb_run_df_backtest
 from quantfreedom.nb_funcs.nb_simulate.nb_sim_or import nb_run_or_backtest
 from quantfreedom.core.plotting_base import plot_or_results
-from quantfreedom.utils import pretty_qf
+from quantfreedom import pretty_qf
 
 
 def nb_sim_backtest(
@@ -39,8 +39,8 @@ def nb_sim_backtest(
     nb_strat_get_total_ind_settings: Callable,
     nb_strat_ind_creator: Callable,
     static_os_tuple: StaticOrderSettings,
-    dos_index: int = None,
-    ind_set_index: int = None,
+    dos_index: Optional[int] = None,
+    ind_set_index: Optional[int] = None,
     plot_results: bool = False,
 ):
     dos_tuple = dos_cart_product(

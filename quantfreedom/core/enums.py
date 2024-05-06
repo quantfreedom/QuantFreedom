@@ -1,51 +1,51 @@
 import numpy as np
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 
 class CurrentFootprintCandleTuple(NamedTuple):
-    open_dateime: np.datetime64 = None
-    open_timestamp: int = None
-    close_dateime: np.datetime64 = None
-    close_timestamp: int = None
-    open_price: float = None
-    high_price: float = None
-    low_price: float = None
-    close_price: float = None
-    asset_volume: float = None
-    usdt_volume: float = None
+    open_dateime: Optional[np.datetime64] = None
+    open_timestamp: Optional[int] = None
+    close_dateime: Optional[np.datetime64] = None
+    close_timestamp: Optional[int] = None
+    open_price: Optional[float] = None
+    high_price: Optional[float] = None
+    low_price: Optional[float] = None
+    close_price: Optional[float] = None
+    asset_volume: Optional[float] = None
+    usdt_volume: Optional[float] = None
 
 
 class FootprintCandlesTuple(NamedTuple):
-    candle_open_datetimes: np.ndarray = None
-    candle_open_timestamps: np.ndarray = None
-    candle_close_datetimes: np.ndarray = None
-    candle_close_timestamps: np.ndarray = None
-    candle_durations_seconds: np.ndarray = None
-    candle_open_prices: np.ndarray = None
-    candle_high_prices: np.ndarray = None
-    candle_low_prices: np.ndarray = None
-    candle_close_prices: np.ndarray = None
-    candle_asset_volumes: np.ndarray = None
-    candle_usdt_volumes: np.ndarray = None
-    candle_trade_counts: np.ndarray = None
-    candle_deltas: np.ndarray = None
-    candle_delta_percents: np.ndarray = None
-    candle_buy_volumes: np.ndarray = None
-    candle_buy_counts: np.ndarray = None
-    candle_sell_volumes: np.ndarray = None
-    candle_sell_counts: np.ndarray = None
-    candle_cvds: np.ndarray = None
-    candle_pocs: np.ndarray = None
-    candle_high_lows: np.ndarray = None
-    prices_tuple: tuple = None
-    prices_buy_vol_tuple: tuple = None
-    prices_buy_count_tuple: tuple = None
-    prices_sell_vol_tuple: tuple = None
-    prices_sell_count_tuple: tuple = None
-    prices_delta_tuple: tuple = None
-    prices_delta_percent_tuple: tuple = None
-    prices_volume_tuple: tuple = None
-    prices_trade_count_tuple: tuple = None
+    candle_open_datetimes: Optional[np.ndarray] = None
+    candle_open_timestamps: Optional[np.ndarray] = None
+    candle_close_datetimes: Optional[np.ndarray] = None
+    candle_close_timestamps: Optional[np.ndarray] = None
+    candle_durations_seconds: Optional[np.ndarray] = None
+    candle_open_prices: Optional[np.ndarray] = None
+    candle_high_prices: Optional[np.ndarray] = None
+    candle_low_prices: Optional[np.ndarray] = None
+    candle_close_prices: Optional[np.ndarray] = None
+    candle_usdt_volumes: Optional[np.ndarray] = None
+    candle_asset_volumes: Optional[np.ndarray] = None
+    candle_trade_counts: Optional[np.ndarray] = None
+    candle_deltas: Optional[np.ndarray] = None
+    candle_delta_percents: Optional[np.ndarray] = None
+    candle_buy_volumes: Optional[np.ndarray] = None
+    candle_buy_counts: Optional[np.ndarray] = None
+    candle_sell_volumes: Optional[np.ndarray] = None
+    candle_sell_counts: Optional[np.ndarray] = None
+    candle_cvds: Optional[np.ndarray] = None
+    candle_pocs: Optional[np.ndarray] = None
+    candle_high_lows: Optional[np.ndarray] = None
+    prices_tuple: Optional[tuple] = None
+    prices_buy_vol_tuple: Optional[tuple] = None
+    prices_buy_count_tuple: Optional[tuple] = None
+    prices_sell_vol_tuple: Optional[tuple] = None
+    prices_sell_count_tuple: Optional[tuple] = None
+    prices_delta_tuple: Optional[tuple] = None
+    prices_delta_percent_tuple: Optional[tuple] = None
+    prices_volume_tuple: Optional[tuple] = None
+    prices_trade_count_tuple: Optional[tuple] = None
 
 
 class CandleBodyTypeT(NamedTuple):
@@ -334,8 +334,8 @@ class DecreasePosition(Exception):
     def __init__(
         self,
         order_status: OrderStatus = None,  # type: ignore
-        exit_price: float = None,
-        exit_fee_pct: float = None,
+        exit_price: Optional[float] = None,
+        exit_fee_pct: Optional[float] = None,
         msg: str = None,
     ):
         self.order_status = order_status

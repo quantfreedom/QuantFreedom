@@ -6,6 +6,7 @@ from quantfreedom.core.enums import AccountState, FootprintCandlesTuple, OrderRe
 from quantfreedom.exchanges.binance_usdm import BinanceUSDM
 from quantfreedom.exchanges.bybit import Bybit
 from quantfreedom.exchanges.mufex import Mufex
+from typing import Optional
 
 logger = getLogger()
 
@@ -14,7 +15,7 @@ def dl_ex_candles(
     exchange: str,
     symbol: str,
     timeframe: str,
-    candles_to_dl: int = None,
+    candles_to_dl: Optional[int] = None,
     since_datetime: datetime = None,
     until_datetime: datetime = None,
 ) -> FootprintCandlesTuple:

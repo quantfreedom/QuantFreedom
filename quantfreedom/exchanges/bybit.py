@@ -1,3 +1,4 @@
+from typing import Optional
 import hashlib
 import hmac
 import inspect
@@ -229,18 +230,18 @@ class Bybit(Exchange):
         asset_size: float,
         category: str = "linear",
         time_in_force: str = "GTC",
-        price: float = None,
-        triggerDirection: int = None,
-        triggerPrice: float = None,
+        price: Optional[float] = None,
+        triggerDirection: Optional[int] = None,
+        triggerPrice: Optional[float] = None,
         triggerBy: str = None,
         tpTriggerBy: str = None,
         slTriggerBy: str = None,
         custom_order_id: str = None,
-        takeProfit: float = None,
-        stopLoss: float = None,
+        takeProfit: Optional[float] = None,
+        stopLoss: Optional[float] = None,
         reduce_only: bool = None,
         closeOnTrigger: bool = None,
-        isLeverage: int = None,
+        isLeverage: Optional[int] = None,
     ):
         """
         https://bybit-exchange.github.io/docs/v5/order/create-order
@@ -687,21 +688,21 @@ class Bybit(Exchange):
     def adjust_order(
         self,
         symbol: str,
-        asset_size: float = None,
+        asset_size: Optional[float] = None,
         category: str = "linear",
         custom_order_id: str = None,
         orderIv: str = None,
         order_id: str = None,
-        price: float = None,
-        slLimitPrice: float = None,
-        slTriggerBy: float = None,
-        stopLoss: float = None,
-        takeProfit: float = None,
-        tpLimitPrice: float = None,
+        price: Optional[float] = None,
+        slLimitPrice: Optional[float] = None,
+        slTriggerBy: Optional[float] = None,
+        stopLoss: Optional[float] = None,
+        takeProfit: Optional[float] = None,
+        tpLimitPrice: Optional[float] = None,
         tpslMode: str = None,
-        tpTriggerBy: float = None,
-        triggerBy: float = None,
-        triggerPrice: float = None,
+        tpTriggerBy: Optional[float] = None,
+        triggerBy: Optional[float] = None,
+        triggerPrice: Optional[float] = None,
     ):
         """
         https://bybit-exchange.github.io/docs/v5/order/amend-order

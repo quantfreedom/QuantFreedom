@@ -7,7 +7,7 @@ from quantfreedom.core.enums import CandleBodyType, FootprintCandlesTuple
 def wma_tv(
     source: np.ndarray,
     length: int,
-) -> np.array:
+) -> np.ndarray:
     """
     [Weighted Moving Average From Tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.wma)
 
@@ -41,7 +41,7 @@ def wma_tv(
 def sma_tv(
     source: np.ndarray,
     length: int,
-) -> np.array:
+) -> np.ndarray:
     """
     [Simple Moving average from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.sma)
 
@@ -71,7 +71,7 @@ def sma_tv(
 def ema_tv(
     source: np.ndarray,
     length: int,
-) -> np.array:
+) -> np.ndarray:
     """
     [Exponential Moving average from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.ema)
 
@@ -103,7 +103,7 @@ def ema_tv(
 def rma_tv(
     source: np.ndarray,
     length: int,
-) -> np.array:
+) -> np.ndarray:
     """
     [Relative strength index Moving average from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma)
 
@@ -174,7 +174,7 @@ def rma_tv_2(
 def stdev_tv(
     source: np.ndarray,
     length: int,
-) -> np.array:
+) -> np.ndarray:
     """
     [Standard deviation from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.stdev)
 
@@ -288,7 +288,7 @@ def bb_tv(
 
 def true_range_tv(
     candles: FootprintCandlesTuple,
-) -> np.array:
+) -> np.ndarray:
     """
     [True Range from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.tr)
 
@@ -320,7 +320,7 @@ def atr_tv(
     candles: FootprintCandlesTuple,
     length: int,
     smoothing_type: Callable = rma_tv,
-) -> np.array:
+) -> np.ndarray:
     """
     [Average true range smoothing from tradingview](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.atr)
 
@@ -346,7 +346,7 @@ def atr_tv(
 def rsi_tv(
     length: int,
     source: np.ndarray,
-) -> np.array:
+) -> np.ndarray:
     """
     [Relative strength index](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rsi)
 
@@ -453,7 +453,7 @@ def supertrend_tv(
 
 def vwap_tv(
     candles: FootprintCandlesTuple,
-) -> np.array:
+) -> np.ndarray:
     """
     [Volume Weighted Average Price](https://blog.quantinsti.com/vwap-strategy/)
 

@@ -1,4 +1,4 @@
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -89,7 +89,7 @@ def pretty_qf_string(
 def generate_candles(
     number_of_candles: int = 100,
     plot_candles: bool = False,
-    seed: int = None,
+    seed: Optional[int] = None,
 ):
     """
     Generate a dataframe filled with random candles
