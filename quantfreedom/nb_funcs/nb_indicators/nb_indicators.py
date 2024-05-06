@@ -6,7 +6,7 @@ import numpy as np
 
 @njit(cache=True)
 def nb_wma_tv(
-    source: np.array,
+    source: np.ndarray,
     length: int,
 ):
     """
@@ -26,7 +26,7 @@ def nb_wma_tv(
 
 @njit(cache=True)
 def nb_sma_tv(
-    source: np.array,
+    source: np.ndarray,
     length: int,
 ):
     """
@@ -43,7 +43,7 @@ def nb_sma_tv(
 
 @njit(cache=True)
 def nb_ema_tv(
-    source: np.array,
+    source: np.ndarray,
     length: int,
 ):
     """
@@ -64,7 +64,7 @@ def nb_ema_tv(
 
 @njit(cache=True)
 def nb_rma_tv(
-    source: np.array,
+    source: np.ndarray,
     length: int,
 ):
     """
@@ -85,8 +85,8 @@ def nb_rma_tv(
 
 @njit(cache=True)
 def nb_rma_tv_2(
-    source_1: np.array,
-    source_2: np.array,
+    source_1: np.ndarray,
+    source_2: np.ndarray,
     length: int,
 ):
     """
@@ -111,7 +111,7 @@ def nb_rma_tv_2(
 
 @njit(cache=True)
 def nb_stdev_tv(
-    source: np.array,
+    source: np.ndarray,
     length: int,
 ):
     """
@@ -142,7 +142,7 @@ def nb_stdev_tv(
 
 @njit(cache=True)
 def nb_macd_tv(
-    source: np.array,
+    source: np.ndarray,
     fast_length: int,
     slow_length: int,
     signal_smoothing: int,
@@ -164,7 +164,7 @@ def nb_macd_tv(
 
 @njit(cache=True)
 def nb_bb_tv(
-    source: np.array,
+    source: np.ndarray,
     length: int,
     multi: float,
     basis_ma_type=nb_sma_tv,
@@ -218,7 +218,7 @@ def nb_atr_tv(
 
 @njit(cache=True)
 def nb_rsi_tv(
-    source: np.array,
+    source: np.ndarray,
     length: int,
 ):
     """

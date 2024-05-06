@@ -8,8 +8,8 @@ from quantfreedom.core.enums import CandleBodyType, LoggerFuncType, StringerFunc
 
 
 class IndicatorSettings(NamedTuple):
-    rsi_is_below: np.array
-    rsi_period: np.array
+    rsi_is_below: np.ndarray
+    rsi_period: np.ndarray
 
 
 class IndicatorSettings(NamedTuple):

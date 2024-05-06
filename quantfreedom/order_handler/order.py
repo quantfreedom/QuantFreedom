@@ -114,7 +114,7 @@ class OrderHandler:
     def fill_or_exit_move(
         self,
         bar_index: int,
-        order_records: np.array,
+        order_records: np.ndarray,
         order_status: OrderStatus,  # type: ignore
         timestamp: int,
         set_idx: int,
@@ -157,7 +157,7 @@ class OrderHandler:
         self,
         bar_index: int,
         set_idx: int,
-        order_records: np.array,
+        order_records: np.ndarray,
         timestamp: int,
     ):
         order_records["set_idx"] = set_idx

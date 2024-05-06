@@ -34,7 +34,7 @@ def multiprocess_backtest(
     order: OrderHandler,
     range_end: int,
     range_start: int,
-    record_results: np.array,
+    record_results: np.ndarray,
     starting_equity: float,
     static_os_tuple: StaticOrderSettings,
     strategy: Strategy,

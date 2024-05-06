@@ -85,9 +85,9 @@ static_os_tuple = StaticOrderSettings(
 
 
 class IndicatorSettings(NamedTuple):
-    rsi_is_above: np.array
-    rsi_is_below: np.array
-    rsi_length: np.array
+    rsi_is_above: np.ndarray
+    rsi_is_below: np.ndarray
+    rsi_length: np.ndarray
 
 
 class RSIRisingFalling(Strategy):
@@ -95,8 +95,8 @@ class RSIRisingFalling(Strategy):
         self,
         long_short: str,
         rsi_length: int,
-        rsi_is_above: np.array = np.array([0]),
-        rsi_is_below: np.array = np.array([0]),
+        rsi_is_above: np.ndarray = np.array([0]),
+        rsi_is_below: np.ndarray = np.array([0]),
     ) -> None:
 
         self.long_short = long_short

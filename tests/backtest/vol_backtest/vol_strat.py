@@ -69,30 +69,30 @@ static_os_tuple = StaticOrderSettings(
 
 
 class IndicatorSettings(NamedTuple):
-    cur_candle_rsi_below: np.array
-    cur_dur_less_than: np.array
-    dur_x_times_faster: np.array
-    ema_length: np.array
-    max_av_duration: np.array
-    min_delta_dif: np.array
-    rsi_dur_lb: np.array
-    rsi_is_below: np.array
-    rsi_length: np.array
+    cur_candle_rsi_below: np.ndarray
+    cur_dur_less_than: np.ndarray
+    dur_x_times_faster: np.ndarray
+    ema_length: np.ndarray
+    max_av_duration: np.ndarray
+    min_delta_dif: np.ndarray
+    rsi_dur_lb: np.ndarray
+    rsi_is_below: np.ndarray
+    rsi_length: np.ndarray
 
 
 class VolStrategy(Strategy):
     def __init__(
         self,
         long_short: str,
-        cur_candle_rsi_below: np.array,
-        cur_dur_less_than: np.array,
-        dur_x_times_faster: np.array,
-        ema_length: np.array,
-        max_av_duration: np.array,
-        min_delta_dif: np.array,
-        rsi_dur_lb: np.array,
-        rsi_is_below: np.array,
-        rsi_length: np.array,
+        cur_candle_rsi_below: np.ndarray,
+        cur_dur_less_than: np.ndarray,
+        dur_x_times_faster: np.ndarray,
+        ema_length: np.ndarray,
+        max_av_duration: np.ndarray,
+        min_delta_dif: np.ndarray,
+        rsi_dur_lb: np.ndarray,
+        rsi_is_below: np.ndarray,
+        rsi_length: np.ndarray,
     ) -> None:
 
         self.long_short = long_short

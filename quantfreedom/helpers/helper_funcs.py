@@ -81,7 +81,7 @@ def candles_to_df(
 
     Parameters
     ----------
-    candles : np.array
+    candles : np.ndarray
         a 2 dim array with the following columns "timestamp", "open", "high", "low", "close", "volume"
 
     Returns
@@ -98,7 +98,7 @@ def candles_to_df(
 
 def get_qf_score(
     gains_pct: float,
-    wins_and_losses_array_no_be: np.array,
+    wins_and_losses_array_no_be: np.ndarray,
 ):
     x = np.arange(1, len(wins_and_losses_array_no_be) + 1)
     y = wins_and_losses_array_no_be.cumsum()
@@ -142,7 +142,7 @@ def round_size_by_tick_step(
 def fill_order_records(
     account_state: AccountState,
     or_index: int,
-    order_records: np.array,
+    order_records: np.ndarray,
     order_result: OrderResult,
 ) -> int:
     order_records["ind_set_idx"] = account_state.ind_set_index

@@ -5,7 +5,7 @@ from quantfreedom.core.enums import CandleBodyType, FootprintCandlesTuple
 
 
 def wma_tv(
-    source: np.array,
+    source: np.ndarray,
     length: int,
 ) -> np.array:
     """
@@ -15,7 +15,7 @@ def wma_tv(
 
     Parameters
     ----------
-    source : np.array
+    source : np.ndarray
         Values to process
     length : int
         Number of bars
@@ -39,7 +39,7 @@ def wma_tv(
 
 
 def sma_tv(
-    source: np.array,
+    source: np.ndarray,
     length: int,
 ) -> np.array:
     """
@@ -47,7 +47,7 @@ def sma_tv(
 
     Parameters
     ----------
-    source : np.array
+    source : np.ndarray
         Values to process
     length : int
         Number of bars
@@ -69,7 +69,7 @@ def sma_tv(
 
 
 def ema_tv(
-    source: np.array,
+    source: np.ndarray,
     length: int,
 ) -> np.array:
     """
@@ -77,7 +77,7 @@ def ema_tv(
 
     Parameters
     ----------
-    source : np.array
+    source : np.ndarray
         Values to process
     length : int
         Number of bars
@@ -101,7 +101,7 @@ def ema_tv(
 
 
 def rma_tv(
-    source: np.array,
+    source: np.ndarray,
     length: int,
 ) -> np.array:
     """
@@ -109,7 +109,7 @@ def rma_tv(
 
     Parameters
     ----------
-    source : np.array
+    source : np.ndarray
         Values to process
     length : int
         Number of bars
@@ -133,8 +133,8 @@ def rma_tv(
 
 
 def rma_tv_2(
-    source_1: np.array,
-    source_2: np.array,
+    source_1: np.ndarray,
+    source_2: np.ndarray,
     length: int,
 ):
     """
@@ -142,9 +142,9 @@ def rma_tv_2(
 
     Parameters
     ----------
-    source_1 : np.array
+    source_1 : np.ndarray
         Values to process
-    source_2 : np.array
+    source_2 : np.ndarray
         Values to process
     length : int
         Number of bars
@@ -172,7 +172,7 @@ def rma_tv_2(
 
 
 def stdev_tv(
-    source: np.array,
+    source: np.ndarray,
     length: int,
 ) -> np.array:
     """
@@ -182,7 +182,7 @@ def stdev_tv(
 
     Parameters
     ----------
-    source : np.array
+    source : np.ndarray
         Values to process
     length : int
         Number of bars
@@ -216,7 +216,7 @@ def stdev_tv(
 
 
 def macd_tv(
-    source: np.array,
+    source: np.ndarray,
     fast_length: int,
     slow_length: int,
     signal_smoothing: int,
@@ -228,7 +228,7 @@ def macd_tv(
 
     Parameters
     ----------
-    source : np.array
+    source : np.ndarray
         Values to process
     fast_length : int
         Number of bars
@@ -257,7 +257,7 @@ def macd_tv(
 def bb_tv(
     length: int,
     multi: float,
-    source: np.array,
+    source: np.ndarray,
     basis_ma_type: Callable = sma_tv,
 ) -> tuple[np.array, np.array, np.array]:
     """
@@ -265,7 +265,7 @@ def bb_tv(
 
     Parameters
     ----------
-    source : np.array
+    source : np.ndarray
         Values to process
     length : int
         Number of bars
@@ -294,7 +294,7 @@ def true_range_tv(
 
     Parameters
     ----------
-    candles : np.array
+    candles : np.ndarray
         2-dim np.array with columns in the following order [timestamp, open, high, low, close, volume]
 
     Returns
@@ -326,7 +326,7 @@ def atr_tv(
 
     Parameters
     ----------
-    candles : np.array
+    candles : np.ndarray
         2-dim np.array with columns in the following order [timestamp, open, high, low, close, volume]
     length : int
         Number of bars
@@ -345,14 +345,14 @@ def atr_tv(
 
 def rsi_tv(
     length: int,
-    source: np.array,
+    source: np.ndarray,
 ) -> np.array:
     """
     [Relative strength index](https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rsi)
 
     Parameters
     ----------
-    source : np.array
+    source : np.ndarray
         Values to process
     length : int
         Number of bars
@@ -393,7 +393,7 @@ def supertrend_tv(
 
     Parameters
     ----------
-    candles : np.array
+    candles : np.ndarray
         2-dim np.array with columns in the following order [timestamp, open, high, low, close, volume]
     atr_length : int
         Number of bars
@@ -459,7 +459,7 @@ def vwap_tv(
 
     Parameters
     ----------
-    candles : np.array
+    candles : np.ndarray
         2-dim np.array with columns in the following order [timestamp, open, high, low, close, volume]
 
     Returns
@@ -509,7 +509,7 @@ def donchain_channels_tv(
 
     Parameters
     ----------
-    candles : np.array
+    candles : np.ndarray
         2-dim np.array with columns in the following order [timestamp, open, high, low, close, volume]
     length : int
         Number of bars of donchain lookback
@@ -547,7 +547,7 @@ def squeeze_momentum_lazybear_tv(
 
     Parameters
     ----------
-    candles : np.array
+    candles : np.ndarray
         2-dim np.array with columns in the following order [timestamp, open, high, low, close, volume]
     length_bb : int
         Number of bars of Bollinger Bands
@@ -614,7 +614,7 @@ def linear_regression_candles_ugurvu_tv(
 
     Parameters
     ----------
-    candles : np.array
+    candles : np.ndarray
         2-dim np.array with columns in the following order [timestamp, open, high, low, close, volume]
     lin_reg_length : int
         Number of bars for lin reg
@@ -666,7 +666,7 @@ def linear_regression_candles_ugurvu_tv(
 
 def revolution_volatility_bands_tv(
     length: int,
-    source: np.array,
+    source: np.ndarray,
 ):
     basis = ema_tv(source=source, length=length)
 

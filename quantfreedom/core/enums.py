@@ -16,27 +16,27 @@ class CurrentFootprintCandleTuple(NamedTuple):
 
 
 class FootprintCandlesTuple(NamedTuple):
-    candle_open_datetimes: np.array = None
-    candle_open_timestamps: np.array = None
-    candle_close_datetimes: np.array = None
-    candle_close_timestamps: np.array = None
-    candle_durations_seconds: np.array = None
-    candle_open_prices: np.array = None
-    candle_high_prices: np.array = None
-    candle_low_prices: np.array = None
-    candle_close_prices: np.array = None
-    candle_asset_volumes: np.array = None
-    candle_usdt_volumes: np.array = None
-    candle_trade_counts: np.array = None
-    candle_deltas: np.array = None
-    candle_delta_percents: np.array = None
-    candle_buy_volumes: np.array = None
-    candle_buy_counts: np.array = None
-    candle_sell_volumes: np.array = None
-    candle_sell_counts: np.array = None
-    candle_cvds: np.array = None
-    candle_pocs: np.array = None
-    candle_high_lows: np.array = None
+    candle_open_datetimes: np.ndarray = None
+    candle_open_timestamps: np.ndarray = None
+    candle_close_datetimes: np.ndarray = None
+    candle_close_timestamps: np.ndarray = None
+    candle_durations_seconds: np.ndarray = None
+    candle_open_prices: np.ndarray = None
+    candle_high_prices: np.ndarray = None
+    candle_low_prices: np.ndarray = None
+    candle_close_prices: np.ndarray = None
+    candle_asset_volumes: np.ndarray = None
+    candle_usdt_volumes: np.ndarray = None
+    candle_trade_counts: np.ndarray = None
+    candle_deltas: np.ndarray = None
+    candle_delta_percents: np.ndarray = None
+    candle_buy_volumes: np.ndarray = None
+    candle_buy_counts: np.ndarray = None
+    candle_sell_volumes: np.ndarray = None
+    candle_sell_counts: np.ndarray = None
+    candle_cvds: np.ndarray = None
+    candle_pocs: np.ndarray = None
+    candle_high_lows: np.ndarray = None
     prices_tuple: tuple = None
     prices_buy_vol_tuple: tuple = None
     prices_buy_count_tuple: tuple = None
@@ -261,17 +261,17 @@ class BacktestSettings(NamedTuple):
 
 
 class DynamicOrderSettings(NamedTuple):
-    account_pct_risk_per_trade: np.array
-    max_trades: np.array
-    risk_reward: np.array
-    sl_based_on_add_pct: np.array
-    sl_based_on_lookback: np.array
-    sl_bcb_type: np.array
-    sl_to_be_cb_type: np.array
-    sl_to_be_when_pct: np.array
-    trail_sl_bcb_type: np.array
-    trail_sl_by_pct: np.array
-    trail_sl_when_pct: np.array
+    account_pct_risk_per_trade: np.ndarray
+    max_trades: np.ndarray
+    risk_reward: np.ndarray
+    sl_based_on_add_pct: np.ndarray
+    sl_based_on_lookback: np.ndarray
+    sl_bcb_type: np.ndarray
+    sl_to_be_cb_type: np.ndarray
+    sl_to_be_when_pct: np.ndarray
+    trail_sl_bcb_type: np.ndarray
+    trail_sl_by_pct: np.ndarray
+    trail_sl_when_pct: np.ndarray
 
 
 class ExchangeSettings(NamedTuple):

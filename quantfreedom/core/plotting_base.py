@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 
 def plot_candles_1_ind_same_pane(
     candles: FootprintCandlesTuple,
-    indicator: np.array,
+    indicator: np.ndarray,
     ind_name: str,
     ind_color: str = "yellow",
 ):
@@ -33,7 +33,7 @@ def plot_candles_1_ind_same_pane(
 
 def plot_candles_1_ind_dif_pane(
     candles: FootprintCandlesTuple,
-    indicator: np.array,
+    indicator: np.ndarray,
     ind_name: str,
     ind_color: str = "yellow",
 ):
@@ -75,7 +75,7 @@ def plot_candles_1_ind_dif_pane(
 
 def plot_vwap(
     candles: FootprintCandlesTuple,
-    indicator: np.array,
+    indicator: np.ndarray,
     ind_color: str = "yellow",
 ):
     fig = plot_candles_1_ind_same_pane(
@@ -99,7 +99,7 @@ def plot_vwap(
 
 def plot_rma(
     candles: FootprintCandlesTuple,
-    indicator: np.array,
+    indicator: np.ndarray,
     ind_color: str = "yellow",
 ):
     fig = plot_candles_1_ind_same_pane(
@@ -124,7 +124,7 @@ def plot_rma(
 
 def plot_wma(
     candles: FootprintCandlesTuple,
-    indicator: np.array,
+    indicator: np.ndarray,
     ind_color: str = "yellow",
 ):
     fig = plot_candles_1_ind_same_pane(
@@ -149,7 +149,7 @@ def plot_wma(
 
 def plot_sma(
     candles: FootprintCandlesTuple,
-    indicator: np.array,
+    indicator: np.ndarray,
     ind_color: str = "yellow",
 ):
     fig = plot_candles_1_ind_same_pane(
@@ -174,7 +174,7 @@ def plot_sma(
 
 def plot_ema(
     candles: FootprintCandlesTuple,
-    indicator: np.array,
+    indicator: np.ndarray,
     ind_color: str = "yellow",
 ):
     fig = plot_candles_1_ind_same_pane(
@@ -199,7 +199,7 @@ def plot_ema(
 
 def plot_rsi(
     candles: FootprintCandlesTuple,
-    indicator: np.array,
+    indicator: np.ndarray,
     ind_color: str = "yellow",
 ):
     return plot_candles_1_ind_dif_pane(
@@ -212,7 +212,7 @@ def plot_rsi(
 
 def plot_atr(
     candles: FootprintCandlesTuple,
-    indicator: np.array,
+    indicator: np.ndarray,
     ind_color: str = "red",
 ):
     return plot_candles_1_ind_dif_pane(
@@ -225,7 +225,7 @@ def plot_atr(
 
 def plot_stdev(
     candles: FootprintCandlesTuple,
-    indicator: np.array,
+    indicator: np.ndarray,
     ind_color: str = "yellow",
 ):
     return plot_candles_1_ind_dif_pane(
@@ -238,7 +238,7 @@ def plot_stdev(
 
 def plot_bollinger_bands(
     candles: FootprintCandlesTuple,
-    indicator: np.array,
+    indicator: np.ndarray,
     ul_rgb: str = "48, 123, 255",
     basis_color_rgb: str = "255, 176, 0",
 ):
@@ -292,9 +292,9 @@ def plot_bollinger_bands(
 
 def plot_macd(
     candles: FootprintCandlesTuple,
-    signal: np.array,
-    histogram: np.array,
-    macd: np.array,
+    signal: np.ndarray,
+    histogram: np.ndarray,
+    macd: np.ndarray,
 ):
     datetimes = candles[:, CandleBodyType.OpenTimestamp].astype("datetime64[ms]")
     fig = make_subplots(
@@ -357,7 +357,7 @@ def plot_macd(
 
 def plot_squeeze_mom_lazybear(
     candles: FootprintCandlesTuple,
-    indicator: np.array,
+    indicator: np.ndarray,
 ):
     datetimes = candles[:, CandleBodyType.OpenTimestamp].astype("datetime64[ms]")
     fig = make_subplots(
@@ -613,7 +613,7 @@ def plot_or_results(
 
 def plot_supertrend(
     candles: FootprintCandlesTuple,
-    indicator: np.array,
+    indicator: np.ndarray,
 ):
     datetimes = candles[:, CandleBodyType.OpenTimestamp].astype("datetime64[ms]")
     lower = np.where(indicator[:, 1] < 0, indicator[:, 0], np.nan)
@@ -657,7 +657,7 @@ def plot_supertrend(
 
 def plot_linear_regression_candles_ugurvu_tv(
     lin_reg_candles: FootprintCandlesTuple,
-    signal: np.array,
+    signal: np.ndarray,
 ):
     datetimes = lin_reg_candles[:, CandleBodyType.OpenTimestamp].astype("datetime64[ms]")
     fig = go.Figure(
@@ -684,10 +684,10 @@ def plot_linear_regression_candles_ugurvu_tv(
 
 def plot_revolution_volatility_bands_tv(
     candles: FootprintCandlesTuple,
-    upper_smooth: np.array,
-    upper_falling: np.array,
-    lower_smooth: np.array,
-    lower_rising: np.array,
+    upper_smooth: np.ndarray,
+    upper_falling: np.ndarray,
+    lower_smooth: np.ndarray,
+    lower_rising: np.ndarray,
     ind_color: str = "yellow",
 ):
     datetimes = candles[:, CandleBodyType.OpenTimestamp].astype("datetime64[ms]")
@@ -730,7 +730,7 @@ def plot_revolution_volatility_bands_tv(
 
 def plot_volume(
     candles: FootprintCandlesTuple,
-    moving_average: np.array = None,
+    moving_average: np.ndarray = None,
 ):
     datetimes = candles[:, CandleBodyType.OpenTimestamp].astype("datetime64[ms]")
     close_prices = candles[:, CandleBodyType.Close]
@@ -756,8 +756,8 @@ def plot_volume(
 """
 def plot_range_detextor_LuxAlgo(
     candles: FootprintCandlesTuple,
-    box_x: np.array,
-    box_y: np.array,
+    box_x: np.ndarray,
+    box_y: np.ndarray,
 ):
     datetimes = candles[:, CandleBodyType.OpenTimestamp].astype("datetime64[ms]")
     fig = go.Figure(

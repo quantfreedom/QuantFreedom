@@ -23,7 +23,7 @@ E_CHAR = 101
 @njit(cache=True)
 def nb_get_qf_score(
     gains_pct: float,
-    wins_and_losses_array_no_be: np.array,
+    wins_and_losses_array_no_be: np.ndarray,
 ):
     x = np.arange(1, len(wins_and_losses_array_no_be) + 1)
     y = wins_and_losses_array_no_be.cumsum()
@@ -236,7 +236,7 @@ def nb_float_to_str(x: float):
 def nb_fill_order_records(
     account_state: AccountState,
     or_index: int,
-    order_records: np.array,
+    order_records: np.ndarray,
     order_result: OrderResult,
 ):
     order_records["ind_set_idx"] = account_state.ind_set_index
@@ -270,7 +270,7 @@ def nb_fill_order_records(
     return or_index + 1
 
 
-def order_records_to_df(order_records: np.array):
+def order_records_to_df(order_records: np.ndarray):
     order_records_df = pd.DataFrame(order_records)
     order_records_df.insert(4, "datetime", pd.to_datetime(order_records_df.timestamp, unit="ms"))
     order_records_df.replace(
@@ -503,7 +503,7 @@ def get_data_for_plotting(order_records_df: pd.DataFrame, candles: FootprintCand
     return data
 
 
-def order_records_to_df(order_records: np.array):
+def order_records_to_df(order_records: np.ndarray):
     order_records_df = pd.DataFrame(order_records)
     order_records_df.insert(4, "datetime", pd.to_datetime(order_records_df.timestamp, unit="ms"))
     order_records_df.replace(
