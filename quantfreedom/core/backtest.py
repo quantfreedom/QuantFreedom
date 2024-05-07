@@ -49,15 +49,14 @@ def multiprocess_backtest(
             candles=candles,
             ind_set_index=set_idx,
         )
-        strategy.log_indicator_settings(ind_set_index=set_idx)
 
-        strategy.set_current_dos_tuple(dos_index=set_idx)
+        strategy.set_cur_dos_tuple(dos_index=set_idx)
 
         pnl_array = np.full(shape=round(total_bars / 3), fill_value=np.nan)
         filled_pnl_counter = 0
         total_fees_paid = 0
 
-        order.update_class_dos(dynamic_order_settings=strategy.current_dos_tuple)
+        order.update_class_dos(dynamic_order_settings=strategy.cur_dos_tuple)
         order.set_order_variables(equity=starting_equity)
 
         logger.debug("Set order variables, class dos and pnl array")
@@ -407,11 +406,10 @@ def or_backtest(
         candles=candles,
         ind_set_index=set_idx,
     )
-    strategy.log_indicator_settings(ind_set_index=set_idx)
 
-    strategy.set_current_dos_tuple(dos_index=set_idx)
+    strategy.set_cur_dos_tuple(dos_index=set_idx)
 
-    order.update_class_dos(dynamic_order_settings=strategy.current_dos_tuple)
+    order.update_class_dos(dynamic_order_settings=strategy.cur_dos_tuple)
     order.set_order_variables(equity=starting_equity)
 
     total_bars = candles.candle_open_timestamps.size
@@ -628,8 +626,8 @@ def or_backtest(
                     logger.error(f"Exception hit in eval strat -> {e}")
                     raise Exception(f"Exception hit in eval strat -> {e}")
     order_records_df = order_records_to_df(order_records[:or_filled])
-    pretty_qf(strategy.current_dos_tuple)
-    pretty_qf(strategy.current_ind_settings_tuple)
+    pretty_qf(strategy.cur_dos_tuple)
+    pretty_qf(strategy.cur_ind_set_tuple)
     if plot_results:
         strategy.plot_signals(
             candles=candles,

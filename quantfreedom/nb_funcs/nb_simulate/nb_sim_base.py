@@ -34,7 +34,7 @@ def nb_sim_backtest(
     logger_bool: bool,
     long_short: str,
     nb_strat_evaluate: Callable,
-    nb_strat_get_current_ind_settings_tuple: Callable,
+    nb_strat_get_cur_ind_set_tuple: Callable,
     nb_strat_get_ind_set_str: Callable,
     nb_strat_get_total_ind_settings: Callable,
     nb_strat_ind_creator: Callable,
@@ -221,7 +221,7 @@ def nb_sim_backtest(
     print("Starting the backtest now ... and also here are some stats for your backtest.\n")
 
     if ind_set_index is not None and dos_index is not None:
-        order_records, indicator_settings_tuple, dynamic_order_settings = nb_run_or_backtest(
+        order_records, og_ind_set_tuple, dynamic_order_settings = nb_run_or_backtest(
             candles=candles,
             dos_tuple=dos_tuple,
             dos_index=dos_index,
@@ -250,7 +250,7 @@ def nb_sim_backtest(
             nb_sl_mover=nb_sl_mover,
             nb_sl_price_calc=nb_sl_price_calc,
             nb_strat_evaluate=nb_strat_evaluate,
-            nb_strat_get_current_ind_settings_tuple=nb_strat_get_current_ind_settings_tuple,
+            nb_strat_get_cur_ind_set_tuple=nb_strat_get_cur_ind_set_tuple,
             nb_strat_get_ind_set_str=nb_strat_get_ind_set_str,
             nb_strat_ind_creator=nb_strat_ind_creator,
             nb_tp_calculator=nb_tp_calculator,
@@ -259,7 +259,7 @@ def nb_sim_backtest(
             static_os_tuple=static_os_tuple,
             stringer=stringer,
         )
-        pretty_qf(indicator_settings_tuple)
+        pretty_qf(og_ind_set_tuple)
         pretty_qf(dynamic_order_settings)
         order_records_df = order_records_to_df(order_records)
         if order_records_df.bar_idx.iloc[-1] >= total_bars:
@@ -303,7 +303,7 @@ def nb_sim_backtest(
             nb_sl_mover=nb_sl_mover,
             nb_sl_price_calc=nb_sl_price_calc,
             nb_strat_evaluate=nb_strat_evaluate,
-            nb_strat_get_current_ind_settings_tuple=nb_strat_get_current_ind_settings_tuple,
+            nb_strat_get_cur_ind_set_tuple=nb_strat_get_cur_ind_set_tuple,
             nb_strat_get_ind_set_str=nb_strat_get_ind_set_str,
             nb_strat_ind_creator=nb_strat_ind_creator,
             nb_tp_calculator=nb_tp_calculator,

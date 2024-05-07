@@ -16,11 +16,11 @@ logger = getLogger()
 
 class StopLoss:
     sl_based_on_add_pct: float
-    sl_based_on_lookback: float
+    sl_based_on_lookback: int
     sl_bcb_type: int
     sl_to_be_cb_type: int
     sl_to_be_when_pct: float
-    trail_sl_bcb_type: float
+    trail_sl_bcb_type: int
     trail_sl_by_pct: float
     trail_sl_when_pct: float
 

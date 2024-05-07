@@ -50,7 +50,7 @@ def nb_run_df_backtest(
     nb_sl_mover: Callable,
     nb_sl_price_calc: Callable,
     nb_strat_evaluate: Callable,
-    nb_strat_get_current_ind_settings_tuple: Callable,
+    nb_strat_get_cur_ind_set_tuple: Callable,
     nb_strat_get_ind_set_str: Callable,
     nb_strat_ind_creator: Callable,
     nb_tp_calculator: Callable,
@@ -79,14 +79,14 @@ def nb_run_df_backtest(
     result_records_filled = 0
 
     for ind_set_index in range(total_indicator_settings):
-        indicator_settings_tuple = nb_strat_get_current_ind_settings_tuple(
+        og_ind_set_tuple = nb_strat_get_cur_ind_set_tuple(
             ind_set_index=ind_set_index,
             logger=logger,
         )
 
         for dos_index in range(total_order_settings):
             logger("nb_simulate.py - nb_run_backtest() - Indicator settings index=" + str(ind_set_index))
-            logger(nb_strat_get_ind_set_str(indicator_settings_tuple=indicator_settings_tuple, stringer=stringer))
+            logger(nb_strat_get_ind_set_str(og_ind_set_tuple=og_ind_set_tuple, stringer=stringer))
             dynamic_order_settings = nb_get_dos(
                 dos_tuple=dos_tuple,
                 dos_index=dos_index,
@@ -325,7 +325,7 @@ def nb_run_df_backtest(
                     bar_index=bar_index,
                     candle_group_size=static_os_tuple.starting_bar,
                     candles=candles,
-                    indicator_settings_tuple=indicator_settings_tuple,
+                    og_ind_set_tuple=og_ind_set_tuple,
                     nb_strat_ind_creator=nb_strat_ind_creator,
                     logger=logger,
                     stringer=stringer,
