@@ -67,10 +67,10 @@ class Strategy:
 
     def get_og_dos_tuple(
         self,
-        shuffled_cart_arrays: np.ndarray,
+        filtered_cart_arrays: np.ndarray,
     ) -> DynamicOrderSettings:
 
-        dos_tuple = DynamicOrderSettings(*tuple(shuffled_cart_arrays[:11]))
+        dos_tuple = DynamicOrderSettings(*tuple(filtered_cart_arrays[:11]))
         logger.debug("dos_tuple")
 
         og_dos_tuple = DynamicOrderSettings(
@@ -87,7 +87,7 @@ class Strategy:
             trail_sl_when_pct=dos_tuple.trail_sl_when_pct / 100,
         )
         logger.debug("og_dos_tuple")
-        
+
         return og_dos_tuple
 
     def set_cur_dos_tuple(
@@ -111,8 +111,8 @@ class Strategy:
         logger.info(
             f"""
 Dynamic Order settings index= {dos_index}
-max_trades={self.cur_dos_tuple.max_trades}
 account_pct_risk_per_trade={round(self.cur_dos_tuple.account_pct_risk_per_trade * 100, 3)}
+max_trades={self.cur_dos_tuple.max_trades}
 risk_reward={self.cur_dos_tuple.risk_reward}
 sl_based_on_add_pct={round(self.cur_dos_tuple.sl_based_on_add_pct * 100, 3)}
 sl_based_on_lookback={self.cur_dos_tuple.sl_based_on_lookback}
@@ -141,7 +141,7 @@ trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 3)
     def get_og_ind_set_tuple(
         self,
         cart_arrays: np.ndarray,
-        shuffled_cart_arrays: np.ndarray,
+        filtered_cart_arrays: np.ndarray,
     ) -> IndicatorSettings:
         pass
 

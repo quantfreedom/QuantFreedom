@@ -96,7 +96,6 @@ class RSIRisingFalling(Strategy):
     def __init__(
         self,
         long_short: str,
-        shuffle_bool: bool,
         rsi_length: np.ndarray,
         above_rsi_cur: np.ndarray = np.array([0]),
         above_rsi_p: np.ndarray = np.array([0]),
@@ -160,30 +159,22 @@ class RSIRisingFalling(Strategy):
             cart_arrays=cart_arrays,
         )
 
-        if shuffle_bool:
-            shuffled_cart_arrays = np.random.default_rng().permutation(
-                filtered_cart_arrays,
-                axis=1,
-            )
-        else:
-            shuffled_cart_arrays = filtered_cart_arrays.copy()
-
         self.og_dos_tuple = self.get_og_dos_tuple(
-            shuffled_cart_arrays=shuffled_cart_arrays,
+            filtered_cart_arrays=filtered_cart_arrays,
         )
 
         self.og_ind_set_tuple = self.get_og_ind_set_tuple(
-            shuffled_cart_arrays=shuffled_cart_arrays,
+            filtered_cart_arrays=filtered_cart_arrays,
         )
 
         logger.debug("set_og_ind_and_dos_tuples")
 
     def get_og_ind_set_tuple(
         self,
-        shuffled_cart_arrays: np.ndarray,
+        filtered_cart_arrays: np.ndarray,
     ) -> IndicatorSettings:
 
-        ind_set_tuple = IndicatorSettings(*tuple(shuffled_cart_arrays[11:]))
+        ind_set_tuple = IndicatorSettings(*tuple(filtered_cart_arrays[11:]))
         logger.debug("ind_set_tuple")
 
         og_ind_set_tuple = IndicatorSettings(
@@ -429,7 +420,6 @@ above_rsi_cur= {self.above_rsi_cur}"""
 
 long_strat = RSIRisingFalling(
     long_short="long",
-    shuffle_bool=True,
     rsi_length=np.array([15, 25]),
     below_rsi_cur=np.array([30, 40, 60, 80]),
     below_rsi_p=np.array([25, 30, 40]),

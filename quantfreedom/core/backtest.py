@@ -1,8 +1,8 @@
-from multiprocessing import Pool
-from multiprocessing.pool import ApplyResult
 import numpy as np
 import pandas as pd
 from logging import getLogger
+from multiprocessing import Pool
+from multiprocessing.pool import ApplyResult
 from quantfreedom.helpers.custom_logger import set_loggers
 from quantfreedom.helpers.helper_funcs import get_qf_score
 from quantfreedom.nb_funcs.nb_helper_funcs import order_records_to_df
@@ -11,10 +11,8 @@ from quantfreedom.core.plotting_base import plot_or_results
 from quantfreedom.core.strategy import Strategy
 from quantfreedom.core.enums import (
     BacktestSettings,
-    CandleBodyType,
     CurrentFootprintCandleTuple,
     DecreasePosition,
-    DynamicOrderSettings,
     ExchangeSettings,
     FootprintCandlesTuple,
     OrderStatus,
