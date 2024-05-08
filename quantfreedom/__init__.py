@@ -4,12 +4,13 @@ from jupyter_dash import JupyterDash
 from IPython import get_ipython
 import dash_bootstrap_components as dbc
 from quantfreedom.helpers.utils import pretty_qf, pretty_qf_string
-from quantfreedom.helpers.helper_funcs import dl_ex_candles
+from quantfreedom.helpers.helper_funcs import dl_ex_candles, all_backtest_stats
 
 __all__ = [
     "pretty_qf",
     "dl_ex_candles",
     "pretty_qf_string",
+    "all_backtest_stats",
 ]
 
 load_figure_template("darkly")

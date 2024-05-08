@@ -3,12 +3,36 @@ import pandas as pd
 from logging import getLogger
 from datetime import datetime
 from quantfreedom.core.enums import AccountState, FootprintCandlesTuple, OrderResult
+from quantfreedom.core.strategy import Strategy
 from quantfreedom.exchanges.binance_usdm import BinanceUSDM
 from quantfreedom.exchanges.bybit import Bybit
 from quantfreedom.exchanges.mufex import Mufex
 from typing import Optional
 
 logger = getLogger()
+
+
+def all_backtest_stats(
+    step_by: int,
+    strategy: Strategy,
+    threads: int,
+    total_bars: int,
+):
+    total_settings = strategy.total_order_settings * strategy.total_indicator_settings
+
+    # logger.infoing out total numbers of things
+    print("Starting the backtest now ... and also here are some stats for your backtest.\n")
+    print(f"Total threads to use: {threads:,}")
+    print(f"Total indicator settings to test: {strategy.total_indicator_settings:,}")
+    print(f"Total order settings to test: {strategy.total_order_settings:,}")
+    print(f"Total settings combinations to test: {total_settings:,}")
+    print(f"Total settings combination chunks to process at the same time: {total_settings // threads:,}\n")
+    print(f"Total candles: {total_bars:,}")
+    total_candles = total_settings * total_bars
+    print(f"Total candles to test: {total_candles:,}")
+    chunks = total_candles // threads
+    print(f"Total candle chunks to be processed at the same time: {chunks:,}")
+    print(f"Total chunks with step by: {chunks // step_by:,}")
 
 
 def dl_ex_candles(

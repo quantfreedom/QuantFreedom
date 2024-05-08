@@ -22,8 +22,8 @@ class Strategy:
     og_dos_tuple: DynamicOrderSettings = None
     og_ind_set_tuple: IndicatorSettings = None
     set_entries_exits_array: np.ndarray = None
-    total_indicator_settings: int = 1
-    total_order_settings: int = 1
+    total_indicator_settings: int = 0
+    total_order_settings: int = 0
 
     def __init__(self) -> None:
         pass
@@ -33,17 +33,19 @@ class Strategy:
         og_dos_tuple: DynamicOrderSettings,
         og_ind_set_tuple: IndicatorSettings,
     ) -> None:
+        total_indicator_settings = 1
+        total_order_settings = 1
 
         for array in og_dos_tuple:
-            self.total_order_settings *= array.size
-        logger.debug(f"Total Order Settings: {self.total_order_settings}")
+            total_order_settings *= array.size
+        logger.debug(f"Total Order Settings: {total_order_settings}")
 
         for array in og_ind_set_tuple:
-            self.total_indicator_settings *= array.size
-        logger.debug(f"Total Indicator Settings: {self.total_indicator_settings}")
+            total_indicator_settings *= array.size
+        logger.debug(f"Total Indicator Settings: {total_indicator_settings}")
 
         the_tuple = og_dos_tuple + og_ind_set_tuple
-        array_size = self.total_order_settings * self.total_indicator_settings
+        array_size = total_order_settings * total_indicator_settings
         logger.debug(f"Total Array Size: {array_size}")
 
         cart_arrays = np.empty((array_size, len(the_tuple)))

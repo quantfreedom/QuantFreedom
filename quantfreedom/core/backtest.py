@@ -11,6 +11,7 @@ from quantfreedom.core.plotting_base import plot_or_results
 from quantfreedom.core.strategy import Strategy
 from quantfreedom.core.enums import (
     BacktestSettings,
+    CandleBodyType,
     CurrentFootprintCandleTuple,
     DecreasePosition,
     ExchangeSettings,
@@ -250,22 +251,28 @@ total_trades={total_trades_closed}"""
                     win_rate = round(wins / win_loss.size * 100, 3)
 
                     total_pnl = wins_and_losses_array.sum()
-
-                    record_results[rec_idx]["set_idx"] = set_idx
-                    record_results[rec_idx]["total_trades"] = wins_and_losses_array.size
-                    record_results[rec_idx]["wins"] = wins
-                    record_results[rec_idx]["losses"] = losses
-                    record_results[rec_idx]["gains_pct"] = gains_pct
-                    record_results[rec_idx]["win_rate"] = win_rate
-                    record_results[rec_idx]["qf_score"] = qf_score
-                    record_results[rec_idx]["fees_paid"] = round(total_fees_paid, 3)
-                    record_results[rec_idx]["total_pnl"] = total_pnl
-                    record_results[rec_idx]["ending_eq"] = order.equity
+                    tuple_results = (
+                        (
+                            set_idx,
+                            wins_and_losses_array.size,
+                            wins,
+                            losses,
+                            gains_pct,
+                            win_rate,
+                            qf_score,
+                            round(total_fees_paid, 3),
+                            total_pnl,
+                            order.equity,
+                        )
+                        + strategy.cur_dos_tuple
+                        + strategy.cur_ind_set_tuple
+                    )
+                    record_results[rec_idx] = tuple_results
                     rec_idx += 1
         logger.info(
             f"Starting New Loop\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
         )
-    return record_results, range_start, range_end
+    return range_start, range_end, record_results
 
 
 def run_df_backtest(
@@ -273,9 +280,9 @@ def run_df_backtest(
     candles: FootprintCandlesTuple,
     exchange_settings_tuple: ExchangeSettings,
     static_os_tuple: StaticOrderSettings,
+    step_by: int,
     strategy: Strategy,
     threads: int,
-    step_by: int,
 ) -> pd.DataFrame:
     global strategy_result_records
 
@@ -311,11 +318,9 @@ def run_df_backtest(
     print(f"Total candle chunks to be processed at the same time: {chunks:,}")
     print(f"Total chunks with step by: {chunks // step_by:,}")
 
-    strategy_result_records = np.full(
-        shape=total_settings,
-        fill_value=np.nan,
-        dtype=strat_df_array_dt,
-    )
+    num_array_columns = 10 + len(strategy.og_dos_tuple._fields) + len(strategy.og_ind_set_tuple._fields)
+    arr_shape = (total_settings, num_array_columns)
+    strategy_result_records = np.full(arr_shape, np.nan)
 
     range_multiplier = total_settings / threads
     p = Pool()
@@ -323,11 +328,8 @@ def run_df_backtest(
     for thread in range(threads):
         range_start = int(thread * range_multiplier)
         range_end = int((thread + 1) * range_multiplier)
-        record_results = np.full(
-            shape=range_end - range_start,
-            fill_value=np.nan,
-            dtype=strat_df_array_dt,
-        )
+        arr_shape = (range_end - range_start, num_array_columns)
+        record_results = np.full(arr_shape, np.nan)
 
         r: ApplyResult = p.apply_async(
             func=multiprocess_backtest,
@@ -356,16 +358,46 @@ def run_df_backtest(
     p.close()
     p.join()
     print("creating datafram")
-    backtest_df = pd.DataFrame(strategy_result_records).dropna()
+    column_names = (
+        [
+            "set_idx",
+            "total_trades",
+            "wins",
+            "losses",
+            "gains_pct",
+            "win_rate",
+            "qf_score",
+            "fees_paid",
+            "total_pnl",
+            "ending_eq",
+        ]
+        + list(strategy.og_dos_tuple._fields)
+        + list(strategy.og_ind_set_tuple._fields)
+    )
+    backtest_df = pd.DataFrame(data=strategy_result_records, columns=column_names).dropna()
     backtest_df.set_index("set_idx", inplace=True)
+    
+    backtest_df["sl_bcb_type"] = backtest_df["sl_bcb_type"].apply(lambda x: CandleBodyType._fields[int(x)])
+    backtest_df["trail_sl_bcb_type"] = backtest_df["trail_sl_bcb_type"].apply(lambda x: CandleBodyType._fields[int(x)])
+    backtest_df["sl_to_be_cb_type"] = backtest_df["sl_to_be_cb_type"].apply(lambda x: CandleBodyType._fields[int(x)])
+    backtest_df["account_pct_risk_per_trade"] = backtest_df["account_pct_risk_per_trade"].apply(
+        lambda x: round(x * 100, 2)
+    )
+    backtest_df["sl_based_on_add_pct"] = backtest_df["sl_based_on_add_pct"].apply(lambda x: round(x * 100, 2))
+    backtest_df["sl_to_be_when_pct"] = backtest_df["sl_to_be_when_pct"].apply(lambda x: round(x * 100, 2))
+    backtest_df["trail_sl_by_pct"] = backtest_df["trail_sl_by_pct"].apply(lambda x: round(x * 100, 2))
+    backtest_df["trail_sl_when_pct"] = backtest_df["trail_sl_when_pct"].apply(lambda x: round(x * 100, 2))
     return backtest_df
 
 
-def proc_results(results):
+def proc_results(
+    results: tuple,
+):
     # print("Results: ", results)
-    start = results[1]
-    end = results[2]
-    strategy_result_records[start:end] = results[0]
+    start = results[0]
+    end = results[1]
+    arr = results[2]
+    strategy_result_records[start:end] = arr
 
 
 # error callback function

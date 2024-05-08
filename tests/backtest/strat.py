@@ -120,7 +120,6 @@ class RSIRisingFalling(Strategy):
 
         self.set_og_ind_and_dos_tuples(
             og_ind_set_tuple=og_ind_set_tuple,
-            shuffle_bool=shuffle_bool,
         )
 
         if long_short == "long":
@@ -147,7 +146,6 @@ class RSIRisingFalling(Strategy):
     def set_og_ind_and_dos_tuples(
         self,
         og_ind_set_tuple: IndicatorSettings,
-        shuffle_bool: bool,
     ) -> None:
 
         cart_arrays = self.get_ind_set_dos_cart_product(
@@ -162,10 +160,12 @@ class RSIRisingFalling(Strategy):
         self.og_dos_tuple = self.get_og_dos_tuple(
             filtered_cart_arrays=filtered_cart_arrays,
         )
+        self.total_order_settings = og_dos_tuple.account_pct_risk_per_trade.size
 
         self.og_ind_set_tuple = self.get_og_ind_set_tuple(
             filtered_cart_arrays=filtered_cart_arrays,
         )
+        self.total_indicator_settings = self.og_ind_set_tuple.rsi_length.size
 
         logger.debug("set_og_ind_and_dos_tuples")
 
@@ -421,7 +421,7 @@ above_rsi_cur= {self.above_rsi_cur}"""
 long_strat = RSIRisingFalling(
     long_short="long",
     rsi_length=np.array([15, 25]),
-    below_rsi_cur=np.array([30, 40, 60, 80]),
+    below_rsi_cur=np.array([30, 40, 60]),
     below_rsi_p=np.array([25, 30, 40]),
-    below_rsi_pp=np.array([30, 40, 50]),
+    below_rsi_pp=np.array([30, 40]),
 )
