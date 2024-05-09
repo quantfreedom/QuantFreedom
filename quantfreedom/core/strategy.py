@@ -24,6 +24,7 @@ class Strategy:
     set_entries_exits_array: np.ndarray = None
     total_indicator_settings: int = 0
     total_order_settings: int = 0
+    total_filtered_settings: int = 0
 
     def __init__(self) -> None:
         pass
@@ -39,20 +40,22 @@ class Strategy:
         for array in og_dos_tuple:
             total_order_settings *= array.size
         logger.debug(f"Total Order Settings: {total_order_settings}")
-
+        self.total_order_settings = total_order_settings
+        
         for array in og_ind_set_tuple:
             total_indicator_settings *= array.size
         logger.debug(f"Total Indicator Settings: {total_indicator_settings}")
+        self.total_indicator_settings = total_indicator_settings
 
         the_tuple = og_dos_tuple + og_ind_set_tuple
         array_size = total_order_settings * total_indicator_settings
         logger.debug(f"Total Array Size: {array_size}")
 
-        cart_arrays = np.empty((array_size, len(the_tuple)))
+        cart_prod_array = np.empty((array_size, len(the_tuple)))
 
         for i in range(len(the_tuple)):
             m = int(array_size / the_tuple[i].size)
-            cart_arrays[:array_size, i] = np.repeat(the_tuple[i], m)
+            cart_prod_array[:array_size, i] = np.repeat(the_tuple[i], m)
             array_size //= the_tuple[i].size
 
         array_size = the_tuple[-1].size
@@ -62,20 +65,21 @@ class Strategy:
             array_size *= the_tuple[k].size
             m = int(array_size / the_tuple[k].size)
             for j in range(1, the_tuple[k].size):
-                cart_arrays[j * m : (j + 1) * m, k + 1 :] = cart_arrays[0:m, k + 1 :]
+                cart_prod_array[j * m : (j + 1) * m, k + 1 :] = cart_prod_array[0:m, k + 1 :]
 
-        logger.debug("cart_arrays")
-        return cart_arrays.T
+        logger.debug("cart_prod_array")
+        return cart_prod_array.T
 
     def get_og_dos_tuple(
         self,
-        filtered_cart_arrays: np.ndarray,
+        shuffled_cart_prod_array: np.ndarray,
     ) -> DynamicOrderSettings:
 
-        dos_tuple = DynamicOrderSettings(*tuple(filtered_cart_arrays[:11]))
+        dos_tuple = DynamicOrderSettings(*tuple(shuffled_cart_prod_array[:12]))
         logger.debug("dos_tuple")
 
         og_dos_tuple = DynamicOrderSettings(
+            settings_index=dos_tuple.settings_index.astype(np.int_),
             account_pct_risk_per_trade=dos_tuple.account_pct_risk_per_trade / 100,
             max_trades=dos_tuple.max_trades.astype(np.int_),
             risk_reward=dos_tuple.risk_reward,
@@ -92,27 +96,36 @@ class Strategy:
 
         return og_dos_tuple
 
+    def get_settings_index(
+        self,
+        set_idx: int,
+    ) -> int:
+        indexes = self.og_dos_tuple.settings_index == set_idx
+        new_set_idx = np.where(indexes)[0][0]
+        return new_set_idx
+
     def set_cur_dos_tuple(
         self,
-        dos_index: int,
+        set_idx: int,
     ):
         self.cur_dos_tuple = DynamicOrderSettings(
-            account_pct_risk_per_trade=self.og_dos_tuple.account_pct_risk_per_trade[dos_index],
-            max_trades=self.og_dos_tuple.max_trades[dos_index],
-            risk_reward=self.og_dos_tuple.risk_reward[dos_index],
-            sl_based_on_add_pct=self.og_dos_tuple.sl_based_on_add_pct[dos_index],
-            sl_based_on_lookback=self.og_dos_tuple.sl_based_on_lookback[dos_index],
-            sl_bcb_type=self.og_dos_tuple.sl_bcb_type[dos_index],
-            sl_to_be_cb_type=self.og_dos_tuple.sl_to_be_cb_type[dos_index],
-            sl_to_be_when_pct=self.og_dos_tuple.sl_to_be_when_pct[dos_index],
-            trail_sl_bcb_type=self.og_dos_tuple.trail_sl_bcb_type[dos_index],
-            trail_sl_by_pct=self.og_dos_tuple.trail_sl_by_pct[dos_index],
-            trail_sl_when_pct=self.og_dos_tuple.trail_sl_when_pct[dos_index],
+            settings_index=self.og_dos_tuple.settings_index[set_idx],
+            account_pct_risk_per_trade=self.og_dos_tuple.account_pct_risk_per_trade[set_idx],
+            max_trades=self.og_dos_tuple.max_trades[set_idx],
+            risk_reward=self.og_dos_tuple.risk_reward[set_idx],
+            sl_based_on_add_pct=self.og_dos_tuple.sl_based_on_add_pct[set_idx],
+            sl_based_on_lookback=self.og_dos_tuple.sl_based_on_lookback[set_idx],
+            sl_bcb_type=self.og_dos_tuple.sl_bcb_type[set_idx],
+            sl_to_be_cb_type=self.og_dos_tuple.sl_to_be_cb_type[set_idx],
+            sl_to_be_when_pct=self.og_dos_tuple.sl_to_be_when_pct[set_idx],
+            trail_sl_bcb_type=self.og_dos_tuple.trail_sl_bcb_type[set_idx],
+            trail_sl_by_pct=self.og_dos_tuple.trail_sl_by_pct[set_idx],
+            trail_sl_when_pct=self.og_dos_tuple.trail_sl_when_pct[set_idx],
         )
 
         logger.info(
             f"""
-Dynamic Order settings index= {dos_index}
+Settings Index= {self.og_dos_tuple.settings_index[set_idx]}
 account_pct_risk_per_trade={round(self.cur_dos_tuple.account_pct_risk_per_trade * 100, 3)}
 max_trades={self.cur_dos_tuple.max_trades}
 risk_reward={self.cur_dos_tuple.risk_reward}
@@ -134,16 +147,15 @@ trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 3)
     ) -> None:
         pass
 
-    def get_filter_cart_arrays(
+    def get_filter_cart_prod_array(
         self,
-        cart_arrays: np.ndarray,
+        cart_prod_array: np.ndarray,
     ) -> np.ndarray:
         pass
 
     def get_og_ind_set_tuple(
         self,
-        cart_arrays: np.ndarray,
-        filtered_cart_arrays: np.ndarray,
+        shuffled_cart_prod_array: np.ndarray,
     ) -> IndicatorSettings:
         pass
 
@@ -160,7 +172,7 @@ trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 3)
     def long_set_entries_exits_array(
         self,
         candles: FootprintCandlesTuple,
-        ind_set_index: int,
+        set_idx: int,
     ):
         pass
 
@@ -183,7 +195,7 @@ trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 3)
     def short_set_entries_exits_array(
         self,
         candles: FootprintCandlesTuple,
-        ind_set_index: int,
+        set_idx: int,
     ):
         pass
 
@@ -205,7 +217,7 @@ trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 3)
 
     def live_set_indicator(
         self,
-        ind_set_index: int,
+        set_idx: int,
     ):
         pass
 

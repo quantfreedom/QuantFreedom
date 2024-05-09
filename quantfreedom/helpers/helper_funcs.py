@@ -13,26 +13,38 @@ logger = getLogger()
 
 
 def all_backtest_stats(
-    step_by: int,
     strategy: Strategy,
     threads: int,
     total_bars: int,
+    step_by: int,
+    num_chunk_bts: Optional[int] = None,
 ):
-    total_settings = strategy.total_order_settings * strategy.total_indicator_settings
 
     # logger.infoing out total numbers of things
-    print("Starting the backtest now ... and also here are some stats for your backtest.\n")
+    print("Starting the backtest now ... and also here are some stats for your backtest." + "\n")
     print(f"Total threads to use: {threads:,}")
     print(f"Total indicator settings to test: {strategy.total_indicator_settings:,}")
     print(f"Total order settings to test: {strategy.total_order_settings:,}")
-    print(f"Total settings combinations to test: {total_settings:,}")
-    print(f"Total settings combination chunks to process at the same time: {total_settings // threads:,}\n")
+    print(f"Total settings combinations to test: {strategy.total_order_settings * strategy.total_indicator_settings:,}")
+    print(f"Total settings combination to test after filtering: {strategy.total_filtered_settings:,}")
+    print(
+        f"Total settings combination chunks to process at the same time: {strategy.total_filtered_settings // threads:,}"
+        + "\n"
+    )
+
     print(f"Total candles: {total_bars:,}")
-    total_candles = total_settings * total_bars
+    total_candles = strategy.total_filtered_settings * total_bars
     print(f"Total candles to test: {total_candles:,}")
     chunks = total_candles // threads
     print(f"Total candle chunks to be processed at the same time: {chunks:,}")
-    print(f"Total chunks with step by: {chunks // step_by:,}")
+    print(f"Total candle chunks with step by: {chunks // step_by:,}")
+
+    if num_chunk_bts:
+        total_settings = (num_chunk_bts * threads * step_by // total_bars) + 1
+        print("\n" + f"New Total Settings: {total_settings:,}")
+        new_total_candles = total_settings * total_bars
+        new_chunks = new_total_candles // threads
+        print(f"New total chunks with step by: {new_chunks // step_by:,}")
 
 
 def dl_ex_candles(
@@ -164,38 +176,79 @@ def round_size_by_tick_step(
     return round(user_num, exchange_num)
 
 
-def fill_order_records(
-    account_state: AccountState,
-    or_index: int,
+def order_records_to_df(
     order_records: np.ndarray,
-    order_result: OrderResult,
-) -> int:
-    order_records["ind_set_idx"] = account_state.ind_set_index
-    order_records["or_set_idx"] = account_state.dos_index
-    order_records["bar_idx"] = account_state.bar_index
-    order_records["timestamp"] = account_state.timestamp
-
-    order_records["equity"] = account_state.equity
-    order_records["available_balance"] = account_state.available_balance
-    order_records["cash_borrowed"] = account_state.cash_borrowed
-    order_records["cash_used"] = account_state.cash_used
-
-    order_records["average_entry"] = order_result.average_entry
-    order_records["fees_paid"] = account_state.fees_paid
-    order_records["leverage"] = order_result.leverage
-    order_records["liq_price"] = order_result.liq_price
-    order_records["order_status"] = order_result.order_status
-    order_records["total_possible_loss"] = account_state.total_possible_loss
-    order_records["total_trades"] = account_state.total_trades
-    order_records["entry_size_asset"] = order_result.entry_size_asset
-    order_records["entry_size_usd"] = order_result.entry_size_usd
-    order_records["entry_price"] = order_result.entry_price
-    order_records["exit_price"] = order_result.exit_price
-    order_records["position_size_asset"] = order_result.position_size_asset
-    order_records["position_size_usd"] = order_result.position_size_usd
-    order_records["realized_pnl"] = account_state.realized_pnl
-    order_records["sl_pct"] = round(order_result.sl_pct * 100, 3)
-    order_records["sl_price"] = order_result.sl_price
-    order_records["tp_pct"] = round(order_result.tp_pct * 100, 3)
-    order_records["tp_price"] = order_result.tp_price
-    return or_index + 1
+):
+    order_records_df = pd.DataFrame(order_records)
+    order_records_df.insert(4, "datetime", pd.to_datetime(order_records_df.timestamp, unit="ms"))
+    order_records_df.replace(
+        {
+            "order_status": {
+                0: "HitMaxTrades",
+                1: "EntryFilled",
+                2: "StopLossFilled",
+                3: "TakeProfitFilled",
+                4: "LiquidationFilled",
+                5: "MovedSLToBE",
+                6: "MovedTSL",
+                7: "MaxEquityRisk",
+                8: "RiskToBig",
+                9: "CashUsedExceed",
+                10: "EntrySizeTooSmall",
+                11: "EntrySizeTooBig",
+                12: "PossibleLossTooBig",
+                13: "Nothing",
+            }
+        },
+        inplace=True,
+    )
+    order_records_df[
+        [
+            "equity",
+            "available_balance",
+            "cash_borrowed",
+            "cash_used",
+            "average_entry",
+            "fees_paid",
+            "leverage",
+            "liq_price",
+            "total_possible_loss",
+            "entry_size_asset",
+            "entry_size_usd",
+            "entry_price",
+            "exit_price",
+            "position_size_asset",
+            "position_size_usd",
+            "realized_pnl",
+            "sl_pct",
+            "sl_price",
+            "tp_pct",
+            "tp_price",
+        ]
+    ] = order_records_df[
+        [
+            "equity",
+            "available_balance",
+            "cash_borrowed",
+            "cash_used",
+            "average_entry",
+            "fees_paid",
+            "leverage",
+            "liq_price",
+            "total_possible_loss",
+            "entry_size_asset",
+            "entry_size_usd",
+            "entry_price",
+            "exit_price",
+            "position_size_asset",
+            "position_size_usd",
+            "realized_pnl",
+            "sl_pct",
+            "sl_price",
+            "tp_pct",
+            "tp_price",
+        ]
+    ].replace(
+        {0: np.nan}
+    )
+    return order_records_df

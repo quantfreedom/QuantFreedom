@@ -148,8 +148,8 @@ def nb_move_stop_loss(
     account_state: AccountState,
     bar_index: int,
     can_move_sl_to_be: bool,
-    dos_index: int,
-    ind_set_index: int,
+    set_idx: int,
+    set_idx: int,
     logger,
     order_result: OrderResult,
     order_status: int,
@@ -159,8 +159,8 @@ def nb_move_stop_loss(
 ):
     account_state = AccountState(
         # where we are at
-        ind_set_index=ind_set_index,
-        dos_index=dos_index,
+        set_idx=set_idx,
+        set_idx=set_idx,
         bar_index=bar_index,
         timestamp=timestamp,
         # account info
@@ -473,8 +473,8 @@ def nb_move_stop_loss_pass(
     account_state: AccountState,
     bar_index: int,
     can_move_sl_to_be: bool,
-    dos_index: int,
-    ind_set_index: int,
+    set_idx: int,
+    set_idx: int,
     logger,
     order_result: OrderResult,
     order_status: int,

@@ -39,8 +39,8 @@ def nb_sim_backtest(
     nb_strat_get_total_ind_settings: Callable,
     nb_strat_ind_creator: Callable,
     static_os_tuple: StaticOrderSettings,
-    dos_index: Optional[int] = None,
-    ind_set_index: Optional[int] = None,
+    set_idx: Optional[int] = None,
+    set_idx: Optional[int] = None,
     plot_results: bool = False,
 ):
     dos_tuple = dos_cart_product(
@@ -220,14 +220,14 @@ def nb_sim_backtest(
     # logger.infoing out total numbers of things
     print("Starting the backtest now ... and also here are some stats for your backtest.\n")
 
-    if ind_set_index is not None and dos_index is not None:
+    if set_idx is not None and set_idx is not None:
         order_records, og_ind_set_tuple, dynamic_order_settings = nb_run_or_backtest(
             candles=candles,
             dos_tuple=dos_tuple,
-            dos_index=dos_index,
+            set_idx=set_idx,
             exchange_settings_tuple=exchange_settings_tuple,
             exit_fee_pct=exit_fee_pct,
-            ind_set_index=ind_set_index,
+            set_idx=set_idx,
             logger=logger,
             nb_calc_dynamic_lev=nb_calc_dynamic_lev,
             nb_checker_sl_hit=nb_checker_sl_hit,
@@ -269,7 +269,7 @@ def nb_sim_backtest(
             plot_or_results(candles=candles, order_records_df=order_records_df)
         return order_records_df, data
 
-    elif ind_set_index is None and dos_index is None:
+    elif set_idx is None and set_idx is None:
         print(f"Total indicator settings to test: {total_indicator_settings:,}")
         print(f"Total order settings to test: {total_order_settings:,}")
         print(f"Total combinations of settings to test: {total_indicator_settings * total_order_settings:,}")

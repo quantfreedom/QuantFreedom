@@ -6,14 +6,14 @@ from os.path import dirname, join, abspath
 from quantfreedom.indicators.tv_indicators import rsi_tv
 from quantfreedom.core.strategy import Strategy
 from quantfreedom.core.enums import (
+    BacktestSettings,
+    CandleBodyType,
+    DynamicOrderSettings,
     ExchangeSettings,
     FootprintCandlesTuple,
     IncreasePositionType,
     LeverageStrategyType,
     StaticOrderSettings,
-    BacktestSettings,
-    CandleBodyType,
-    DynamicOrderSettings,
     StopLossStrategyType,
     TakeProfitStrategyType,
 )
@@ -48,21 +48,7 @@ exchange_settings_tuple = ExchangeSettings(
     position_mode=3,
     price_tick_step=1,
 )
-backtest_settings_tuple = BacktestSettings(qf_filter=0.02)
-
-og_dos_tuple = DynamicOrderSettings(
-    account_pct_risk_per_trade=np.array([5]),
-    max_trades=np.array([2, 4, 6]),
-    risk_reward=np.array([3, 5]),
-    sl_based_on_add_pct=np.array([0.1, 0.2, 0.3, 0.5]),
-    sl_based_on_lookback=np.array([20, 50]),
-    sl_bcb_type=np.array([CandleBodyType.Low]),
-    sl_to_be_cb_type=np.array([CandleBodyType.Nothing]),
-    sl_to_be_when_pct=np.array([0]),
-    trail_sl_bcb_type=np.array([CandleBodyType.Low]),
-    trail_sl_by_pct=np.array([0.5, 1.0, 2.0, 3, 4]),
-    trail_sl_when_pct=np.array([1, 2, 3, 4]),
-)
+backtest_settings_tuple = BacktestSettings()
 
 static_os_tuple = StaticOrderSettings(
     increase_position_type=IncreasePositionType.RiskPctAccountEntrySize,
@@ -77,6 +63,21 @@ static_os_tuple = StaticOrderSettings(
     tp_strategy_type=TakeProfitStrategyType.RiskReward,
     trail_sl_bool=True,
     z_or_e_type=None,
+)
+
+og_dos_tuple = DynamicOrderSettings(
+    settings_index=np.array([0]),
+    account_pct_risk_per_trade=np.array([5]),
+    max_trades=np.array([2, 4, 6]),
+    risk_reward=np.array([3, 5]),
+    sl_based_on_add_pct=np.array([0.1, 0.2, 0.3, 0.5]),
+    sl_based_on_lookback=np.array([20, 50]),
+    sl_bcb_type=np.array([CandleBodyType.Low]),
+    sl_to_be_cb_type=np.array([CandleBodyType.Nothing]),
+    sl_to_be_when_pct=np.array([0]),
+    trail_sl_bcb_type=np.array([CandleBodyType.Low]),
+    trail_sl_by_pct=np.array([0.5, 1.0, 2.0, 3, 4]),
+    trail_sl_when_pct=np.array([1, 2, 3, 4]),
 )
 
 
@@ -96,6 +97,7 @@ class RSIRisingFalling(Strategy):
     def __init__(
         self,
         long_short: str,
+        shuffle_bool: bool,
         rsi_length: np.ndarray,
         above_rsi_cur: np.ndarray = np.array([0]),
         above_rsi_p: np.ndarray = np.array([0]),
@@ -120,18 +122,19 @@ class RSIRisingFalling(Strategy):
 
         self.set_og_ind_and_dos_tuples(
             og_ind_set_tuple=og_ind_set_tuple,
+            shuffle_bool=shuffle_bool,
         )
 
         if long_short == "long":
-            self.set_entries_exits_array = self.long_set_entries_exits_array
+            self.chart_title = "Long Signal"
             self.entry_message = self.long_entry_message
             self.live_evaluate = self.long_live_evaluate
-            self.chart_title = "Long Signal"
+            self.set_entries_exits_array = self.long_set_entries_exits_array
         else:
-            self.set_entries_exits_array = self.short_set_entries_exits_array
+            self.chart_title = "short Signal"
             self.entry_message = self.short_entry_message
             self.live_evaluate = self.short_live_evaluate
-            self.chart_title = "short Signal"
+            self.set_entries_exits_array = self.short_set_entries_exits_array
 
     #######################################################
     #######################################################
@@ -146,35 +149,40 @@ class RSIRisingFalling(Strategy):
     def set_og_ind_and_dos_tuples(
         self,
         og_ind_set_tuple: IndicatorSettings,
+        shuffle_bool: bool,
     ) -> None:
 
-        cart_arrays = self.get_ind_set_dos_cart_product(
+        cart_prod_array = self.get_ind_set_dos_cart_product(
             og_dos_tuple=og_dos_tuple,
             og_ind_set_tuple=og_ind_set_tuple,
         )
 
-        filtered_cart_arrays = self.get_filter_cart_arrays(
-            cart_arrays=cart_arrays,
+        filtered_cart_prod_array = self.get_filter_cart_prod_array(
+            cart_prod_array=cart_prod_array,
         )
+
+        if shuffle_bool:
+            shuffled_cart_prod_array = np.random.default_rng().permuted(filtered_cart_prod_array, axis=1)
+        else:
+            shuffled_cart_prod_array = filtered_cart_prod_array.copy()
 
         self.og_dos_tuple = self.get_og_dos_tuple(
-            filtered_cart_arrays=filtered_cart_arrays,
+            shuffled_cart_prod_array=shuffled_cart_prod_array,
         )
-        self.total_order_settings = og_dos_tuple.account_pct_risk_per_trade.size
 
         self.og_ind_set_tuple = self.get_og_ind_set_tuple(
-            filtered_cart_arrays=filtered_cart_arrays,
+            shuffled_cart_prod_array=shuffled_cart_prod_array,
         )
-        self.total_indicator_settings = self.og_ind_set_tuple.rsi_length.size
+        self.total_filtered_settings = self.og_ind_set_tuple.rsi_length.size
 
         logger.debug("set_og_ind_and_dos_tuples")
 
     def get_og_ind_set_tuple(
         self,
-        filtered_cart_arrays: np.ndarray,
+        shuffled_cart_prod_array: np.ndarray,
     ) -> IndicatorSettings:
 
-        ind_set_tuple = IndicatorSettings(*tuple(filtered_cart_arrays[11:]))
+        ind_set_tuple = IndicatorSettings(*tuple(shuffled_cart_prod_array[12:]))
         logger.debug("ind_set_tuple")
 
         og_ind_set_tuple = IndicatorSettings(
@@ -190,30 +198,34 @@ class RSIRisingFalling(Strategy):
 
         return og_ind_set_tuple
 
-    def get_filter_cart_arrays(
+    def get_filter_cart_prod_array(
         self,
-        cart_arrays: np.ndarray,
+        cart_prod_array: np.ndarray,
     ) -> np.ndarray:
         # cart array indexes
-        above_rsi_cur = 12
-        above_rsi_p = 13
-        above_rsi_pp = 14
-        below_rsi_cur = 15
-        below_rsi_p = 16
-        below_rsi_pp = 17
+        above_rsi_cur = 13
+        above_rsi_p = 14
+        above_rsi_pp = 15
+        below_rsi_cur = 16
+        below_rsi_p = 17
+        below_rsi_pp = 18
 
-        above_cur_le_p = cart_arrays[above_rsi_cur] <= cart_arrays[above_rsi_p]
-        above_pp_le_p = cart_arrays[above_rsi_pp] <= cart_arrays[above_rsi_p]
+        above_cur_le_p = cart_prod_array[above_rsi_cur] <= cart_prod_array[above_rsi_p]
+        above_pp_le_p = cart_prod_array[above_rsi_pp] <= cart_prod_array[above_rsi_p]
 
-        below_cur_ge_p = cart_arrays[below_rsi_cur] >= cart_arrays[below_rsi_p]
-        below_pp_ge_p = cart_arrays[below_rsi_pp] >= cart_arrays[below_rsi_p]
+        below_cur_ge_p = cart_prod_array[below_rsi_cur] >= cart_prod_array[below_rsi_p]
+        below_pp_ge_p = cart_prod_array[below_rsi_pp] >= cart_prod_array[below_rsi_p]
 
         filtered_indexes = below_cur_ge_p & below_pp_ge_p & above_cur_le_p & above_pp_le_p
 
-        filtered_cart_arrays = cart_arrays[:, filtered_indexes]
-        logger.debug("filtered_cart_arrays")
+        filtered_cart_prod_array = cart_prod_array[:, filtered_indexes]
+        logger.debug(f"cart prod size {cart_prod_array.shape[1]:,}")
+        logger.debug(f"filtered cart prod size {filtered_cart_prod_array.shape[1]:,}")
+        logger.debug(f"Removed {cart_prod_array.shape[1] -filtered_cart_prod_array.shape[1] }")
 
-        return filtered_cart_arrays
+        filtered_cart_prod_array[0] = np.arange(filtered_cart_prod_array.shape[1])
+
+        return filtered_cart_prod_array
 
     #######################################################
     #######################################################
@@ -228,13 +240,13 @@ class RSIRisingFalling(Strategy):
     def long_set_entries_exits_array(
         self,
         candles: FootprintCandlesTuple,
-        ind_set_index: int,
+        set_idx: int,
     ):
         try:
-            rsi_length = self.og_ind_set_tuple.rsi_length[ind_set_index]
-            below_rsi_cur = self.og_ind_set_tuple.below_rsi_cur[ind_set_index]
-            below_rsi_p = self.og_ind_set_tuple.below_rsi_p[ind_set_index]
-            below_rsi_pp = self.og_ind_set_tuple.below_rsi_pp[ind_set_index]
+            rsi_length = self.og_ind_set_tuple.rsi_length[set_idx]
+            below_rsi_cur = self.og_ind_set_tuple.below_rsi_cur[set_idx]
+            below_rsi_p = self.og_ind_set_tuple.below_rsi_p[set_idx]
+            below_rsi_pp = self.og_ind_set_tuple.below_rsi_pp[set_idx]
 
             self.h_line = below_rsi_cur
 
@@ -250,7 +262,7 @@ class RSIRisingFalling(Strategy):
             logger.info(
                 f"""
 Indicator Settings
-Indicator Settings Index= {ind_set_index}
+Indicator Settings Index= {set_idx}
 rsi_length= {rsi_length}
 below_rsi_cur= {below_rsi_cur}
 below_rsi_p= {below_rsi_p}
@@ -307,17 +319,17 @@ below_rsi_pp= {below_rsi_pp}
     def short_set_entries_exits_array(
         self,
         candles: FootprintCandlesTuple,
-        ind_set_index: int,
+        set_idx: int,
     ):
         try:
-            self.above_rsi_cur = self.og_ind_set_tuple.above_rsi_cur[ind_set_index]
+            self.above_rsi_cur = self.og_ind_set_tuple.above_rsi_cur[set_idx]
             self.h_line = self.above_rsi_cur
-            rsi_length = self.og_ind_set_tuple.rsi_length[ind_set_index]
+            rsi_length = self.og_ind_set_tuple.rsi_length[set_idx]
 
             logger.info(
                 f"""
 Indicator Settings
-Indicator Settings Index= {ind_set_index}
+Indicator Settings Index= {set_idx}
 rsi_length= {rsi_length}
 above_rsi_cur= {self.above_rsi_cur}"""
             )
@@ -420,6 +432,7 @@ above_rsi_cur= {self.above_rsi_cur}"""
 
 long_strat = RSIRisingFalling(
     long_short="long",
+    shuffle_bool=True,
     rsi_length=np.array([15, 25]),
     below_rsi_cur=np.array([30, 40, 60]),
     below_rsi_p=np.array([25, 30, 40]),

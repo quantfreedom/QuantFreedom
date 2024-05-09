@@ -26,11 +26,11 @@ def nb_short_pnl_calc(
 def nb_decrease_position(
     average_entry: float,
     bar_index: int,
-    dos_index: int,
+    set_idx: int,
     equity: float,
     exit_fee_pct: float,
     exit_price: float,
-    ind_set_index: int,
+    set_idx: int,
     logger,
     market_fee_pct: float,
     nb_pnl_calc,
@@ -65,8 +65,8 @@ def nb_decrease_position(
 
     account_state = AccountState(
         # where we are at
-        ind_set_index=ind_set_index,
-        dos_index=dos_index,
+        set_idx=set_idx,
+        set_idx=set_idx,
         bar_index=bar_index,
         timestamp=timestamp,
         # account info

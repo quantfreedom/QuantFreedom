@@ -225,8 +225,8 @@ TriggerDirectionType = TriggerDirectionTypeT()
 
 class AccountState(NamedTuple):
     # where we are at
-    ind_set_index: int
-    dos_index: int
+    set_idx: int
+    set_idx: int
     bar_index: int
     timestamp: int
     # account info
@@ -261,6 +261,7 @@ class BacktestSettings(NamedTuple):
 
 
 class DynamicOrderSettings(NamedTuple):
+    settings_index: np.ndarray
     account_pct_risk_per_trade: np.ndarray
     max_trades: np.ndarray
     risk_reward: np.ndarray

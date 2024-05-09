@@ -102,12 +102,12 @@ def nb_strat_get_total_ind_settings():
 
 @njit(cache=True)
 def nb_strat_get_cur_ind_set_tuple(
-    ind_set_index: int,
+    set_idx: int,
     logger: Callable,
 ):
     og_ind_set_tuple = IndicatorSettings(
-        rsi_is_below=ind_set_arrays.rsi_is_below[ind_set_index],
-        rsi_period=ind_set_arrays.rsi_period[ind_set_index],
+        rsi_is_below=ind_set_arrays.rsi_is_below[set_idx],
+        rsi_period=ind_set_arrays.rsi_period[set_idx],
     )
     logger("nb_strategy.py - nb_get_cur_ind_set_tuple() - Created indicator settings")
     return og_ind_set_tuple

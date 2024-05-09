@@ -1,11 +1,11 @@
+from typing import Optional
 import numpy as np
 import pandas as pd
 from logging import getLogger
 from multiprocessing import Pool
 from multiprocessing.pool import ApplyResult
 from quantfreedom.helpers.custom_logger import set_loggers
-from quantfreedom.helpers.helper_funcs import get_qf_score
-from quantfreedom.nb_funcs.nb_helper_funcs import order_records_to_df
+from quantfreedom.helpers.helper_funcs import get_qf_score, order_records_to_df
 from quantfreedom.order_handler.order import OrderHandler
 from quantfreedom.core.plotting_base import plot_or_results
 from quantfreedom.core.strategy import Strategy
@@ -19,7 +19,6 @@ from quantfreedom.core.enums import (
     OrderStatus,
     RejectedOrder,
     StaticOrderSettings,
-    strat_df_array_dt,
     or_dt,
 )
 from quantfreedom.helpers.utils import pretty_qf
@@ -44,12 +43,13 @@ def multiprocess_backtest(
     logger.disabled = True
     rec_idx = 0
     for set_idx in range(range_start, range_end, step_by):
+        logger.debug(set_idx)
         strategy.set_entries_exits_array(
             candles=candles,
-            ind_set_index=set_idx,
+            set_idx=set_idx,
         )
 
-        strategy.set_cur_dos_tuple(dos_index=set_idx)
+        strategy.set_cur_dos_tuple(set_idx=set_idx)
 
         pnl_array = np.full(shape=round(total_bars / 3), fill_value=np.nan)
         filled_pnl_counter = 0
@@ -61,8 +61,10 @@ def multiprocess_backtest(
         logger.debug("Set order variables, class dos and pnl array")
 
         for bar_index in range(static_os_tuple.starting_bar - 1, total_bars):
-            logger.info("\n\n")
-            logger.info(f"set_idx= {set_idx} bar_idx= {bar_index} datetime= {candles.candle_open_datetimes[bar_index]}")
+            logger.debug("\n\n")
+            logger.debug(
+                f"set_idx= {strategy.cur_dos_tuple.settings_index} loop_idx = {set_idx} bar_idx= {bar_index} datetime= {candles.candle_open_datetimes[bar_index]}"
+            )
 
             if order.position_size_usd > 0:
                 try:
@@ -213,7 +215,7 @@ def multiprocess_backtest(
                         tp_pct=tp_pct,
                         tp_price=tp_price,
                     )
-                    logger.info("We are in a position and filled the result")
+                    logger.debug("We are in a position and filled the result")
                 except RejectedOrder:
                     pass
                 except Exception as e:
@@ -224,10 +226,11 @@ def multiprocess_backtest(
         gains_pct = round(((order.equity - starting_equity) / starting_equity) * 100, 3)
         wins_and_losses_array = pnl_array[~np.isnan(pnl_array)]
         total_trades_closed = wins_and_losses_array.size
-        logger.info(
+        logger.debug(
             f"""
 Results from backtest
-set_idx={set_idx}
+set_idx={strategy.cur_dos_tuple.settings_index}
+loop_idx = {set_idx}
 Starting eq={starting_equity}
 Ending eq={order.equity}
 Gains pct={gains_pct}
@@ -253,7 +256,6 @@ total_trades={total_trades_closed}"""
                     total_pnl = wins_and_losses_array.sum()
                     tuple_results = (
                         (
-                            set_idx,
                             wins_and_losses_array.size,
                             wins,
                             losses,
@@ -269,7 +271,7 @@ total_trades={total_trades_closed}"""
                     )
                     record_results[rec_idx] = tuple_results
                     rec_idx += 1
-        logger.info(
+        logger.debug(
             f"Starting New Loop\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
         )
     return range_start, range_end, record_results
@@ -283,6 +285,7 @@ def run_df_backtest(
     step_by: int,
     strategy: Strategy,
     threads: int,
+    num_chunk_bts: Optional[int] = None,
 ) -> pd.DataFrame:
     global strategy_result_records
 
@@ -305,20 +308,32 @@ def run_df_backtest(
     total_settings = strategy.total_order_settings * strategy.total_indicator_settings
 
     # logger.infoing out total numbers of things
-    print("Starting the backtest now ... and also here are some stats for your backtest.\n")
+    print("Starting the backtest now ... and also here are some stats for your backtest." + "\n")
     print(f"Total threads to use: {threads:,}")
     print(f"Total indicator settings to test: {strategy.total_indicator_settings:,}")
     print(f"Total order settings to test: {strategy.total_order_settings:,}")
-    print(f"Total settings combinations to test: {total_settings:,}")
-    print(f"Total settings combination chunks to process at the same time: {total_settings // threads:,}\n")
+    print(f"Total settings combinations to test: {strategy.total_order_settings * strategy.total_indicator_settings:,}")
+    print(f"Total settings combination to test after filtering: {strategy.total_filtered_settings:,}")
+    print(
+        f"Total settings combination chunks to process at the same time: {strategy.total_filtered_settings // threads:,}"
+        + "\n"
+    )
+
     print(f"Total candles: {total_bars:,}")
-    total_candles = total_settings * total_bars
+    total_candles = strategy.total_filtered_settings * total_bars
     print(f"Total candles to test: {total_candles:,}")
     chunks = total_candles // threads
     print(f"Total candle chunks to be processed at the same time: {chunks:,}")
     print(f"Total chunks with step by: {chunks // step_by:,}")
 
-    num_array_columns = 10 + len(strategy.og_dos_tuple._fields) + len(strategy.og_ind_set_tuple._fields)
+    if num_chunk_bts:
+        total_settings = (num_chunk_bts * threads * step_by // total_bars) + 1
+        print("\n" + f"New Total Settings: {total_settings:,}")
+        new_total_candles = total_settings * total_bars
+        new_chunks = new_total_candles // threads
+        print(f"New total chunks with step by: {new_chunks // step_by:,}")
+
+    num_array_columns = 9 + len(strategy.og_dos_tuple._fields) + len(strategy.og_ind_set_tuple._fields)
     arr_shape = (total_settings, num_array_columns)
     strategy_result_records = np.full(arr_shape, np.nan)
 
@@ -351,7 +366,7 @@ def run_df_backtest(
             error_callback=handler,
         )
         results.append(r)
-    print("looping through results")
+    print("\n" + "looping through results")
     for r in results:
         r.wait()
 
@@ -360,7 +375,6 @@ def run_df_backtest(
     print("creating datafram")
     column_names = (
         [
-            "set_idx",
             "total_trades",
             "wins",
             "losses",
@@ -375,8 +389,8 @@ def run_df_backtest(
         + list(strategy.og_ind_set_tuple._fields)
     )
     backtest_df = pd.DataFrame(data=strategy_result_records, columns=column_names).dropna()
-    backtest_df.set_index("set_idx", inplace=True)
-    
+    backtest_df.set_index("settings_index", inplace=True)
+
     backtest_df["sl_bcb_type"] = backtest_df["sl_bcb_type"].apply(lambda x: CandleBodyType._fields[int(x)])
     backtest_df["trail_sl_bcb_type"] = backtest_df["trail_sl_bcb_type"].apply(lambda x: CandleBodyType._fields[int(x)])
     backtest_df["sl_to_be_cb_type"] = backtest_df["sl_to_be_cb_type"].apply(lambda x: CandleBodyType._fields[int(x)])
@@ -432,12 +446,14 @@ def or_backtest(
         static_os_tuple=static_os_tuple,
     )
 
+    set_idx = strategy.get_settings_index(set_idx=set_idx)
+
     strategy.set_entries_exits_array(
         candles=candles,
-        ind_set_index=set_idx,
+        set_idx=set_idx,
     )
 
-    strategy.set_cur_dos_tuple(dos_index=set_idx)
+    strategy.set_cur_dos_tuple(set_idx=set_idx)
 
     order.update_class_dos(dynamic_order_settings=strategy.cur_dos_tuple)
     order.set_order_variables(equity=starting_equity)

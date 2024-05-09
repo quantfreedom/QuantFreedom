@@ -78,20 +78,20 @@ def nb_run_df_backtest(
     )
     result_records_filled = 0
 
-    for ind_set_index in range(total_indicator_settings):
+    for set_idx in range(total_indicator_settings):
         og_ind_set_tuple = nb_strat_get_cur_ind_set_tuple(
-            ind_set_index=ind_set_index,
+            set_idx=set_idx,
             logger=logger,
         )
 
-        for dos_index in range(total_order_settings):
-            logger("nb_simulate.py - nb_run_backtest() - Indicator settings index=" + str(ind_set_index))
+        for set_idx in range(total_order_settings):
+            logger("nb_simulate.py - nb_run_backtest() - Indicator settings index=" + str(set_idx))
             logger(nb_strat_get_ind_set_str(og_ind_set_tuple=og_ind_set_tuple, stringer=stringer))
             dynamic_order_settings = nb_get_dos(
                 dos_tuple=dos_tuple,
-                dos_index=dos_index,
+                set_idx=set_idx,
             )
-            logger("nb_simulate.py - nb_run_backtest() - Dynamic Order settings index=" + str(dos_index))
+            logger("nb_simulate.py - nb_run_backtest() - Dynamic Order settings index=" + str(set_idx))
             logger(
                 "nb_simulate.py - nb_run_backtest() - Created Dynamic Order Settings"
                 + "\nmax_equity_risk_pct= "
@@ -138,9 +138,9 @@ def nb_run_df_backtest(
                 logger(
                     (
                         "nb_simulate.py - nb_run_backtest() - ind_idx="
-                        + str(ind_set_index)
+                        + str(set_idx)
                         + " dos_idx="
-                        + str(dos_index)
+                        + str(set_idx)
                         + " bar_idx="
                         + str(bar_index)
                         + " timestamp= "
@@ -164,11 +164,11 @@ def nb_run_df_backtest(
                             account_state, order_result = nb_decrease_position(
                                 average_entry=order_result.average_entry,
                                 bar_index=bar_index,
-                                dos_index=dos_index,
+                                set_idx=set_idx,
                                 equity=account_state.equity,
                                 exit_fee_pct=market_fee_pct,
                                 exit_price=order_result.sl_price,
-                                ind_set_index=ind_set_index,
+                                set_idx=set_idx,
                                 logger=logger,
                                 market_fee_pct=market_fee_pct,
                                 nb_pnl_calc=nb_pnl_calc,
@@ -196,11 +196,11 @@ def nb_run_df_backtest(
                             account_state, order_result = nb_decrease_position(
                                 average_entry=order_result.average_entry,
                                 bar_index=bar_index,
-                                dos_index=dos_index,
+                                set_idx=set_idx,
                                 equity=account_state.equity,
                                 exit_fee_pct=market_fee_pct,
                                 exit_price=order_result.liq_price,
-                                ind_set_index=ind_set_index,
+                                set_idx=set_idx,
                                 logger=logger,
                                 market_fee_pct=market_fee_pct,
                                 nb_pnl_calc=nb_pnl_calc,
@@ -228,11 +228,11 @@ def nb_run_df_backtest(
                             account_state, order_result = nb_decrease_position(
                                 average_entry=order_result.average_entry,
                                 bar_index=bar_index,
-                                dos_index=dos_index,
+                                set_idx=set_idx,
                                 equity=account_state.equity,
                                 exit_fee_pct=exit_fee_pct,
                                 exit_price=order_result.tp_price,
-                                ind_set_index=ind_set_index,
+                                set_idx=set_idx,
                                 logger=logger,
                                 market_fee_pct=market_fee_pct,
                                 nb_pnl_calc=nb_pnl_calc,
@@ -269,8 +269,8 @@ def nb_run_df_backtest(
                                 account_state=account_state,
                                 bar_index=bar_index,
                                 can_move_sl_to_be=False,
-                                dos_index=0,
-                                ind_set_index=0,
+                                set_idx=0,
+                                set_idx=0,
                                 logger=logger,
                                 order_result=order_result,
                                 order_status=OrderStatus.MovedSLToBE,
@@ -301,8 +301,8 @@ def nb_run_df_backtest(
                                 account_state=account_state,
                                 bar_index=bar_index,
                                 can_move_sl_to_be=False,
-                                dos_index=dos_index,
-                                ind_set_index=ind_set_index,
+                                set_idx=set_idx,
+                                set_idx=set_idx,
                                 logger=logger,
                                 order_result=order_result,
                                 order_status=OrderStatus.MovedTSL,
@@ -439,8 +439,8 @@ def nb_run_df_backtest(
                         logger("nb_simulate.py - nb_run_backtest() - Recorded Trade")
                         account_state = AccountState(
                             # where we are at
-                            ind_set_index=ind_set_index,
-                            dos_index=dos_index,
+                            set_idx=set_idx,
+                            set_idx=set_idx,
                             bar_index=bar_index + 1,  # put plus 1 because we need to place entry on next bar
                             timestamp=int(candles[bar_index + 1, CandleBodyType.OpenTimestamp]),
                             # account info
@@ -487,10 +487,10 @@ def nb_run_df_backtest(
             total_trades_closed = wins_and_losses_array.size
             logger(
                 "nb_simulate.py - nb_run_backtest() - Results from backtest\n"
-                + "\nind_set_index= "
-                + str(ind_set_index)
-                + "\ndos_index= "
-                + str(dos_index)
+                + "\nset_idx= "
+                + str(set_idx)
+                + "\nset_idx= "
+                + str(set_idx)
                 + "\nStarting eq= "
                 + stringer[StringerFuncType.float_to_str](static_os_tuple.starting_equity)
                 + "\nEnding eq= "
@@ -521,8 +521,8 @@ def nb_run_df_backtest(
                         total_pnl = wins_and_losses_array.sum()
 
                         # strat array
-                        strategy_result_records[result_records_filled]["ind_set_idx"] = ind_set_index
-                        strategy_result_records[result_records_filled]["dos_index"] = dos_index
+                        strategy_result_records[result_records_filled]["ind_set_idx"] = set_idx
+                        strategy_result_records[result_records_filled]["set_idx"] = set_idx
                         strategy_result_records[result_records_filled]["total_trades"] = wins_and_losses_array.size
                         strategy_result_records[result_records_filled]["wins"] = wins
                         strategy_result_records[result_records_filled]["losses"] = losses

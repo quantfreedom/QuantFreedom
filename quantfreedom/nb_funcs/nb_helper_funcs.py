@@ -60,21 +60,21 @@ def nb_get_qf_score(
 @njit(cache=True)
 def nb_get_dos(
     dos_tuple: DynamicOrderSettings,
-    dos_index: int,
+    set_idx: int,
 ):
     return DynamicOrderSettings(
-        max_equity_risk_pct=dos_tuple.max_equity_risk_pct[dos_index],
-        max_trades=dos_tuple.max_trades[dos_index],
-        account_pct_risk_per_trade=dos_tuple.account_pct_risk_per_trade[dos_index],
-        risk_reward=dos_tuple.risk_reward[dos_index],
-        sl_based_on_add_pct=dos_tuple.sl_based_on_add_pct[dos_index],
-        sl_based_on_lookback=dos_tuple.sl_based_on_lookback[dos_index],
-        sl_bcb_type=dos_tuple.sl_bcb_type[dos_index],
-        sl_to_be_cb_type=dos_tuple.sl_to_be_cb_type[dos_index],
-        sl_to_be_when_pct=dos_tuple.sl_to_be_when_pct[dos_index],
-        trail_sl_bcb_type=dos_tuple.trail_sl_bcb_type[dos_index],
-        trail_sl_by_pct=dos_tuple.trail_sl_by_pct[dos_index],
-        trail_sl_when_pct=dos_tuple.trail_sl_when_pct[dos_index],
+        max_equity_risk_pct=dos_tuple.max_equity_risk_pct[set_idx],
+        max_trades=dos_tuple.max_trades[set_idx],
+        account_pct_risk_per_trade=dos_tuple.account_pct_risk_per_trade[set_idx],
+        risk_reward=dos_tuple.risk_reward[set_idx],
+        sl_based_on_add_pct=dos_tuple.sl_based_on_add_pct[set_idx],
+        sl_based_on_lookback=dos_tuple.sl_based_on_lookback[set_idx],
+        sl_bcb_type=dos_tuple.sl_bcb_type[set_idx],
+        sl_to_be_cb_type=dos_tuple.sl_to_be_cb_type[set_idx],
+        sl_to_be_when_pct=dos_tuple.sl_to_be_when_pct[set_idx],
+        trail_sl_bcb_type=dos_tuple.trail_sl_bcb_type[set_idx],
+        trail_sl_by_pct=dos_tuple.trail_sl_by_pct[set_idx],
+        trail_sl_when_pct=dos_tuple.trail_sl_when_pct[set_idx],
     )
 
 
@@ -84,8 +84,7 @@ def nb_create_ao(
 ):
     account_state = AccountState(
         # where we are at
-        ind_set_index=-1,
-        dos_index=-1,
+        set_idx=-1,
         bar_index=-1,
         timestamp=-1,
         # account info
@@ -239,8 +238,8 @@ def nb_fill_order_records(
     order_records: np.ndarray,
     order_result: OrderResult,
 ):
-    order_records["ind_set_idx"] = account_state.ind_set_index
-    order_records["or_set_idx"] = account_state.dos_index
+    order_records["ind_set_idx"] = account_state.set_idx
+    order_records["or_set_idx"] = account_state.set_idx
     order_records["bar_idx"] = account_state.bar_index
     order_records["timestamp"] = account_state.timestamp
 
@@ -270,310 +269,5 @@ def nb_fill_order_records(
     return or_index + 1
 
 
-def order_records_to_df(order_records: np.ndarray):
-    order_records_df = pd.DataFrame(order_records)
-    order_records_df.insert(4, "datetime", pd.to_datetime(order_records_df.timestamp, unit="ms"))
-    order_records_df.replace(
-        {
-            "order_status": {
-                0: "HitMaxTrades",
-                1: "EntryFilled",
-                2: "StopLossFilled",
-                3: "TakeProfitFilled",
-                4: "LiquidationFilled",
-                5: "MovedSLToBE",
-                6: "MovedTSL",
-                7: "MaxEquityRisk",
-                8: "RiskToBig",
-                9: "CashUsedExceed",
-                10: "EntrySizeTooSmall",
-                11: "EntrySizeTooBig",
-                12: "PossibleLossTooBig",
-                13: "Nothing",
-            }
-        },
-        inplace=True,
-    )
-    order_records_df[
-        [
-            "equity",
-            "available_balance",
-            "cash_borrowed",
-            "cash_used",
-            "average_entry",
-            "fees_paid",
-            "leverage",
-            "liq_price",
-            "total_possible_loss",
-            "entry_size_asset",
-            "entry_size_usd",
-            "entry_price",
-            "exit_price",
-            "position_size_asset",
-            "position_size_usd",
-            "realized_pnl",
-            "sl_pct",
-            "sl_price",
-            "tp_pct",
-            "tp_price",
-        ]
-    ] = order_records_df[
-        [
-            "equity",
-            "available_balance",
-            "cash_borrowed",
-            "cash_used",
-            "average_entry",
-            "fees_paid",
-            "leverage",
-            "liq_price",
-            "total_possible_loss",
-            "entry_size_asset",
-            "entry_size_usd",
-            "entry_price",
-            "exit_price",
-            "position_size_asset",
-            "position_size_usd",
-            "realized_pnl",
-            "sl_pct",
-            "sl_price",
-            "tp_pct",
-            "tp_price",
-        ]
-    ].replace(
-        {0: np.nan}
-    )
-    return order_records_df
 
 
-def get_data_for_plotting(
-    order_records_df: pd.DataFrame,
-    candles: FootprintCandlesTuple,
-):
-    data = {
-        "candles": candles.tolist(),
-    }
-    timestamp_list = candles[:, 0].tolist()
-
-    temp_entries_df = order_records_df[
-        ["order_status", "timestamp", "average_entry", "entry_price", "liq_price", "sl_price", "tp_price"]
-    ]
-    entries_df = temp_entries_df[temp_entries_df["order_status"] == "EntryFilled"]
-    entries_list_df = entries_df.values[:, 1:].tolist()
-
-    entries_list = np.vstack(candles[:, 0]).tolist()
-    sl_list = np.vstack(candles[:, 0]).tolist()
-    tp_list = np.vstack(candles[:, 0]).tolist()
-
-    for idx, timestamp in enumerate(timestamp_list):
-        if timestamp == entries_list_df[0][0]:
-            current_entry = entries_list_df[0]
-            entries_list[idx] = [current_entry[0], current_entry[2]]
-            sl_list[idx] = [current_entry[0], current_entry[4]]
-            tp_list[idx] = [current_entry[0], current_entry[5]]
-            del entries_list_df[0]
-            if len(entries_list_df) == 0:
-                break
-    data["entries"] = entries_list
-    data["sl_prices"] = sl_list
-    data["tp_prices"] = tp_list
-
-    temp_sl_filled_df = order_records_df[["order_status", "timestamp", "exit_price"]]
-    sl_filled_df = temp_sl_filled_df[temp_sl_filled_df["order_status"] == "StopLossFilled"]
-    sl_filled_list_df = sl_filled_df.values[:, 1:].tolist()
-    filled_sl_list = np.vstack(candles[:, 0]).tolist()
-
-    for idx, timestamp in enumerate(timestamp_list):
-        if timestamp == sl_filled_list_df[0][0]:
-            filled_sl_list[idx] = sl_filled_list_df[0]
-            del sl_filled_list_df[0]
-            if len(sl_filled_list_df) == 0:
-                break
-    data["sl_filled"] = filled_sl_list
-
-    temp_tp_filled_df = order_records_df[["order_status", "timestamp", "exit_price"]]
-    tp_filled_df = temp_tp_filled_df[temp_tp_filled_df["order_status"] == "TakeProfitFilled"]
-    tp_filled_list_df = tp_filled_df.values[:, 1:].tolist()
-    filled_tp_list = np.vstack(candles[:, 0]).tolist()
-
-    for idx, timestamp in enumerate(timestamp_list):
-        if timestamp == tp_filled_list_df[0][0]:
-            filled_tp_list[idx] = tp_filled_list_df[0]
-            del tp_filled_list_df[0]
-            if len(tp_filled_list_df) == 0:
-                break
-    data["tp_filled"] = filled_tp_list
-
-    temp_tp_filled_df = order_records_df[["order_status", "timestamp", "sl_price"]]
-    moved_sl_df = temp_tp_filled_df[
-        (temp_tp_filled_df["order_status"] == "MovedTSL") | (temp_tp_filled_df["order_status"] == "MovedSLToBE")
-    ]
-    moved_sl_list_df = moved_sl_df.values[:, 1:].tolist()
-    moved_sl_list = np.vstack(candles[:, 0]).tolist()
-    for idx, timestamp in enumerate(timestamp_list):
-        if timestamp == moved_sl_list_df[0][0]:
-            moved_sl_list[idx] = moved_sl_list_df[0]
-            del moved_sl_list_df[0]
-            if len(moved_sl_list_df) == 0:
-                break
-    data["moved_sl"] = moved_sl_list
-
-    return data
-
-
-def get_data_for_plotting(order_records_df: pd.DataFrame, candles: FootprintCandlesTuple):
-    data = {
-        "candles": candles.tolist(),
-    }
-    timestamp_list = candles[:, 0].tolist()
-
-    temp_entries_df = order_records_df[
-        ["order_status", "timestamp", "average_entry", "entry_price", "liq_price", "sl_price", "tp_price"]
-    ]
-    entries_df = temp_entries_df[temp_entries_df["order_status"] == "EntryFilled"]
-    entries_list_df = entries_df.values[:, 1:].tolist()
-
-    entries_list = np.vstack(candles[:, 0]).tolist()
-    sl_list = np.vstack(candles[:, 0]).tolist()
-    tp_list = np.vstack(candles[:, 0]).tolist()
-
-    for idx, timestamp in enumerate(timestamp_list):
-        if timestamp == entries_list_df[0][0]:
-            current_entry = entries_list_df[0]
-            entries_list[idx] = [current_entry[0], current_entry[2]]
-            sl_list[idx] = [current_entry[0], current_entry[4]]
-            tp_list[idx] = [current_entry[0], current_entry[5]]
-            del entries_list_df[0]
-            if len(entries_list_df) == 0:
-                break
-    data["entries"] = entries_list
-    data["sl_prices"] = sl_list
-    data["tp_prices"] = tp_list
-
-    filled_sl_list = np.vstack(candles[:, 0]).tolist()
-    try:
-        temp_sl_filled_df = order_records_df[["order_status", "timestamp", "exit_price"]]
-        sl_filled_df = temp_sl_filled_df[temp_sl_filled_df["order_status"] == "StopLossFilled"]
-        sl_filled_list_df = sl_filled_df.values[:, 1:].tolist()
-
-        for idx, timestamp in enumerate(timestamp_list):
-            if timestamp == sl_filled_list_df[0][0]:
-                filled_sl_list[idx] = sl_filled_list_df[0]
-                del sl_filled_list_df[0]
-                if len(sl_filled_list_df) == 0:
-                    break
-    except:
-        pass
-
-    data["sl_filled"] = filled_sl_list
-
-    filled_tp_list = np.vstack(candles[:, 0]).tolist()
-    try:
-        temp_tp_filled_df = order_records_df[["order_status", "timestamp", "exit_price"]]
-        tp_filled_df = temp_tp_filled_df[temp_tp_filled_df["order_status"] == "TakeProfitFilled"]
-        tp_filled_list_df = tp_filled_df.values[:, 1:].tolist()
-
-        for idx, timestamp in enumerate(timestamp_list):
-            if timestamp == tp_filled_list_df[0][0]:
-                filled_tp_list[idx] = tp_filled_list_df[0]
-                del tp_filled_list_df[0]
-                if len(tp_filled_list_df) == 0:
-                    break
-    except:
-        pass
-    data["tp_filled"] = filled_tp_list
-
-    moved_sl_list = np.vstack(candles[:, 0]).tolist()
-    try:
-        temp_tp_filled_df = order_records_df[["order_status", "timestamp", "sl_price"]]
-        moved_sl_df = temp_tp_filled_df[
-            (temp_tp_filled_df["order_status"] == "MovedTSL") | (temp_tp_filled_df["order_status"] == "MovedSLToBE")
-        ]
-        moved_sl_list_df = moved_sl_df.values[:, 1:].tolist()
-        for idx, timestamp in enumerate(timestamp_list):
-            if timestamp == moved_sl_list_df[0][0]:
-                moved_sl_list[idx] = moved_sl_list_df[0]
-                del moved_sl_list_df[0]
-                if len(moved_sl_list_df) == 0:
-                    break
-    except:
-        pass
-    data["moved_sl"] = moved_sl_list
-
-    return data
-
-
-def order_records_to_df(order_records: np.ndarray):
-    order_records_df = pd.DataFrame(order_records)
-    order_records_df.insert(4, "datetime", pd.to_datetime(order_records_df.timestamp, unit="ms"))
-    order_records_df.replace(
-        {
-            "order_status": {
-                0: "HitMaxTrades",
-                1: "EntryFilled",
-                2: "StopLossFilled",
-                3: "TakeProfitFilled",
-                4: "LiquidationFilled",
-                5: "MovedSLToBE",
-                6: "MovedTSL",
-                7: "MaxEquityRisk",
-                8: "RiskToBig",
-                9: "CashUsedExceed",
-                10: "EntrySizeTooSmall",
-                11: "EntrySizeTooBig",
-                12: "PossibleLossTooBig",
-                13: "Nothing",
-            }
-        },
-        inplace=True,
-    )
-    order_records_df[
-        [
-            "equity",
-            "available_balance",
-            "cash_borrowed",
-            "cash_used",
-            "average_entry",
-            "fees_paid",
-            "leverage",
-            "liq_price",
-            "total_possible_loss",
-            "entry_size_asset",
-            "entry_size_usd",
-            "entry_price",
-            "exit_price",
-            "position_size_asset",
-            "position_size_usd",
-            "realized_pnl",
-            "sl_pct",
-            "sl_price",
-            "tp_pct",
-            "tp_price",
-        ]
-    ] = order_records_df[
-        [
-            "equity",
-            "available_balance",
-            "cash_borrowed",
-            "cash_used",
-            "average_entry",
-            "fees_paid",
-            "leverage",
-            "liq_price",
-            "total_possible_loss",
-            "entry_size_asset",
-            "entry_size_usd",
-            "entry_price",
-            "exit_price",
-            "position_size_asset",
-            "position_size_usd",
-            "realized_pnl",
-            "sl_pct",
-            "sl_price",
-            "tp_pct",
-            "tp_price",
-        ]
-    ].replace(
-        {0: np.nan}
-    )
-    return order_records_df
