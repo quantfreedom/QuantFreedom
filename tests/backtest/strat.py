@@ -66,7 +66,6 @@ static_os_tuple = StaticOrderSettings(
 )
 
 og_dos_tuple = DynamicOrderSettings(
-    settings_index=np.array([0]),
     account_pct_risk_per_trade=np.array([5]),
     max_trades=np.array([2, 4, 6]),
     risk_reward=np.array([3, 5]),
@@ -223,7 +222,7 @@ class RSIRisingFalling(Strategy):
         logger.debug(f"filtered cart prod size {filtered_cart_prod_array.shape[1]:,}")
         logger.debug(f"Removed {cart_prod_array.shape[1] -filtered_cart_prod_array.shape[1] }")
 
-        filtered_cart_prod_array[0] = np.arange(filtered_cart_prod_array.shape[1])
+        filtered_cart_prod_array[11] = np.arange(filtered_cart_prod_array.shape[1])
 
         return filtered_cart_prod_array
 

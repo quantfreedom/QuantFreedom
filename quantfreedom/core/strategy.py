@@ -33,7 +33,7 @@ class Strategy:
         self,
         og_dos_tuple: DynamicOrderSettings,
         og_ind_set_tuple: IndicatorSettings,
-    ) -> None:
+    ) -> np.ndarray:
         total_indicator_settings = 1
         total_order_settings = 1
 
@@ -41,7 +41,7 @@ class Strategy:
             total_order_settings *= array.size
         logger.debug(f"Total Order Settings: {total_order_settings}")
         self.total_order_settings = total_order_settings
-        
+
         for array in og_ind_set_tuple:
             total_indicator_settings *= array.size
         logger.debug(f"Total Indicator Settings: {total_indicator_settings}")
@@ -72,10 +72,10 @@ class Strategy:
 
     def get_og_dos_tuple(
         self,
-        shuffled_cart_prod_array: np.ndarray,
+        final_cart_prod_array: np.ndarray,
     ) -> DynamicOrderSettings:
 
-        dos_tuple = DynamicOrderSettings(*tuple(shuffled_cart_prod_array[:12]))
+        dos_tuple = DynamicOrderSettings(*tuple(final_cart_prod_array[:12]))
         logger.debug("dos_tuple")
 
         og_dos_tuple = DynamicOrderSettings(

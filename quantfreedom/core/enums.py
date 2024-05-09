@@ -261,7 +261,6 @@ class BacktestSettings(NamedTuple):
 
 
 class DynamicOrderSettings(NamedTuple):
-    settings_index: np.ndarray
     account_pct_risk_per_trade: np.ndarray
     max_trades: np.ndarray
     risk_reward: np.ndarray
@@ -273,6 +272,7 @@ class DynamicOrderSettings(NamedTuple):
     trail_sl_bcb_type: np.ndarray
     trail_sl_by_pct: np.ndarray
     trail_sl_when_pct: np.ndarray
+    settings_index: np.ndarray = np.array([0])
 
 
 class ExchangeSettings(NamedTuple):
