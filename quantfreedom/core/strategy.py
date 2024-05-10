@@ -1,4 +1,4 @@
-from typing import NamedTuple
+from typing import NamedTuple, Optional, Callable
 import numpy as np
 from logging import getLogger
 from quantfreedom.core.enums import DynamicOrderSettings, FootprintCandlesTuple
@@ -14,14 +14,11 @@ class Strategy:
     cur_dos_tuple: DynamicOrderSettings = None
     cur_ind_set_tuple: IndicatorSettings = None
     entries: np.ndarray = None
-    entry_message = None
     exit_prices: np.ndarray = None
-    live_evaluate = None
     log_folder: str = None
     long_short: str = None
     og_dos_tuple: DynamicOrderSettings = None
     og_ind_set_tuple: IndicatorSettings = None
-    set_entries_exits_array: np.ndarray = None
     total_indicator_settings: int = 0
     total_order_settings: int = 0
     total_filtered_settings: int = 0
@@ -140,6 +137,16 @@ trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 3)
 }"""
         )
 
+    #######################################################
+    #######################################################
+    #######################################################
+    ##################      Reg      ######################
+    ##################      Reg      ######################
+    ##################      Reg      ######################
+    #######################################################
+    #######################################################
+    #######################################################
+
     def set_og_ind_and_dos_tuples(
         self,
         og_ind_set_tuple: IndicatorSettings,
@@ -155,8 +162,38 @@ trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 3)
 
     def get_og_ind_set_tuple(
         self,
-        shuffled_cart_prod_array: np.ndarray,
+        final_cart_prod_array: np.ndarray,
     ) -> IndicatorSettings:
+        pass
+
+    def set_cur_ind_tuple(
+        self,
+        set_idx: int,
+    ):
+        pass
+
+    def set_entries_exits_array(
+        self,
+        set_idx: int,
+    ):
+        pass
+
+    def entry_message(
+        self,
+        bar_index: int,
+    ):
+        pass
+
+    def live_evaluate(
+        self,
+        candles: FootprintCandlesTuple,
+    ):
+        pass
+
+    def live_bt(
+        self,
+        candles: FootprintCandlesTuple,
+    ):
         pass
 
     #######################################################
@@ -169,10 +206,15 @@ trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 3)
     #######################################################
     #######################################################
 
+    def long_set_cur_ind_tuple(
+        self,
+        set_idx: int,
+    ):
+        pass
+
     def long_set_entries_exits_array(
         self,
         candles: FootprintCandlesTuple,
-        set_idx: int,
     ):
         pass
 
@@ -182,6 +224,18 @@ trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 3)
     ):
         pass
 
+    def long_live_evaluate(
+        self,
+        candles: FootprintCandlesTuple,
+    ):
+        pass
+
+    def long_live_bt(
+        self,
+        candles: FootprintCandlesTuple,
+    ):
+        pass
+
     #######################################################
     #######################################################
     #######################################################
@@ -191,6 +245,12 @@ trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 3)
     #######################################################
     #######################################################
     #######################################################
+
+    def short_set_cur_ind_tuple(
+        self,
+        set_idx: int,
+    ):
+        pass
 
     def short_set_entries_exits_array(
         self,
@@ -205,29 +265,13 @@ trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 3)
     ):
         pass
 
-    #######################################################
-    #######################################################
-    #######################################################
-    ##################      Live     ######################
-    ##################      Live     ######################
-    ##################      Live     ######################
-    #######################################################
-    #######################################################
-    #######################################################
-
-    def live_set_indicator(
-        self,
-        set_idx: int,
-    ):
-        pass
-
-    def long_live_evaluate(
+    def short_live_evaluate(
         self,
         candles: FootprintCandlesTuple,
     ):
         pass
 
-    def short_live_evaluate(
+    def short_live_bt(
         self,
         candles: FootprintCandlesTuple,
     ):

@@ -7,12 +7,13 @@ class CurrentFootprintCandleTuple(NamedTuple):
     open_timestamp: Optional[int] = None
     close_dateime: Optional[np.datetime64] = None
     close_timestamp: Optional[int] = None
+    close_timestamp: Optional[int] = None
     open_price: Optional[float] = None
     high_price: Optional[float] = None
     low_price: Optional[float] = None
     close_price: Optional[float] = None
-    asset_volume: Optional[float] = None
     usdt_volume: Optional[float] = None
+    asset_volume: Optional[float] = None
 
 
 class FootprintCandlesTuple(NamedTuple):
@@ -53,13 +54,14 @@ class CandleBodyTypeT(NamedTuple):
     OpenTimestamp: int = 1
     CloseDatetime: int = 2
     CloseTimestamp: int = 3
-    Open: int = 4
-    High: int = 5
-    Low: int = 6
-    Close: int = 7
-    AssetVolume: int = 8
+    DurationSeconds: int = 4
+    Open: int = 5
+    High: int = 6
+    Low: int = 7
+    Close: int = 8
     UsdtVolume: int = 9
-    Nothing: int = 10
+    AssetVolume: int = 10
+    Nothing: int = 11
 
 
 CandleBodyType = CandleBodyTypeT()

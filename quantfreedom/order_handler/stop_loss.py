@@ -308,3 +308,6 @@ class StopLoss:
 
     def pass_func(self, **kwargs):
         return None, None
+
+    def sl_to_zero_price(self, **kwargs):
+        pass

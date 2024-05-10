@@ -92,6 +92,7 @@ class IndicatorSettings(NamedTuple):
 
 class RSIRisingFalling(Strategy):
     og_ind_set_tuple: IndicatorSettings
+    cur_ind_set_tuple: IndicatorSettings
 
     def __init__(
         self,
@@ -128,6 +129,7 @@ class RSIRisingFalling(Strategy):
             self.chart_title = "Long Signal"
             self.entry_message = self.long_entry_message
             self.live_evaluate = self.long_live_evaluate
+            self.set_cur_ind_tuple = self.long_set_cur_ind_tuple
             self.set_entries_exits_array = self.long_set_entries_exits_array
         else:
             self.chart_title = "short Signal"
@@ -161,16 +163,16 @@ class RSIRisingFalling(Strategy):
         )
 
         if shuffle_bool:
-            shuffled_cart_prod_array = np.random.default_rng().permuted(filtered_cart_prod_array, axis=1)
+            final_cart_prod_array = np.random.default_rng().permuted(filtered_cart_prod_array, axis=1)
         else:
-            shuffled_cart_prod_array = filtered_cart_prod_array.copy()
+            final_cart_prod_array = filtered_cart_prod_array.copy()
 
         self.og_dos_tuple = self.get_og_dos_tuple(
-            shuffled_cart_prod_array=shuffled_cart_prod_array,
+            final_cart_prod_array=final_cart_prod_array,
         )
 
         self.og_ind_set_tuple = self.get_og_ind_set_tuple(
-            shuffled_cart_prod_array=shuffled_cart_prod_array,
+            final_cart_prod_array=final_cart_prod_array,
         )
         self.total_filtered_settings = self.og_ind_set_tuple.rsi_length.size
 
@@ -178,10 +180,10 @@ class RSIRisingFalling(Strategy):
 
     def get_og_ind_set_tuple(
         self,
-        shuffled_cart_prod_array: np.ndarray,
+        final_cart_prod_array: np.ndarray,
     ) -> IndicatorSettings:
 
-        ind_set_tuple = IndicatorSettings(*tuple(shuffled_cart_prod_array[12:]))
+        ind_set_tuple = IndicatorSettings(*tuple(final_cart_prod_array[12:]))
         logger.debug("ind_set_tuple")
 
         og_ind_set_tuple = IndicatorSettings(
@@ -236,30 +238,28 @@ class RSIRisingFalling(Strategy):
     #######################################################
     #######################################################
 
-    def long_set_entries_exits_array(
+    def long_set_cur_ind_tuple(
         self,
-        candles: FootprintCandlesTuple,
         set_idx: int,
     ):
-        try:
-            rsi_length = self.og_ind_set_tuple.rsi_length[set_idx]
-            below_rsi_cur = self.og_ind_set_tuple.below_rsi_cur[set_idx]
-            below_rsi_p = self.og_ind_set_tuple.below_rsi_p[set_idx]
-            below_rsi_pp = self.og_ind_set_tuple.below_rsi_pp[set_idx]
+        rsi_length = self.og_ind_set_tuple.rsi_length[set_idx]
+        below_rsi_cur = self.og_ind_set_tuple.below_rsi_cur[set_idx]
+        below_rsi_p = self.og_ind_set_tuple.below_rsi_p[set_idx]
+        below_rsi_pp = self.og_ind_set_tuple.below_rsi_pp[set_idx]
 
-            self.h_line = below_rsi_cur
+        self.h_line = below_rsi_cur
 
-            self.cur_ind_set_tuple = IndicatorSettings(
-                rsi_length=rsi_length,
-                above_rsi_cur=0,
-                above_rsi_p=0,
-                above_rsi_pp=0,
-                below_rsi_cur=below_rsi_cur,
-                below_rsi_p=below_rsi_p,
-                below_rsi_pp=below_rsi_pp,
-            )
-            logger.info(
-                f"""
+        self.cur_ind_set_tuple = IndicatorSettings(
+            rsi_length=rsi_length,
+            above_rsi_cur=0,
+            above_rsi_p=0,
+            above_rsi_pp=0,
+            below_rsi_cur=below_rsi_cur,
+            below_rsi_p=below_rsi_p,
+            below_rsi_pp=below_rsi_pp,
+        )
+        logger.info(
+            f"""
 Indicator Settings
 Indicator Settings Index= {set_idx}
 rsi_length= {rsi_length}
@@ -267,11 +267,16 @@ below_rsi_cur= {below_rsi_cur}
 below_rsi_p= {below_rsi_p}
 below_rsi_pp= {below_rsi_pp}
 """
-            )
+        )
 
+    def long_set_entries_exits_array(
+        self,
+        candles: FootprintCandlesTuple,
+    ):
+        try:
             rsi = rsi_tv(
                 source=candles.candle_close_prices,
-                length=rsi_length,
+                length=self.cur_ind_set_tuple.rsi_length,
             )
 
             self.rsi = np.around(rsi, 1)
@@ -285,9 +290,9 @@ below_rsi_pp= {below_rsi_pp}
 
             falling = prev_prev_rsi > prev_rsi
             rising = self.rsi > prev_rsi
-            is_below_cur = self.rsi < below_rsi_cur
-            is_below_p = prev_rsi < below_rsi_p
-            is_below_pp = prev_prev_rsi < below_rsi_pp
+            is_below_cur = self.rsi < self.cur_ind_set_tuple.below_rsi_cur
+            is_below_p = prev_rsi < self.cur_ind_set_tuple.below_rsi_p
+            is_below_pp = prev_prev_rsi < self.cur_ind_set_tuple.below_rsi_pp
 
             self.entries = is_below_cur & is_below_p & is_below_pp & falling & rising
             self.entry_signals = np.where(self.entries, self.rsi, np.nan)
