@@ -34,6 +34,7 @@ def live_backtest(
     strategy: Strategy,
     set_idx: int,
     plot_results: bool = False,
+    logger_level: str = "INFO",
 ):
     if disable_logger:
         set_loggers(
@@ -43,6 +44,7 @@ def live_backtest(
         set_loggers(
             disable_logger=disable_logger,
             log_path=strategy.log_folder,
+            logger_level=logger_level,
         )
 
     starting_equity = static_os_tuple.starting_equity
@@ -75,9 +77,9 @@ def live_backtest(
 
     loop_start = static_os_tuple.starting_bar - 1
     for bar_index in range(loop_start, total_bars):
-        logger.info("\n\n")
+        logger.debug("\n\n")
         datetime = candles.candle_open_datetimes[bar_index]
-        logger.info(f"set_idx= {set_idx} bar_idx= {bar_index} datetime= {datetime}")
+        logger.debug(f"set_idx= {set_idx} bar_idx= {bar_index} datetime= {datetime}")
 
         if order.position_size_usd > 0:
             try:
@@ -149,6 +151,7 @@ def live_backtest(
                     fees_paid,
                     realized_pnl,
                 ) = order.calculate_decrease_position(
+                    cur_datetime=current_candle.open_timestamp,
                     exit_fee_pct=e.exit_fee_pct,
                     exit_price=e.exit_price,
                     order_status=e.order_status,

@@ -133,8 +133,8 @@ sl_to_be_cb_type={self.cur_dos_tuple.sl_to_be_cb_type}
 sl_to_be_when_pct={round(self.cur_dos_tuple.sl_to_be_when_pct * 100, 3)}
 trail_sl_bcb_type={self.cur_dos_tuple.trail_sl_bcb_type}
 trail_sl_by_pct={round(self.cur_dos_tuple.trail_sl_by_pct * 100, 3)}
-trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 3)
-}"""
+trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 3)}
+"""
         )
 
     #######################################################

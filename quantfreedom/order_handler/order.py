@@ -308,7 +308,8 @@ entry_size_asset= {entry_size_asset}
 entry_size_usd= {entry_size_usd}
 position_size_asset= {position_size_asset}
 position_size_usd= {position_size_usd}
-sl_pct= {round(sl_pct*100, 3)}"""
+sl_pct= {round(sl_pct*100, 3)}
+"""
         )
         return (
             average_entry,
@@ -353,7 +354,8 @@ available_balance= {available_balance}
 cash_borrowed= {cash_borrowed}
 cash_used= {cash_used}
 leverage= {leverage}
-liq_price= {liq_price}"""
+liq_price= {liq_price}
+"""
         )
         return (
             available_balance,
@@ -381,7 +383,8 @@ liq_price= {liq_price}"""
         logger.info(
             f"""
 tp_price= {tp_price}
-tp_pct= {round(tp_pct * 100, 3)}"""
+tp_pct= {round(tp_pct * 100, 3)}
+"""
         )
         return (
             can_move_sl_to_be,
@@ -397,6 +400,7 @@ tp_pct= {round(tp_pct * 100, 3)}"""
 
     def calculate_decrease_position(
         self,
+        cur_datetime: str,
         exit_fee_pct: float,
         exit_price: float,
         equity: float,
@@ -423,10 +427,12 @@ tp_pct= {round(tp_pct * 100, 3)}"""
 
         logger.info(
             f"""
+datetime= {cur_datetime}
 equity= {equity}
 fees_paid= {fees_paid}
 order_status= {OrderStatus._fields[order_status]}
-realized_pnl= {realized_pnl}"""
+realized_pnl= {realized_pnl}
+"""
         )
         return (
             equity,
