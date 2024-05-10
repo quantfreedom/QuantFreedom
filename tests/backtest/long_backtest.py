@@ -3,7 +3,7 @@ from os import remove
 from os.path import exists
 from time import perf_counter
 from time import gmtime, strftime
-from quantfreedom.core.backtest import run_df_backtest
+from quantfreedom.backtesters.bt_regular import run_df_backtest
 from strat import long_strat, backtest_settings_tuple, exchange_settings_tuple, static_os_tuple
 
 
