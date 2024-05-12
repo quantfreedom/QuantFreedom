@@ -21,10 +21,10 @@ if __name__ == "__main__":
         candles=candles,
         exchange_settings_tuple=exchange_settings_tuple,
         static_os_tuple=static_os_tuple,
-        step_by=1,
+        step_by=2,
         strategy=long_strat,
-        threads=1,
-        num_chunk_bts=20000,
+        threads=32,
+        num_chunk_bts=2000000,
     )
     print("\n" + "Backtest results done now saving to hdf5")
     backtest_results.to_hdf(

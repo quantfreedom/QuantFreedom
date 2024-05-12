@@ -400,7 +400,7 @@ def run_df_backtest(
         + list(strategy.og_ind_set_tuple._fields)
     )
     backtest_df = pd.DataFrame(data=strategy_result_records, columns=column_names).dropna()
-    backtest_df.set_index("settings_index", inplace=True)
+    backtest_df.set_index(backtest_df["settings_index"].values.astype(np.int_), inplace=True)
 
     backtest_df["sl_bcb_type"] = backtest_df["sl_bcb_type"].apply(lambda x: CandleBodyType._fields[int(x)])
     backtest_df["trail_sl_bcb_type"] = backtest_df["trail_sl_bcb_type"].apply(lambda x: CandleBodyType._fields[int(x)])

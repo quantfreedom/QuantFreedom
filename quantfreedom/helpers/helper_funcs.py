@@ -13,10 +13,10 @@ logger = getLogger()
 
 
 def all_backtest_stats(
+    step_by: int,
     strategy: Strategy,
     threads: int,
     total_bars: int,
-    step_by: int,
     num_chunk_bts: Optional[int] = None,
 ):
 

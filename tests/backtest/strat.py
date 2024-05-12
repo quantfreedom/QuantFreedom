@@ -163,7 +163,7 @@ class RSIRisingFalling(Strategy):
         )
 
         if shuffle_bool:
-            final_cart_prod_array = np.random.default_rng().permuted(filtered_cart_prod_array, axis=1)
+            final_cart_prod_array = np.random.default_rng().permutation(filtered_cart_prod_array, axis=1)
         else:
             final_cart_prod_array = filtered_cart_prod_array.copy()
 
