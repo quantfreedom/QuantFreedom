@@ -5,12 +5,16 @@ from IPython import get_ipython
 import dash_bootstrap_components as dbc
 from quantfreedom.helpers.utils import pretty_qf, pretty_qf_string
 from quantfreedom.helpers.helper_funcs import dl_ex_candles, all_backtest_stats
+from quantfreedom.helpers.custom_logger import set_loggers
+from quantfreedom.core.enums import FootprintCandlesTuple
 
 __all__ = [
     "pretty_qf",
     "dl_ex_candles",
     "pretty_qf_string",
     "all_backtest_stats",
+    "set_loggers",
+    "FootprintCandlesTuple",
 ]
 
 load_figure_template("darkly")

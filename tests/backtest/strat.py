@@ -2,7 +2,7 @@ import numpy as np
 import plotly.graph_objects as go
 from logging import getLogger
 from typing import NamedTuple
-from os.path import dirname, join, abspath
+from os.path import join, abspath
 from quantfreedom.indicators.tv_indicators import rsi_tv
 from quantfreedom.core.strategy import Strategy
 from quantfreedom.core.enums import (
@@ -108,7 +108,7 @@ class RSIRisingFalling(Strategy):
     ) -> None:
 
         self.long_short = long_short
-        self.log_folder = abspath(join(dirname(__file__)))
+        self.log_folder = abspath(join(abspath("")))
 
         og_ind_set_tuple = IndicatorSettings(
             rsi_length=rsi_length,

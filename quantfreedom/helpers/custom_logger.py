@@ -26,14 +26,14 @@ def set_loggers(
 
             logger = getLogger()
             logger.disabled = False
-            logger.setLevel(logger_level)
+            logger.setLevel(logger_level.upper())
             logger.addHandler(create_logging_handler(filename=filename))
             logger.info("Testing info log")
 
         except:  # this is for the aws lambda function
             logger = getLogger()
             logger.disabled = False
-            logger.setLevel(logger_level)
+            logger.setLevel(logger_level.upper())
 
             log_handler = logger.handlers[0]
             log_format = "\n%(levelname)s - %(filename)s - %(funcName)s() - %(lineno)d - %(message)s"
