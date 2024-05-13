@@ -7,7 +7,7 @@ class CurrentFootprintCandleTuple(NamedTuple):
     open_timestamp: Optional[int] = None
     close_dateime: Optional[np.datetime64] = None
     close_timestamp: Optional[int] = None
-    close_timestamp: Optional[int] = None
+    durations_seconds: Optional[float] = None
     open_price: Optional[float] = None
     high_price: Optional[float] = None
     low_price: Optional[float] = None
