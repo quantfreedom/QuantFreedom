@@ -21,65 +21,6 @@ from quantfreedom.core.enums import (
 logger = getLogger()
 
 
-# mufex_main = Mufex(
-#     api_key=MufexKeys.mainnet_neo_api_key,
-#     secret_key=MufexKeys.mainnet_neo_secret_key,
-#     use_testnet=False,
-# )
-
-
-# exchange_settings_tuple = mufex_main.set_and_get_exchange_settings_tuple(
-#     leverage_mode=LeverageModeType.Isolated,
-#     position_mode=PositionModeType.HedgeMode,
-#     symbol="BTCUSDT",
-# )
-
-exchange_settings_tuple = ExchangeSettings(
-    asset_tick_step=3,
-    leverage_mode=1,
-    leverage_tick_step=2,
-    limit_fee_pct=0.0003,
-    market_fee_pct=0.0006,
-    max_asset_size=100.0,
-    max_leverage=150.0,
-    min_asset_size=0.001,
-    min_leverage=1.0,
-    mmr_pct=0.004,
-    position_mode=3,
-    price_tick_step=1,
-)
-backtest_settings_tuple = BacktestSettings()
-
-static_os_tuple = StaticOrderSettings(
-    increase_position_type=IncreasePositionType.RiskPctAccountEntrySize,
-    leverage_strategy_type=LeverageStrategyType.Dynamic,
-    pg_min_max_sl_bcb="min",
-    sl_strategy_type=StopLossStrategyType.SLBasedOnCandleBody,
-    sl_to_be_bool=False,
-    starting_bar=50,
-    starting_equity=1000.0,
-    static_leverage=None,
-    tp_fee_type="limit",
-    tp_strategy_type=TakeProfitStrategyType.RiskReward,
-    trail_sl_bool=True,
-    z_or_e_type=None,
-)
-
-og_dos_tuple = DynamicOrderSettings(
-    account_pct_risk_per_trade=np.array([5]),
-    max_trades=np.array([2, 4, 6]),
-    risk_reward=np.array([3, 5]),
-    sl_based_on_add_pct=np.array([0.1, 0.2, 0.3, 0.5]),
-    sl_based_on_lookback=np.array([20, 50]),
-    sl_bcb_type=np.array([CandleBodyType.Low]),
-    sl_to_be_cb_type=np.array([CandleBodyType.Nothing]),
-    sl_to_be_when_pct=np.array([0]),
-    trail_sl_bcb_type=np.array([CandleBodyType.Low]),
-    trail_sl_by_pct=np.array([0.5, 1.0, 2.0, 3, 4]),
-    trail_sl_when_pct=np.array([1, 2, 3, 4]),
-)
-
-
 class IndicatorSettings(NamedTuple):
     rsi_length: np.ndarray
     above_rsi_cur: np.ndarray
@@ -109,6 +50,7 @@ class RSIRisingFalling(Strategy):
 
         self.long_short = long_short
         self.log_folder = abspath(join(abspath("")))
+        self.static_os_tuple = static_os_tuple
 
         og_ind_set_tuple = IndicatorSettings(
             rsi_length=rsi_length,
@@ -433,6 +375,52 @@ above_rsi_cur= {self.above_rsi_cur}"""
         )
         fig.show()
 
+
+backtest_settings_tuple = BacktestSettings()
+
+exchange_settings_tuple = ExchangeSettings(
+    asset_tick_step=3,
+    leverage_mode=1,
+    leverage_tick_step=2,
+    limit_fee_pct=0.0003,
+    market_fee_pct=0.0006,
+    max_asset_size=100.0,
+    max_leverage=150.0,
+    min_asset_size=0.001,
+    min_leverage=1.0,
+    mmr_pct=0.004,
+    position_mode=3,
+    price_tick_step=1,
+)
+
+static_os_tuple = StaticOrderSettings(
+    increase_position_type=IncreasePositionType.RiskPctAccountEntrySize,
+    leverage_strategy_type=LeverageStrategyType.Dynamic,
+    pg_min_max_sl_bcb="min",
+    sl_strategy_type=StopLossStrategyType.SLBasedOnCandleBody,
+    sl_to_be_bool=False,
+    starting_bar=50,
+    starting_equity=1000.0,
+    static_leverage=None,
+    tp_fee_type="limit",
+    tp_strategy_type=TakeProfitStrategyType.RiskReward,
+    trail_sl_bool=True,
+    z_or_e_type=None,
+)
+
+og_dos_tuple = DynamicOrderSettings(
+    account_pct_risk_per_trade=np.array([5]),
+    max_trades=np.array([2, 4, 6]),
+    risk_reward=np.array([3, 5]),
+    sl_based_on_add_pct=np.array([0.1, 0.2, 0.3, 0.5]),
+    sl_based_on_lookback=np.array([20, 50]),
+    sl_bcb_type=np.array([CandleBodyType.Low]),
+    sl_to_be_cb_type=np.array([CandleBodyType.Nothing]),
+    sl_to_be_when_pct=np.array([0]),
+    trail_sl_bcb_type=np.array([CandleBodyType.Low]),
+    trail_sl_by_pct=np.array([0.5, 1.0, 2.0, 3, 4]),
+    trail_sl_when_pct=np.array([1, 2, 3, 4]),
+)
 
 long_strat = RSIRisingFalling(
     long_short="long",

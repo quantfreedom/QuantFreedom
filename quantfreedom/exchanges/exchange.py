@@ -99,14 +99,18 @@ class Exchange:
         until_datetime: datetime,
     ) -> tuple[int, int]:
         if until_datetime is None:
-            until_timestamp = self.get_current_time_ms() - timeframe_in_ms + 5000  # note below
-            # add 5 seconds because if it is currently 0:02:00 and we are getting min candles we will subtract 1 min and get 0:01:00 which means we will return 0:00:00 when getting candles which is not what we want ... so if we add 5 seconds we will get 0:01:05 which means we will return 0:01:00 which is what we want
+            cur_time = self.get_current_time_ms()
+            until_timestamp = cur_time - (cur_time % timeframe_in_ms) - 5000  # note below
+            # we subtract the remainder of cur time / timeframe in ms to get the most recent timestamp for our timeframe
+            # then we subtract 5 seconds so that if we are doing 5 min we would get 02:05:00 and change it to 02:04:55
+            # this way we don't download the candle for 02:05:00 since it is not closed yet
             if since_datetime is None:
-                since_timestamp = until_timestamp - candles_to_dl_ms
+                since_timestamp = until_timestamp - candles_to_dl_ms + 5000
+                # add back 5 seconds so we get the candle at 01:00:00 and not 00:59:55
             else:
                 since_timestamp = int(since_datetime.replace(tzinfo=timezone.utc).timestamp() * 1000)
-                temp_until = since_timestamp + candles_to_dl_ms - 5000  # 5000 is to sub 5 seconds
-                if temp_until < until_timestamp: # if false then we will try to get candles from the future
+                temp_until = since_timestamp + candles_to_dl_ms - 5000  # 5000 is to sub 5 seconds so we don't get the cur candle
+                if temp_until < until_timestamp:  # if false then we will try to get candles from the future
                     until_timestamp = temp_until
 
         else:

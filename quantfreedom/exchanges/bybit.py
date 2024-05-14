@@ -187,12 +187,20 @@ class Bybit(Exchange):
             "limit": 1000,
         }
 
+        waiter_timestamp = until_timestamp + 5000 - (self.timeframe_in_ms * 2)
+        # add 5 seconds back so it is a flat time, then subtract the timeframe * two
+
         while params["end"] - self.timeframe_in_ms > since_timestamp:
             try:
                 response: dict = get(url=self.url_start + end_point, params=params).json()
                 new_candles = response["result"]["list"]
+
+                first_candle_timestamp = int(new_candles[0][0])
                 last_candle_timestamp = int(new_candles[-1][0])
-                if last_candle_timestamp == params["start"]:
+
+                if first_candle_timestamp == waiter_timestamp:
+                    # checking to see if the first candle we download is one candle behind what we should be downloading
+                    # if it is then we are trying to dl candles too soon and need to wait to try again
                     print("sleeping .2 seconds")
                     sleep(0.2)
                 else:
