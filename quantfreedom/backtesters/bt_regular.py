@@ -27,15 +27,12 @@ logger = getLogger()
 
 
 def multiprocess_backtest(
-    backtest_settings_tuple: BacktestSettings,
     candles: FootprintCandlesTuple,
-    exchange_settings_tuple: ExchangeSettings,
     order: OrderHandler,
     range_end: int,
     range_start: int,
     record_results: np.ndarray,
     starting_equity: float,
-    static_os_tuple: StaticOrderSettings,
     strategy: Strategy,
     total_bars: int,
     step_by: int,
@@ -49,12 +46,12 @@ def multiprocess_backtest(
             set_idx=set_idx,
         )
 
-        strategy.set_entries_exits_array(
-            candles=candles,
-        )
-
         strategy.set_cur_dos_tuple(
             set_idx=set_idx,
+        )
+
+        strategy.set_entries_exits_array(
+            candles=candles,
         )
 
         pnl_array = np.full(shape=round(total_bars / 3), fill_value=np.nan)
@@ -70,7 +67,9 @@ def multiprocess_backtest(
 
         logger.debug("Set order variables, class dos and pnl array")
 
-        for bar_index in range(static_os_tuple.starting_bar - 1, total_bars):
+        range_start = strategy.static_os_tuple.starting_bar - 1
+
+        for bar_index in range(range_start, total_bars):
             logger.debug("\n\n")
             logger.debug(
                 f"set_idx= {strategy.cur_dos_tuple.settings_index} loop_idx = {set_idx} bar_idx= {bar_index} datetime= {candles.candle_open_datetimes[bar_index]}"
@@ -124,7 +123,7 @@ def multiprocess_backtest(
                         exit_fee_pct=e.exit_fee_pct,
                         exit_price=e.exit_price,
                         order_status=e.order_status,
-                        market_fee_pct=exchange_settings_tuple.market_fee_pct,
+                        market_fee_pct=strategy.exchange_settings_tuple.market_fee_pct,
                         equity=order.equity,
                     )
 
@@ -247,8 +246,8 @@ Ending eq={order.equity}
 Gains pct={gains_pct}
 total_trades={total_trades_closed}"""
         )
-        if total_trades_closed > 0 and gains_pct > backtest_settings_tuple.gains_pct_filter:
-            if wins_and_losses_array.size > backtest_settings_tuple.total_trade_filter:
+        if total_trades_closed > 0 and gains_pct > strategy.backtest_settings_tuple.gains_pct_filter:
+            if wins_and_losses_array.size > strategy.backtest_settings_tuple.total_trade_filter:
                 wins_and_losses_array_no_be = wins_and_losses_array[
                     (wins_and_losses_array < -0.009) | (wins_and_losses_array > 0.009)
                 ]
@@ -258,7 +257,7 @@ total_trades={total_trades_closed}"""
                 )
 
                 # Checking to the upside filter
-                if qf_score > backtest_settings_tuple.qf_filter:
+                if qf_score > strategy.backtest_settings_tuple.qf_filter:
                     win_loss = np.where(wins_and_losses_array_no_be < 0, 0, 1)
                     wins = np.count_nonzero(win_loss)
                     losses = win_loss.size - wins
@@ -289,10 +288,7 @@ total_trades={total_trades_closed}"""
 
 
 def run_df_backtest(
-    backtest_settings_tuple: BacktestSettings,
     candles: FootprintCandlesTuple,
-    exchange_settings_tuple: ExchangeSettings,
-    static_os_tuple: StaticOrderSettings,
     step_by: int,
     strategy: Strategy,
     threads: int,
@@ -304,12 +300,12 @@ def run_df_backtest(
     # logger.disabled = False
     # set_loggers(log_folder=strategy.log_folder)
 
-    starting_equity = static_os_tuple.starting_equity
+    starting_equity = strategy.static_os_tuple.starting_equity
 
     order = OrderHandler(
         long_short=strategy.long_short,
-        static_os_tuple=static_os_tuple,
-        exchange_settings_tuple=exchange_settings_tuple,
+        static_os_tuple=strategy.static_os_tuple,
+        exchange_settings_tuple=strategy.exchange_settings_tuple,
     )
 
     # Creating Settings Vars
@@ -319,30 +315,36 @@ def run_df_backtest(
     total_settings = strategy.total_order_settings * strategy.total_indicator_settings
 
     # logger.infoing out total numbers of things
-    print("Starting the backtest now ... and also here are some stats for your backtest." + "\n")
-    print(f"Total threads to use: {threads:,}")
+    print("Starting the backtest now ... and also here are some stats for your backtest.")
+
+    print("\n" + f"Total threads to use: {threads:,}")
     print(f"Total indicator settings to test: {strategy.total_indicator_settings:,}")
     print(f"Total order settings to test: {strategy.total_order_settings:,}")
     print(f"Total settings combinations to test: {strategy.total_order_settings * strategy.total_indicator_settings:,}")
     print(f"Total settings combination to test after filtering: {strategy.total_filtered_settings:,}")
-    print(
-        f"Total settings combination chunks to process at the same time: {strategy.total_filtered_settings // threads:,}"
-        + "\n"
-    )
+    print(f"Total settings combination chunks to process: {strategy.total_filtered_settings // threads:,}")
 
-    print(f"Total candles: {total_bars:,}")
     total_candles = strategy.total_filtered_settings * total_bars
-    print(f"Total candles to test: {total_candles:,}")
     chunks = total_candles // threads
+    candle_chunks = chunks // step_by
+
+    print("\n" + f"Total candles: {total_bars:,}")
+    print(f"Total candles to test: {total_candles:,}")
     print(f"Total candle chunks to be processed at the same time: {chunks:,}")
-    print(f"Total chunks with step by: {chunks // step_by:,}")
+    print(f"Total candle chunks with step by: {candle_chunks:,}")
 
     if num_chunk_bts:
-        total_settings = (num_chunk_bts * threads * step_by // total_bars) + 1
-        print("\n" + f"New Total Settings: {total_settings:,}")
-        new_total_candles = total_settings * total_bars
-        new_chunks = new_total_candles // threads
-        print(f"New total chunks with step by: {new_chunks // step_by:,}")
+        temp_step_by = step_by = total_candles // num_chunk_bts // threads
+        if temp_step_by < 1:
+            print("\n" + f"Step by set to 1. Num_chunk_bts > candle chunks you would get with step by set to 1")
+            step_by = 1
+        else:
+            step_by = temp_step_by
+
+        new_candle_chunks = chunks // step_by
+
+        print("\n" + f"New step by: {step_by:,}")
+        print(f"Total candle chunks with new step by: {new_candle_chunks:,}")
 
     num_array_columns = 9 + len(strategy.og_dos_tuple._fields) + len(strategy.og_ind_set_tuple._fields)
     arr_shape = (total_settings, num_array_columns)
@@ -360,15 +362,12 @@ def run_df_backtest(
         r: ApplyResult = p.apply_async(
             func=multiprocess_backtest,
             args=[
-                backtest_settings_tuple,
                 candles,
-                exchange_settings_tuple,
                 order,
                 range_end,
                 range_start,
                 record_results,
                 starting_equity,
-                static_os_tuple,
                 strategy,
                 total_bars,
                 step_by,
@@ -412,6 +411,7 @@ def run_df_backtest(
     backtest_df["sl_to_be_when_pct"] = backtest_df["sl_to_be_when_pct"].apply(lambda x: round(x * 100, 2))
     backtest_df["trail_sl_by_pct"] = backtest_df["trail_sl_by_pct"].apply(lambda x: round(x * 100, 2))
     backtest_df["trail_sl_when_pct"] = backtest_df["trail_sl_when_pct"].apply(lambda x: round(x * 100, 2))
+    backtest_df.sort_values("gains_pct", ascending=False, inplace=True)
     return backtest_df
 
 
@@ -432,9 +432,7 @@ def handler(error):
 
 def or_backtest(
     candles: FootprintCandlesTuple,
-    exchange_settings_tuple: ExchangeSettings,
     disable_logger: bool,
-    static_os_tuple: StaticOrderSettings,
     strategy: Strategy,
     set_idx: int,
     plot_results: bool = False,
@@ -451,12 +449,12 @@ def or_backtest(
             logger_level=logger_level,
         )
 
-    starting_equity = static_os_tuple.starting_equity
+    starting_equity = strategy.static_os_tuple.starting_equity
 
     order = OrderHandler(
-        exchange_settings_tuple=exchange_settings_tuple,
+        exchange_settings_tuple=strategy.exchange_settings_tuple,
         long_short=strategy.long_short,
-        static_os_tuple=static_os_tuple,
+        static_os_tuple=strategy.static_os_tuple,
     )
 
     set_idx = strategy.get_settings_index(set_idx=set_idx)
@@ -485,7 +483,7 @@ def or_backtest(
     or_filled = 0
     order_records = np.empty(shape=int(total_bars / 3), dtype=or_dt)
 
-    for bar_index in range(static_os_tuple.starting_bar - 1, total_bars):
+    for bar_index in range(strategy.static_os_tuple.starting_bar - 1, total_bars):
         logger.info("\n\n")
         datetime = candles.candle_open_datetimes[bar_index]
         logger.info(f"set_idx= {set_idx} bar_idx= {bar_index} datetime= {datetime}")
@@ -564,7 +562,7 @@ def or_backtest(
                     exit_fee_pct=e.exit_fee_pct,
                     exit_price=e.exit_price,
                     order_status=e.order_status,
-                    market_fee_pct=exchange_settings_tuple.market_fee_pct,
+                    market_fee_pct=strategy.exchange_settings_tuple.market_fee_pct,
                     equity=order.equity,
                 )
                 logger.debug(f"Filling or for decrease postiion {OrderStatus._fields[e.order_status]}")

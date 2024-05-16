@@ -1,7 +1,13 @@
 from typing import NamedTuple, Optional, Callable
 import numpy as np
 from logging import getLogger
-from quantfreedom.core.enums import DynamicOrderSettings, FootprintCandlesTuple
+from quantfreedom.core.enums import (
+    BacktestSettings,
+    DynamicOrderSettings,
+    ExchangeSettings,
+    FootprintCandlesTuple,
+    StaticOrderSettings,
+)
 
 logger = getLogger()
 
@@ -11,17 +17,20 @@ class IndicatorSettings(NamedTuple):
 
 
 class Strategy:
-    cur_dos_tuple: DynamicOrderSettings = None
-    cur_ind_set_tuple: IndicatorSettings = None
-    entries: np.ndarray = None
-    exit_prices: np.ndarray = None
-    log_folder: str = None
-    long_short: str = None
-    og_dos_tuple: DynamicOrderSettings = None
-    og_ind_set_tuple: IndicatorSettings = None
+    backtest_settings_tuple: BacktestSettings
+    cur_dos_tuple: DynamicOrderSettings
+    cur_ind_set_tuple: IndicatorSettings
+    entries: np.ndarray
+    exchange_settings_tuple: ExchangeSettings
+    exit_prices: np.ndarray
+    log_folder: str
+    long_short: str
+    og_dos_tuple: DynamicOrderSettings
+    og_ind_set_tuple: IndicatorSettings
+    static_os_tuple: StaticOrderSettings
+    total_filtered_settings: int = 0
     total_indicator_settings: int = 0
     total_order_settings: int = 0
-    total_filtered_settings: int = 0
 
     def __init__(self) -> None:
         pass
@@ -192,6 +201,7 @@ trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 3)}
 
     def live_bt(
         self,
+        bar_index: int,
         candles: FootprintCandlesTuple,
     ):
         pass

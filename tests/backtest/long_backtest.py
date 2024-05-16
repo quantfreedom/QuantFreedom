@@ -4,7 +4,7 @@ from os.path import exists
 from time import perf_counter
 from time import gmtime, strftime
 from quantfreedom.backtesters.bt_regular import run_df_backtest
-from strat import long_strat, backtest_settings_tuple, exchange_settings_tuple, static_os_tuple
+from strat import long_strat
 
 
 if __name__ == "__main__":
@@ -17,10 +17,7 @@ if __name__ == "__main__":
         candles = pickle.load(f)
 
     backtest_results = run_df_backtest(
-        backtest_settings_tuple=backtest_settings_tuple,
         candles=candles,
-        exchange_settings_tuple=exchange_settings_tuple,
-        static_os_tuple=static_os_tuple,
         step_by=2,
         strategy=long_strat,
         threads=32,

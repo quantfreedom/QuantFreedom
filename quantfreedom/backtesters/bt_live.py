@@ -1,24 +1,16 @@
-from typing import Optional
 import numpy as np
-import pandas as pd
 from logging import getLogger
-from multiprocessing import Pool
-from multiprocessing.pool import ApplyResult
 from quantfreedom.helpers.custom_logger import set_loggers
-from quantfreedom.helpers.helper_funcs import get_qf_score, order_records_to_df
+from quantfreedom.helpers.helper_funcs import order_records_to_df
 from quantfreedom.order_handler.order import OrderHandler
 from quantfreedom.core.plotting_base import plot_or_results
 from quantfreedom.core.strategy import Strategy
 from quantfreedom.core.enums import (
-    BacktestSettings,
-    CandleBodyType,
     CurrentFootprintCandleTuple,
     DecreasePosition,
-    ExchangeSettings,
     FootprintCandlesTuple,
     OrderStatus,
     RejectedOrder,
-    StaticOrderSettings,
     or_dt,
 )
 from quantfreedom.helpers.utils import pretty_qf
@@ -28,9 +20,7 @@ logger = getLogger()
 
 def live_backtest(
     candles: FootprintCandlesTuple,
-    exchange_settings_tuple: ExchangeSettings,
     disable_logger: bool,
-    static_os_tuple: StaticOrderSettings,
     strategy: Strategy,
     set_idx: int,
     plot_results: bool = False,
@@ -47,12 +37,12 @@ def live_backtest(
             logger_level=logger_level,
         )
 
-    starting_equity = static_os_tuple.starting_equity
+    starting_equity = strategy.static_os_tuple.starting_equity
 
     order = OrderHandler(
-        exchange_settings_tuple=exchange_settings_tuple,
+        exchange_settings_tuple=strategy.exchange_settings_tuple,
         long_short=strategy.long_short,
-        static_os_tuple=static_os_tuple,
+        static_os_tuple=strategy.static_os_tuple,
     )
 
     set_idx = strategy.get_settings_index(
@@ -75,7 +65,7 @@ def live_backtest(
     or_filled = 0
     order_records = np.empty(shape=int(total_bars / 3), dtype=or_dt)
 
-    loop_start = static_os_tuple.starting_bar - 1
+    loop_start = strategy.static_os_tuple.starting_bar - 1
     for bar_index in range(loop_start, total_bars):
         logger.debug("\n\n")
         datetime = candles.candle_open_datetimes[bar_index]
@@ -155,7 +145,7 @@ def live_backtest(
                     exit_fee_pct=e.exit_fee_pct,
                     exit_price=e.exit_price,
                     order_status=e.order_status,
-                    market_fee_pct=exchange_settings_tuple.market_fee_pct,
+                    market_fee_pct=strategy.exchange_settings_tuple.market_fee_pct,
                     equity=order.equity,
                 )
                 logger.debug(f"Filling or for decrease postiion {OrderStatus._fields[e.order_status]}")

@@ -36,10 +36,11 @@ def set_loggers(
             logger.setLevel(logger_level.upper())
 
             log_handler = logger.handlers[0]
-            log_format = "\n%(levelname)s - %(filename)s - %(funcName)s() - %(lineno)d - %(message)s"
+            log_format = "\n" + "%(levelname)s - %(filename)s - %(funcName)s() - %(lineno)d - %(message)s"
             log_handler.setFormatter(
                 Formatter(
                     fmt=log_format,
+                    datefmt="%Y-%m-%d %H:%M:%S",
                 )
             )
 

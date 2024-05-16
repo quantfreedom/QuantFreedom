@@ -21,30 +21,35 @@ def all_backtest_stats(
 ):
 
     # logger.infoing out total numbers of things
-    print("Starting the backtest now ... and also here are some stats for your backtest." + "\n")
-    print(f"Total threads to use: {threads:,}")
+    print("Starting the backtest now ... and also here are some stats for your backtest.")
+
+    print("\n" + f"Total threads to use: {threads:,}")
     print(f"Total indicator settings to test: {strategy.total_indicator_settings:,}")
     print(f"Total order settings to test: {strategy.total_order_settings:,}")
     print(f"Total settings combinations to test: {strategy.total_order_settings * strategy.total_indicator_settings:,}")
     print(f"Total settings combination to test after filtering: {strategy.total_filtered_settings:,}")
-    print(
-        f"Total settings combination chunks to process at the same time: {strategy.total_filtered_settings // threads:,}"
-        + "\n"
-    )
+    print(f"Total settings combination chunks to process: {strategy.total_filtered_settings // threads:,}")
 
-    print(f"Total candles: {total_bars:,}")
     total_candles = strategy.total_filtered_settings * total_bars
-    print(f"Total candles to test: {total_candles:,}")
     chunks = total_candles // threads
+    candle_chunks = chunks // step_by
+
+    print("\n" + f"Total candles: {total_bars:,}")
+    print(f"Total candles to test: {total_candles:,}")
     print(f"Total candle chunks to be processed at the same time: {chunks:,}")
-    print(f"Total candle chunks with step by: {chunks // step_by:,}")
+    print(f"Total candle chunks with step by: {candle_chunks:,}")
 
     if num_chunk_bts:
-        total_settings = (num_chunk_bts * threads * step_by // total_bars) + 1
-        print("\n" + f"New Total Settings: {total_settings:,}")
-        new_total_candles = total_settings * total_bars
-        new_chunks = new_total_candles // threads
-        print(f"New total chunks with step by: {new_chunks // step_by:,}")
+        temp_step_by = step_by = total_candles // num_chunk_bts // threads
+        if temp_step_by < 1:
+            print("\n" + f"Step by set to 1. Num_chunk_bts > candle chunks you would get with step by set to 1")
+            step_by = 1
+        else:
+            step_by = temp_step_by
+            new_candle_chunks = chunks // step_by
+            print("\n" + f"New step by: {step_by:,}")
+            print(f"Total candle chunks with new step by: {new_candle_chunks:,}")
+
 
 
 def dl_ex_candles(
