@@ -26,6 +26,133 @@ from quantfreedom.helpers.utils import pretty_qf
 logger = getLogger()
 
 
+def run_df_backtest(
+    candles: FootprintCandlesTuple,
+    strategy: Strategy,
+    threads: int,
+    num_chunk_bts: Optional[int] = None,
+    step_by: int = 1,
+) -> pd.DataFrame:
+    global strategy_result_records
+
+    logger.disabled = True
+    # logger.disabled = False
+    # set_loggers(log_folder=strategy.log_folder)
+
+    starting_equity = strategy.static_os_tuple.starting_equity
+
+    order = OrderHandler(
+        long_short=strategy.long_short,
+        static_os_tuple=strategy.static_os_tuple,
+        exchange_settings_tuple=strategy.exchange_settings_tuple,
+    )
+
+    # Creating Settings Vars
+    total_bars = candles.candle_open_timestamps.size
+    step_by_settings = strategy.total_filtered_settings // step_by
+    chunk_process = step_by_settings // threads
+
+    print("Starting the backtest now ... and also here are some stats for your backtest.")
+
+    print("\n" + f"Total threads to use: {threads:,}")
+    print(f"Total indicator settings to test: {strategy.total_indicator_settings:,}")
+    print(f"Total order settings to test: {strategy.total_order_settings:,}")
+    print(f"Total settings combinations to test: {strategy.total_order_settings * strategy.total_indicator_settings:,}")
+    print(f"Total settings combination to test after filtering: {strategy.total_filtered_settings:,}")
+    print(f"Total settings combination with step by: {step_by_settings:,}")
+    print(f"Total settings combination to process per chunk: {chunk_process:,}")
+
+    total_candles = strategy.total_filtered_settings * total_bars
+    chunks = total_candles // threads
+    candle_chunks = chunks // step_by
+    print("\n" + f"Total candles: {total_bars:,}")
+    print(f"Total candles to test: {total_candles:,}")
+    print(f"Total candle chunks to be processed at the same time: {chunks:,}")
+    print(f"Total candle chunks with step by: {candle_chunks:,}")
+
+    if num_chunk_bts:
+        new_step_by = step_by = total_candles // num_chunk_bts // threads
+        if new_step_by < 1:
+            print("\n" + f"Step by set to 1. Num_chunk_bts > candle chunks you would get with step by set to 1")
+            step_by = 1
+        else:
+            new_candle_chunks = chunks // new_step_by
+            new_step_by_settings = strategy.total_filtered_settings // new_step_by
+            print("\n" + f"New step by: {new_step_by:,}")
+            print(f"Total settings combination with new step by: {new_step_by_settings:,}")
+            print(f"Total candle chunks with new step by: {new_candle_chunks:,}")
+            step_by = new_step_by
+
+    num_array_columns = 9 + len(strategy.og_dos_tuple._fields) + len(strategy.og_ind_set_tuple._fields)
+    arr_shape = (strategy.total_filtered_settings, num_array_columns)
+    strategy_result_records = np.full(arr_shape, np.nan)
+
+    range_multiplier = strategy.total_filtered_settings / threads
+    p = Pool()
+    results = []
+    for thread in range(threads):
+        range_start = int(thread * range_multiplier)
+        range_end = int((thread + 1) * range_multiplier)
+        rec_arr_shape = (range_end - range_start, num_array_columns)
+        record_results = np.full(rec_arr_shape, np.nan)
+
+        r: ApplyResult = p.apply_async(
+            func=multiprocess_backtest,
+            args=[
+                candles,
+                order,
+                range_end,
+                range_start,
+                record_results,
+                starting_equity,
+                strategy,
+                total_bars,
+                step_by,
+            ],
+            callback=proc_results,
+            error_callback=handler,
+        )
+        results.append(r)
+        
+    print("\n" + "looping through results")
+    for r in results:
+        r.wait()
+
+    p.close()
+    p.join()
+    print("creating datafram")
+    column_names = (
+        [
+            "total_trades",
+            "wins",
+            "losses",
+            "gains_pct",
+            "win_rate",
+            "qf_score",
+            "fees_paid",
+            "total_pnl",
+            "ending_eq",
+        ]
+        + list(strategy.og_dos_tuple._fields)
+        + list(strategy.og_ind_set_tuple._fields)
+    )
+    backtest_df = pd.DataFrame(data=strategy_result_records, columns=column_names).dropna()
+    backtest_df.set_index(backtest_df["settings_index"].values.astype(np.int_), inplace=True)
+
+    backtest_df["sl_bcb_type"] = backtest_df["sl_bcb_type"].apply(lambda x: CandleBodyType._fields[int(x)])
+    backtest_df["trail_sl_bcb_type"] = backtest_df["trail_sl_bcb_type"].apply(lambda x: CandleBodyType._fields[int(x)])
+    backtest_df["sl_to_be_cb_type"] = backtest_df["sl_to_be_cb_type"].apply(lambda x: CandleBodyType._fields[int(x)])
+    backtest_df["account_pct_risk_per_trade"] = backtest_df["account_pct_risk_per_trade"].apply(
+        lambda x: round(x * 100, 2)
+    )
+    backtest_df["sl_based_on_add_pct"] = backtest_df["sl_based_on_add_pct"].apply(lambda x: round(x * 100, 2))
+    backtest_df["sl_to_be_when_pct"] = backtest_df["sl_to_be_when_pct"].apply(lambda x: round(x * 100, 2))
+    backtest_df["trail_sl_by_pct"] = backtest_df["trail_sl_by_pct"].apply(lambda x: round(x * 100, 2))
+    backtest_df["trail_sl_when_pct"] = backtest_df["trail_sl_when_pct"].apply(lambda x: round(x * 100, 2))
+    backtest_df.sort_values("gains_pct", ascending=False, inplace=True)
+    return backtest_df
+
+
 def multiprocess_backtest(
     candles: FootprintCandlesTuple,
     order: OrderHandler,
@@ -67,9 +194,9 @@ def multiprocess_backtest(
 
         logger.debug("Set order variables, class dos and pnl array")
 
-        range_start = strategy.static_os_tuple.starting_bar - 1
+        starting_bar = strategy.static_os_tuple.starting_bar - 1
 
-        for bar_index in range(range_start, total_bars):
+        for bar_index in range(starting_bar, total_bars):
             logger.debug("\n\n")
             logger.debug(
                 f"set_idx= {strategy.cur_dos_tuple.settings_index} loop_idx = {set_idx} bar_idx= {bar_index} datetime= {candles.candle_open_datetimes[bar_index]}"
@@ -287,145 +414,15 @@ total_trades={total_trades_closed}"""
     return range_start, range_end, record_results
 
 
-def run_df_backtest(
-    candles: FootprintCandlesTuple,
-    step_by: int,
-    strategy: Strategy,
-    threads: int,
-    num_chunk_bts: Optional[int] = None,
-) -> pd.DataFrame:
-    global strategy_result_records
-
-    logger.disabled = True
-    # logger.disabled = False
-    # set_loggers(log_folder=strategy.log_folder)
-
-    starting_equity = strategy.static_os_tuple.starting_equity
-
-    order = OrderHandler(
-        long_short=strategy.long_short,
-        static_os_tuple=strategy.static_os_tuple,
-        exchange_settings_tuple=strategy.exchange_settings_tuple,
-    )
-
-    # Creating Settings Vars
-
-    total_bars = candles.candle_open_timestamps.size
-
-    total_settings = strategy.total_order_settings * strategy.total_indicator_settings
-
-    # logger.infoing out total numbers of things
-    print("Starting the backtest now ... and also here are some stats for your backtest.")
-
-    print("\n" + f"Total threads to use: {threads:,}")
-    print(f"Total indicator settings to test: {strategy.total_indicator_settings:,}")
-    print(f"Total order settings to test: {strategy.total_order_settings:,}")
-    print(f"Total settings combinations to test: {strategy.total_order_settings * strategy.total_indicator_settings:,}")
-    print(f"Total settings combination to test after filtering: {strategy.total_filtered_settings:,}")
-    print(f"Total settings combination chunks to process: {strategy.total_filtered_settings // threads:,}")
-
-    total_candles = strategy.total_filtered_settings * total_bars
-    chunks = total_candles // threads
-    candle_chunks = chunks // step_by
-
-    print("\n" + f"Total candles: {total_bars:,}")
-    print(f"Total candles to test: {total_candles:,}")
-    print(f"Total candle chunks to be processed at the same time: {chunks:,}")
-    print(f"Total candle chunks with step by: {candle_chunks:,}")
-
-    if num_chunk_bts:
-        temp_step_by = step_by = total_candles // num_chunk_bts // threads
-        if temp_step_by < 1:
-            print("\n" + f"Step by set to 1. Num_chunk_bts > candle chunks you would get with step by set to 1")
-            step_by = 1
-        else:
-            step_by = temp_step_by
-
-        new_candle_chunks = chunks // step_by
-
-        print("\n" + f"New step by: {step_by:,}")
-        print(f"Total candle chunks with new step by: {new_candle_chunks:,}")
-
-    num_array_columns = 9 + len(strategy.og_dos_tuple._fields) + len(strategy.og_ind_set_tuple._fields)
-    arr_shape = (total_settings, num_array_columns)
-    strategy_result_records = np.full(arr_shape, np.nan)
-
-    range_multiplier = total_settings / threads
-    p = Pool()
-    results = []
-    for thread in range(threads):
-        range_start = int(thread * range_multiplier)
-        range_end = int((thread + 1) * range_multiplier)
-        arr_shape = (range_end - range_start, num_array_columns)
-        record_results = np.full(arr_shape, np.nan)
-
-        r: ApplyResult = p.apply_async(
-            func=multiprocess_backtest,
-            args=[
-                candles,
-                order,
-                range_end,
-                range_start,
-                record_results,
-                starting_equity,
-                strategy,
-                total_bars,
-                step_by,
-            ],
-            callback=proc_results,
-            error_callback=handler,
-        )
-        results.append(r)
-    print("\n" + "looping through results")
-    for r in results:
-        r.wait()
-
-    p.close()
-    p.join()
-    print("creating datafram")
-    column_names = (
-        [
-            "total_trades",
-            "wins",
-            "losses",
-            "gains_pct",
-            "win_rate",
-            "qf_score",
-            "fees_paid",
-            "total_pnl",
-            "ending_eq",
-        ]
-        + list(strategy.og_dos_tuple._fields)
-        + list(strategy.og_ind_set_tuple._fields)
-    )
-    backtest_df = pd.DataFrame(data=strategy_result_records, columns=column_names).dropna()
-    backtest_df.set_index(backtest_df["settings_index"].values.astype(np.int_), inplace=True)
-
-    backtest_df["sl_bcb_type"] = backtest_df["sl_bcb_type"].apply(lambda x: CandleBodyType._fields[int(x)])
-    backtest_df["trail_sl_bcb_type"] = backtest_df["trail_sl_bcb_type"].apply(lambda x: CandleBodyType._fields[int(x)])
-    backtest_df["sl_to_be_cb_type"] = backtest_df["sl_to_be_cb_type"].apply(lambda x: CandleBodyType._fields[int(x)])
-    backtest_df["account_pct_risk_per_trade"] = backtest_df["account_pct_risk_per_trade"].apply(
-        lambda x: round(x * 100, 2)
-    )
-    backtest_df["sl_based_on_add_pct"] = backtest_df["sl_based_on_add_pct"].apply(lambda x: round(x * 100, 2))
-    backtest_df["sl_to_be_when_pct"] = backtest_df["sl_to_be_when_pct"].apply(lambda x: round(x * 100, 2))
-    backtest_df["trail_sl_by_pct"] = backtest_df["trail_sl_by_pct"].apply(lambda x: round(x * 100, 2))
-    backtest_df["trail_sl_when_pct"] = backtest_df["trail_sl_when_pct"].apply(lambda x: round(x * 100, 2))
-    backtest_df.sort_values("gains_pct", ascending=False, inplace=True)
-    return backtest_df
-
-
 def proc_results(
     results: tuple,
 ):
-    # print("Results: ", results)
     start = results[0]
     end = results[1]
     arr = results[2]
     strategy_result_records[start:end] = arr
 
 
-# error callback function
 def handler(error):
     print(f"Error: {error}", flush=True)
 

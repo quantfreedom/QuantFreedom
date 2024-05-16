@@ -13,14 +13,17 @@ logger = getLogger()
 
 
 def all_backtest_stats(
-    step_by: int,
+    candles: FootprintCandlesTuple,
     strategy: Strategy,
     threads: int,
-    total_bars: int,
     num_chunk_bts: Optional[int] = None,
+    step_by: int = 1,
 ):
+    # Creating Settings Vars
+    total_bars = candles.candle_open_timestamps.size
+    step_by_settings = strategy.total_filtered_settings // step_by
+    chunk_process = step_by_settings // threads
 
-    # logger.infoing out total numbers of things
     print("Starting the backtest now ... and also here are some stats for your backtest.")
 
     print("\n" + f"Total threads to use: {threads:,}")
@@ -28,28 +31,29 @@ def all_backtest_stats(
     print(f"Total order settings to test: {strategy.total_order_settings:,}")
     print(f"Total settings combinations to test: {strategy.total_order_settings * strategy.total_indicator_settings:,}")
     print(f"Total settings combination to test after filtering: {strategy.total_filtered_settings:,}")
-    print(f"Total settings combination chunks to process: {strategy.total_filtered_settings // threads:,}")
+    print(f"Total settings combination with step by: {step_by_settings:,}")
+    print(f"Total settings combination to process per chunk: {chunk_process:,}")
 
     total_candles = strategy.total_filtered_settings * total_bars
     chunks = total_candles // threads
     candle_chunks = chunks // step_by
-
     print("\n" + f"Total candles: {total_bars:,}")
     print(f"Total candles to test: {total_candles:,}")
     print(f"Total candle chunks to be processed at the same time: {chunks:,}")
     print(f"Total candle chunks with step by: {candle_chunks:,}")
 
     if num_chunk_bts:
-        temp_step_by = step_by = total_candles // num_chunk_bts // threads
-        if temp_step_by < 1:
+        new_step_by = step_by = total_candles // num_chunk_bts // threads
+        if new_step_by < 1:
             print("\n" + f"Step by set to 1. Num_chunk_bts > candle chunks you would get with step by set to 1")
             step_by = 1
         else:
-            step_by = temp_step_by
-            new_candle_chunks = chunks // step_by
-            print("\n" + f"New step by: {step_by:,}")
+            new_candle_chunks = chunks // new_step_by
+            new_step_by_settings = strategy.total_filtered_settings // new_step_by
+            print("\n" + f"New step by: {new_step_by:,}")
+            print(f"Total settings combination with new step by: {new_step_by_settings:,}")
             print(f"Total candle chunks with new step by: {new_candle_chunks:,}")
-
+            step_by = new_step_by
 
 
 def dl_ex_candles(
