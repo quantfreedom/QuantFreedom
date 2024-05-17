@@ -95,17 +95,17 @@ def nb_run_df_backtest(
             logger(
                 "nb_simulate.py - nb_run_backtest() - Created Dynamic Order Settings"
                 + "\nmax_equity_risk_pct= "
-                + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.max_equity_risk_pct * 100, 3))
+                + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.max_equity_risk_pct * 100, 2))
                 + "\nmax_trades= "
                 + str(dynamic_order_settings.max_trades)
                 + "\naccount_pct_risk_per_trade= "
                 + stringer[StringerFuncType.float_to_str](
-                    round(dynamic_order_settings.account_pct_risk_per_trade * 100, 3)
+                    round(dynamic_order_settings.account_pct_risk_per_trade * 100, 2)
                 )
                 + "\nrisk_reward= "
                 + stringer[StringerFuncType.float_to_str](dynamic_order_settings.risk_reward)
                 + "\nsl_based_on_add_pct= "
-                + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.sl_based_on_add_pct * 100, 3))
+                + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.sl_based_on_add_pct * 100, 2))
                 + "\nsl_based_on_lookback= "
                 + str(dynamic_order_settings.sl_based_on_lookback)
                 + "\nsl_bcb_type= "
@@ -113,13 +113,13 @@ def nb_run_df_backtest(
                 + "\nsl_to_be_cb_type= "
                 + stringer[StringerFuncType.candle_body_str](dynamic_order_settings.sl_to_be_cb_type)
                 + "\nsl_to_be_when_pct= "
-                + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.sl_to_be_when_pct * 100, 3))
+                + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.sl_to_be_when_pct * 100, 2))
                 + "\ntrail_sl_bcb_type= "
                 + stringer[StringerFuncType.candle_body_str](dynamic_order_settings.trail_sl_bcb_type)
                 + "\ntrail_sl_by_pct= "
-                + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_by_pct * 100, 3))
+                + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_by_pct * 100, 2))
                 + "\ntrail_sl_when_pct= "
-                + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_when_pct * 100, 3))
+                + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_when_pct * 100, 2))
             )
 
             logger("nb_simulate.py - nb_run_backtest() - Starting Bar=" + str(static_os_tuple.starting_bar))
@@ -516,7 +516,7 @@ def nb_run_df_backtest(
                         win_loss = np.where(wins_and_losses_array_no_be < 0, 0, 1)
                         wins = np.count_nonzero(win_loss)
                         losses = win_loss.size - wins
-                        win_rate = round(wins / win_loss.size * 100, 3)
+                        win_rate = round(wins / win_loss.size * 100, 2)
 
                         total_pnl = wins_and_losses_array.sum()
 
@@ -529,7 +529,7 @@ def nb_run_df_backtest(
                         strategy_result_records[result_records_filled]["gains_pct"] = gains_pct
                         strategy_result_records[result_records_filled]["win_rate"] = win_rate
                         strategy_result_records[result_records_filled]["qf_score"] = qf_score
-                        strategy_result_records[result_records_filled]["fees_paid"] = round(total_fees_paid, 3)
+                        strategy_result_records[result_records_filled]["fees_paid"] = round(total_fees_paid, 2)
                         strategy_result_records[result_records_filled]["total_pnl"] = total_pnl
                         strategy_result_records[result_records_filled]["ending_eq"] = account_state.equity
 

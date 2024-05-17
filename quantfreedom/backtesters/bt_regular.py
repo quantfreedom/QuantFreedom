@@ -5,20 +5,16 @@ from logging import getLogger
 from multiprocessing import Pool
 from multiprocessing.pool import ApplyResult
 from quantfreedom.helpers.custom_logger import set_loggers
-from quantfreedom.helpers.helper_funcs import get_qf_score, order_records_to_df
+from quantfreedom.helpers.helper_funcs import get_qf_score, order_records_to_df, make_bt_df
 from quantfreedom.order_handler.order import OrderHandler
 from quantfreedom.core.plotting_base import plot_or_results
 from quantfreedom.core.strategy import Strategy
 from quantfreedom.core.enums import (
-    BacktestSettings,
-    CandleBodyType,
     CurrentFootprintCandleTuple,
     DecreasePosition,
-    ExchangeSettings,
     FootprintCandlesTuple,
     OrderStatus,
     RejectedOrder,
-    StaticOrderSettings,
     or_dt,
 )
 from quantfreedom.helpers.utils import pretty_qf
@@ -113,7 +109,7 @@ def run_df_backtest(
             error_callback=handler,
         )
         results.append(r)
-        
+
     print("\n" + "looping through results")
     for r in results:
         r.wait()
@@ -121,35 +117,12 @@ def run_df_backtest(
     p.close()
     p.join()
     print("creating datafram")
-    column_names = (
-        [
-            "total_trades",
-            "wins",
-            "losses",
-            "gains_pct",
-            "win_rate",
-            "qf_score",
-            "fees_paid",
-            "total_pnl",
-            "ending_eq",
-        ]
-        + list(strategy.og_dos_tuple._fields)
-        + list(strategy.og_ind_set_tuple._fields)
-    )
-    backtest_df = pd.DataFrame(data=strategy_result_records, columns=column_names).dropna()
-    backtest_df.set_index(backtest_df["settings_index"].values.astype(np.int_), inplace=True)
 
-    backtest_df["sl_bcb_type"] = backtest_df["sl_bcb_type"].apply(lambda x: CandleBodyType._fields[int(x)])
-    backtest_df["trail_sl_bcb_type"] = backtest_df["trail_sl_bcb_type"].apply(lambda x: CandleBodyType._fields[int(x)])
-    backtest_df["sl_to_be_cb_type"] = backtest_df["sl_to_be_cb_type"].apply(lambda x: CandleBodyType._fields[int(x)])
-    backtest_df["account_pct_risk_per_trade"] = backtest_df["account_pct_risk_per_trade"].apply(
-        lambda x: round(x * 100, 2)
+    backtest_df = make_bt_df(
+        strategy=strategy,
+        strategy_result_records=strategy_result_records,
     )
-    backtest_df["sl_based_on_add_pct"] = backtest_df["sl_based_on_add_pct"].apply(lambda x: round(x * 100, 2))
-    backtest_df["sl_to_be_when_pct"] = backtest_df["sl_to_be_when_pct"].apply(lambda x: round(x * 100, 2))
-    backtest_df["trail_sl_by_pct"] = backtest_df["trail_sl_by_pct"].apply(lambda x: round(x * 100, 2))
-    backtest_df["trail_sl_when_pct"] = backtest_df["trail_sl_when_pct"].apply(lambda x: round(x * 100, 2))
-    backtest_df.sort_values("gains_pct", ascending=False, inplace=True)
+
     return backtest_df
 
 
@@ -360,7 +333,7 @@ def multiprocess_backtest(
                     raise Exception(f"Exception hit in eval strat -> {e}")
 
         # Checking if gains
-        gains_pct = round(((order.equity - starting_equity) / starting_equity) * 100, 3)
+        gains_pct = round(((order.equity - starting_equity) / starting_equity) * 100, 2)
         wins_and_losses_array = pnl_array[~np.isnan(pnl_array)]
         total_trades_closed = wins_and_losses_array.size
         logger.debug(
@@ -388,7 +361,7 @@ total_trades={total_trades_closed}"""
                     win_loss = np.where(wins_and_losses_array_no_be < 0, 0, 1)
                     wins = np.count_nonzero(win_loss)
                     losses = win_loss.size - wins
-                    win_rate = round(wins / win_loss.size * 100, 3)
+                    win_rate = round(wins / win_loss.size * 100, 2)
 
                     total_pnl = wins_and_losses_array.sum()
                     tuple_results = (
@@ -399,7 +372,7 @@ total_trades={total_trades_closed}"""
                             gains_pct,
                             win_rate,
                             qf_score,
-                            round(total_fees_paid, 3),
+                            round(total_fees_paid, 2),
                             total_pnl,
                             order.equity,
                         )
@@ -429,11 +402,11 @@ def handler(error):
 
 def or_backtest(
     candles: FootprintCandlesTuple,
-    disable_logger: bool,
     strategy: Strategy,
     set_idx: int,
-    plot_results: bool = False,
+    disable_logger: bool = True,
     logger_level: str = "INFO",
+    plot_results: bool = False,
 ):
     if disable_logger:
         set_loggers(
@@ -481,9 +454,9 @@ def or_backtest(
     order_records = np.empty(shape=int(total_bars / 3), dtype=or_dt)
 
     for bar_index in range(strategy.static_os_tuple.starting_bar - 1, total_bars):
-        logger.info("\n\n")
+        logger.debug("\n\n")
         datetime = candles.candle_open_datetimes[bar_index]
-        logger.info(f"set_idx= {set_idx} bar_idx= {bar_index} datetime= {datetime}")
+        logger.debug(f"set_idx= {set_idx} bar_idx= {bar_index} datetime= {datetime}")
 
         if order.position_size_usd > 0:
             try:

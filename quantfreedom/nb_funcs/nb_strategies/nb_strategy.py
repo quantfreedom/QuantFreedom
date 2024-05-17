@@ -66,7 +66,7 @@ def nb_strat_bt_create_ind(
             source=candles[start : bar_index + 1, CandleBodyType.Close],
             length=og_ind_set_tuple.rsi_period,
         )
-        rsi = np.around(rsi, 3)
+        rsi = np.around(rsi, 2)
         logger("nb_strategy.py - nb_strat_bt_create_ind() - Created RSI")
         return rsi
     except Exception:
@@ -87,7 +87,7 @@ def nb_strat_liv_create_ind(
             source=candles[:, CandleBodyType.Close],
             length=og_ind_set_tuple.rsi_period,
         )
-        rsi = np.around(rsi, 3)
+        rsi = np.around(rsi, 2)
         logger("nb_strategy.py - nb_strat_liv_create_ind() - Created RSI")
         return rsi
     except Exception:

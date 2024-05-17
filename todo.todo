@@ -1,0 +1,114 @@
+
+multiprocessing:
+  ☐ change the for loops in backtester
+
+backtester: 
+  ☐ get rid of max account risk percent whatever
+  ☐ go through all the logging code and do 3 quotes instead of /n all over the place
+  ☐ investigage why i am even using avaiable balance over equity
+
+beginners guide:
+  ☐ update the order and steps
+  ☐ creating repo and updating repo
+
+bot:
+  ☐ firebase for the website https://firebase.google.com/
+  ☐ pip install aiogram
+  ☐ https://www.cloudflare.com/ vs amazon
+
+bybit exchange live:
+  ☐ add await functions to bybit live mode so that while you are waiting for the next candle ever 15 second you check to see if your stop loss and tp are still there
+  ✔ get_closed_pnl @done(24-01-08 06:41)
+  ✔ get_latest_pnl_result @done(24-01-08 06:42)
+  ✔ get_order_history @done(24-01-08 07:04)
+  ✔ get_filled_orders @done(24-01-08 07:05)
+  ✔ get_filled_order_by_order_id @done(24-01-08 07:13)
+  ✔ check_if_order_filled @done(24-01-08 07:17)
+  ✔ cancel_all_open_orders_per_symbol @done(24-01-08 07:27)
+  ✔ set_leverage @done(24-01-08 08:14)
+  ✔ set_leverage_mode @done(24-01-08 08:14)
+  ✔ check_if_order_open @done(24-01-08 08:27)
+  ✔ adjust_order @done(24-01-08 12:50)
+  ✔ move_stop_order @done(24-01-09 06:25)
+  ✔ get_open_order_by_order_id @done(24-01-09 06:29)
+  ✔ get_risk_limit_info @done(24-01-09 07:11)
+  ✔ set_position_mode @done(24-01-09 07:18)
+  ✔ __get_mmr_pct @done(24-01-09 07:28)
+  ✔ get_all_symbols_info @done(24-01-09 07:57)
+  ✔ __get_min_max_leverage_and_asset_size @done(24-01-09 07:57)
+  ✔ get_symbol_trading_fee_rates @done(24-01-09 08:04)
+  ✔ __get_fee_pcts @done(24-01-09 08:04)
+  ✔ set_leverage_mode_cross @done(24-01-09 08:38)
+  ✔ set_leverage_mode_isolated @done(24-01-09 08:39)
+  ✔ set_position_mode_as_one_way_mode @done(24-01-09 08:39)
+  ✔ set_position_mode_as_hedge_mode @done(24-01-09 08:39)
+  ✔ set_exchange_settings @done(24-01-09 08:42)
+
+Update Backtester:
+  ✔ fix since_date and until_date @done(23-12-08 13:08)
+  ☐ fix shorting
+  ☐ update candles doc strings
+
+Numba Updates:
+  ☐ update numba with tv indicators
+  ☐ update numba simulate
+  ☐ add nothing tp and provided tp
+
+beginner videos:
+  ☐ 
+
+general quality of life:
+  ☐ figure out what to do with the get_risk_limit_info because you need to match up the risk limit with the position info to pick the right risk limit info ... and then risk limit info needs to return both the buy risk limit and sell risk limit info
+  ☐ add something to catch if the person has no previous pnl history
+
+Videos:
+  ✔ ATR video on func and plot @done(23-11-27 17:32)
+  ✔ RSI video on func and plot @done(23-11-27 17:32)
+  ✔ linear regression candles @done(23-11-30 11:14)
+  ✔ SMA video on func and plot @done(23-12-08 13:08)
+  ☐ EMA video on func and plot
+  ☐ VWAP video on func and plot
+  ☐ MACD video on func and plot
+  ☐ BB video on func and plot ... fix plotting because of new return
+  ☐ Super Trend video on func and plot ... fix plotting because of new return
+  ☐ squeeze lazybear video on func and plot ... put crosses on lazybear plot
+
+Archive:
+  ✔ RMA video on func and plot @done(23-11-22 13:00)
+  ✔ WMA video on func and plot @done(23-11-18 08:34)
+  ✔ STDEV video on func and plot @done(23-11-19 14:22)
+  ✔ fix strategy to work with backtest @done(23-11-14 17:19)
+  ✔ fix dynamic order settings @done(23-11-14 17:19)
+  ✔ fix run_df_backtest to work with new strategy, dynamic, and starting bar @done(23-11-14 17:19)
+  ✔ fix or_backtest to work with new strategy, dynamic, and starting bar @done(23-11-14 17:19)
+  ✔ plot for wma @done(23-11-13 10:07)
+  ✔ add supertrend @done(23-11-13 10:06)
+  ✔ plot for supertrend @done(23-11-13 10:06)
+  ✔ add macd @done(23-11-13 07:05)
+  ✔ plot for macd @done(23-11-13 10:06)
+  ✔ fix len adder sma @done(23-11-11 17:39)
+  ✔ fix len adder ema @done(23-11-11 17:39)
+  ✔ fix len adder rma @done(23-11-11 17:39)
+  ✔ fix len adder rma2 @done(23-11-11 17:39)
+  ✔ fix len adder wma @done(23-11-11 17:39)
+  ✔ video on how to plot candlesticks @done(23-11-12 08:07)
+  ✔ add wma @done(23-11-10 17:07)
+  ✔ video for plot for rma @done(23-11-10 17:06)
+  ✔ fix mufex to be able to send None values as params @done(23-11-10 08:20)
+  ✔ fix live mufex @done(23-11-10 08:20)
+  ✔ create result plot @done(23-11-09 08:21)
+  ✔ plot for rma @done(23-11-09 06:20)
+  ✔ plot for rsi @done(23-11-09 06:20)
+  ✔ plot for sma @done(23-11-09 06:20)
+  ✔ plot for ema @done(23-11-09 06:20)
+  ✔ plot for atr @done(23-11-09 06:20)
+  ✔ plot for stdev @done(23-11-09 06:20)
+  ✔ plot for bollingerbands @done(23-11-09 06:20)
+  ✔ change mufex to be able to download candles with no api keys @done(23-11-08 14:21)
+  ✔ make a function that turns np candles to pandas df @done(23-11-08 14:22)
+  ✔ download binance candles @done(23-11-08 10:58)
+  ✔ download apex candles @done(23-11-08 10:58)
+  ✔ set video to go live today @done(23-11-08 06:50)
+  ✔ set video to go live tomorrow @done(23-11-08 06:50)
+  ✔ get binance to work with placing trade on testnet @done(23-11-08 06:50)
+  ✔ create bollineger bands @done(23-11-08 06:50)

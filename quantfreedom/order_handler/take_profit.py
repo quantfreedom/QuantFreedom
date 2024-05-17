@@ -3,7 +3,13 @@ import numpy as np
 from logging import getLogger
 
 from quantfreedom.helpers.helper_funcs import round_size_by_tick_step
-from quantfreedom.core.enums import CandleBodyType, CurrentFootprintCandleTuple, DecreasePosition, OrderStatus, TakeProfitStrategyType
+from quantfreedom.core.enums import (
+    CandleBodyType,
+    CurrentFootprintCandleTuple,
+    DecreasePosition,
+    OrderStatus,
+    TakeProfitStrategyType,
+)
 
 logger = getLogger()
 
@@ -107,8 +113,8 @@ class TakeProfit:
         )
         logger.debug(f"tp_price= {tp_price}")
 
-        tp_pct = round(abs((tp_price - average_entry)) / average_entry, 3)
-        logger.debug(f"tp_pct= {round(tp_pct * 100, 3)}")
+        tp_pct = round(abs((tp_price - average_entry)) / average_entry, 2)
+        logger.debug(f"tp_pct= {round(tp_pct * 100, 2)}")
         can_move_sl_to_be = True
         logger.debug("can_move_sl_to_be= True")
         return (

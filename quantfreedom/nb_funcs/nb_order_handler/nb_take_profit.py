@@ -101,9 +101,9 @@ def nb_tp_rr(
     )
     logger("nb_take_profit.py - nb_tp_rr() - tp_price= " + stringer[StringerFuncType.float_to_str](tp_price))
 
-    tp_pct = round(abs(tp_price - average_entry) / average_entry, 3)
+    tp_pct = round(abs(tp_price - average_entry) / average_entry, 2)
     logger(
-        "nb_take_profit.py - nb_tp_rr() - tp_pct= " + stringer[StringerFuncType.float_to_str](round(tp_pct * 100, 3))
+        "nb_take_profit.py - nb_tp_rr() - tp_pct= " + stringer[StringerFuncType.float_to_str](round(tp_pct * 100, 2))
     )
     can_move_sl_to_be = True
     logger("nb_take_profit.py - nb_tp_rr() - can_move_sl_to_be= True")

@@ -132,17 +132,17 @@ class Strategy:
         logger.info(
             f"""
 Settings Index= {self.og_dos_tuple.settings_index[set_idx]}
-account_pct_risk_per_trade={round(self.cur_dos_tuple.account_pct_risk_per_trade * 100, 3)}
+account_pct_risk_per_trade={round(self.cur_dos_tuple.account_pct_risk_per_trade * 100, 2)}
 max_trades={self.cur_dos_tuple.max_trades}
 risk_reward={self.cur_dos_tuple.risk_reward}
-sl_based_on_add_pct={round(self.cur_dos_tuple.sl_based_on_add_pct * 100, 3)}
+sl_based_on_add_pct={round(self.cur_dos_tuple.sl_based_on_add_pct * 100, 2)}
 sl_based_on_lookback={self.cur_dos_tuple.sl_based_on_lookback}
 sl_bcb_type={self.cur_dos_tuple.sl_bcb_type}
 sl_to_be_cb_type={self.cur_dos_tuple.sl_to_be_cb_type}
-sl_to_be_when_pct={round(self.cur_dos_tuple.sl_to_be_when_pct * 100, 3)}
+sl_to_be_when_pct={round(self.cur_dos_tuple.sl_to_be_when_pct * 100, 2)}
 trail_sl_bcb_type={self.cur_dos_tuple.trail_sl_bcb_type}
-trail_sl_by_pct={round(self.cur_dos_tuple.trail_sl_by_pct * 100, 3)}
-trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 3)}
+trail_sl_by_pct={round(self.cur_dos_tuple.trail_sl_by_pct * 100, 2)}
+trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 2)}
 """
         )
 

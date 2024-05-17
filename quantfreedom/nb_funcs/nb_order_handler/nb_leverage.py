@@ -148,13 +148,13 @@ def nb_calc_liq_price(
     logger(
         "nb_leverage.py - nb_calc_liq_price() -"
         + "\ninitial_margin= "
-        + stringer[StringerFuncType.float_to_str](round(initial_margin, 3))
+        + stringer[StringerFuncType.float_to_str](round(initial_margin, 2))
         + "\nfee_to_open= "
-        + stringer[StringerFuncType.float_to_str](round(fee_to_open, 3))
+        + stringer[StringerFuncType.float_to_str](round(fee_to_open, 2))
         + "\nbankruptcy_price= "
-        + stringer[StringerFuncType.float_to_str](round(bankruptcy_price, 3))
+        + stringer[StringerFuncType.float_to_str](round(bankruptcy_price, 2))
         + "\ncash_used= "
-        + stringer[StringerFuncType.float_to_str](round(cash_used, 3))
+        + stringer[StringerFuncType.float_to_str](round(cash_used, 2))
     )
 
     if cash_used > og_available_balance:
@@ -163,9 +163,9 @@ def nb_calc_liq_price(
     else:
         # liq formula
         # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001067&language=en_US
-        available_balance = round(og_available_balance - cash_used, 3)
-        cash_used = round(og_cash_used + cash_used, 3)
-        cash_borrowed = round(og_cash_borrowed + position_size_usd - cash_used, 3)
+        available_balance = round(og_available_balance - cash_used, 2)
+        cash_used = round(og_cash_used + cash_used, 2)
+        cash_borrowed = round(og_cash_borrowed + position_size_usd - cash_used, 2)
 
         liq_price = nb_get_liq_price(
             average_entry=average_entry,

@@ -459,6 +459,29 @@ def plot_or_results(
     except:
         pass
     try:
+        # avg Entries
+        fig.add_trace(
+            go.Scatter(
+                x=entries_dt,
+                y=entries_df["average_entry"],
+                mode="markers",
+                name="Avgerage Entries",
+                marker=dict(
+                    size=10,
+                    symbol="circle",
+                    color="#DE66FF",
+                    line=dict(
+                        width=1,
+                        color="DarkSlateGrey",
+                    ),
+                ),
+            ),
+            col=1,
+            row=1,
+        )
+    except:
+        pass
+    try:
         fig.add_trace(
             # Stop Losses
             go.Scatter(

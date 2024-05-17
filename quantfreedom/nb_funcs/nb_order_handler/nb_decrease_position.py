@@ -10,7 +10,7 @@ def nb_long_pnl_calc(
     exit_price: float,
     position_size_asset: float,
 ):
-    return round((exit_price - average_entry) * position_size_asset, 3)  # math checked
+    return round((exit_price - average_entry) * position_size_asset, 2)  # math checked
 
 
 @njit(cache=True)
@@ -19,7 +19,7 @@ def nb_short_pnl_calc(
     exit_price: float,
     position_size_asset: float,
 ):
-    return round((average_entry - exit_price) * position_size_asset, 3)  # math checked
+    return round((average_entry - exit_price) * position_size_asset, 2)  # math checked
 
 
 @njit(cache=True)
@@ -47,10 +47,10 @@ def nb_decrease_position(
     fee_open = position_size_asset * average_entry * market_fee_pct  # math checked
     fee_close = position_size_asset * exit_price * exit_fee_pct  # math checked
     fees_paid = fee_open + fee_close  # math checked
-    realized_pnl = round(pnl - fees_paid, 3)  # math checked
+    realized_pnl = round(pnl - fees_paid, 2)  # math checked
 
     # Setting new equity
-    equity = round(realized_pnl + equity, 3)
+    equity = round(realized_pnl + equity, 2)
     logger(
         "nb_decrease_position.py - nb_decrease_position() -"
         + "\nrealized_pnl= "

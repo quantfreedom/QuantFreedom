@@ -107,11 +107,11 @@ class Leverage:
 
         logger.debug(
             f"""
-initial_margin= {round(initial_margin, 3)}
-fee_to_open= {round(fee_to_open, 3)}
-bankruptcy_price= {round(bankruptcy_price, 3)}
-fee to close= {round(fee_to_close, 3)}
-cash_used= {round(cash_used, 3)}
+initial_margin= {round(initial_margin, 2)}
+fee_to_open= {round(fee_to_open, 2)}
+bankruptcy_price= {round(bankruptcy_price, 2)}
+fee to close= {round(fee_to_close, 2)}
+cash_used= {round(cash_used, 2)}
 og_available_balance= {og_available_balance}"""
         )
 
@@ -121,9 +121,9 @@ og_available_balance= {og_available_balance}"""
             RejectedOrder.msg = msg
             raise RejectedOrder
         else:
-            available_balance = round(og_available_balance - cash_used, 3)
-            cash_used = round(og_cash_used + cash_used, 3)
-            cash_borrowed = round(og_cash_borrowed + position_size_usd - cash_used, 3)
+            available_balance = round(og_available_balance - cash_used, 2)
+            cash_used = round(og_cash_used + cash_used, 2)
+            cash_borrowed = round(og_cash_borrowed + position_size_usd - cash_used, 2)
 
             liq_price = self.get_liq_price(average_entry=average_entry, leverage=leverage)  # math checked
             liq_price = round_size_by_tick_step(

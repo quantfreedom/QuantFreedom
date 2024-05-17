@@ -84,15 +84,15 @@ def nb_run_or_backtest(
     logger(
         "nb_simulate.py - nb_run_backtest() - Created Dynamic Order Settings"
         + "\nmax_equity_risk_pct= "
-        + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.max_equity_risk_pct * 100, 3))
+        + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.max_equity_risk_pct * 100, 2))
         + "\nmax_trades= "
         + str(dynamic_order_settings.max_trades)
         + "\naccount_pct_risk_per_trade= "
-        + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.account_pct_risk_per_trade * 100, 3))
+        + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.account_pct_risk_per_trade * 100, 2))
         + "\nrisk_reward= "
         + stringer[StringerFuncType.float_to_str](dynamic_order_settings.risk_reward)
         + "\nsl_based_on_add_pct= "
-        + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.sl_based_on_add_pct * 100, 3))
+        + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.sl_based_on_add_pct * 100, 2))
         + "\nsl_based_on_lookback= "
         + str(dynamic_order_settings.sl_based_on_lookback)
         + "\nsl_bcb_type= "
@@ -100,13 +100,13 @@ def nb_run_or_backtest(
         + "\nsl_to_be_cb_type= "
         + stringer[StringerFuncType.candle_body_str](dynamic_order_settings.sl_to_be_cb_type)
         + "\nsl_to_be_when_pct= "
-        + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.sl_to_be_when_pct * 100, 3))
+        + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.sl_to_be_when_pct * 100, 2))
         + "\ntrail_sl_bcb_type= "
         + stringer[StringerFuncType.candle_body_str](dynamic_order_settings.trail_sl_bcb_type)
         + "\ntrail_sl_by_pct= "
-        + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_by_pct * 100, 3))
+        + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_by_pct * 100, 2))
         + "\ntrail_sl_when_pct= "
-        + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_when_pct * 100, 3))
+        + stringer[StringerFuncType.float_to_str](round(dynamic_order_settings.trail_sl_when_pct * 100, 2))
     )
 
     logger("nb_simulate.py - nb_run_backtest() - Starting Bar=" + str(static_os_tuple.starting_bar))

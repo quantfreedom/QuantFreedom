@@ -54,7 +54,7 @@ def nb_get_qf_score(
 
     if gains_pct <= 0:
         qf_score = -(qf_score)
-    return round(qf_score, 3)
+    return round(qf_score, 2)
 
 
 @njit(cache=True)
@@ -184,7 +184,7 @@ def nb_float_to_str(x: float):
     else:
         offset_x = x
         l1, l2 = nb_get_n_digits(x)
-        l2 = max(1, 3)  # Will have at least .0
+        l2 = max(1, 2)  # Will have at least .0
 
     use_dec = l2 > 0
 
@@ -262,12 +262,8 @@ def nb_fill_order_records(
     order_records["position_size_asset"] = order_result.position_size_asset
     order_records["position_size_usd"] = order_result.position_size_usd
     order_records["realized_pnl"] = account_state.realized_pnl
-    order_records["sl_pct"] = round(order_result.sl_pct * 100, 3)
+    order_records["sl_pct"] = round(order_result.sl_pct * 100, 2)
     order_records["sl_price"] = order_result.sl_price
-    order_records["tp_pct"] = round(order_result.tp_pct * 100, 3)
+    order_records["tp_pct"] = round(order_result.tp_pct * 100, 2)
     order_records["tp_price"] = order_result.tp_price
     return or_index + 1
-
-
-
-

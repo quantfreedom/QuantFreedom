@@ -112,7 +112,7 @@ def generate_candles(
 
     periods = number_of_candles * 48
 
-    prices = np.around(30000 + np.random.normal(scale=1, size=periods).cumsum(), 3)
+    prices = np.around(30000 + np.random.normal(scale=1, size=periods).cumsum(), 2)
 
     data = pd.DataFrame(
         prices,

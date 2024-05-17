@@ -317,7 +317,7 @@ total_possible_loss= {total_possible_loss}"""
         entry_size_asset = self.min_asset_size
         logger.debug(f"entry_size_asset= {entry_size_asset} position_size_asset{position_size_asset}")
 
-        entry_size_usd = round(self.min_asset_size * entry_price, 3)
+        entry_size_usd = round(self.min_asset_size * entry_price, 2)
         logger.debug(f"entry_size_usd = {entry_size_usd}")
 
         average_entry = (entry_size_usd + position_size_usd) / (
@@ -329,10 +329,10 @@ total_possible_loss= {total_possible_loss}"""
         )
         logger.debug(f"average_entry {average_entry}")
 
-        sl_pct = round(abs(average_entry - sl_price) / average_entry, 3)
-        logger.debug(f"sl_pct= {round(sl_pct*100, 3)}")
+        sl_pct = round(abs(average_entry - sl_price) / average_entry, 2)
+        logger.debug(f"sl_pct= {round(sl_pct*100, 2)}")
 
-        position_size_usd = round(entry_size_usd + position_size_usd, 3)
+        position_size_usd = round(entry_size_usd + position_size_usd, 2)
         logger.debug(f"position_size_usd= {position_size_usd}")
 
         total_possible_loss, total_trades = self.c_total_trades(
@@ -390,13 +390,13 @@ total_possible_loss= {total_possible_loss}"""
         entry_size_asset = position_size_asset = self.min_asset_size
         logger.debug(f"entry_size_asset={entry_size_asset} position_size_asset= {position_size_asset}")
 
-        entry_size_usd = position_size_usd = round(entry_size_asset * entry_price, 3)
+        entry_size_usd = position_size_usd = round(entry_size_asset * entry_price, 2)
         logger.debug(f"entry_size_usd= {entry_size_usd} position_size_usd= {position_size_usd}")
 
         average_entry = entry_price
         logger.debug(f"average_entry {average_entry}")
-        sl_pct = round(abs(average_entry - sl_price) / average_entry, 3)
-        logger.debug(f"sl_pct= {round(sl_pct*100, 3)}")
+        sl_pct = round(abs(average_entry - sl_price) / average_entry, 2)
+        logger.debug(f"sl_pct= {round(sl_pct*100, 2)}")
 
         total_possible_loss, total_trades = self.c_total_trades(
             average_entry=average_entry,
@@ -507,7 +507,7 @@ total_possible_loss= {total_possible_loss}"""
         """
         price_mult_loss = entry_price * -total_possible_loss
         div_by = -sl_price + entry_price + entry_price * self.market_fee_pct + self.market_fee_pct * sl_price
-        entry_size_usd = round(price_mult_loss / div_by, 3)
+        entry_size_usd = round(price_mult_loss / div_by, 2)
         return entry_size_usd
 
     def short_entry_size_p(
@@ -594,7 +594,7 @@ total_possible_loss= {total_possible_loss}"""
         """
         price_mult_loss = entry_price * -total_possible_loss
         div_by = -entry_price + sl_price + entry_price * self.market_fee_pct + self.market_fee_pct * sl_price
-        entry_size_usd = round(price_mult_loss / div_by, 3)
+        entry_size_usd = round(price_mult_loss / div_by, 2)
         return entry_size_usd
 
     def rpa_slbcb(
@@ -736,7 +736,7 @@ total_possible_loss= {total_possible_loss}"""
         )
         logger.debug(f"position_size_asset= {position_size_asset}")
 
-        position_size_usd = round(entry_size_usd + position_size_usd, 3)
+        position_size_usd = round(entry_size_usd + position_size_usd, 2)
         logger.debug(f"position_size_usd= {position_size_usd}")
 
         average_entry = (entry_size_usd + position_size_usd) / (
@@ -748,8 +748,8 @@ total_possible_loss= {total_possible_loss}"""
         )
         logger.debug(f"average_entry= {average_entry}")
 
-        sl_pct = round(abs(average_entry - sl_price) / average_entry, 3)
-        logger.debug(f"sl_pct= {round(sl_pct * 100, 3)}")
+        sl_pct = round(abs(average_entry - sl_price) / average_entry, 2)
+        logger.debug(f"sl_pct= {round(sl_pct * 100, 2)}")
         return (
             average_entry,
             entry_price,
@@ -814,8 +814,8 @@ total_possible_loss= {total_possible_loss}"""
 
         average_entry = entry_price
 
-        sl_pct = round(abs(average_entry - sl_price) / average_entry, 3)
-        logger.debug(f"sl_pct= {round(sl_pct * 100, 3)}")
+        sl_pct = round(abs(average_entry - sl_price) / average_entry, 2)
+        logger.debug(f"sl_pct= {round(sl_pct * 100, 2)}")
         return (
             average_entry,
             entry_price,

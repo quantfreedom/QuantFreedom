@@ -183,9 +183,9 @@ class OrderHandler:
         order_records["position_size_asset"] = self.position_size_asset
         order_records["position_size_usd"] = self.position_size_usd
         order_records["realized_pnl"] = self.realized_pnl
-        order_records["sl_pct"] = round(self.sl_pct * 100, 3)
+        order_records["sl_pct"] = round(self.sl_pct * 100, 2)
         order_records["sl_price"] = self.sl_price
-        order_records["tp_pct"] = round(self.tp_pct * 100, 3)
+        order_records["tp_pct"] = round(self.tp_pct * 100, 2)
         order_records["tp_price"] = self.tp_price
 
     def check_move_tsl(
@@ -308,7 +308,7 @@ entry_size_asset= {entry_size_asset}
 entry_size_usd= {entry_size_usd}
 position_size_asset= {position_size_asset}
 position_size_usd= {position_size_usd}
-sl_pct= {round(sl_pct*100, 3)}
+sl_pct= {round(sl_pct*100, 2)}
 """
         )
         return (
@@ -383,7 +383,7 @@ liq_price= {liq_price}
         logger.info(
             f"""
 tp_price= {tp_price}
-tp_pct= {round(tp_pct * 100, 3)}
+tp_pct= {round(tp_pct * 100, 2)}
 """
         )
         return (
@@ -393,10 +393,10 @@ tp_pct= {round(tp_pct * 100, 3)}
         )
 
     def long_pnl_calc(self, exit_price: float):
-        return round((exit_price - self.average_entry) * self.position_size_asset, 3)  # math checked
+        return round((exit_price - self.average_entry) * self.position_size_asset, 2)  # math checked
 
     def short_pnl_calc(self, exit_price: float):
-        return round((self.average_entry - exit_price) * self.position_size_asset, 3)  # math checked
+        return round((self.average_entry - exit_price) * self.position_size_asset, 2)  # math checked
 
     def calculate_decrease_position(
         self,
@@ -410,19 +410,19 @@ tp_pct= {round(tp_pct * 100, 3)}
         pnl = self.pnl_calc(exit_price=exit_price)  # math checked
         logger.debug(f"pnl= {pnl}")
 
-        fee_open = round(self.position_size_asset * self.average_entry * market_fee_pct, 3)  # math checked
+        fee_open = round(self.position_size_asset * self.average_entry * market_fee_pct, 2)  # math checked
         logger.debug(f"fee_open= {fee_open}")
 
-        fee_close = round(self.position_size_asset * exit_price * exit_fee_pct, 3)  # math checked
+        fee_close = round(self.position_size_asset * exit_price * exit_fee_pct, 2)  # math checked
         logger.debug(f"fee_close= {fee_close}")
 
-        fees_paid = round(fee_open + fee_close, 3)  # math checked
+        fees_paid = round(fee_open + fee_close, 2)  # math checked
         logger.debug(f"fees_paid= {fees_paid}")
 
-        realized_pnl = round(pnl - fees_paid, 3)  # math checked
+        realized_pnl = round(pnl - fees_paid, 2)  # math checked
         logger.debug(f"realized_pnl= {realized_pnl}")
 
-        equity = round(realized_pnl + equity, 3)
+        equity = round(realized_pnl + equity, 2)
         logger.debug(f"equity= {equity}")
 
         logger.info(

@@ -339,7 +339,7 @@ def nb_rpa_slbcb_p(
         + stringer[StringerFuncType.float_to_str](position_size_asset)
     )
 
-    position_size_usd = round(entry_size_usd + position_size_usd, 3)
+    position_size_usd = round(entry_size_usd + position_size_usd, 2)
     logger(
         "nb_increase_position.py - nb_long_rpa_slbcb_p() - "
         + "position_size_usd= "
@@ -359,11 +359,11 @@ def nb_rpa_slbcb_p(
         + stringer[StringerFuncType.float_to_str](average_entry)
     )
 
-    sl_pct = round(abs(average_entry - sl_price) / average_entry, 3)
+    sl_pct = round(abs(average_entry - sl_price) / average_entry, 2)
     logger(
         "nb_increase_position.py - nb_long_rpa_slbcb_p() - "
         + "sl_pct= "
-        + stringer[StringerFuncType.float_to_str](round(sl_pct * 100, 3))
+        + stringer[StringerFuncType.float_to_str](round(sl_pct * 100, 2))
     )
 
     logger(
@@ -385,7 +385,7 @@ def nb_rpa_slbcb_p(
         + "\ntotal_trades= "
         + stringer[StringerFuncType.float_to_str](total_trades)
         + "\nsl_pct= "
-        + stringer[StringerFuncType.float_to_str](round(sl_pct * 100, 3))
+        + stringer[StringerFuncType.float_to_str](round(sl_pct * 100, 2))
     )
     return (
         average_entry,
@@ -460,11 +460,11 @@ def nb_rpa_slbcb_np(
 
     average_entry = entry_price
 
-    sl_pct = round(abs(average_entry - sl_price) / average_entry, 3)
+    sl_pct = round(abs(average_entry - sl_price) / average_entry, 2)
     logger(
         "nb_increase_position.py - nb_rpa_slbcb_np() - "
         + "sl_pct= "
-        + stringer[StringerFuncType.float_to_str](round(sl_pct * 100, 3))
+        + stringer[StringerFuncType.float_to_str](round(sl_pct * 100, 2))
     )
 
     logger(
@@ -486,7 +486,7 @@ def nb_rpa_slbcb_np(
         + "\ntotal_trades= "
         + stringer[StringerFuncType.float_to_str](total_trades)
         + "\nsl_pct= "
-        + stringer[StringerFuncType.float_to_str](round(sl_pct * 100, 3))
+        + stringer[StringerFuncType.float_to_str](round(sl_pct * 100, 2))
     )
     return (
         average_entry,
@@ -561,7 +561,7 @@ def nb_min_amount_p(
         "nb_increase_position.py - nb_long_min_amount_p() - entry_size_asset position_size_asset{entry_size_asset, position_size_asset}"
     )
 
-    entry_size_usd = round(min_asset_size * entry_price, 3)
+    entry_size_usd = round(min_asset_size * entry_price, 2)
     logger("nb_increase_position.py - nb_long_min_amount_p() - entry_size_usd entry_size_usd}")
 
     average_entry = (entry_size_usd + position_size_usd) / (
@@ -573,10 +573,10 @@ def nb_min_amount_p(
     )
     logger("nb_increase_position.py - nb_long_min_amount_p() - average_entry average_entry}")
 
-    sl_pct = round((average_entry - sl_price) / average_entry, 3)
-    logger("nb_increase_position.py - nb_long_min_amount_p() - sl_pct={round(sl_pct*100, 3))")
+    sl_pct = round((average_entry - sl_price) / average_entry, 2)
+    logger("nb_increase_position.py - nb_long_min_amount_p() - sl_pct={round(sl_pct*100, 2))")
 
-    position_size_usd = round(entry_size_usd + position_size_usd, 3)
+    position_size_usd = round(entry_size_usd + position_size_usd, 2)
     logger("nb_increase_position.py - nb_long_min_amount_p() - position_size_usd position_size_usd}")
 
     total_possible_loss, total_trades = nb_c_total_trades(
@@ -620,7 +620,7 @@ def nb_min_amount_p(
         + "\ntotal_trades= "
         + stringer[StringerFuncType.float_to_str](total_trades)
         + "\nsl_pct= "
-        + stringer[StringerFuncType.float_to_str](round(sl_pct * 100, 3))
+        + stringer[StringerFuncType.float_to_str](round(sl_pct * 100, 2))
     )
     return (
         average_entry,
@@ -659,13 +659,13 @@ def nb_min_amount_np(
     entry_size_asset = position_size_asset = min_asset_size
     logger("entry_size_asset position_size_asset{entry_size_asset, position_size_asset}")
 
-    entry_size_usd = position_size_usd = round(entry_size_asset * entry_price, 3)
+    entry_size_usd = position_size_usd = round(entry_size_asset * entry_price, 2)
     logger("entry_size_usd position_size_usd {entry_size_usd, position_size_usd}")
 
     average_entry = entry_price
     logger("average_entry average_entry}")
-    sl_pct = round((average_entry - sl_price) / average_entry, 3)
-    logger("sl_pct={round(sl_pct*100, 3))")
+    sl_pct = round((average_entry - sl_price) / average_entry, 2)
+    logger("sl_pct={round(sl_pct*100, 2))")
 
     total_possible_loss, total_trades = nb_c_total_trades(
         average_entry=average_entry,
@@ -706,7 +706,7 @@ def nb_min_amount_np(
         + "\ntotal_trades= "
         + stringer[StringerFuncType.float_to_str](total_trades)
         + "\nsl_pct= "
-        + stringer[StringerFuncType.float_to_str](round(sl_pct * 100, 3))
+        + stringer[StringerFuncType.float_to_str](round(sl_pct * 100, 2))
     )
     return (
         average_entry,

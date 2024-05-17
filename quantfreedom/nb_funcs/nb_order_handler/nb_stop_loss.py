@@ -112,7 +112,7 @@ def nb_check_move_sl_to_be(
         pct_from_ae = abs(candle_body - average_entry) / average_entry
         logger(
             "nb_stop_loss.py - cm_sl_to_be() - pct_from_ae= "
-            + stringer[StringerFuncType.float_to_str](round(pct_from_ae * 100, 3))
+            + stringer[StringerFuncType.float_to_str](round(pct_from_ae * 100, 2))
         )
         move_sl = nb_move_sl_bool(
             num_1=pct_from_ae,
@@ -125,14 +125,14 @@ def nb_check_move_sl_to_be(
                 market_fee_pct=market_fee_pct,
                 price_tick_step=price_tick_step,
             )
-            sl_pct = round(abs(average_entry - sl_price) / average_entry, 3)
+            sl_pct = round(abs(average_entry - sl_price) / average_entry, 2)
             logger(
                 "nb_stop_loss.py - cm_sl_to_be() - moving sl old_sl= "
                 + stringer[StringerFuncType.float_to_str](old_sl)
                 + " new sl= "
                 + stringer[StringerFuncType.float_to_str](sl_price)
                 + " new sl pct= "
-                + stringer[StringerFuncType.float_to_str](round(sl_pct * 100, 3))
+                + stringer[StringerFuncType.float_to_str](round(sl_pct * 100, 2))
             )
             return sl_price, sl_pct
         else:
@@ -217,7 +217,7 @@ def nb_check_move_tsl(
     pct_from_ae = abs(candle_body - average_entry) / average_entry
     logger(
         "nb_stop_loss.py - cm_tsl() - pct_from_ae= "
-        + stringer[StringerFuncType.float_to_str](round(pct_from_ae * 100, 3))
+        + stringer[StringerFuncType.float_to_str](round(pct_from_ae * 100, 2))
     )
     possible_move_tsl = nb_move_sl_bool(
         num_1=pct_from_ae,
@@ -244,14 +244,14 @@ def nb_check_move_tsl(
             num_1=temp_sl_price,
             num_2=sl_price,
         ):
-            sl_pct = round(abs(average_entry - temp_sl_price) / average_entry, 3)
+            sl_pct = round(abs(average_entry - temp_sl_price) / average_entry, 2)
             logger(
                 "nb_stop_loss.py - cm_tsl() - Moving tsl new sl= "
                 + stringer[StringerFuncType.float_to_str](temp_sl_price)
                 + " > old sl= "
                 + stringer[StringerFuncType.float_to_str](sl_price)
                 + " new sl pct= "
-                + stringer[StringerFuncType.float_to_str](round(sl_pct * 100, 3))
+                + stringer[StringerFuncType.float_to_str](round(sl_pct * 100, 2))
             )
             return temp_sl_price, sl_pct
         else:

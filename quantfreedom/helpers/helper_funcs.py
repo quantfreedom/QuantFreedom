@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from logging import getLogger
 from datetime import datetime
-from quantfreedom.core.enums import AccountState, FootprintCandlesTuple, OrderResult
+from quantfreedom.core.enums import CandleBodyType, FootprintCandlesTuple
 from quantfreedom.core.strategy import Strategy
 from quantfreedom.exchanges.binance_usdm import BinanceUSDM
 from quantfreedom.exchanges.bybit import Bybit
@@ -261,3 +261,48 @@ def order_records_to_df(
         {0: np.nan}
     )
     return order_records_df
+
+
+def make_bt_df(
+    strategy: Strategy,
+    strategy_result_records: np.ndarray,
+):
+    def cbt_to_field(x):
+        field_name = CandleBodyType._fields[int(x)]
+        return field_name
+
+    def rounder(x):
+        rounded = round(x * 100, 2)
+        return rounded
+
+    column_names = (
+        [
+            "total_trades",
+            "wins",
+            "losses",
+            "gains_pct",
+            "win_rate",
+            "qf_score",
+            "fees_paid",
+            "total_pnl",
+            "ending_eq",
+        ]
+        + list(strategy.og_dos_tuple._fields)
+        + list(strategy.og_ind_set_tuple._fields)
+    )
+    backtest_df = pd.DataFrame(data=strategy_result_records, columns=column_names).dropna()
+    backtest_df.set_index(backtest_df["settings_index"].values.astype(np.int_), inplace=True)
+
+    backtest_df["sl_bcb_type"] = backtest_df["sl_bcb_type"].apply(cbt_to_field)
+    backtest_df["trail_sl_bcb_type"] = backtest_df["trail_sl_bcb_type"].apply(cbt_to_field)
+    backtest_df["sl_to_be_cb_type"] = backtest_df["sl_to_be_cb_type"].apply(cbt_to_field)
+
+    backtest_df["account_pct_risk_per_trade"] = backtest_df["account_pct_risk_per_trade"].apply(rounder)
+    backtest_df["sl_based_on_add_pct"] = backtest_df["sl_based_on_add_pct"].apply(rounder)
+    backtest_df["sl_to_be_when_pct"] = backtest_df["sl_to_be_when_pct"].apply(rounder)
+    backtest_df["trail_sl_by_pct"] = backtest_df["trail_sl_by_pct"].apply(rounder)
+    backtest_df["trail_sl_when_pct"] = backtest_df["trail_sl_when_pct"].apply(rounder)
+
+    backtest_df.sort_values("gains_pct", ascending=False, inplace=True)
+
+    return backtest_df
