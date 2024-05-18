@@ -7,7 +7,7 @@ from quantfreedom.core.strategy import Strategy
 from quantfreedom.exchanges.binance_usdm import BinanceUSDM
 from quantfreedom.exchanges.bybit import Bybit
 from quantfreedom.exchanges.mufex import Mufex
-from typing import Optional
+from typing import List, Optional, Union
 
 logger = getLogger()
 
@@ -189,7 +189,7 @@ def order_records_to_df(
     order_records: np.ndarray,
 ):
     order_records_df = pd.DataFrame(order_records)
-    order_records_df.insert(4, "datetime", pd.to_datetime(order_records_df.timestamp, unit="ms"))
+    order_records_df.insert(4, "datetime", pd.to_datetime(order_records_df["timestamp"], unit="ms"))
     order_records_df.replace(
         {
             "order_status": {
@@ -306,3 +306,187 @@ def make_bt_df(
     backtest_df.sort_values("gains_pct", ascending=False, inplace=True)
 
     return backtest_df
+
+
+def symbol_bt_df(
+    backtest_df: pd.DataFrame,
+):
+
+    def dollar_sign(x):
+        result = "${:,.2f}".format(x)
+        return result
+
+    def pct_sign(x):
+        result = "{:,.2f}%".format(x)
+        return result
+
+    backtest_df["fees_paid"] = backtest_df["fees_paid"].apply(dollar_sign)
+    backtest_df["total_pnl"] = backtest_df["total_pnl"].apply(dollar_sign)
+    backtest_df["ending_eq"] = backtest_df["ending_eq"].apply(dollar_sign)
+
+    backtest_df["gains_pct"] = backtest_df["gains_pct"].apply(pct_sign)
+    backtest_df["win_rate"] = backtest_df["win_rate"].apply(pct_sign)
+
+    return backtest_df
+
+
+def np_shift_fwd(
+    arr: np.ndarray,
+    fill_value: Union[float, int, bool, str],
+    shift: int = 1,
+) -> np.ndarray:
+
+    result = np.empty_like(arr)
+
+    result[:shift] = fill_value
+    result[shift:] = arr[:-shift]
+
+    return result
+
+
+def np_shift_bwd(
+    arr: np.ndarray,
+    fill_value: Union[float, int, bool, str],
+    shift: int = -1,
+) -> np.ndarray:
+
+    result = np.empty_like(arr)
+
+    result[shift:] = fill_value
+    result[:shift] = arr[-shift:]
+
+    return result
+
+
+def np_lookback_one(
+    arr: np.ndarray,
+    lookback: int,
+    include_current: bool,
+    fill_value: Union[float, int, bool, str],
+    fwd_bwd: str,
+) -> tuple[np.ndarray, np.ndarray]:
+    """
+    _summary_
+
+    [Video]()
+
+    Parameters
+    ----------
+    arr : np.ndarray
+        _description_
+    lookback : int
+        _description_
+    include_current : bool
+        _description_
+    fill_value : float, int, bool, str]
+        _description_
+    fwd_bwd : str
+        fwd for forward and bwd for backward
+
+    Returns
+    -------
+    tuple[np.ndarray, np.ndarray]
+        _description_
+    """
+
+    def np_shift(
+        arr: np.ndarray,
+        fill_value: Union[float, int, bool, str],
+        shift: int = 1,
+    ) -> np.ndarray:
+        pass
+
+    if fwd_bwd.lower() == "fwd":
+        np_shift = np_shift_fwd
+    elif fwd_bwd.lower() == "bwd":
+        np_shift = np_shift_bwd
+    else:
+        raise Exception("fwd_bwd must be either 'fwd' or 'bwd'")
+
+    prev_arr = np.empty((arr.size, lookback), dtype=arr.dtype)
+
+    if include_current:
+        lookback += 1
+        prev_arr = np.empty((arr.size, lookback), dtype=arr.dtype)
+        prev_arr[:, 0] = arr
+
+    else:
+
+        prev_arr = np.empty((arr.size, lookback), dtype=arr.dtype)
+        prev_arr[:, 0] = np_shift(arr, fill_value=fill_value)
+
+    for idx in range(1, lookback):
+        prev_arr[:, idx] = np_shift(prev_arr[:, idx - 1], fill_value=fill_value)
+
+    return prev_arr
+
+
+def np_lookback_two(
+    arr_1: np.ndarray,
+    arr_2: np.ndarray,
+    lookback: int,
+    include_current: bool,
+    fill_value: Union[float, int, bool, str],
+    fwd_bwd: str = "fwd",
+) -> tuple[np.ndarray, np.ndarray]:
+    """
+    _summary_
+
+    [Video]()
+
+    Parameters
+    ----------
+    arr_1 : np.ndarray
+        _description_
+    arr_2 : np.ndarray
+        _description_
+    lookback : int
+        _description_
+    include_current : bool
+        _description_
+    fill_value : float, int, bool, str]
+        _description_
+    fwd_bwd : str
+        fwd for forward and bwd for backward
+
+    Returns
+    -------
+    tuple[np.ndarray, np.ndarray]
+        _description_
+    """
+
+    def np_shift(
+        arr: np.ndarray,
+        fill_value: Union[float, int, bool, str],
+        shift: int = 1,
+    ) -> np.ndarray:
+        pass
+
+    if fwd_bwd.lower() == "fwd":
+        np_shift = np_shift_fwd
+    elif fwd_bwd.lower() == "bwd":
+        np_shift = np_shift_bwd
+    else:
+        raise Exception("fwd_bwd must be either 'fwd' or 'bwd'")
+
+    if include_current:
+        lookback += 1
+
+        prev_arr_1 = np.empty((arr_1.size, lookback), dtype=arr_1.dtype)
+        prev_arr_2 = np.empty((arr_2.size, lookback), dtype=arr_2.dtype)
+
+        prev_arr_1[:, 0] = arr_1
+        prev_arr_2[:, 0] = arr_2
+    else:
+
+        prev_arr_1 = np.empty((arr_1.size, lookback), dtype=arr_1.dtype)
+        prev_arr_2 = np.empty((arr_2.size, lookback), dtype=arr_2.dtype)
+
+        prev_arr_1[:, 0] = np_shift(arr_1, fill_value=fill_value)
+        prev_arr_2[:, 0] = np_shift(arr_2, fill_value=fill_value)
+
+    for idx in range(1, lookback):
+        prev_arr_1[:, idx] = np_shift(prev_arr_1[:, idx - 1], fill_value=fill_value)
+        prev_arr_2[:, idx] = np_shift(prev_arr_2[:, idx - 1], fill_value=fill_value)
+
+    return prev_arr_1, prev_arr_2
