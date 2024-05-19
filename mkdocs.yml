@@ -49,6 +49,9 @@ plugins:
 - literate-nav:
     nav_file: nav_file.md
     implicit_index: false
+- redirects:
+    redirect_maps: 
+      'index.md': 'home/installation.md'
 
 - mkdocstrings:
     handlers:

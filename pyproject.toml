@@ -41,11 +41,12 @@ mkdocs-gen-files = { version = "0.5.0", optional = true }
 mkdocs-literate-nav = {version = "0.6.1", optional = true}
 mkdocs-material = { version = "9.4.14", optional = true }
 mkdocs-open-in-new-tab = { version = "1.0.3", optional = true }
+mkdocs-redirects = { version = "1.2.1", optional = true }
 python-multipart = {version = "0.0.9", optional = true}
 
 [tool.poetry.extras]
 dev = ["aws-cdk-lib", "bcrypt", "cryptography", "fastapi", "httpx", "mangum", "mysql-connector-python", "pyjwt", "uvicorn"]
-docs = ["griffe", "mkdocs", "mkdocstrings", "mkdocs-gen-files", "mkdocs-literate-nav", "mkdocs-material", "mkdocs-open-in-new-tab", "python-multipart"]
+docs = ["griffe", "mkdocs", "mkdocstrings", "mkdocs-gen-files", "mkdocs-literate-nav", "mkdocs-material", "mkdocs-open-in-new-tab", "mkdocs-redirects", "python-multipart"]
 
 [build-system]
 requires = ["poetry-core"]
