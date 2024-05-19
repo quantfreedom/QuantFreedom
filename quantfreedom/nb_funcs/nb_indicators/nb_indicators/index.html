@@ -9,22 +9,18 @@
       
       
       
-        <link rel="prev" href="../increase_position/">
       
       
-        <link rel="next" href="../stop_loss/">
-      
-      
-      <link rel="icon" href="../../../assets/images/favicon.png">
+      <link rel="icon" href="../../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.14">
     
     
       
-        <title>order - QuantFreedom Docs</title>
+        <title>Nb indicators - QuantFreedom Docs</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.fad675c6.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.fad675c6.min.css">
       
       
 
@@ -43,11 +39,11 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+      <link rel="stylesheet" href="../../../../stylesheets/extra.css">
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -69,7 +65,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#quantfreedom.order_handler.order" class="md-skip">
+        <a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators" class="md-skip">
           Skip to content
         </a>
       
@@ -85,7 +81,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../.." title="QuantFreedom Docs" class="md-header__button md-logo" aria-label="QuantFreedom Docs" data-md-component="logo">
+    <a href="../../../.." title="QuantFreedom Docs" class="md-header__button md-logo" aria-label="QuantFreedom Docs" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
@@ -105,7 +101,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              order
+              Nb indicators
             
           </span>
         </div>
@@ -179,7 +175,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../home/installation/" class="md-tabs__link">
+        <a href="../../../../home/installation/" class="md-tabs__link">
           
   
     
@@ -199,7 +195,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../services/copy_trading/" class="md-tabs__link">
+        <a href="../../../../services/copy_trading/" class="md-tabs__link">
           
   
     
@@ -219,7 +215,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../beginners/guide/" class="md-tabs__link">
+        <a href="../../../../beginners/guide/" class="md-tabs__link">
           
   
     
@@ -235,21 +231,17 @@
         
   
   
-    
-  
   
     
     
       
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../../backtesters/bt_live/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../../backtesters/bt_live/" class="md-tabs__link">
           
   
     
@@ -293,7 +285,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="QuantFreedom Docs" class="md-nav__button md-logo" aria-label="QuantFreedom Docs" data-md-component="logo">
+    <a href="../../../.." title="QuantFreedom Docs" class="md-nav__button md-logo" aria-label="QuantFreedom Docs" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
@@ -367,7 +359,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../home/installation/" class="md-nav__link">
+      <a href="../../../../home/installation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -439,7 +431,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../services/copy_trading/" class="md-nav__link">
+      <a href="../../../../services/copy_trading/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -511,7 +503,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../beginners/guide/" class="md-nav__link">
+      <a href="../../../../beginners/guide/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -536,10 +528,8 @@
       
   
   
-    
   
   
-  
     
     
       
@@ -562,12 +552,12 @@
       
       
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
@@ -581,7 +571,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Functions
@@ -638,7 +628,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../backtesters/bt_live/" class="md-nav__link">
+      <a href="../../../backtesters/bt_live/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -659,7 +649,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../backtesters/bt_regular/" class="md-nav__link">
+      <a href="../../../backtesters/bt_regular/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -731,7 +721,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/enums/" class="md-nav__link">
+      <a href="../../../core/enums/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -752,7 +742,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/strategy/" class="md-nav__link">
+      <a href="../../../core/strategy/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -826,7 +816,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../exchanges/binance_usdm/" class="md-nav__link">
+      <a href="../../../exchanges/binance_usdm/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -847,7 +837,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../exchanges/bybit/" class="md-nav__link">
+      <a href="../../../exchanges/bybit/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -868,7 +858,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../exchanges/mufex/" class="md-nav__link">
+      <a href="../../../exchanges/mufex/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -942,7 +932,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../helpers/bsc_scan/" class="md-nav__link">
+      <a href="../../../helpers/bsc_scan/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -963,7 +953,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../helpers/helper_funcs/" class="md-nav__link">
+      <a href="../../../helpers/helper_funcs/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -984,7 +974,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../helpers/utils/" class="md-nav__link">
+      <a href="../../../helpers/utils/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1054,7 +1044,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../indicators/tv_indicators/" class="md-nav__link">
+      <a href="../../../indicators/tv_indicators/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1080,10 +1070,8 @@
                 
   
   
-    
   
   
-  
     
     
       
@@ -1097,12 +1085,12 @@
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_6" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_6" >
         
           
           <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
@@ -1116,7 +1104,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4_6">
             <span class="md-nav__icon md-icon"></span>
             order_handler
@@ -1130,7 +1118,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../increase_position/" class="md-nav__link">
+      <a href="../../../order_handler/increase_position/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1148,28 +1136,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    order
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../../order_handler/order/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1178,42 +1148,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#quantfreedom.order_handler.order" class="md-nav__link">
-    <span class="md-ellipsis">
-      order
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#quantfreedom.order_handler.order-classes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Classes
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1226,7 +1160,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../stop_loss/" class="md-nav__link">
+      <a href="../../../order_handler/stop_loss/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1280,20 +1214,152 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#quantfreedom.order_handler.order" class="md-nav__link">
+  <a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators" class="md-nav__link">
     <span class="md-ellipsis">
-      order
+      nb_indicators
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#quantfreedom.order_handler.order-classes" class="md-nav__link">
+  <a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators-functions" class="md-nav__link">
     <span class="md-ellipsis">
-      Classes
+      Functions
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_atr_tv" class="md-nav__link">
+    <span class="md-ellipsis">
+      nb_atr_tv
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_bb_tv" class="md-nav__link">
+    <span class="md-ellipsis">
+      nb_bb_tv
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_ema_tv" class="md-nav__link">
+    <span class="md-ellipsis">
+      nb_ema_tv
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_macd_tv" class="md-nav__link">
+    <span class="md-ellipsis">
+      nb_macd_tv
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_rma_tv" class="md-nav__link">
+    <span class="md-ellipsis">
+      nb_rma_tv
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_rma_tv_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      nb_rma_tv_2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_rsi_tv" class="md-nav__link">
+    <span class="md-ellipsis">
+      nb_rsi_tv
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_sma_tv" class="md-nav__link">
+    <span class="md-ellipsis">
+      nb_sma_tv
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_squeeze_momentum_lazybear_tv" class="md-nav__link">
+    <span class="md-ellipsis">
+      nb_squeeze_momentum_lazybear_tv
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_stdev_tv" class="md-nav__link">
+    <span class="md-ellipsis">
+      nb_stdev_tv
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_supertrend_tv" class="md-nav__link">
+    <span class="md-ellipsis">
+      nb_supertrend_tv
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_true_range_tv" class="md-nav__link">
+    <span class="md-ellipsis">
+      nb_true_range_tv
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_vwap_tv" class="md-nav__link">
+    <span class="md-ellipsis">
+      nb_vwap_tv
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_wma_tv" class="md-nav__link">
+    <span class="md-ellipsis">
+      nb_wma_tv
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1315,13 +1381,13 @@
   
 
 
-  <h1>order</h1>
+  <h1>Nb indicators</h1>
 
 <div class="doc doc-object doc-module">
 
 
 
-<a id="quantfreedom.order_handler.order"></a>
+<a id="quantfreedom.nb_funcs.nb_indicators.nb_indicators"></a>
   <div class="doc doc-contents first">
 
   
@@ -1333,8 +1399,306 @@
 
 
 
-<h2 id="quantfreedom.order_handler.order-classes">Classes<a href="#quantfreedom.order_handler.order-classes" class="headerlink" title="Permanent link">&para;</a></h2>
 
+<h2 id="quantfreedom.nb_funcs.nb_indicators.nb_indicators-functions">Functions<a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators-functions" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_atr_tv" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">nb_atr_tv</span>
+
+
+<a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_atr_tv" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nb_atr_tv</span><span class="p">(</span><span class="n">candles</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">smoothing_type</span><span class="o">=</span><span class="n">nb_rma_tv</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Average true range smoothing <a href="https://www.tradingview.com/pine-script-reference/v5/#fun_ta.atr">https://www.tradingview.com/pine-script-reference/v5/#fun_ta.atr</a></p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_bb_tv" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">nb_bb_tv</span>
+
+
+<a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_bb_tv" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nb_bb_tv</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">multi</span><span class="p">,</span> <span class="n">basis_ma_type</span><span class="o">=</span><span class="n">nb_sma_tv</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>returns basis, upper, lower</p>
+<p>Bollinger bands <a href="https://www.tradingview.com/pine-script-reference/v5/#fun_ta.bb">https://www.tradingview.com/pine-script-reference/v5/#fun_ta.bb</a></p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_ema_tv" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">nb_ema_tv</span>
+
+
+<a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_ema_tv" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nb_ema_tv</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Exponential Moving average <a href="https://www.tradingview.com/pine-script-reference/v5/#fun_ta.ema">https://www.tradingview.com/pine-script-reference/v5/#fun_ta.ema</a></p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_macd_tv" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">nb_macd_tv</span>
+
+
+<a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_macd_tv" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nb_macd_tv</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">fast_length</span><span class="p">,</span> <span class="n">slow_length</span><span class="p">,</span> <span class="n">signal_smoothing</span><span class="p">,</span> <span class="n">oscillator_type</span><span class="o">=</span><span class="n">nb_ema_tv</span><span class="p">,</span> <span class="n">signal_ma_type</span><span class="o">=</span><span class="n">nb_ema_tv</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>return order = histogram, macd, signal
+Moving average convergence divergence <a href="https://www.tradingview.com/pine-script-reference/v5/#fun_ta.macd">https://www.tradingview.com/pine-script-reference/v5/#fun_ta.macd</a></p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_rma_tv" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">nb_rma_tv</span>
+
+
+<a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_rma_tv" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nb_rma_tv</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Relative strength index Moving average <a href="https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma">https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma</a></p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_rma_tv_2" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">nb_rma_tv_2</span>
+
+
+<a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_rma_tv_2" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nb_rma_tv_2</span><span class="p">(</span><span class="n">source_1</span><span class="p">,</span> <span class="n">source_2</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Relative strength index Moving average <a href="https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma">https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rma</a></p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_rsi_tv" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">nb_rsi_tv</span>
+
+
+<a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_rsi_tv" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nb_rsi_tv</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Relative strength index <a href="https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rsi">https://www.tradingview.com/pine-script-reference/v5/#fun_ta.rsi</a></p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_sma_tv" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">nb_sma_tv</span>
+
+
+<a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_sma_tv" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nb_sma_tv</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Simple Moving average <a href="https://www.tradingview.com/pine-script-reference/v5/#fun_ta.sma">https://www.tradingview.com/pine-script-reference/v5/#fun_ta.sma</a></p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_squeeze_momentum_lazybear_tv" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">nb_squeeze_momentum_lazybear_tv</span>
+
+
+<a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_squeeze_momentum_lazybear_tv" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nb_squeeze_momentum_lazybear_tv</span><span class="p">(</span><span class="n">candles</span><span class="p">,</span> <span class="n">length_bb</span><span class="p">,</span> <span class="n">length_kc</span><span class="p">,</span> <span class="n">multi_bb</span><span class="p">,</span> <span class="n">multi_kc</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Returns = sqz_hist, sqz_on, no_sqz</p>
+<p><a href="https://www.tradingview.com/script/nqQ1DT5a-Squeeze-Momentum-Indicator-LazyBear/">https://www.tradingview.com/script/nqQ1DT5a-Squeeze-Momentum-Indicator-LazyBear/</a></p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_stdev_tv" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">nb_stdev_tv</span>
+
+
+<a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_stdev_tv" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nb_stdev_tv</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Standard deviation <a href="https://www.tradingview.com/pine-script-reference/v5/#fun_ta.stdev">https://www.tradingview.com/pine-script-reference/v5/#fun_ta.stdev</a></p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_supertrend_tv" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">nb_supertrend_tv</span>
+
+
+<a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_supertrend_tv" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nb_supertrend_tv</span><span class="p">(</span><span class="n">candles</span><span class="p">,</span> <span class="n">atr_length</span><span class="p">,</span> <span class="n">factor</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>return super trend, direction
+Super Trend <a href="https://www.tradingview.com/pine-script-reference/v5/#fun_ta.supertrend">https://www.tradingview.com/pine-script-reference/v5/#fun_ta.supertrend</a></p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_true_range_tv" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">nb_true_range_tv</span>
+
+
+<a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_true_range_tv" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nb_true_range_tv</span><span class="p">(</span><span class="n">candles</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_vwap_tv" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">nb_vwap_tv</span>
+
+
+<a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_vwap_tv" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nb_vwap_tv</span><span class="p">(</span><span class="n">candles</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_wma_tv" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">nb_wma_tv</span>
+
+
+<a href="#quantfreedom.nb_funcs.nb_indicators.nb_indicators.nb_wma_tv" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nb_wma_tv</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Weighted Moving average <a href="https://www.tradingview.com/pine-script-reference/v5/#fun_ta.wma">https://www.tradingview.com/pine-script-reference/v5/#fun_ta.wma</a></p>
+
+  </div>
+
+</div>
 
 
 
@@ -1381,12 +1745,12 @@
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.path", "navigation.indexes"], "search": "../../../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.path", "navigation.indexes"], "search": "../../../../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.cd18aaf1.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.cd18aaf1.min.js"></script>
       
-        <script src="../../../js/open_in_new_tab.js"></script>
+        <script src="../../../../js/open_in_new_tab.js"></script>
       
     
   </body>
