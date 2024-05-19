@@ -27,7 +27,6 @@ def nb_run_or_backtest(
     set_idx: int,
     exchange_settings_tuple: ExchangeSettings,
     exit_fee_pct: float,
-    set_idx: int,
     logger: Callable,
     nb_calc_dynamic_lev: Callable,
     nb_checker_sl_hit: Callable,

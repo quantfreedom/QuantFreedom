@@ -30,7 +30,6 @@ def nb_decrease_position(
     equity: float,
     exit_fee_pct: float,
     exit_price: float,
-    set_idx: int,
     logger,
     market_fee_pct: float,
     nb_pnl_calc,

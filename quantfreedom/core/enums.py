@@ -228,7 +228,6 @@ TriggerDirectionType = TriggerDirectionTypeT()
 class AccountState(NamedTuple):
     # where we are at
     set_idx: int
-    set_idx: int
     bar_index: int
     timestamp: int
     # account info

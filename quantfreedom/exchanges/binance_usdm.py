@@ -129,7 +129,9 @@ class BinanceUSDM(Exchange):
         except Exception as e:
             raise Exception(f"Binance get_all_symbols_info = Data or List is empty {response['message']} -> {e}")
 
-    def get_all_symbols_info(self):
+    def get_all_symbols_info(
+        self,
+    ):
         """
         [Binance Exchange Information](https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/Exchange-Information)
 

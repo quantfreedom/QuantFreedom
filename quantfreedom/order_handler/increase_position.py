@@ -114,8 +114,6 @@ class IncreasePosition:
         ----------
         equity : float
             equity
-        total_possible_loss : float
-            total_possible_loss
         total_trades : int
             total_trades
 
@@ -161,8 +159,6 @@ total_possible_loss= {total_possible_loss}"""
         ----------
         average_entry : float
             average_entry
-        total_possible_loss : float
-            total_possible_loss
         position_size_asset : float
             position_size_asset
         sl_price : float

@@ -40,7 +40,6 @@ def nb_sim_backtest(
     nb_strat_ind_creator: Callable,
     static_os_tuple: StaticOrderSettings,
     set_idx: Optional[int] = None,
-    set_idx: Optional[int] = None,
     plot_results: bool = False,
 ):
     dos_tuple = dos_cart_product(
