@@ -50,7 +50,8 @@ class RSIRisingFalling(Strategy):
 
         self.long_short = long_short
         self.log_folder = abspath(join(abspath("")))
-        self.static_os_tuple = static_os_tuple
+        self.exchange_settings_tuple = exchange_settings_tuple
+        self.backtest_settings_tuple = backtest_settings_tuple
 
         og_ind_set_tuple = IndicatorSettings(
             rsi_length=rsi_length,
@@ -62,22 +63,28 @@ class RSIRisingFalling(Strategy):
             below_rsi_pp=below_rsi_pp,
         )
 
-        self.set_og_ind_and_dos_tuples(
-            og_ind_set_tuple=og_ind_set_tuple,
-            shuffle_bool=shuffle_bool,
-        )
-
         if long_short == "long":
             self.chart_title = "Long Signal"
             self.entry_message = self.long_entry_message
             self.live_evaluate = self.long_live_evaluate
             self.set_cur_ind_tuple = self.long_set_cur_ind_tuple
             self.set_entries_exits_array = self.long_set_entries_exits_array
+            self.static_os_tuple = long_static_os_tuple
+            og_dos_tuple = long_og_dos_tuple
         else:
             self.chart_title = "short Signal"
             self.entry_message = self.short_entry_message
             self.live_evaluate = self.short_live_evaluate
+            self.set_cur_ind_tuple = self.short_set_cur_ind_tuple
             self.set_entries_exits_array = self.short_set_entries_exits_array
+            self.static_os_tuple = short_static_os_tuple
+            og_dos_tuple = short_og_dos_tuple
+
+        self.set_og_ind_and_dos_tuples(
+            og_dos_tuple=og_dos_tuple,
+            og_ind_set_tuple=og_ind_set_tuple,
+            shuffle_bool=shuffle_bool,
+        )
 
     #######################################################
     #######################################################
@@ -91,6 +98,7 @@ class RSIRisingFalling(Strategy):
 
     def set_og_ind_and_dos_tuples(
         self,
+        og_dos_tuple: DynamicOrderSettings,
         og_ind_set_tuple: IndicatorSettings,
         shuffle_bool: bool,
     ) -> None:
@@ -262,36 +270,49 @@ below_rsi_pp= {below_rsi_pp}
     #######################################################
     #######################################################
 
-    def short_set_entries_exits_array(
+    def short_set_cur_ind_tuple(
         self,
-        candles: FootprintCandlesTuple,
         set_idx: int,
     ):
-        try:
-            self.above_rsi_cur = self.og_ind_set_tuple.above_rsi_cur[set_idx]
-            self.h_line = self.above_rsi_cur
-            rsi_length = self.og_ind_set_tuple.rsi_length[set_idx]
+        rsi_length = self.og_ind_set_tuple.rsi_length[set_idx]
+        above_rsi_cur = self.og_ind_set_tuple.above_rsi_cur[set_idx]
+        above_rsi_p = self.og_ind_set_tuple.above_rsi_p[set_idx]
+        above_rsi_pp = self.og_ind_set_tuple.above_rsi_pp[set_idx]
 
-            logger.info(
-                f"""
+        self.h_line = above_rsi_cur
+
+        self.cur_ind_set_tuple = IndicatorSettings(
+            rsi_length=rsi_length,
+            above_rsi_cur=above_rsi_cur,
+            above_rsi_p=above_rsi_p,
+            above_rsi_pp=above_rsi_pp,
+            below_rsi_cur=0,
+            below_rsi_p=0,
+            below_rsi_pp=0,
+        )
+        logger.info(
+            f"""
 Indicator Settings
 Indicator Settings Index= {set_idx}
 rsi_length= {rsi_length}
-above_rsi_cur= {self.above_rsi_cur}"""
-            )
+above_rsi_cur= {above_rsi_cur}
+above_rsi_p= {above_rsi_p}
+above_rsi_pp= {above_rsi_pp}
+"""
+        )
 
-            self.cur_ind_set_tuple = IndicatorSettings(
-                above_rsi_cur=self.above_rsi_cur,
-                below_rsi_cur=0,
-                rsi_length=rsi_length,
-            )
+    def short_set_entries_exits_array(
+        self,
+        candles: FootprintCandlesTuple,
+    ):
+        try:
             rsi = rsi_tv(
                 source=candles.candle_close_prices,
-                length=rsi_length,
+                length=self.cur_ind_set_tuple.rsi_length,
             )
 
             self.rsi = np.around(rsi, 1)
-            logger.info(f"Created RSI rsi_length= {rsi_length}")
+            logger.debug("Created RSI")
 
             prev_rsi = np.roll(self.rsi, 1)
             prev_rsi[0] = np.nan
@@ -300,16 +321,19 @@ above_rsi_cur= {self.above_rsi_cur}"""
             prev_prev_rsi[0] = np.nan
 
             rising = prev_prev_rsi < prev_rsi
-            falling = self.rsi < prev_rsi
-            is_above = self.rsi > self.above_rsi_cur
+            falling = self.rsi > prev_rsi
+            is_above_cur = self.rsi > self.cur_ind_set_tuple.above_rsi_cur
+            is_above_p = prev_rsi > self.cur_ind_set_tuple.above_rsi_p
+            is_above_pp = prev_prev_rsi > self.cur_ind_set_tuple.above_rsi_pp
 
-            self.entries = np.where(is_above & falling & rising, True, False)
+            self.entries = is_above_cur & is_above_p & is_above_pp & falling & rising
             self.entry_signals = np.where(self.entries, self.rsi, np.nan)
 
             self.exit_prices = np.full_like(self.rsi, np.nan)
+            logger.debug("Created entries exits")
         except Exception as e:
-            logger.error(f"Exception short_set_entries_exits_array -> {e}")
-            raise Exception(f"Exception short_set_entries_exits_array -> {e}")
+            logger.error(f"Exception long_set_entries_exits_array -> {e}")
+            raise Exception(f"Exception long_set_entries_exits_array -> {e}")
 
     def short_entry_message(
         self,
@@ -376,7 +400,10 @@ above_rsi_cur= {self.above_rsi_cur}"""
         fig.show()
 
 
-backtest_settings_tuple = BacktestSettings()
+backtest_settings_tuple = BacktestSettings(
+    gains_pct_filter=0,
+    qf_filter=0,
+)
 
 exchange_settings_tuple = ExchangeSettings(
     asset_tick_step=3,
@@ -393,7 +420,7 @@ exchange_settings_tuple = ExchangeSettings(
     price_tick_step=1,
 )
 
-static_os_tuple = StaticOrderSettings(
+long_static_os_tuple = StaticOrderSettings(
     increase_position_type=IncreasePositionType.RiskPctAccountEntrySize,
     leverage_strategy_type=LeverageStrategyType.Dynamic,
     pg_min_max_sl_bcb="min",
@@ -408,7 +435,7 @@ static_os_tuple = StaticOrderSettings(
     z_or_e_type=None,
 )
 
-og_dos_tuple = DynamicOrderSettings(
+long_og_dos_tuple = DynamicOrderSettings(
     account_pct_risk_per_trade=np.array([5]),
     max_trades=np.array([2, 4, 6]),
     risk_reward=np.array([3, 5]),
@@ -422,11 +449,49 @@ og_dos_tuple = DynamicOrderSettings(
     trail_sl_when_pct=np.array([1, 2, 3, 4]),
 )
 
-long_strat = RSIRisingFalling(
+rsi_rising_falling_long_strat = RSIRisingFalling(
     long_short="long",
     shuffle_bool=True,
     rsi_length=np.array([15, 25]),
     below_rsi_cur=np.array([30, 40, 60]),
     below_rsi_p=np.array([25, 30, 40]),
     below_rsi_pp=np.array([30, 40]),
+)
+
+short_static_os_tuple = StaticOrderSettings(
+    increase_position_type=IncreasePositionType.RiskPctAccountEntrySize,
+    leverage_strategy_type=LeverageStrategyType.Dynamic,
+    pg_min_max_sl_bcb="max",
+    sl_strategy_type=StopLossStrategyType.SLBasedOnCandleBody,
+    sl_to_be_bool=False,
+    starting_bar=50,
+    starting_equity=1000.0,
+    static_leverage=None,
+    tp_fee_type="limit",
+    tp_strategy_type=TakeProfitStrategyType.RiskReward,
+    trail_sl_bool=True,
+    z_or_e_type=None,
+)
+
+short_og_dos_tuple = DynamicOrderSettings(
+    account_pct_risk_per_trade=np.array([5]),
+    max_trades=np.array([2, 4, 6]),
+    risk_reward=np.array([3, 5]),
+    sl_based_on_add_pct=np.array([0.1, 0.2, 0.3, 0.5]),
+    sl_based_on_lookback=np.array([20, 50]),
+    sl_bcb_type=np.array([CandleBodyType.High]),
+    sl_to_be_cb_type=np.array([CandleBodyType.Nothing]),
+    sl_to_be_when_pct=np.array([0]),
+    trail_sl_bcb_type=np.array([CandleBodyType.High]),
+    trail_sl_by_pct=np.array([0.5, 1.0, 2.0, 3, 4]),
+    trail_sl_when_pct=np.array([1, 2, 3, 4]),
+)
+
+rsi_rising_falling_short_strat = RSIRisingFalling(
+    long_short="short",
+    shuffle_bool=True,
+    rsi_length=np.array([15, 25]),
+    above_rsi_cur=np.array([70, 60, 40]),
+    above_rsi_p=np.array([75, 70, 60]),
+    above_rsi_pp=np.array([70, 60]),
 )

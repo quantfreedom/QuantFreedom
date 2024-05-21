@@ -26,7 +26,6 @@ def run_df_backtest(
     candles: FootprintCandlesTuple,
     strategy: Strategy,
     threads: int,
-    num_chunk_bts: Optional[int] = None,
     step_by: int = 1,
 ) -> pd.DataFrame:
     global strategy_result_records
@@ -65,19 +64,6 @@ def run_df_backtest(
     print(f"Total candles to test: {total_candles:,}")
     print(f"Total candle chunks to be processed at the same time: {chunks:,}")
     print(f"Total candle chunks with step by: {candle_chunks:,}")
-
-    if num_chunk_bts:
-        new_step_by = step_by = total_candles // num_chunk_bts // threads
-        if new_step_by < 1:
-            print("\n" + f"Step by set to 1. Num_chunk_bts > candle chunks you would get with step by set to 1")
-            step_by = 1
-        else:
-            new_candle_chunks = chunks // new_step_by
-            new_step_by_settings = strategy.total_filtered_settings // new_step_by
-            print("\n" + f"New step by: {new_step_by:,}")
-            print(f"Total settings combination with new step by: {new_step_by_settings:,}")
-            print(f"Total candle chunks with new step by: {new_candle_chunks:,}")
-            step_by = new_step_by
 
     num_array_columns = 9 + len(strategy.og_dos_tuple._fields) + len(strategy.og_ind_set_tuple._fields)
     arr_shape = (strategy.total_filtered_settings, num_array_columns)
