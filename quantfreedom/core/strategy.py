@@ -146,6 +146,24 @@ trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 2)}
 """
         )
 
+    def reg_candle_chunk(
+        self,
+        candles: FootprintCandlesTuple,
+        beg: int,
+        end: int,
+    ) -> FootprintCandlesTuple:
+        candle_chunk = FootprintCandlesTuple(
+            candle_open_datetimes=candles.candle_open_datetimes[beg:end],
+            candle_open_timestamps=candles.candle_open_timestamps[beg:end],
+            candle_open_prices=candles.candle_open_prices[beg:end],
+            candle_high_prices=candles.candle_high_prices[beg:end],
+            candle_low_prices=candles.candle_low_prices[beg:end],
+            candle_close_prices=candles.candle_close_prices[beg:end],
+            candle_asset_volumes=candles.candle_asset_volumes[beg:end],
+            candle_usdt_volumes=candles.candle_usdt_volumes[beg:end],
+        )
+        return candle_chunk
+
     #######################################################
     #######################################################
     #######################################################
@@ -183,7 +201,13 @@ trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 2)}
 
     def set_entries_exits_array(
         self,
-        set_idx: int,
+        candles: FootprintCandlesTuple,
+    ):
+        pass
+
+    def set_live_bt_entries_exits_array(
+        self,
+        candles: FootprintCandlesTuple,
     ):
         pass
 

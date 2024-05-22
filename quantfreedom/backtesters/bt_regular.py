@@ -388,11 +388,11 @@ def handler(error):
 
 def or_backtest(
     candles: FootprintCandlesTuple,
+    disable_logger: bool,
+    disable_plot: bool,
     strategy: Strategy,
     set_idx: int,
-    disable_logger: bool = True,
     logger_level: str = "INFO",
-    plot_results: bool = False,
 ):
     if disable_logger:
         set_loggers(
@@ -651,7 +651,7 @@ def or_backtest(
     order_records_df = order_records_to_df(order_records[:or_filled])
     pretty_qf(strategy.cur_dos_tuple)
     pretty_qf(strategy.cur_ind_set_tuple)
-    if plot_results:
+    if not disable_plot:
         strategy.plot_signals(
             candles=candles,
         )

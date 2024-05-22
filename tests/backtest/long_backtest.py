@@ -22,7 +22,6 @@ if __name__ == "__main__":
         candles=oct_dec_candles,
         strategy=rsi_rising_falling_long_strat,
         threads=32,
-        # num_chunk_bts=4000000,
         step_by=4,
     )
     print("\n" + "Backtest results done now saving to hdf5")

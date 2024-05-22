@@ -21,9 +21,9 @@ logger = getLogger()
 def live_backtest(
     candles: FootprintCandlesTuple,
     disable_logger: bool,
+    disable_plot: bool,
     strategy: Strategy,
     set_idx: int,
-    plot_results: bool = False,
     logger_level: str = "INFO",
 ):
     if disable_logger:
@@ -173,20 +173,17 @@ def live_backtest(
             logger.debug("Not in a pos so not checking SL Liq or TP")
 
         logger.debug("strategy evaluate")
+
         beg = bar_index - loop_start
         end = bar_index + 1
-        candle_chunk = FootprintCandlesTuple(
-            candle_open_datetimes=candles.candle_open_datetimes[beg:end],
-            candle_open_timestamps=candles.candle_open_timestamps[beg:end],
-            candle_open_prices=candles.candle_open_prices[beg:end],
-            candle_high_prices=candles.candle_high_prices[beg:end],
-            candle_low_prices=candles.candle_low_prices[beg:end],
-            candle_close_prices=candles.candle_close_prices[beg:end],
-        )
+
         result = strategy.live_bt(
-            candles=candle_chunk,
             bar_index=bar_index,
+            beg=beg,
+            candles=candles,
+            end=end,
         )
+
         if result:
             strategy.entry_message(bar_index=bar_index)
             try:
@@ -292,7 +289,7 @@ def live_backtest(
     order_records_df = order_records_to_df(order_records[:or_filled])
     pretty_qf(strategy.cur_dos_tuple)
     pretty_qf(strategy.cur_ind_set_tuple)
-    if plot_results:
+    if not disable_plot:
         strategy.plot_signals(
             candles=candles,
         )

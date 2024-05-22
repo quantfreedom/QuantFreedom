@@ -364,7 +364,7 @@ def np_lookback_one(
     include_current: bool,
     fill_value: Union[float, int, bool, str],
     fwd_bwd: str,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> np.ndarray:
     """
     _summary_
 
@@ -407,18 +407,27 @@ def np_lookback_one(
 
     if include_current:
         lookback += 1
+        
         prev_arr = np.empty((arr.size, lookback), dtype=arr.dtype)
         prev_arr[:, 0] = arr
+        
+        for idx in range(1, lookback):
+            prev_arr[:, idx] = np_shift(prev_arr[:, idx - 1], fill_value=fill_value)
+        
+        prev_arr[: lookback - 1] = fill_value
+        
+        return prev_arr
 
     else:
-
         prev_arr = np.empty((arr.size, lookback), dtype=arr.dtype)
         prev_arr[:, 0] = np_shift(arr, fill_value=fill_value)
-
-    for idx in range(1, lookback):
-        prev_arr[:, idx] = np_shift(prev_arr[:, idx - 1], fill_value=fill_value)
-
-    return prev_arr
+        
+        for idx in range(1, lookback):
+            prev_arr[:, idx] = np_shift(prev_arr[:, idx - 1], fill_value=fill_value)
+        
+        prev_arr[:lookback] = fill_value
+        
+        return prev_arr
 
 
 def np_lookback_two(
