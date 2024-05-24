@@ -330,172 +330,25 @@ def symbol_bt_df(
     return backtest_df
 
 
-def np_shift_fwd(
+def np_lb_one(
     arr: np.ndarray,
-    fill_value: Union[float, int, bool, str],
-    shift: int = 1,
+    include: bool,
+    lb: int,
+    fill_value: Union[np.float_, np.int_, np.bool_, np.str_],
 ) -> np.ndarray:
+    num_cols = lb
 
-    result = np.empty_like(arr)
+    if include:
+        num_cols += 1
 
-    result[:shift] = fill_value
-    result[shift:] = arr[:-shift]
+    arr_size = arr.size
+    p_arr = np.full((arr_size, num_cols), fill_value)  # previous array
+    g_arr = arr_size - lb  # grab end of arr index
+    a_arr = np.where(np.isnan(arr))[0].size  # add total number of nans to p arr start and arr start in loop
 
-    return result
+    s_pa = lb + a_arr  # start for previous array
 
+    for col in range(num_cols):
+        p_arr[s_pa:, col] = arr[col + a_arr : g_arr + col]
 
-def np_shift_bwd(
-    arr: np.ndarray,
-    fill_value: Union[float, int, bool, str],
-    shift: int = -1,
-) -> np.ndarray:
-
-    result = np.empty_like(arr)
-
-    result[shift:] = fill_value
-    result[:shift] = arr[-shift:]
-
-    return result
-
-
-def np_lookback_one(
-    arr: np.ndarray,
-    lookback: int,
-    include_current: bool,
-    fill_value: Union[float, int, bool, str],
-    fwd_bwd: str,
-) -> np.ndarray:
-    """
-    _summary_
-
-    [Video]()
-
-    Parameters
-    ----------
-    arr : np.ndarray
-        _description_
-    lookback : int
-        _description_
-    include_current : bool
-        _description_
-    fill_value : float, int, bool, str]
-        _description_
-    fwd_bwd : str
-        fwd for forward and bwd for backward
-
-    Returns
-    -------
-    tuple[np.ndarray, np.ndarray]
-        _description_
-    """
-
-    def np_shift(
-        arr: np.ndarray,
-        fill_value: Union[float, int, bool, str],
-        shift: int = 1,
-    ) -> np.ndarray:
-        pass
-
-    if fwd_bwd.lower() == "fwd":
-        np_shift = np_shift_fwd
-    elif fwd_bwd.lower() == "bwd":
-        np_shift = np_shift_bwd
-    else:
-        raise Exception("fwd_bwd must be either 'fwd' or 'bwd'")
-
-    prev_arr = np.empty((arr.size, lookback), dtype=arr.dtype)
-
-    if include_current:
-        lookback += 1
-        
-        prev_arr = np.empty((arr.size, lookback), dtype=arr.dtype)
-        prev_arr[:, 0] = arr
-        
-        for idx in range(1, lookback):
-            prev_arr[:, idx] = np_shift(prev_arr[:, idx - 1], fill_value=fill_value)
-        
-        prev_arr[: lookback - 1] = fill_value
-        
-        return prev_arr
-
-    else:
-        prev_arr = np.empty((arr.size, lookback), dtype=arr.dtype)
-        prev_arr[:, 0] = np_shift(arr, fill_value=fill_value)
-        
-        for idx in range(1, lookback):
-            prev_arr[:, idx] = np_shift(prev_arr[:, idx - 1], fill_value=fill_value)
-        
-        prev_arr[:lookback] = fill_value
-        
-        return prev_arr
-
-
-def np_lookback_two(
-    arr_1: np.ndarray,
-    arr_2: np.ndarray,
-    lookback: int,
-    include_current: bool,
-    fill_value: Union[float, int, bool, str],
-    fwd_bwd: str = "fwd",
-) -> tuple[np.ndarray, np.ndarray]:
-    """
-    _summary_
-
-    [Video]()
-
-    Parameters
-    ----------
-    arr_1 : np.ndarray
-        _description_
-    arr_2 : np.ndarray
-        _description_
-    lookback : int
-        _description_
-    include_current : bool
-        _description_
-    fill_value : float, int, bool, str]
-        _description_
-    fwd_bwd : str
-        fwd for forward and bwd for backward
-
-    Returns
-    -------
-    tuple[np.ndarray, np.ndarray]
-        _description_
-    """
-
-    def np_shift(
-        arr: np.ndarray,
-        fill_value: Union[float, int, bool, str],
-        shift: int = 1,
-    ) -> np.ndarray:
-        pass
-
-    if fwd_bwd.lower() == "fwd":
-        np_shift = np_shift_fwd
-    elif fwd_bwd.lower() == "bwd":
-        np_shift = np_shift_bwd
-    else:
-        raise Exception("fwd_bwd must be either 'fwd' or 'bwd'")
-
-    if include_current:
-        lookback += 1
-
-        prev_arr_1 = np.empty((arr_1.size, lookback), dtype=arr_1.dtype)
-        prev_arr_2 = np.empty((arr_2.size, lookback), dtype=arr_2.dtype)
-
-        prev_arr_1[:, 0] = arr_1
-        prev_arr_2[:, 0] = arr_2
-    else:
-
-        prev_arr_1 = np.empty((arr_1.size, lookback), dtype=arr_1.dtype)
-        prev_arr_2 = np.empty((arr_2.size, lookback), dtype=arr_2.dtype)
-
-        prev_arr_1[:, 0] = np_shift(arr_1, fill_value=fill_value)
-        prev_arr_2[:, 0] = np_shift(arr_2, fill_value=fill_value)
-
-    for idx in range(1, lookback):
-        prev_arr_1[:, idx] = np_shift(prev_arr_1[:, idx - 1], fill_value=fill_value)
-        prev_arr_2[:, idx] = np_shift(prev_arr_2[:, idx - 1], fill_value=fill_value)
-
-    return prev_arr_1, prev_arr_2
+    return p_arr
