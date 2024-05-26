@@ -672,7 +672,6 @@ long_static_os_tuple = StaticOrderSettings(
     static_leverage=None,
     tp_fee_type="limit",
     tp_strategy_type=TakeProfitStrategyType.RiskReward,
-    trail_sl_bool=True,
     z_or_e_type=None,
 )
 
@@ -726,7 +725,6 @@ short_static_os_tuple = StaticOrderSettings(
     static_leverage=None,
     tp_fee_type="limit",
     tp_strategy_type=TakeProfitStrategyType.RiskReward,
-    trail_sl_bool=True,
     z_or_e_type=None,
 )
 

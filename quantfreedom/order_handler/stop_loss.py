@@ -197,7 +197,7 @@ class StopLoss:
         logger.debug(f"candle_body= {candle_body}")
 
         sl_price = self.sl_price_calc(
-            candle_body=candle_body,
+            price=candle_body,
             add_pct=self.sl_based_on_add_pct,
         )
         sl_price = round_size_by_tick_step(

@@ -330,7 +330,6 @@ class StaticOrderSettings(NamedTuple):
     static_leverage: float
     tp_fee_type: str
     tp_strategy_type: int
-    trail_sl_bool: bool
     z_or_e_type: str
 
 
