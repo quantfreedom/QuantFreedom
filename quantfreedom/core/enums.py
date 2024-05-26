@@ -182,6 +182,15 @@ class StopLossStrategyTypeT(NamedTuple):
 StopLossStrategyType = StopLossStrategyTypeT()
 
 
+class TrailingSLStrategyTypeT(NamedTuple):
+    Nothing: int = 0
+    CBAboveBelow: int = 1
+    PctAboveBelow: int = 2
+
+
+TrailingSLStrategyType = TrailingSLStrategyTypeT()
+
+
 class TakeProfitStrategyTypeT(NamedTuple):
     """
     How you want to process the take profit

@@ -3,12 +3,12 @@ from logging import getLogger
 
 from quantfreedom.helpers.helper_funcs import round_size_by_tick_step
 from quantfreedom.core.enums import (
-    CandleBodyType,
     CurrentFootprintCandleTuple,
     DecreasePosition,
     FootprintCandlesTuple,
     OrderStatus,
     StopLossStrategyType,
+    TrailingSLStrategyType,
 )
 
 logger = getLogger()
@@ -30,9 +30,9 @@ class StopLoss:
         market_fee_pct: float,
         pg_min_max_sl_bcb: str,
         price_tick_step: float,
-        sl_strategy_type: StopLossStrategyType,  # type: ignore
+        sl_strategy_type: int,
         sl_to_be_bool: bool,
-        trail_sl_bool: bool,
+        trail_sl_strategy_type: int,
         z_or_e_type: str,
     ) -> None:
         self.market_fee_pct = market_fee_pct
@@ -80,8 +80,15 @@ class StopLoss:
             self.zero_or_entry_calc = self.pass_func
 
         # Trailing stop loss
-        if trail_sl_bool:
-            self.checker_tsl = self.check_move_tsl
+        if trail_sl_strategy_type == TrailingSLStrategyType.CBAboveBelow:
+            self.checker_tsl = self.check_move_tsl_close
+        elif trail_sl_strategy_type == TrailingSLStrategyType.PctAboveBelow:
+            self.checker_tsl = self.init_check_move_tsl_pct
+            if long_short.lower() == "long":
+                self.tsl_adder = self.short_sl_price_calc
+            else:
+                pass
+
         else:
             self.checker_tsl = self.pass_func
 
@@ -250,7 +257,7 @@ class StopLoss:
             logger.debug("can't move sl to be")
             return None, None
 
-    def check_move_tsl(
+    def check_move_tsl_close(
         self,
         average_entry: float,
         current_candle: CurrentFootprintCandleTuple,
@@ -263,8 +270,46 @@ class StopLoss:
         pct_from_ae = abs(candle_body - average_entry) / average_entry
         logger.debug(f"pct_from_ae= {round(pct_from_ae * 100, 2)}")
         possible_move_tsl = self.move_sl_bool(num_1=pct_from_ae, num_2=self.trail_sl_when_pct)
+
         if possible_move_tsl:
             logger.debug("Maybe move tsl")
+            temp_sl_price = self.sl_price_calc(candle_body=candle_body, add_pct=self.trail_sl_by_pct)
+            temp_sl_price = round_size_by_tick_step(
+                user_num=temp_sl_price,
+                exchange_num=self.price_tick_step,
+            )
+            logger.debug(f"temp sl= {temp_sl_price}")
+            if self.move_sl_bool(num_1=temp_sl_price, num_2=sl_price):
+                sl_pct = round(abs(average_entry - temp_sl_price) / average_entry, 2)
+                logger.debug(f"Moving tsl new sl= {temp_sl_price} > old sl= {sl_price} sl_pct= {round(sl_pct*100, 2)}")
+                return temp_sl_price, sl_pct
+            else:
+                logger.debug("Wont move tsl")
+                return None, None
+        else:
+            logger.debug("Not moving tsl")
+            return None, None
+
+    def init_check_move_tsl_pct(
+        self,
+        average_entry: float,
+        current_candle: CurrentFootprintCandleTuple,
+        sl_price: float,
+    ):
+        """
+        Checking to see if we move the trailing stop loss
+        """
+        candle_body = current_candle[self.trail_sl_bcb_type]
+        pct_from_ae = abs(candle_body - average_entry) / average_entry
+        logger.debug(f"pct_from_ae= {round(pct_from_ae * 100, 2)}")
+        possible_move_tsl = self.move_sl_bool(num_1=pct_from_ae, num_2=self.trail_sl_when_pct)
+
+        # TODO once possible_move_tsl is True, we don't need to check it again
+
+        if possible_move_tsl:
+            logger.debug("Move tsl")
+            sl_price = average_entry + (average_entry * self.trail_sl_by_pct)
+
             temp_sl_price = self.sl_price_calc(candle_body=candle_body, add_pct=self.trail_sl_by_pct)
             temp_sl_price = round_size_by_tick_step(
                 user_num=temp_sl_price,
