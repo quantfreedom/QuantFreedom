@@ -42,12 +42,12 @@ class StopLoss:
             self.sl_to_zero_price = self.long_sl_to_zero_price
             self.get_sl_hit = self.long_sl_hit_bool
             self.move_sl_bool = self.num_greater_than_num
-            self.sl_price_calc = self.increase_sl_price
+            self.sl_price_calc = self.decrease_sl_price
         elif long_short.lower() == "short":
             self.sl_to_zero_price = self.short_sl_to_zero_price
             self.get_sl_hit = self.short_sl_hit_bool
             self.move_sl_bool = self.num_less_than_num
-            self.sl_price_calc = self.decrease_sl_price
+            self.sl_price_calc = self.increase_sl_price
         else:
             raise Exception("long or short are the only options for long_short")
 
