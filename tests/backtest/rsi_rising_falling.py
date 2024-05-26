@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 from logging import getLogger
 from typing import NamedTuple
 from os.path import join, abspath
-from quantfreedom.helpers.helper_funcs import np_lookback_one
+from quantfreedom.helpers.helper_funcs import np_lb_one
 from quantfreedom.indicators.tv_indicators import rsi_tv
 from quantfreedom.core.strategy import Strategy
 from quantfreedom.core.enums import (
@@ -250,12 +250,11 @@ below_rsi_pp= {below_rsi_pp}
             self.rsi = np.around(rsi, 1)
             logger.debug("Created RSI")
 
-            rsi_lb = np_lookback_one(
+            rsi_lb = np_lb_one(
                 arr=self.rsi,
-                lookback=2,
-                include_current=False,
+                lb=2,
+                include=False,
                 fill_value=np.nan,
-                fwd_bwd="fwd",
             )
 
             p_rsi = rsi_lb[:, 0]
@@ -452,12 +451,11 @@ above_rsi_pp= {above_rsi_pp}
             self.rsi = np.around(rsi, 1)
             logger.debug("Created RSI")
 
-            rsi_lb = np_lookback_one(
+            rsi_lb = np_lb_one(
                 arr=self.rsi,
-                lookback=2,
-                include_current=False,
+                lb=2,
+                include=False,
                 fill_value=np.nan,
-                fwd_bwd="fwd",
             )
 
             p_rsi = rsi_lb[:, 0]
@@ -666,6 +664,7 @@ long_static_os_tuple = StaticOrderSettings(
     leverage_strategy_type=LeverageStrategyType.Dynamic,
     pg_min_max_sl_bcb="min",
     sl_strategy_type=StopLossStrategyType.SLBasedOnCandleBody,
+    trailing_sl_strategy_type=TrailingSLStrategyType.PctAboveBelow,
     sl_to_be_bool=False,
     starting_bar=100,
     starting_equity=1000.0,

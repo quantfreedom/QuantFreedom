@@ -74,7 +74,15 @@ class Strategy:
                 cart_prod_array[j * m : (j + 1) * m, k + 1 :] = cart_prod_array[0:m, k + 1 :]
 
         logger.debug("cart_prod_array")
-        return cart_prod_array.T
+        trail_sl_by_pct = 9
+        trail_sl_when_pct = 10
+        cart_prod_array = cart_prod_array.T
+
+        filter_tf = cart_prod_array[trail_sl_when_pct] > cart_prod_array[trail_sl_by_pct]
+
+        filtered_cart_prod = cart_prod_array[:, filter_tf]
+
+        return filtered_cart_prod
 
     def get_og_dos_tuple(
         self,

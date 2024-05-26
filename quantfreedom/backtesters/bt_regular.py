@@ -49,6 +49,8 @@ def run_df_backtest(
 
     print("Starting the backtest now ... and also here are some stats for your backtest.")
 
+    # TODO total settings combinations to test is wrong because we need to take into account the filtering in creating dos tuple
+
     print("\n" + f"Total threads to use: {threads:,}")
     print(f"Total indicator settings to test: {strategy.total_indicator_settings:,}")
     print(f"Total order settings to test: {strategy.total_order_settings:,}")
@@ -97,10 +99,13 @@ def run_df_backtest(
         results.append(r)
 
     print("\n" + "looping through results")
-    for r in results:
+    for idx, r in enumerate(results):
+        print(idx, end=", ")
         r.wait()
 
+    print("\n" + "closing")
     p.close()
+    print("joining")
     p.join()
     print("creating datafram")
 
@@ -164,6 +169,7 @@ def multiprocess_backtest(
             if order.position_size_usd > 0:
                 try:
                     current_candle = CurrentFootprintCandleTuple(
+                        open_timestamp=candles.candle_open_timestamps[bar_index],
                         open_price=candles.candle_open_prices[bar_index],
                         high_price=candles.candle_high_prices[bar_index],
                         low_price=candles.candle_low_prices[bar_index],
