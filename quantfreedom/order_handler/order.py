@@ -42,6 +42,7 @@ class OrderHandler:
             pg_min_max_sl_bcb=static_os_tuple.pg_min_max_sl_bcb,
             price_tick_step=exchange_settings_tuple.price_tick_step,
             sl_strategy_type=static_os_tuple.sl_strategy_type,
+            trailing_sl_strategy_type=static_os_tuple.trailing_sl_strategy_type,
             sl_to_be_bool=static_os_tuple.sl_to_be_bool,
             trail_sl_bool=static_os_tuple.trail_sl_bool,
             z_or_e_type=static_os_tuple.z_or_e_type,

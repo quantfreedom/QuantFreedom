@@ -31,8 +31,8 @@ class StopLoss:
         pg_min_max_sl_bcb: str,
         price_tick_step: float,
         sl_strategy_type: int,
+        trailing_sl_strategy_type: int,
         sl_to_be_bool: bool,
-        trail_sl_strategy_type: int,
         z_or_e_type: str,
     ) -> None:
         self.market_fee_pct = market_fee_pct
@@ -42,12 +42,12 @@ class StopLoss:
             self.sl_to_zero_price = self.long_sl_to_zero_price
             self.get_sl_hit = self.long_sl_hit_bool
             self.move_sl_bool = self.num_greater_than_num
-            self.sl_price_calc = self.long_sl_price_calc
+            self.sl_price_calc = self.increase_sl_price
         elif long_short.lower() == "short":
             self.sl_to_zero_price = self.short_sl_to_zero_price
             self.get_sl_hit = self.short_sl_hit_bool
             self.move_sl_bool = self.num_less_than_num
-            self.sl_price_calc = self.short_sl_price_calc
+            self.sl_price_calc = self.decrease_sl_price
         else:
             raise Exception("long or short are the only options for long_short")
 
@@ -80,27 +80,35 @@ class StopLoss:
             self.zero_or_entry_calc = self.pass_func
 
         # Trailing stop loss
-        if trail_sl_strategy_type == TrailingSLStrategyType.CBAboveBelow:
+        if trailing_sl_strategy_type == TrailingSLStrategyType.CBAboveBelow:
             self.checker_tsl = self.check_move_tsl_close
-        elif trail_sl_strategy_type == TrailingSLStrategyType.PctAboveBelow:
+        elif trailing_sl_strategy_type == TrailingSLStrategyType.PctAboveBelow:
             self.checker_tsl = self.init_check_move_tsl_pct
             if long_short.lower() == "long":
-                self.tsl_adder = self.short_sl_price_calc
+                self.tsl_mover = self.increase_sl_price
             else:
                 pass
 
         else:
             self.checker_tsl = self.pass_func
 
-    # Long Functions
-
-    def long_sl_price_calc(
+    def decrease_sl_price(
         self,
-        candle_body: float,
+        price: float,
         add_pct: float,
     ):
-        sl_price = candle_body - (candle_body * add_pct)
+        sl_price = price - (price * add_pct)
         return sl_price
+
+    def increase_sl_price(
+        self,
+        price: float,
+        add_pct: float,
+    ):
+        sl_price = price + (price * add_pct)
+        return sl_price
+
+    # Long Functions
 
     def long_sl_hit_bool(
         self,
@@ -130,14 +138,6 @@ class StopLoss:
         candle_high = current_candle.high_price
         logger.debug(f"candle_high= {candle_high}")
         return sl_price < candle_high
-
-    def short_sl_price_calc(
-        self,
-        candle_body: float,
-        add_pct: float,
-    ):
-        sl_price = candle_body + (candle_body * add_pct)
-        return sl_price
 
     def short_sl_to_zero_price(
         self,
@@ -302,27 +302,61 @@ class StopLoss:
         candle_body = current_candle[self.trail_sl_bcb_type]
         pct_from_ae = abs(candle_body - average_entry) / average_entry
         logger.debug(f"pct_from_ae= {round(pct_from_ae * 100, 2)}")
-        possible_move_tsl = self.move_sl_bool(num_1=pct_from_ae, num_2=self.trail_sl_when_pct)
+        possible_move_tsl = self.move_sl_bool(
+            num_1=pct_from_ae,
+            num_2=self.trail_sl_when_pct,
+        )
+
+
+        if possible_move_tsl:
+            logger.debug("Move tsl")
+            new_sl_price = self.tsl_mover(
+                price=average_entry,
+                add_pct=self.trail_sl_by_pct,
+            )
+            round_size_by_tick_step(
+                user_num=new_sl_price,
+                exchange_num=self.price_tick_step,
+            )
+            sl_pct = round(abs(average_entry - new_sl_price) / average_entry, 2)
+            self.checker_tsl = self.check_move_tsl_pct
+            return new_sl_price, sl_pct
+        else:
+            logger.debug("Not moving tsl")
+            return None, None
+
+    def check_move_tsl_pct(
+        self,
+        average_entry: float,
+        current_candle: CurrentFootprintCandleTuple,
+        sl_price: float,
+    ):
+        """
+        Checking to see if we move the trailing stop loss
+        """
+        candle_body = current_candle[self.trail_sl_bcb_type]
+        pct_from_sl = abs(candle_body - sl_price) / sl_price
+        logger.debug(f"pct_from_sl = {round(pct_from_sl * 100, 2)}")
+
+        possible_move_tsl = self.move_sl_bool(
+            num_1=pct_from_sl,
+            num_2=self.trail_sl_when_pct,
+        )
 
         # TODO once possible_move_tsl is True, we don't need to check it again
 
         if possible_move_tsl:
             logger.debug("Move tsl")
-            sl_price = average_entry + (average_entry * self.trail_sl_by_pct)
-
-            temp_sl_price = self.sl_price_calc(candle_body=candle_body, add_pct=self.trail_sl_by_pct)
-            temp_sl_price = round_size_by_tick_step(
-                user_num=temp_sl_price,
+            new_sl_price = self.tsl_mover(
+                price=sl_price,
+                add_pct=self.trail_sl_by_pct,
+            )
+            round_size_by_tick_step(
+                user_num=new_sl_price,
                 exchange_num=self.price_tick_step,
             )
-            logger.debug(f"temp sl= {temp_sl_price}")
-            if self.move_sl_bool(num_1=temp_sl_price, num_2=sl_price):
-                sl_pct = round(abs(average_entry - temp_sl_price) / average_entry, 2)
-                logger.debug(f"Moving tsl new sl= {temp_sl_price} > old sl= {sl_price} sl_pct= {round(sl_pct*100, 2)}")
-                return temp_sl_price, sl_pct
-            else:
-                logger.debug("Wont move tsl")
-                return None, None
+            sl_pct = round(abs(sl_price - new_sl_price) / sl_price, 2)
+            return new_sl_price, sl_pct
         else:
             logger.debug("Not moving tsl")
             return None, None
@@ -355,4 +389,19 @@ class StopLoss:
         return None, None
 
     def sl_to_zero_price(self, **kwargs):
+        pass
+
+    def checker_tsl(
+        self,
+        average_entry: float,
+        current_candle: CurrentFootprintCandleTuple,
+        sl_price: float,
+    ):
+        pass
+
+    def move_sl_bool(
+        self,
+        num1: float,
+        num2: float,
+    ):
         pass

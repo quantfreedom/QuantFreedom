@@ -16,6 +16,7 @@ from quantfreedom.core.enums import (
     LeverageStrategyType,
     StaticOrderSettings,
     StopLossStrategyType,
+    TrailingSLStrategyType,
     TakeProfitStrategyType,
 )
 
@@ -718,6 +719,7 @@ short_static_os_tuple = StaticOrderSettings(
     leverage_strategy_type=LeverageStrategyType.Dynamic,
     pg_min_max_sl_bcb="max",
     sl_strategy_type=StopLossStrategyType.SLBasedOnCandleBody,
+    trailing_sl_strategy_type=TrailingSLStrategyType.CBAboveBelow,
     sl_to_be_bool=False,
     starting_bar=100,
     starting_equity=1000.0,
