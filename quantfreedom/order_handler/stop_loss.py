@@ -269,11 +269,17 @@ class StopLoss:
         candle_body = current_candle[self.trail_sl_bcb_type]
         pct_from_ae = abs(candle_body - average_entry) / average_entry
         logger.debug(f"pct_from_ae= {round(pct_from_ae * 100, 2)}")
-        possible_move_tsl = self.move_sl_bool(num_1=pct_from_ae, num_2=self.trail_sl_when_pct)
+        possible_move_tsl = self.move_sl_bool(
+            num_1=pct_from_ae,
+            num_2=self.trail_sl_when_pct,
+        )
 
         if possible_move_tsl:
             logger.debug("Maybe move tsl")
-            temp_sl_price = self.sl_price_calc(candle_body=candle_body, add_pct=self.trail_sl_by_pct)
+            temp_sl_price = self.sl_price_calc(
+                price=candle_body,
+                add_pct=self.trail_sl_by_pct,
+            )
             temp_sl_price = round_size_by_tick_step(
                 user_num=temp_sl_price,
                 exchange_num=self.price_tick_step,
@@ -306,7 +312,6 @@ class StopLoss:
             num_1=pct_from_ae,
             num_2=self.trail_sl_when_pct,
         )
-
 
         if possible_move_tsl:
             logger.debug("Move tsl")
@@ -403,5 +408,12 @@ class StopLoss:
         self,
         num1: float,
         num2: float,
+    ):
+        pass
+
+    def sl_price_calc(
+        self,
+        price: float,
+        add_pct: float,
     ):
         pass
