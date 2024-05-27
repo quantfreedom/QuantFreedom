@@ -16,6 +16,7 @@ from quantfreedom.core.enums import (
     OrderStatus,
     RejectedOrder,
     or_dt,
+    TrailingSLStrategyType,
 )
 from quantfreedom.helpers.utils import pretty_qf
 
@@ -376,6 +377,8 @@ total_trades={total_trades_closed}"""
         logger.debug(
             f"Starting New Loop\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
         )
+        if strategy.static_os_tuple.trailing_sl_strategy_type == TrailingSLStrategyType.PctAboveBelow:
+            order.obj_stop_loss.checker_tsl = order.obj_stop_loss.init_check_move_tsl_pct
     return range_start, range_end, record_results
 
 
