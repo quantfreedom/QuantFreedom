@@ -22,7 +22,7 @@ if __name__ == "__main__":
         candles=oct_dec_candles,
         strategy=rsi_rising_falling_long_strat,
         threads=32,
-        step_by=4,
+        step_by=2,
     )
     print("\n" + "Backtest results done now saving to hdf5")
     backtest_results.to_hdf(

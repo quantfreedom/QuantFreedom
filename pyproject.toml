@@ -46,7 +46,7 @@ python-multipart = {version = "0.0.9", optional = true}
 
 [tool.poetry.extras]
 dev = ["aws-cdk-lib", "bcrypt", "cryptography", "fastapi", "httpx", "mangum", "mysql-connector-python", "pyjwt", "uvicorn"]
-docs = ["griffe", "mkdocs", "mkdocstrings", "mkdocs-gen-files", "mkdocs-literate-nav", "mkdocs-material", "mkdocs-open-in-new-tab", "mkdocs-redirects", "python-multipart"]
+docs = ["griffe", "mkdocs", "mkdocs-gen-files", "mkdocs-literate-nav", "mkdocs-material", "mkdocs-open-in-new-tab", "mkdocs-redirects", "mkdocstrings", "python-multipart"]
 
 [build-system]
 requires = ["poetry-core"]
