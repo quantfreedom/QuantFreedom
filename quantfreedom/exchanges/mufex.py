@@ -670,10 +670,10 @@ class Mufex(Exchange):
 
     def move_stop_order(
         self,
-        symbol: str,
-        order_id: str,
-        new_price: float,
         asset_size: float,
+        new_price: float,
+        order_id: str,
+        symbol: str,
     ):
         params = {}
         params["symbol"] = symbol
@@ -920,7 +920,7 @@ class Mufex(Exchange):
         leverage_mode: LeverageModeType,  # type: ignore
         position_mode: PositionModeType,  # type: ignore
         symbol: str,
-    ):
+    )-> ExchangeSettings:
         self.position_mode = position_mode
         if position_mode == PositionModeType.HedgeMode:
             self.set_position_mode_as_hedge_mode(symbol=symbol)

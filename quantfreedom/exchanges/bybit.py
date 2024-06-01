@@ -747,16 +747,16 @@ class Bybit(Exchange):
 
     def move_stop_order(
         self,
-        symbol: str,
-        order_id: str,
-        new_price: float,
         asset_size: float,
+        new_price: float,
+        order_id: str,
+        symbol: str,
     ):
         return self.adjust_order(
+            asset_size=asset_size,
             symbol=symbol,
             order_id=order_id,
             triggerPrice=new_price,
-            asset_size=asset_size,
         )
 
     def get_risk_limit_info(

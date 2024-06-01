@@ -227,6 +227,9 @@ def multiprocess_backtest(
 
                     order.set_order_variables(equity=equity)
                     logger.debug("reset order variables")
+                    if strategy.static_os_tuple.trailing_sl_strategy_type == TrailingSLStrategyType.PctAboveBelow:
+                        order.obj_stop_loss.checker_tsl = order.obj_stop_loss.init_check_move_tsl_pct
+                        logger.debug("reset checker_tsl to init_check_move_tsl_pct")
 
                 except Exception as e:
                     logger.error(f"Exception checking sl liq tp and move -> {e}")
@@ -377,8 +380,7 @@ total_trades={total_trades_closed}"""
         logger.debug(
             f"Starting New Loop\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
         )
-        if strategy.static_os_tuple.trailing_sl_strategy_type == TrailingSLStrategyType.PctAboveBelow:
-            order.obj_stop_loss.checker_tsl = order.obj_stop_loss.init_check_move_tsl_pct
+
     return range_start, range_end, record_results
 
 
@@ -547,6 +549,10 @@ def or_backtest(
 
                 order.set_order_variables(equity=equity)
                 logger.debug("reset order variables")
+                
+                if strategy.static_os_tuple.trailing_sl_strategy_type == TrailingSLStrategyType.PctAboveBelow:
+                        order.obj_stop_loss.checker_tsl = order.obj_stop_loss.init_check_move_tsl_pct
+                        logger.debug("reset checker_tsl to init_check_move_tsl_pct")
 
             except Exception as e:
                 logger.error(f"Exception checking sl liq tp and move -> {e}")
