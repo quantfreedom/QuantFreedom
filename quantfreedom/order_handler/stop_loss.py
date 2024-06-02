@@ -83,7 +83,7 @@ class StopLoss:
         if trailing_sl_strategy_type == TrailingSLStrategyType.CBAboveBelow:
             self.checker_tsl = self.check_move_tsl_close
         elif trailing_sl_strategy_type == TrailingSLStrategyType.PctAboveBelow:
-            self.checker_tsl = self.init_check_move_tsl_pct
+            self.checker_tsl = self.check_move_tsl_pct
             if long_short.lower() == "long":
                 self.tsl_mover = self.increase_sl_price
             else:
@@ -292,40 +292,6 @@ class StopLoss:
             else:
                 logger.debug("Wont move tsl")
                 return None, None
-        else:
-            logger.debug("Not moving tsl")
-            return None, None
-
-    def init_check_move_tsl_pct(
-        self,
-        average_entry: float,
-        current_candle: CurrentFootprintCandleTuple,
-        sl_price: float,
-    ):
-        """
-        Checking to see if we move the trailing stop loss
-        """
-        candle_body = current_candle[self.trail_sl_bcb_type]
-        pct_from_ae = abs(candle_body - average_entry) / average_entry
-        logger.debug(f"pct_from_ae= {round(pct_from_ae * 100, 2)}")
-        possible_move_tsl = self.move_sl_bool(
-            num_1=pct_from_ae,
-            num_2=self.trail_sl_when_pct,
-        )
-
-        if possible_move_tsl:
-            logger.debug("Move tsl")
-            new_sl_price = self.tsl_mover(
-                price=average_entry,
-                add_pct=self.trail_sl_by_pct,
-            )
-            round_size_by_tick_step(
-                user_num=new_sl_price,
-                exchange_num=self.price_tick_step,
-            )
-            sl_pct = round(abs(average_entry - new_sl_price) / average_entry, 2)
-            self.checker_tsl = self.check_move_tsl_pct
-            return new_sl_price, sl_pct
         else:
             logger.debug("Not moving tsl")
             return None, None
