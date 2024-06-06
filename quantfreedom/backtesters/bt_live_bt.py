@@ -91,7 +91,7 @@ def live_backtest(
                 logger.debug("Checking take profit hit")
                 order.check_take_profit_hit(
                     current_candle=current_candle,
-                    exit_price=strategy.exit_prices[bar_index],
+                    exit_price=strategy.exit_prices[-1],
                 )
 
                 logger.debug("Checking to move stop to break even")
@@ -178,7 +178,6 @@ def live_backtest(
         end = bar_index + 1
 
         result = strategy.live_bt(
-            bar_index=bar_index,
             beg=beg,
             candles=candles,
             end=end,

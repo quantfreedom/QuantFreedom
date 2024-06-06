@@ -154,7 +154,7 @@ trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 2)}
 """
         )
 
-    def reg_candle_chunk(
+    def candle_chunk(
         self,
         candles: FootprintCandlesTuple,
         beg: int,
@@ -233,8 +233,9 @@ trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 2)}
 
     def live_bt(
         self,
-        bar_index: int,
+        beg: int,
         candles: FootprintCandlesTuple,
+        end: int,
     ):
         pass
 

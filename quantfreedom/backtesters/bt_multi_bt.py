@@ -69,7 +69,8 @@ def run_df_backtest(
     print(f"Total candle chunks with step by: {candle_chunks:,}")
 
     num_array_columns = 9 + len(strategy.og_dos_tuple._fields) + len(strategy.og_ind_set_tuple._fields)
-    arr_shape = (strategy.total_filtered_settings, num_array_columns)
+    arr_shape = (1000000, num_array_columns)
+    # arr_shape = (strategy.total_filtered_settings, num_array_columns)
     strategy_result_records = np.full(arr_shape, np.nan)
 
     range_multiplier = strategy.total_filtered_settings / threads
