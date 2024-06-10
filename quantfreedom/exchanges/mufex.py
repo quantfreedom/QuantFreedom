@@ -23,9 +23,9 @@ class Mufex(Exchange):
     def __init__(
         # Exchange Vars
         self,
+        use_testnet: bool,
         api_key: str = None,
         secret_key: str = None,
-        use_testnet: bool,
     ):
         """
         main docs page https://www.mufex.finance/apidocs/derivatives/contract/index.html
