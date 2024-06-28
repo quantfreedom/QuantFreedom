@@ -7,6 +7,7 @@ from quantfreedom.core.enums import (
     ExchangeSettings,
     FootprintCandlesTuple,
     StaticOrderSettings,
+    CandleBodyType,
 )
 
 logger = getLogger()
@@ -74,11 +75,18 @@ class Strategy:
                 cart_prod_array[j * m : (j + 1) * m, k + 1 :] = cart_prod_array[0:m, k + 1 :]
 
         logger.debug("cart_prod_array")
-        trail_sl_by_pct = 9
-        trail_sl_when_pct = 10
         cart_prod_array = cart_prod_array.T
 
-        filter_tf = cart_prod_array[trail_sl_when_pct] > cart_prod_array[trail_sl_by_pct]
+        col_trail_sl_bcb_type = 8
+        col_trail_sl_by_pct = 9
+        col_trail_sl_when_pct = 10
+
+        tsl_true: np.ndarray = cart_prod_array[col_trail_sl_bcb_type] != CandleBodyType.Nothing
+
+        if tsl_true.any():
+            filter_tf = cart_prod_array[col_trail_sl_when_pct] > cart_prod_array[col_trail_sl_by_pct]
+        else:
+            filter_tf = np.full(cart_prod_array.shape[1], True)
 
         filtered_cart_prod = cart_prod_array[:, filter_tf]
 

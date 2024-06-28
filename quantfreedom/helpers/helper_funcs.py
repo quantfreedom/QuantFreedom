@@ -332,21 +332,20 @@ def symbol_bt_df(
 
 def np_lb_one(
     arr: np.ndarray,
-    include: bool,
-    lb: int,
-    fill_value: Union[np.float_, np.int_, np.bool_, np.str_],
+    lookback: int,
+    include_current: bool = False,
+    fill_value: Union[np.float_, np.int_, np.bool_, np.str_] = np.nan,
 ) -> np.ndarray:
-    num_cols = lb
+    num_cols = lookback
 
-    if include:
+    if include_current:
         num_cols += 1
 
     arr_size = arr.size
     p_arr = np.full((arr_size, num_cols), fill_value)  # previous array
-    g_arr = arr_size - lb  # grab end of arr index
+    g_arr = arr_size - lookback  # grab end of arr index
     a_arr = np.where(np.isnan(arr))[0].size  # add total number of nans to p arr start and arr start in loop
-
-    s_pa = lb + a_arr  # start for previous array
+    s_pa = a_arr + lookback  # start for previous array
 
     for col in range(num_cols):
         p_arr[s_pa:, col] = arr[col + a_arr : g_arr + col]

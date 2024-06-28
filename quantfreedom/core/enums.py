@@ -323,13 +323,13 @@ class StaticOrderSettings(NamedTuple):
     leverage_strategy_type: int
     pg_min_max_sl_bcb: str
     sl_strategy_type: int
-    trailing_sl_strategy_type: int
     sl_to_be_bool: bool
     starting_bar: int
     starting_equity: float
     static_leverage: float
     tp_fee_type: str
     tp_strategy_type: int
+    trailing_sl_strategy_type: int
     z_or_e_type: str
 
 

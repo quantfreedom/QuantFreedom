@@ -13,7 +13,7 @@ from quantfreedom.helpers.helper_funcs import round_size_by_tick_step
 logger = getLogger()
 
 
-class Leverage:
+class GridLeverage:
     def __init__(
         self,
         leverage_strategy_type: LeverageStrategyType,  # type: ignore
