@@ -21,55 +21,35 @@ logger = getLogger()
 
 
 class GridOrderHandler:
-    cach_borrowed = 0
+    available_balance = 0.0
+    average_entry = 0.0
+    can_move_sl_to_be = False
+    cash_borrowed = 0.0
+    cash_used = 0.0
+    entry_price = 0.0
+    entry_size_asset = 0.0
+    entry_size_usd = 0.0
+    equity = 0.0
+    exit_price = 0.0
+    fees_paid = 0.0
+    leverage = 0.0
+    liq_price = 0.0
+    order_status = 0
+    position_size_asset = 0.0
+    position_size_usd = 0.0
+    total_possible_loss = 0.0
+    realized_pnl = 0.0
+    sl_pct = 0.0
+    sl_price = 0.0
+    total_trades = 0
+    tp_pct = 0.0
+    tp_price = 0.0
+    limit_fee_pct = .0005
+    market_fee_pct = .0009
 
     def __init__(
         self,
-        exchange_settings_tuple: ExchangeSettings,
-        static_os_tuple: StaticOrderSettings,
     ) -> None:
-        self.limit_fee_pct = exchange_settings_tuple.limit_fee_pct
-        self.market_fee_pct = exchange_settings_tuple.market_fee_pct
-        
-        self.obj_stop_loss = GridStopLoss(
-            market_fee_pct=exchange_settings_tuple.market_fee_pct,
-            price_tick_step=exchange_settings_tuple.price_tick_step,
-        )
-        self.obj_inc_pos = GridIncreasePosition(
-            asset_tick_step=exchange_settings_tuple.asset_tick_step,
-            increase_position_type=static_os_tuple.increase_position_type,
-            market_fee_pct=exchange_settings_tuple.market_fee_pct,
-            max_asset_size=exchange_settings_tuple.max_asset_size,
-            min_asset_size=exchange_settings_tuple.min_asset_size,
-            price_tick_step=exchange_settings_tuple.price_tick_step,
-            sl_strategy_type=static_os_tuple.sl_strategy_type,
-        )
-        self.obj_leverage = GridLeverage(
-            leverage_strategy_type=static_os_tuple.leverage_strategy_type,
-            leverage_tick_step=exchange_settings_tuple.leverage_tick_step,
-            market_fee_pct=exchange_settings_tuple.market_fee_pct,
-            max_leverage=exchange_settings_tuple.max_leverage,
-            min_leverage=exchange_settings_tuple.min_leverage,
-            mmr_pct=exchange_settings_tuple.mmr_pct,
-            price_tick_step=exchange_settings_tuple.price_tick_step,
-            static_leverage=static_os_tuple.static_leverage,
-        )
-
-        if static_os_tuple.tp_fee_type.lower() == "market":
-            tp_fee_pct = exchange_settings_tuple.market_fee_pct
-        elif static_os_tuple.tp_fee_type.lower() == "limit":
-            tp_fee_pct = exchange_settings_tuple.limit_fee_pct
-        else:
-            raise Exception("market or limit are the only options for tp_fee_type")
-
-        self.obj_take_profit = GridTakeProfit(
-            market_fee_pct=exchange_settings_tuple.market_fee_pct,
-            price_tick_step=exchange_settings_tuple.price_tick_step,
-            tp_fee_pct=tp_fee_pct,
-            tp_strategy_type=static_os_tuple.tp_strategy_type,
-        )
-
-    def pass_func(self, **kwargs):
         pass
 
     def set_order_variables(self, equity: float):

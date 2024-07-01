@@ -1,7 +1,7 @@
-from typing import Callable
 import numpy as np
+
 from logging import getLogger
-from quantfreedom.helpers.helper_funcs import round_size_by_tick_step
+
 from quantfreedom.core.enums import (
     CurrentFootprintCandleTuple,
     DecreasePosition,
