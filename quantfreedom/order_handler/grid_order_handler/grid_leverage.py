@@ -121,7 +121,6 @@ og_available_balance= {og_available_balance}"""
         if cash_used > og_available_balance:
             msg = "Cash used bigger than available balance AKA position size too big"
             logger.warning(msg)
-            RejectedOrder.msg = msg
             raise RejectedOrder
         else:
             available_balance = round(og_available_balance - cash_used, 2)

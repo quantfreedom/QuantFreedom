@@ -27,20 +27,17 @@ class Strategy:
     log_folder: str
     long_short: str
     og_dos_tuple: DynamicOrderSettings
-    og_ind_set_tuple: IndicatorSettings
     static_os_tuple: StaticOrderSettings
     total_filtered_settings: int = 0
     total_indicator_settings: int = 0
     total_order_settings: int = 0
-
-    def __init__(self) -> None:
-        pass
 
     def get_ind_set_dos_cart_product(
         self,
         og_dos_tuple: DynamicOrderSettings,
         og_ind_set_tuple: IndicatorSettings,
     ) -> np.ndarray:
+
         total_indicator_settings = 1
         total_order_settings = 1
 
