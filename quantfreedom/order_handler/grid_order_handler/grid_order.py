@@ -44,136 +44,13 @@ class GridOrderHandler:
     total_trades = 0
     tp_pct = 0.0
     tp_price = 0.0
-    limit_fee_pct = .0005
-    market_fee_pct = .0009
+    limit_fee_pct = 0.0005
+    market_fee_pct = 0.0009
 
     def __init__(
         self,
     ) -> None:
         pass
-
-    def set_order_variables(self, equity: float):
-        self.available_balance = equity
-        self.average_entry = 0.0
-        self.can_move_sl_to_be = False
-        self.cash_borrowed = 0.0
-        self.cash_used = 0.0
-        self.entry_price = 0.0
-        self.entry_size_asset = 0.0
-        self.entry_size_usd = 0.0
-        self.equity = equity
-        self.exit_price = 0.0
-        self.fees_paid = 0.0
-        self.leverage = 0.0
-        self.liq_price = 0.0
-        self.order_status = 0
-        self.position_size_asset = 0.0
-        self.position_size_usd = 0.0
-        self.total_possible_loss = 0.0
-        self.realized_pnl = 0.0
-        self.sl_pct = 0.0
-        self.sl_price = 0.0
-        self.total_trades = 0
-        self.tp_pct = 0.0
-        self.tp_price = 0.0
-
-    def fill_or_exit_move(
-        self,
-        bar_index: int,
-        order_records: np.ndarray,
-        order_status: OrderStatus,  # type: ignore
-        timestamp: int,
-        set_idx: int,
-        equity: float = np.nan,
-        exit_price: float = np.nan,
-        fees_paid: float = np.nan,
-        realized_pnl: float = np.nan,
-        sl_pct: float = np.nan,
-        sl_price: float = np.nan,
-    ):
-        order_records["set_idx"] = set_idx
-        order_records["bar_idx"] = bar_index
-        order_records["timestamp"] = timestamp
-
-        order_records["equity"] = equity
-        order_records["available_balance"] = equity
-        order_records["cash_borrowed"] = np.nan
-        order_records["cash_used"] = np.nan
-
-        order_records["average_entry"] = np.nan
-        order_records["fees_paid"] = fees_paid
-        order_records["leverage"] = np.nan
-        order_records["liq_price"] = np.nan
-        order_records["order_status"] = order_status
-        order_records["total_possible_loss"] = 0
-        order_records["total_trades"] = 0
-        order_records["entry_size_asset"] = np.nan
-        order_records["entry_size_usd"] = np.nan
-        order_records["entry_price"] = np.nan
-        order_records["exit_price"] = exit_price
-        order_records["position_size_asset"] = np.nan
-        order_records["position_size_usd"] = np.nan
-        order_records["realized_pnl"] = realized_pnl
-        order_records["sl_pct"] = sl_pct
-        order_records["sl_price"] = sl_price
-        order_records["tp_pct"] = np.nan
-        order_records["tp_price"] = np.nan
-
-    def fill_or_entry(
-        self,
-        bar_index: int,
-        set_idx: int,
-        order_records: np.ndarray,
-        timestamp: int,
-    ):
-        order_records["set_idx"] = set_idx
-        order_records["bar_idx"] = bar_index
-        order_records["timestamp"] = timestamp
-
-        order_records["equity"] = self.equity
-        order_records["available_balance"] = self.available_balance
-        order_records["cash_borrowed"] = self.cash_borrowed
-        order_records["cash_used"] = self.cash_used
-
-        order_records["average_entry"] = self.average_entry
-        order_records["fees_paid"] = self.fees_paid
-        order_records["leverage"] = self.leverage
-        order_records["liq_price"] = self.liq_price
-        order_records["order_status"] = self.order_status
-        order_records["total_possible_loss"] = self.total_possible_loss
-        order_records["total_trades"] = self.total_trades
-        order_records["entry_size_asset"] = self.entry_size_asset
-        order_records["entry_size_usd"] = self.entry_size_usd
-        order_records["entry_price"] = self.entry_price
-        order_records["exit_price"] = self.exit_price
-        order_records["position_size_asset"] = self.position_size_asset
-        order_records["position_size_usd"] = self.position_size_usd
-        order_records["realized_pnl"] = self.realized_pnl
-        order_records["sl_pct"] = round(self.sl_pct * 100, 2)
-        order_records["sl_price"] = self.sl_price
-        order_records["tp_pct"] = round(self.tp_pct * 100, 2)
-        order_records["tp_price"] = self.tp_price
-
-    def check_move_tsl(
-        self,
-        current_candle: CurrentFootprintCandleTuple,
-    ):
-        return self.obj_stop_loss.checker_tsl(
-            average_entry=self.average_entry,
-            current_candle=current_candle,
-            sl_price=self.sl_price,
-        )
-
-    def check_move_sl_to_be(
-        self,
-        current_candle: CurrentFootprintCandleTuple,
-    ):
-        return self.obj_stop_loss.checker_sl_to_be(
-            average_entry=self.average_entry,
-            can_move_sl_to_be=self.can_move_sl_to_be,
-            current_candle=current_candle,
-            sl_price=self.sl_price,
-        )
 
     def check_liq_hit(
         self,
@@ -403,6 +280,108 @@ realized_pnl= {realized_pnl}
             fees_paid,
             realized_pnl,
         )
+
+    def set_order_variables(self, equity: float):
+        self.available_balance = equity
+        self.average_entry = 0.0
+        self.can_move_sl_to_be = False
+        self.cash_borrowed = 0.0
+        self.cash_used = 0.0
+        self.entry_price = 0.0
+        self.entry_size_asset = 0.0
+        self.entry_size_usd = 0.0
+        self.equity = equity
+        self.exit_price = 0.0
+        self.fees_paid = 0.0
+        self.leverage = 0.0
+        self.liq_price = 0.0
+        self.order_status = 0
+        self.position_size_asset = 0.0
+        self.position_size_usd = 0.0
+        self.total_possible_loss = 0.0
+        self.realized_pnl = 0.0
+        self.sl_pct = 0.0
+        self.sl_price = 0.0
+        self.total_trades = 0
+        self.tp_pct = 0.0
+        self.tp_price = 0.0
+
+    def fill_or_exit_move(
+        self,
+        bar_index: int,
+        order_records: np.ndarray,
+        order_status: OrderStatus,  # type: ignore
+        timestamp: int,
+        set_idx: int,
+        equity: float = np.nan,
+        exit_price: float = np.nan,
+        fees_paid: float = np.nan,
+        realized_pnl: float = np.nan,
+        sl_pct: float = np.nan,
+        sl_price: float = np.nan,
+    ):
+        order_records["set_idx"] = set_idx
+        order_records["bar_idx"] = bar_index
+        order_records["timestamp"] = timestamp
+
+        order_records["equity"] = equity
+        order_records["available_balance"] = equity
+        order_records["cash_borrowed"] = np.nan
+        order_records["cash_used"] = np.nan
+
+        order_records["average_entry"] = np.nan
+        order_records["fees_paid"] = fees_paid
+        order_records["leverage"] = np.nan
+        order_records["liq_price"] = np.nan
+        order_records["order_status"] = order_status
+        order_records["total_possible_loss"] = 0
+        order_records["total_trades"] = 0
+        order_records["entry_size_asset"] = np.nan
+        order_records["entry_size_usd"] = np.nan
+        order_records["entry_price"] = np.nan
+        order_records["exit_price"] = exit_price
+        order_records["position_size_asset"] = np.nan
+        order_records["position_size_usd"] = np.nan
+        order_records["realized_pnl"] = realized_pnl
+        order_records["sl_pct"] = sl_pct
+        order_records["sl_price"] = sl_price
+        order_records["tp_pct"] = np.nan
+        order_records["tp_price"] = np.nan
+
+    def fill_or_entry(
+        self,
+        bar_index: int,
+        set_idx: int,
+        order_records: np.ndarray,
+        timestamp: int,
+    ):
+        order_records["set_idx"] = set_idx
+        order_records["bar_idx"] = bar_index
+        order_records["timestamp"] = timestamp
+
+        order_records["equity"] = self.equity
+        order_records["available_balance"] = self.available_balance
+        order_records["cash_borrowed"] = self.cash_borrowed
+        order_records["cash_used"] = self.cash_used
+
+        order_records["average_entry"] = self.average_entry
+        order_records["fees_paid"] = self.fees_paid
+        order_records["leverage"] = self.leverage
+        order_records["liq_price"] = self.liq_price
+        order_records["order_status"] = self.order_status
+        order_records["total_possible_loss"] = self.total_possible_loss
+        order_records["total_trades"] = self.total_trades
+        order_records["entry_size_asset"] = self.entry_size_asset
+        order_records["entry_size_usd"] = self.entry_size_usd
+        order_records["entry_price"] = self.entry_price
+        order_records["exit_price"] = self.exit_price
+        order_records["position_size_asset"] = self.position_size_asset
+        order_records["position_size_usd"] = self.position_size_usd
+        order_records["realized_pnl"] = self.realized_pnl
+        order_records["sl_pct"] = round(self.sl_pct * 100, 2)
+        order_records["sl_price"] = self.sl_price
+        order_records["tp_pct"] = round(self.tp_pct * 100, 2)
+        order_records["tp_price"] = self.tp_price
 
     def fill_order_result(
         self,

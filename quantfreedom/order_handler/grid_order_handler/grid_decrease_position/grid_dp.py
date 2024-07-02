@@ -7,22 +7,18 @@ logger = getLogger()
 
 class GridDecreasePosition(GridOrderHandler):
 
-    def __init__(
-        self,
-        market_fee_pct: float,
-        price_tick_step: float,
-    ) -> None:
-        self.market_fee_pct = market_fee_pct
-        self.price_tick_step = price_tick_step
-
-    def finish_decrease_position(
+    def grid_decrease_position(
         self,
         cur_datetime: str,
         exit_price: float,
         equity: float,
         order_status: OrderStatus,  # type: ignore
-        pnl: float,
+        pnl_exec: str,
     ):
+        pnl: float
+
+        exec(pnl_exec)
+
         logger.debug(f"pnl= {pnl}")
 
         fee_open = round(self.position_size_asset * self.average_entry * self.limit_fee_pct, 2)  # math checked
