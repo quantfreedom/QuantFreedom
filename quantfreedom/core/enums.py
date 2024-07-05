@@ -344,15 +344,19 @@ class RejectedOrder(Exception):
 class DecreasePosition(Exception):
     def __init__(
         self,
-        order_status: OrderStatus = None,  # type: ignore
-        exit_price: Optional[float] = None,
-        exit_fee_pct: Optional[float] = None,
-        msg: str = None,
+        exit_fee_pct: Optional[float] = np.nan,
+        exit_price: Optional[float] = np.nan,
+        liq_price: Optional[float] = np.nan,
+        msg: Optional[str] = None,
+        order_status: Optional[OrderStatus] = None,  # type: ignore
+        sl_price: Optional[float] = np.nan,
     ):
-        self.order_status = order_status
-        self.exit_price = exit_price
         self.exit_fee_pct = exit_fee_pct
+        self.exit_price = exit_price
+        self.liq_price = liq_price
         self.msg = msg
+        self.order_status = order_status
+        self.sl_price = sl_price
 
 
 order_settings_array_dt = np.dtype(

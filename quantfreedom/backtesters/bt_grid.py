@@ -13,7 +13,7 @@ from quantfreedom.core.enums import (
     or_dt,
 )
 
-from quantfreedom.order_handler.grid_order_handler import GridOrderHandler, GridStopLoss, GridLeverage
+from quantfreedom.order_handler.grid_order_handler import *
 
 logger = getLogger()
 
@@ -63,68 +63,75 @@ def grid_backtest(
     for bar_index in range(1, closing_prices.size):
         try:
             if position_size > 0:  # in a long position
-                current_candle = CurrentFootprintCandleTuple(
-                    open_timestamp=candles.candle_open_timestamps[bar_index],
-                    open_price=candles.candle_open_prices[bar_index],
-                    high_price=candles.candle_high_prices[bar_index],
-                    low_price=candles.candle_low_prices[bar_index],
-                    close_price=candles.candle_close_prices[bar_index],
+
+                current_candle = grid_order_handler.helpers.get_current_candle(
+                    bar_index=bar_index,
+                    candles=candles,
                 )
-                grid_order_handler.pnl_calc = grid_order_handler.long_pnl_calc
 
-                grid_order_handler.obj_stop_loss.get_sl_hit = GridStopLoss.long_sl_hit_bool
-                grid_order_handler.check_stop_loss_hit(current_candle=current_candle)
+                pnl_exec = GridDPExecLong.long_pnl_exec
 
-                grid_order_handler.obj_leverage.liq_hit_bool = GridLeverage.long_liq_hit_bool
-                grid_order_handler.check_liq_hit(current_candle=current_candle)
+                grid_order_handler.check_stop_loss_hit(
+                    current_candle=current_candle,
+                    sl_hit_exec=GridSLExecLong.long_sl_hit_exec,
+                )
+
+                grid_order_handler.check_liq_hit(
+                    current_candle=current_candle,
+                    liq_hit_bool_exec=GridLevExecLong.long_liq_hit_bool_exec,
+                )
 
             elif position_size < 0:
-                current_candle = CurrentFootprintCandleTuple(
-                    open_timestamp=candles.candle_open_timestamps[bar_index],
-                    open_price=candles.candle_open_prices[bar_index],
-                    high_price=candles.candle_high_prices[bar_index],
-                    low_price=candles.candle_low_prices[bar_index],
-                    close_price=candles.candle_close_prices[bar_index],
+
+                current_candle = grid_order_handler.helpers.get_current_candle(
+                    bar_index=bar_index,
+                    candles=candles,
                 )
-                grid_order_handler.pnl_calc = grid_order_handler.short_pnl_calc
 
-                grid_order_handler.obj_stop_loss.get_sl_hit = GridStopLoss.short_sl_hit_bool
-                grid_order_handler.check_stop_loss_hit(current_candle=current_candle)
+                pnl_exec = GridDPExecShort.short_pnl_exec
 
-                grid_order_handler.obj_leverage.liq_hit_bool = GridLeverage.short_liq_hit_bool
-                grid_order_handler.check_liq_hit(current_candle=current_candle)
+                grid_order_handler.check_stop_loss_hit(
+                    current_candle=current_candle,
+                    sl_hit_exec=GridSLExecShort.short_sl_hit_exec,
+                )
 
-        except DecreasePosition as e:
+                grid_order_handler.check_liq_hit(
+                    current_candle=current_candle,
+                    liq_hit_bool_exec=GridLevExecShort.short_liq_hit_bool_exec,
+                )
+
+        except DecreasePosition as dp:
             (
                 equity,
                 fees_paid,
                 realized_pnl,
             ) = grid_order_handler.calculate_decrease_position(
                 cur_datetime=candles.candle_open_datetimes[bar_index],
-                exit_fee_pct=e.exit_fee_pct,
-                exit_price=e.exit_price,
-                order_status=e.order_status,
-                market_fee_pct=exchange_settings_tuple.market_fee_pct,
+                exit_price=dp.exit_price,
                 equity=grid_order_handler.equity,
+                order_status=dp.order_status,
+                pnl_exec=pnl_exec,
             )
-            logger.debug(f"Filling or for decrease postiion {OrderStatus._fields[e.order_status]}")
 
-            grid_order_handler.fill_or_exit_move(
+            grid_order_handler.helpers.fill_order_record_exit(
                 bar_index=bar_index,
                 set_idx=0,
                 order_records=order_records[or_filled],
-                order_status=e.order_status,
+                order_status=dp.order_status,
                 timestamp=current_candle.open_timestamp,
                 equity=equity,
-                exit_price=e.exit_price,
                 fees_paid=fees_paid,
                 realized_pnl=realized_pnl,
+                sl_price=dp.sl_price,
+                liq_price=dp.liq_price,
             )
 
             or_filled += 1
-            logger.debug(f"Filled decrease postiion order records for {OrderStatus._fields[e.order_status]}")
+            logger.debug(f"Filled decrease postiion order records for {OrderStatus._fields[dp.order_status]}")
 
-            grid_order_handler.set_order_variables(equity=equity)
+            grid_order_handler.helpers.reset_grid_order_variables(
+                equity=equity,
+            )
             logger.debug("reset order variables")
         try:
             if low_prices[bar_index] <= buy_order:
@@ -134,39 +141,30 @@ def grid_backtest(
                 buy_signals[bar_index] = buy_order
                 if position_size >= 0:
                     # adding to long position
-                    grid_order_handler.obj_leverage.get_bankruptcy_price = GridLeverage.long_get_bankruptcy_price
-                    grid_order_handler.obj_leverage.get_liq_price = GridLeverage.long_get_liq_price
+                    get_bankruptcy_price_exec = GridLevExecLong.long_get_bankruptcy_price_exec
+                    get_liq_price_exec = GridLevExecLong.long_get_liq_price_exec
 
-                    try:
-                        average_entry = (position_size + order_size) / (
-                            (position_size / average_entry) + (order_size / buy_order)
-                        )
-                        ae_buy_array[bar_index] = average_entry
-                    except ZeroDivisionError:
-                        average_entry = buy_order
-                        ae_buy_array[bar_index] = average_entry
+                    average_entry = grid_order_handler.calculate_increase_position(
+                        order_size=order_size,
+                        entry_price=buy_order,
+                    )
+                    ae_buy_array[bar_index] = average_entry
 
                 elif temp_pos_size >= 0 and position_size <= 0:
                     # switch from short to long
-                    grid_order_handler.obj_leverage.get_bankruptcy_price = GridLeverage.long_get_bankruptcy_price
-                    grid_order_handler.obj_leverage.get_liq_price = GridLeverage.long_get_liq_price
-                    grid_order_handler.pnl_calc = grid_order_handler.short_pnl_calc
+                    get_bankruptcy_price_exec = GridLevExecLong.long_get_bankruptcy_price_exec
+                    get_liq_price_exec = GridLevExecLong.long_get_liq_price_exec
 
-                    grid_order_handler.calculate_decrease_position(
+                    (
+                        equity,
+                        fees_paid,
+                        realized_pnl,
+                    ) = grid_order_handler.calculate_decrease_position(
                         cur_datetime=candles.candle_open_datetimes[bar_index],
                         exit_price=buy_order,
                         equity=equity,
-                    )
-                    grid_order_handler.fill_or_exit_move(
-                        bar_index=bar_index,
-                        set_idx=0,
-                        order_records=order_records[or_filled],
-                        order_status=e.order_status,
-                        timestamp=current_candle.open_timestamp,
-                        equity=equity,
-                        exit_price=e.exit_price,
-                        fees_paid=fees_paid,
-                        realized_pnl=realized_pnl,
+                        order_status=OrderStatus.TakeProfitFilled,
+                        pnl_exec=GridDPExecShort.short_pnl_exec,
                     )
 
                     average_entry = buy_order
@@ -174,26 +172,19 @@ def grid_backtest(
 
                 elif temp_pos_size < 0:
                     # tp on short
+                    get_bankruptcy_price_exec = GridLevExecShort.short_get_bankruptcy_price_exec
+                    get_liq_price_exec = GridLevExecShort.short_get_liq_price_exec
 
-                    grid_order_handler.obj_leverage.get_bankruptcy_price = GridLeverage.short_get_bankruptcy_price
-                    grid_order_handler.obj_leverage.get_liq_price = GridLeverage.short_get_liq_price
-                    grid_order_handler.pnl_calc = grid_order_handler.short_pnl_calc
-
-                    grid_order_handler.calculate_decrease_position(
+                    (
+                        equity,
+                        fees_paid,
+                        realized_pnl,
+                    ) = grid_order_handler.calculate_decrease_position(
                         cur_datetime=candles.candle_open_datetimes[bar_index],
                         exit_price=buy_order,
                         equity=equity,
-                    )
-                    grid_order_handler.fill_or_exit_move(
-                        bar_index=bar_index,
-                        set_idx=0,
-                        order_records=order_records[or_filled],
-                        order_status=e.order_status,
-                        timestamp=current_candle.open_timestamp,
-                        equity=equity,
-                        exit_price=e.exit_price,
-                        fees_paid=fees_paid,
-                        realized_pnl=realized_pnl,
+                        order_status=OrderStatus.TakeProfitFilled,
+                        pnl_exec=GridDPExecShort.short_pnl_exec,
                     )
 
                 position_size = temp_pos_size
@@ -203,7 +194,7 @@ def grid_backtest(
                     cash_borrowed,
                     cash_used,
                     liq_price,
-                ) = grid_order_handler.obj_leverage.calc_liq_price(
+                ) = grid_order_handler.leverage_class.calculate_liquidation_price(
                     average_entry=average_entry,
                     leverage=leverage,
                     og_available_balance=avaliable_balance,
@@ -212,7 +203,7 @@ def grid_backtest(
                     position_size_asset=average_entry / position_size,
                     position_size_usd=position_size,
                 )
-                
+
                 grid_order_handler.fill_or_entry(
                     bar_index=bar_index + 1,
                     set_idx=0,

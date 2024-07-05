@@ -20,7 +20,6 @@ class IndicatorSettings(NamedTuple):
 class Strategy:
     backtest_settings_tuple: BacktestSettings
     cur_dos_tuple: DynamicOrderSettings
-    cur_ind_set_tuple: IndicatorSettings
     entries: np.ndarray
     exchange_settings_tuple: ExchangeSettings
     exit_prices: np.ndarray
@@ -31,6 +30,7 @@ class Strategy:
     total_filtered_settings: int = 0
     total_indicator_settings: int = 0
     total_order_settings: int = 0
+    cur_ind_set_tuple: IndicatorSettings
 
     def get_ind_set_dos_cart_product(
         self,
@@ -206,7 +206,7 @@ trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 2)}
     ) -> IndicatorSettings:
         pass
 
-    def set_cur_ind_tuple(
+    def set_cur_ind_set_tuple(
         self,
         set_idx: int,
     ):
@@ -344,5 +344,10 @@ trail_sl_when_pct={round(self.cur_dos_tuple.trail_sl_when_pct * 100, 2)}
     def get_strategy_plot_filename(
         self,
         candles: FootprintCandlesTuple,
+    ):
+        pass
+
+    def get_long_or_short(
+        self,
     ):
         pass

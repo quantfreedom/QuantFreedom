@@ -34,7 +34,7 @@ mysql-connector-python = { version = "8.4.0", optional = true }
 pyjwt = {version = "2.8.0", optional = true}
 uvicorn = { version = "0.30.0", optional = true}
 
-griffe = { version = "0.45.2", optional = true }
+griffe = { version = "0.47.0", optional = true }
 mkdocs = { version = "1.6.0", optional = true }
 mkdocs-gen-files = { version = "0.5.0", optional = true }
 mkdocs-literate-nav = {version = "0.6.1", optional = true}

@@ -36,9 +36,9 @@ def run_df_backtest(
     # set_loggers(log_folder=strategy.log_folder)
 
     starting_equity = strategy.static_os_tuple.starting_equity
-
+    
     order = OrderHandler(
-        long_short=strategy.long_short,
+        long_short=strategy.get_long_or_short(),
         static_os_tuple=strategy.static_os_tuple,
         exchange_settings_tuple=strategy.exchange_settings_tuple,
     )
@@ -135,7 +135,7 @@ def multiprocess_backtest(
     for set_idx in range(range_start, range_end, step_by):
         logger.debug(set_idx)
 
-        strategy.set_cur_ind_tuple(
+        strategy.set_cur_ind_set_tuple(
             set_idx=set_idx,
         )
 
@@ -424,7 +424,7 @@ def or_backtest(
 
     set_idx = strategy.get_settings_index(set_idx=set_idx)
 
-    strategy.set_cur_ind_tuple(
+    strategy.set_cur_ind_set_tuple(
         set_idx=set_idx,
     )
 

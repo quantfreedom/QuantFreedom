@@ -40,15 +40,17 @@ def or_backtest(
 
     starting_equity = strategy.static_os_tuple.starting_equity
 
+    
+    
     order = OrderHandler(
         exchange_settings_tuple=strategy.exchange_settings_tuple,
-        long_short=strategy.long_short,
+        long_short=strategy.get_long_or_short(),
         static_os_tuple=strategy.static_os_tuple,
     )
 
     set_idx = strategy.get_settings_index(set_idx=set_idx)
 
-    strategy.set_cur_ind_tuple(
+    strategy.set_cur_ind_set_tuple(
         set_idx=set_idx,
     )
 
