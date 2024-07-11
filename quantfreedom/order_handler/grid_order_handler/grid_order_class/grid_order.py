@@ -11,13 +11,15 @@ logger = getLogger()
 class GridOrderHandler:
     liq_price: float
     sl_price: float
+    average_entry: float
+    limit_fee_pct: float
     market_fee_pct: float
     equity: float
     price_tick_step: float
     position_size_asset: float
     position_size_usd: float
     available_balance: float
-    
+
     def __init__(
         self,
     ) -> None:
@@ -89,7 +91,9 @@ class GridOrderHandler:
     def calculate_decrease_position(
         self,
         cur_datetime: str,
+        exit_fee: float,
         exit_price: float,
+        exit_size_asset: float,
         equity: float,
         order_status: OrderStatus,  # type: ignore
         pnl_exec: str,
@@ -100,7 +104,9 @@ class GridOrderHandler:
             realized_pnl,
         ) = self.decrease_position_class.grid_decrease_position(
             cur_datetime=cur_datetime,
+            exit_fee=exit_fee,
             exit_price=exit_price,
+            exit_size_asset=exit_size_asset,
             equity=equity,
             order_status=order_status,
             pnl_exec=pnl_exec,
@@ -112,13 +118,22 @@ class GridOrderHandler:
             realized_pnl,
         )
 
-    def calculate_increase_position(
+    def calculate_average_entry(
         self,
         order_size: float,
         entry_price: float,
     ):
-        average_entry = self.increase_position_class.grid_increase_position(
-            order_size=order_size,
-            entry_price=entry_price,
-        )
+        try:
+            abs_position_size_usd = abs(self.position_size_usd)
+            total_position_size_usd = abs_position_size_usd + order_size
+
+            position_size_asset = abs_position_size_usd / average_entry
+            order_size_asset = order_size / entry_price
+            total_asset_size = position_size_asset + order_size_asset
+
+            average_entry = total_position_size_usd / total_asset_size
+
+        except ZeroDivisionError:
+            average_entry = entry_price
+
         return average_entry

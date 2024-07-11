@@ -27,9 +27,9 @@ def all_backtest_stats(
     print("Starting the backtest now ... and also here are some stats for your backtest.")
 
     print("\n" + f"Total threads to use: {threads:,}")
+    print(f"Total DOS to test: {strategy.total_dos:,}")
     print(f"Total indicator settings to test: {strategy.total_indicator_settings:,}")
-    print(f"Total order settings to test: {strategy.total_order_settings:,}")
-    print(f"Total settings combinations to test: {strategy.total_order_settings * strategy.total_indicator_settings:,}")
+    print(f"Total settings combinations to test: {strategy.total_dos * strategy.total_indicator_settings:,}")
     print(f"Total settings combination to test after filtering: {strategy.total_filtered_settings:,}")
     print(f"Total settings combination with step by: {step_by_settings:,}")
     print(f"Total settings combination to process per chunk: {chunk_process:,}")

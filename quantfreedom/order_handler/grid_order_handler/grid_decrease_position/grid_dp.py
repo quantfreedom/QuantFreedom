@@ -10,21 +10,23 @@ class GridDecreasePosition(GridOrderHandler):
     def grid_decrease_position(
         self,
         cur_datetime: str,
+        exit_fee: float,
         exit_price: float,
+        exit_size_asset: float,
         equity: float,
         order_status: OrderStatus,  # type: ignore
         pnl_exec: str,
-    )-> tuple[float, float, float]:
+    ) -> tuple[float, float, float]:
         pnl: float
 
         exec(pnl_exec)
 
         logger.debug(f"pnl= {pnl}")
 
-        fee_open = round(self.position_size_asset * self.average_entry * self.limit_fee_pct, 2)  # math checked
+        fee_open = round(exit_size_asset * self.average_entry * exit_fee, 2)  # math checked
         logger.debug(f"fee_open= {fee_open}")
 
-        fee_close = round(self.position_size_asset * exit_price * self.limit_fee_pct, 2)  # math checked
+        fee_close = round(exit_size_asset * exit_price * exit_fee, 2)  # math checked
         logger.debug(f"fee_close= {fee_close}")
 
         fees_paid = round(fee_open + fee_close, 2)  # math checked

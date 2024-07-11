@@ -3,7 +3,6 @@ import numpy as np
 from logging import getLogger
 
 from quantfreedom.core.enums import (
-    CurrentFootprintCandleTuple,
     DecreasePosition,
     FootprintCandlesTuple,
     OrderStatus,
@@ -107,7 +106,9 @@ def grid_backtest(
                 realized_pnl,
             ) = grid_order_handler.calculate_decrease_position(
                 cur_datetime=candles.candle_open_datetimes[bar_index],
+                exit_fee=grid_order_handler.market_fee_pct,
                 exit_price=dp.exit_price,
+                exit_size_asset=abs(grid_order_handler.position_size_asset),
                 equity=grid_order_handler.equity,
                 order_status=dp.order_status,
                 pnl_exec=pnl_exec,
@@ -144,7 +145,7 @@ def grid_backtest(
                     get_bankruptcy_price_exec = GridLevExecLong.long_get_bankruptcy_price_exec
                     get_liq_price_exec = GridLevExecLong.long_get_liq_price_exec
 
-                    average_entry = grid_order_handler.calculate_increase_position(
+                    average_entry = grid_order_handler.calculate_average_entry(
                         order_size=order_size,
                         entry_price=buy_order,
                     )
@@ -162,6 +163,8 @@ def grid_backtest(
                     ) = grid_order_handler.calculate_decrease_position(
                         cur_datetime=candles.candle_open_datetimes[bar_index],
                         exit_price=buy_order,
+                        exit_fee=grid_order_handler.limit_fee_pct,
+                        exit_size_asset=abs(position_size) / average_entry,
                         equity=equity,
                         order_status=OrderStatus.TakeProfitFilled,
                         pnl_exec=GridDPExecShort.short_pnl_exec,
@@ -182,6 +185,8 @@ def grid_backtest(
                     ) = grid_order_handler.calculate_decrease_position(
                         cur_datetime=candles.candle_open_datetimes[bar_index],
                         exit_price=buy_order,
+                        exit_fee=grid_order_handler.limit_fee_pct,
+                        exit_size_asset=order_size / average_entry,
                         equity=equity,
                         order_status=OrderStatus.TakeProfitFilled,
                         pnl_exec=GridDPExecShort.short_pnl_exec,
@@ -200,8 +205,8 @@ def grid_backtest(
                     og_available_balance=avaliable_balance,
                     og_cash_borrowed=cash_borrowed,
                     og_cash_used=cash_used,
-                    position_size_asset=average_entry / position_size,
-                    position_size_usd=position_size,
+                    position_size_asset=abs(position_size) / average_entry,
+                    position_size_usd=abs(position_size),
                 )
 
                 grid_order_handler.fill_or_entry(

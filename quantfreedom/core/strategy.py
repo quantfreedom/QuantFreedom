@@ -14,7 +14,7 @@ logger = getLogger()
 
 
 class IndicatorSettings(NamedTuple):
-    pass
+    empty: np.ndarray
 
 
 class Strategy:
@@ -29,30 +29,31 @@ class Strategy:
     static_os_tuple: StaticOrderSettings
     total_filtered_settings: int = 0
     total_indicator_settings: int = 0
-    total_order_settings: int = 0
+    total_dos: int = 1
     cur_ind_set_tuple: IndicatorSettings
+    og_ind_set_tuple: IndicatorSettings
 
     def get_ind_set_dos_cart_product(
         self,
-        og_dos_tuple: DynamicOrderSettings,
-        og_ind_set_tuple: IndicatorSettings,
-    ) -> np.ndarray:
+        dos_tuple: DynamicOrderSettings,
+        ind_set_tuple: IndicatorSettings,
+    ) -> tuple[np.ndarray, int]:
 
         total_indicator_settings = 1
-        total_order_settings = 1
+        total_dos = 1
+        total_filtered_dos = 1
 
-        for array in og_dos_tuple:
-            total_order_settings *= array.size
-        logger.debug(f"Total Order Settings: {total_order_settings}")
-        self.total_order_settings = total_order_settings
+        for array in dos_tuple:
+            total_dos *= array.size
+        logger.debug(f"Total dos: {total_dos}")
 
-        for array in og_ind_set_tuple:
+        for array in ind_set_tuple:
             total_indicator_settings *= array.size
         logger.debug(f"Total Indicator Settings: {total_indicator_settings}")
         self.total_indicator_settings = total_indicator_settings
 
-        the_tuple = og_dos_tuple + og_ind_set_tuple
-        array_size = total_order_settings * total_indicator_settings
+        the_tuple = dos_tuple + ind_set_tuple
+        array_size = total_dos * total_indicator_settings
         logger.debug(f"Total Array Size: {array_size}")
 
         cart_prod_array = np.empty((array_size, len(the_tuple)))
@@ -87,7 +88,13 @@ class Strategy:
 
         filtered_cart_prod = cart_prod_array[:, filter_tf]
 
-        return filtered_cart_prod
+        array: np.ndarray
+
+        for array in filtered_cart_prod[:12]:
+            total_filtered_dos *= np.unique(array).size
+        logger.debug(f"Total Filted DOS: {total_filtered_dos}")
+
+        return filtered_cart_prod, total_filtered_dos
 
     def get_og_dos_tuple(
         self,
@@ -127,19 +134,20 @@ class Strategy:
         self,
         set_idx: int,
     ):
+        new_set_idx = self.get_settings_index(set_idx)
         self.cur_dos_tuple = DynamicOrderSettings(
-            settings_index=self.og_dos_tuple.settings_index[set_idx],
-            account_pct_risk_per_trade=self.og_dos_tuple.account_pct_risk_per_trade[set_idx],
-            max_trades=self.og_dos_tuple.max_trades[set_idx],
-            risk_reward=self.og_dos_tuple.risk_reward[set_idx],
-            sl_based_on_add_pct=self.og_dos_tuple.sl_based_on_add_pct[set_idx],
-            sl_based_on_lookback=self.og_dos_tuple.sl_based_on_lookback[set_idx],
-            sl_bcb_type=self.og_dos_tuple.sl_bcb_type[set_idx],
-            sl_to_be_cb_type=self.og_dos_tuple.sl_to_be_cb_type[set_idx],
-            sl_to_be_when_pct=self.og_dos_tuple.sl_to_be_when_pct[set_idx],
-            trail_sl_bcb_type=self.og_dos_tuple.trail_sl_bcb_type[set_idx],
-            trail_sl_by_pct=self.og_dos_tuple.trail_sl_by_pct[set_idx],
-            trail_sl_when_pct=self.og_dos_tuple.trail_sl_when_pct[set_idx],
+            settings_index=self.og_dos_tuple.settings_index[new_set_idx],
+            account_pct_risk_per_trade=self.og_dos_tuple.account_pct_risk_per_trade[new_set_idx],
+            max_trades=self.og_dos_tuple.max_trades[new_set_idx],
+            risk_reward=self.og_dos_tuple.risk_reward[new_set_idx],
+            sl_based_on_add_pct=self.og_dos_tuple.sl_based_on_add_pct[new_set_idx],
+            sl_based_on_lookback=self.og_dos_tuple.sl_based_on_lookback[new_set_idx],
+            sl_bcb_type=self.og_dos_tuple.sl_bcb_type[new_set_idx],
+            sl_to_be_cb_type=self.og_dos_tuple.sl_to_be_cb_type[new_set_idx],
+            sl_to_be_when_pct=self.og_dos_tuple.sl_to_be_when_pct[new_set_idx],
+            trail_sl_bcb_type=self.og_dos_tuple.trail_sl_bcb_type[new_set_idx],
+            trail_sl_by_pct=self.og_dos_tuple.trail_sl_by_pct[new_set_idx],
+            trail_sl_when_pct=self.og_dos_tuple.trail_sl_when_pct[new_set_idx],
         )
 
         logger.info(
