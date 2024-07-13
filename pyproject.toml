@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "quantfreedom"
-version = "0.2.0.4"
+version = "0.2.1.0"
 description = "I don't want to put a description here, so I wont"
 authors = ["Neo <quantfreedom1022@gmail.com>"]
 readme = "README.md"
