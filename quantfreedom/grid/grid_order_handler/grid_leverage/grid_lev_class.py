@@ -1,12 +1,11 @@
 from logging import getLogger
 from quantfreedom.helpers.helper_funcs import round_size_by_tick_step
-from quantfreedom.order_handler.grid_order_handler.grid_order_class.grid_order import GridOrderHandler
 from quantfreedom.core.enums import CurrentFootprintCandleTuple, DecreasePosition, OrderStatus, RejectedOrder
 
 logger = getLogger()
 
 
-class GridLeverage(GridOrderHandler):
+class GridLeverage:
 
     def calc_liq_price(
         self,
@@ -14,11 +13,14 @@ class GridLeverage(GridOrderHandler):
         get_bankruptcy_price_exec: str,
         get_liq_price_exec: str,
         leverage: float,
+        market_fee_pct: float,
+        mmr_pct: float,
         og_available_balance: float,
         og_cash_borrowed: float,
         og_cash_used: float,
         position_size_asset: float,
         position_size_usd: float,
+        price_tick_step: float,
     ):
         # Getting Order Cost
         # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001064&language=en_US
@@ -27,11 +29,11 @@ class GridLeverage(GridOrderHandler):
         liq_price: float
 
         initial_margin = (position_size_asset * average_entry) / leverage
-        fee_to_open = position_size_asset * average_entry * self.market_fee_pct  # math checked
+        fee_to_open = position_size_asset * average_entry * market_fee_pct  # math checked
 
         exec(get_bankruptcy_price_exec)  # gets bankruptcy price
 
-        fee_to_close = position_size_asset * bankruptcy_price * self.market_fee_pct
+        fee_to_close = position_size_asset * bankruptcy_price * market_fee_pct
 
         cash_used = initial_margin + fee_to_open + fee_to_close  # math checked
 
@@ -58,7 +60,7 @@ og_available_balance= {og_available_balance}"""
 
             rounded_liq_price = round_size_by_tick_step(
                 user_num=liq_price,
-                exchange_num=self.price_tick_step,
+                exchange_num=price_tick_step,
             )
 
         return (
@@ -73,14 +75,15 @@ og_available_balance= {og_available_balance}"""
         current_candle: CurrentFootprintCandleTuple,
         liq_price: float,
         liq_hit_bool_exec: str,
+        market_fee_pct: float,
     ):
         liq_hit_bool: bool
-        exec(liq_hit_bool_exec) # checks if liq was hit
+        exec(liq_hit_bool_exec)  # checks if liq was hit
 
         if liq_hit_bool:
             logger.debug("Liq Hit")
             raise DecreasePosition(
-                exit_fee_pct=self.market_fee_pct,
+                exit_fee_pct=market_fee_pct,
                 liq_price=liq_price,
                 order_status=OrderStatus.LiquidationFilled,
             )

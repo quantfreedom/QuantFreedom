@@ -1,14 +1,14 @@
 from logging import getLogger
-from quantfreedom.order_handler.grid_order_handler.grid_order_class.grid_order import GridOrderHandler
 from quantfreedom.core.enums import OrderStatus
 
 logger = getLogger()
 
 
-class GridDecreasePosition(GridOrderHandler):
+class GridDecreasePosition:
 
     def grid_decrease_position(
         self,
+        average_entry: float,
         cur_datetime: str,
         exit_fee: float,
         exit_price: float,
@@ -23,7 +23,7 @@ class GridDecreasePosition(GridOrderHandler):
 
         logger.debug(f"pnl= {pnl}")
 
-        fee_open = round(exit_size_asset * self.average_entry * exit_fee, 2)  # math checked
+        fee_open = round(exit_size_asset * average_entry * exit_fee, 2)  # math checked
         logger.debug(f"fee_open= {fee_open}")
 
         fee_close = round(exit_size_asset * exit_price * exit_fee, 2)  # math checked

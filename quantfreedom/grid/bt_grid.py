@@ -12,7 +12,11 @@ from quantfreedom.core.enums import (
     or_dt,
 )
 
-from quantfreedom.order_handler.grid_order_handler import *
+from quantfreedom.grid.grid_order_handler.grid_order import GridOrderHandler
+from quantfreedom.grid.grid_order_handler.grid_leverage.grid_lev_exec import Grid_Lev_Exec_Tuple
+from quantfreedom.grid.grid_order_handler.grid_stop_loss.grid_sl_exec import Grid_SL_Exec_Tuple
+from quantfreedom.grid.grid_order_handler.grid_decrease_position.grid_dp_exec import Grid_DP_Exec_Tuple
+
 
 logger = getLogger()
 
@@ -26,6 +30,8 @@ def grid_backtest(
     exchange_settings_tuple: ExchangeSettings = None,
     static_os_tuple: StaticOrderSettings = None,
 ):
+    price_pct /= 100
+    pct_account /= 100
 
     position_size = 0
     average_entry = 0
@@ -39,10 +45,9 @@ def grid_backtest(
     open_prices = candles.candle_open_prices
     datetimes = candles.candle_open_datetimes
 
-    grid_order_handler = GridOrderHandler(
-        exchange_settings_tuple=exchange_settings_tuple,
-        static_os_tuple=static_os_tuple,
-    )
+    grid_order_handler = GridOrderHandler()
+
+    grid_order_handler.reset_grid_order_variables(equity=equity)
 
     pnl_array = np.full_like(closing_prices, np.nan)
     ae_buy_array = np.full_like(closing_prices, np.nan)
@@ -68,16 +73,16 @@ def grid_backtest(
                     candles=candles,
                 )
 
-                pnl_exec = GridDPExecLong.long_pnl_exec
+                pnl_exec = Grid_DP_Exec_Tuple.long_pnl_exec
 
                 grid_order_handler.check_stop_loss_hit(
                     current_candle=current_candle,
-                    sl_hit_exec=GridSLExecLong.long_sl_hit_exec,
+                    sl_hit_exec=Grid_SL_Exec_Tuple.long_sl_hit_exec,
                 )
 
                 grid_order_handler.check_liq_hit(
                     current_candle=current_candle,
-                    liq_hit_bool_exec=GridLevExecLong.long_liq_hit_bool_exec,
+                    liq_hit_bool_exec=Grid_Lev_Exec_Tuple.long_liq_hit_bool_exec,
                 )
 
             elif position_size < 0:
@@ -87,16 +92,16 @@ def grid_backtest(
                     candles=candles,
                 )
 
-                pnl_exec = GridDPExecShort.short_pnl_exec
+                pnl_exec = Grid_DP_Exec_Tuple.short_pnl_exec
 
                 grid_order_handler.check_stop_loss_hit(
                     current_candle=current_candle,
-                    sl_hit_exec=GridSLExecShort.short_sl_hit_exec,
+                    sl_hit_exec=Grid_SL_Exec_Tuple.short_sl_hit_exec,
                 )
 
                 grid_order_handler.check_liq_hit(
                     current_candle=current_candle,
-                    liq_hit_bool_exec=GridLevExecShort.short_liq_hit_bool_exec,
+                    liq_hit_bool_exec=Grid_Lev_Exec_Tuple.short_liq_hit_bool_exec,
                 )
 
         except DecreasePosition as dp:
@@ -130,7 +135,7 @@ def grid_backtest(
             or_filled += 1
             logger.debug(f"Filled decrease postiion order records for {OrderStatus._fields[dp.order_status]}")
 
-            grid_order_handler.helpers.reset_grid_order_variables(
+            grid_order_handler.reset_grid_order_variables(
                 equity=equity,
             )
             logger.debug("reset order variables")
@@ -142,19 +147,26 @@ def grid_backtest(
                 buy_signals[bar_index] = buy_order
                 if position_size >= 0:
                     # adding to long position
-                    get_bankruptcy_price_exec = GridLevExecLong.long_get_bankruptcy_price_exec
-                    get_liq_price_exec = GridLevExecLong.long_get_liq_price_exec
+                    get_bankruptcy_price_exec = Grid_Lev_Exec_Tuple.long_get_bankruptcy_price_exec
+                    get_liq_price_exec = Grid_Lev_Exec_Tuple.long_get_liq_price_exec
 
                     average_entry = grid_order_handler.calculate_average_entry(
-                        order_size=order_size,
                         entry_price=buy_order,
+                        order_size=order_size,
                     )
                     ae_buy_array[bar_index] = average_entry
+                    entry_price = buy_order
+                    entry_size_asset = order_size / average_entry
+                    entry_size_usd = order_size
+                    equity = grid_order_handler.equity
+                    fees_paid = np.nan
+                    realized_pnl = np.nan
+                    exit_price = np.nan
 
                 elif temp_pos_size >= 0 and position_size <= 0:
                     # switch from short to long
-                    get_bankruptcy_price_exec = GridLevExecLong.long_get_bankruptcy_price_exec
-                    get_liq_price_exec = GridLevExecLong.long_get_liq_price_exec
+                    get_bankruptcy_price_exec = Grid_Lev_Exec_Tuple.long_get_bankruptcy_price_exec
+                    get_liq_price_exec = Grid_Lev_Exec_Tuple.long_get_liq_price_exec
 
                     (
                         equity,
@@ -167,16 +179,21 @@ def grid_backtest(
                         exit_size_asset=abs(position_size) / average_entry,
                         equity=equity,
                         order_status=OrderStatus.TakeProfitFilled,
-                        pnl_exec=GridDPExecShort.short_pnl_exec,
+                        pnl_exec=Grid_DP_Exec_Tuple.short_pnl_exec,
                     )
 
                     average_entry = buy_order
+                    entry_price = buy_order
+                    entry_size_asset = order_size / average_entry
+                    entry_size_usd = order_size
+                    exit_price = buy_order
+
                     ae_buy_array[bar_index] = average_entry
 
                 elif temp_pos_size < 0:
                     # tp on short
-                    get_bankruptcy_price_exec = GridLevExecShort.short_get_bankruptcy_price_exec
-                    get_liq_price_exec = GridLevExecShort.short_get_liq_price_exec
+                    get_bankruptcy_price_exec = Grid_Lev_Exec_Tuple.short_get_bankruptcy_price_exec
+                    get_liq_price_exec = Grid_Lev_Exec_Tuple.short_get_liq_price_exec
 
                     (
                         equity,
@@ -189,8 +206,13 @@ def grid_backtest(
                         exit_size_asset=order_size / average_entry,
                         equity=equity,
                         order_status=OrderStatus.TakeProfitFilled,
-                        pnl_exec=GridDPExecShort.short_pnl_exec,
+                        pnl_exec=Grid_DP_Exec_Tuple.short_pnl_exec,
                     )
+                    average_entry = grid_order_handler.average_entry
+                    entry_price = np.nan
+                    entry_size_asset = np.nan
+                    entry_size_usd = np.nan
+                    exit_price = buy_order
 
                 position_size = temp_pos_size
 
@@ -199,8 +221,10 @@ def grid_backtest(
                     cash_borrowed,
                     cash_used,
                     liq_price,
-                ) = grid_order_handler.leverage_class.calculate_liquidation_price(
+                ) = grid_order_handler.calculate_liquidation_price(
                     average_entry=average_entry,
+                    get_bankruptcy_price_exec=get_bankruptcy_price_exec,
+                    get_liq_price_exec=get_liq_price_exec,
                     leverage=leverage,
                     og_available_balance=avaliable_balance,
                     og_cash_borrowed=cash_borrowed,
@@ -209,64 +233,86 @@ def grid_backtest(
                     position_size_usd=abs(position_size),
                 )
 
-                grid_order_handler.fill_or_entry(
-                    bar_index=bar_index + 1,
-                    set_idx=0,
-                    order_records=order_records[or_filled],
-                    timestamp=candles.candle_open_timestamps[bar_index + 1],
+                grid_order_handler.helpers.set_grid_variables(
+                    available_balance=available_balance,
+                    average_entry=average_entry,
+                    cash_borrowed=cash_borrowed,
+                    cash_used=cash_used,
+                    entry_price=entry_price,
+                    entry_size_asset=entry_size_asset,
+                    entry_size_usd=entry_size_usd,
+                    equity=equity,
+                    exit_price=exit_price,
+                    fees_paid=fees_paid,
+                    leverage=leverage,
+                    liq_price=liq_price,
+                    order_status=OrderStatus.EntryFilled,
+                    position_size_asset=position_size / average_entry,
+                    position_size_usd=position_size,
+                    total_possible_loss=np.nan,
+                    realized_pnl=np.nan,
+                    sl_pct=np.nan,
+                    sl_price=np.nan,
+                    total_trades=np.nan,
+                    tp_pct=np.nan,
+                    tp_price=np.nan,
                 )
 
                 ps_array[bar_index] = position_size
                 buy_order = closing_prices[bar_index] - (closing_prices[bar_index] * price_pct)
                 sell_order = closing_prices[bar_index] + (closing_prices[bar_index] * price_pct)
 
-            elif high_prices[bar_index] >= sell_order:
-                order_size = equity * pct_account
-                temp_pos_size = position_size + -order_size
+            # elif high_prices[bar_index] >= sell_order:
+            #     order_size = equity * pct_account
+            #     temp_pos_size = position_size + -order_size
 
-                sell_signals[bar_index] = sell_order
+            #     sell_signals[bar_index] = sell_order
 
-                if temp_pos_size > 0:
-                    # tp on long
-                    equity = calc_take_profit(
-                        average_entry=average_entry,
-                        equity=equity,
-                        bar_index=bar_index,
-                        limit_order=sell_order,
-                        order_size=order_size,
-                        pnl_array=pnl_array,
-                        tp_on_long_short="long",
-                    )
+            #     if temp_pos_size > 0:
+            #         # tp on long
+            #         equity = calc_take_profit(
+            #             average_entry=average_entry,
+            #             equity=equity,
+            #             bar_index=bar_index,
+            #             limit_order=sell_order,
+            #             order_size=order_size,
+            #             pnl_array=pnl_array,
+            #             tp_on_long_short="long",
+            #         )
 
-                elif temp_pos_size <= 0 and position_size >= 0:
+            #     elif temp_pos_size <= 0 and position_size >= 0:
 
-                    equity = calc_take_profit(
-                        average_entry=average_entry,
-                        equity=equity,
-                        bar_index=bar_index,
-                        limit_order=sell_order,
-                        order_size=position_size,
-                        pnl_array=pnl_array,
-                        tp_on_long_short="long",
-                    )
-                    average_entry = sell_order
-                    ae_sell_array[bar_index] = average_entry
+            #         equity = calc_take_profit(
+            #             average_entry=average_entry,
+            #             equity=equity,
+            #             bar_index=bar_index,
+            #             limit_order=sell_order,
+            #             order_size=position_size,
+            #             pnl_array=pnl_array,
+            #             tp_on_long_short="long",
+            #         )
+            #         average_entry = sell_order
+            #         ae_sell_array[bar_index] = average_entry
 
-                elif position_size <= 0:
-                    # adding to short position
-                    try:
-                        average_entry = (-position_size + order_size) / (
-                            (-position_size / average_entry) + (order_size / sell_order)
-                        )
-                        ae_sell_array[bar_index] = average_entry
+            #     elif position_size <= 0:
+            #         # adding to short position
+            #         try:
+            #             average_entry = (-position_size + order_size) / (
+            #                 (-position_size / average_entry) + (order_size / sell_order)
+            #             )
+            #             ae_sell_array[bar_index] = average_entry
 
-                    except ZeroDivisionError:
-                        average_entry = sell_order
-                        ae_sell_array[bar_index] = average_entry
+            #         except ZeroDivisionError:
+            #             average_entry = sell_order
+            #             ae_sell_array[bar_index] = average_entry
 
-                position_size = temp_pos_size
-                ps_array[bar_index] = position_size
-                buy_order = closing_prices[bar_index] - (closing_prices[bar_index] * price_pct)
-                sell_order = closing_prices[bar_index] + (closing_prices[bar_index] * price_pct)
+            #     position_size = temp_pos_size
+            #     ps_array[bar_index] = position_size
+            #     buy_order = closing_prices[bar_index] - (closing_prices[bar_index] * price_pct)
+            #     sell_order = closing_prices[bar_index] + (closing_prices[bar_index] * price_pct)
         except RejectedOrder:
+            pass
+        except Exception as e:
+            logger.error(f"Error: {e}")
+            print(f"Error: {e}")
             pass
