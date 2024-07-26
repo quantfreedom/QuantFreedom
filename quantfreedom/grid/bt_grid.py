@@ -1,4 +1,5 @@
 import numpy as np
+from os.path import join, abspath
 
 from logging import getLogger
 
@@ -13,9 +14,10 @@ from quantfreedom.core.enums import (
 )
 
 from quantfreedom.grid.grid_order_handler.grid_order import GridOrderHandler
-from quantfreedom.grid.grid_order_handler.grid_leverage.grid_lev_exec import Grid_Lev_Exec_Tuple
-from quantfreedom.grid.grid_order_handler.grid_stop_loss.grid_sl_exec import Grid_SL_Exec_Tuple
-from quantfreedom.grid.grid_order_handler.grid_decrease_position.grid_dp_exec import Grid_DP_Exec_Tuple
+from quantfreedom.grid.grid_order_handler.grid_leverage.grid_lev_exec import Grid_Lev_Funcs
+from quantfreedom.grid.grid_order_handler.grid_stop_loss.grid_sl_exec import Grid_SL_Funcs
+from quantfreedom.grid.grid_order_handler.grid_decrease_position.grid_dp_exec import Grid_DP_Funcs
+from quantfreedom.helpers.custom_logger import set_loggers
 
 
 logger = getLogger()
@@ -30,6 +32,7 @@ def grid_backtest(
     exchange_settings_tuple: ExchangeSettings = None,
     static_os_tuple: StaticOrderSettings = None,
 ):
+    set_loggers(disable_logger=False, log_level="DEBUG", log_path=abspath(join(abspath(""), "..")))
     price_pct /= 100
     pct_account /= 100
 
@@ -65,6 +68,7 @@ def grid_backtest(
     order_records = np.empty(shape=int(total_bars / 3), dtype=or_dt)
 
     for bar_index in range(1, closing_prices.size):
+        logger.debug(f"Bar Index: {bar_index}")
         try:
             if position_size > 0:  # in a long position
 
@@ -73,16 +77,16 @@ def grid_backtest(
                     candles=candles,
                 )
 
-                pnl_exec = Grid_DP_Exec_Tuple.long_pnl_exec
+                get_pnl = Grid_DP_Funcs.long_get_pnl
 
                 grid_order_handler.check_stop_loss_hit(
+                    check_sl_hit_bool=Grid_SL_Funcs.long_check_sl_hit_bool,
                     current_candle=current_candle,
-                    sl_hit_exec=Grid_SL_Exec_Tuple.long_sl_hit_exec,
                 )
 
                 grid_order_handler.check_liq_hit(
+                    check_liq_hit_bool=Grid_Lev_Funcs.long_check_liq_hit_bool,
                     current_candle=current_candle,
-                    liq_hit_bool_exec=Grid_Lev_Exec_Tuple.long_liq_hit_bool_exec,
                 )
 
             elif position_size < 0:
@@ -92,16 +96,16 @@ def grid_backtest(
                     candles=candles,
                 )
 
-                pnl_exec = Grid_DP_Exec_Tuple.short_pnl_exec
+                get_pnl = Grid_DP_Funcs.short_get_pnl
 
                 grid_order_handler.check_stop_loss_hit(
+                    check_sl_hit_bool=Grid_SL_Funcs.short_check_sl_hit_bool,
                     current_candle=current_candle,
-                    sl_hit_exec=Grid_SL_Exec_Tuple.short_sl_hit_exec,
                 )
 
                 grid_order_handler.check_liq_hit(
                     current_candle=current_candle,
-                    liq_hit_bool_exec=Grid_Lev_Exec_Tuple.short_liq_hit_bool_exec,
+                    liq_hit_bool_exec=Grid_Lev_Funcs.short_check_liq_hit_bool,
                 )
 
         except DecreasePosition as dp:
@@ -115,8 +119,8 @@ def grid_backtest(
                 exit_price=dp.exit_price,
                 exit_size_asset=abs(grid_order_handler.position_size_asset),
                 equity=grid_order_handler.equity,
+                get_pnl=get_pnl,
                 order_status=dp.order_status,
-                pnl_exec=pnl_exec,
             )
 
             grid_order_handler.helpers.fill_order_record_exit(
@@ -147,8 +151,8 @@ def grid_backtest(
                 buy_signals[bar_index] = buy_order
                 if position_size >= 0:
                     # adding to long position
-                    get_bankruptcy_price_exec = Grid_Lev_Exec_Tuple.long_get_bankruptcy_price_exec
-                    get_liq_price_exec = Grid_Lev_Exec_Tuple.long_get_liq_price_exec
+                    get_bankruptcy_price = Grid_Lev_Funcs.long_get_bankruptcy_price
+                    get_liq_price = Grid_Lev_Funcs.long_get_liq_price
 
                     average_entry = grid_order_handler.calculate_average_entry(
                         entry_price=buy_order,
@@ -165,8 +169,8 @@ def grid_backtest(
 
                 elif temp_pos_size >= 0 and position_size <= 0:
                     # switch from short to long
-                    get_bankruptcy_price_exec = Grid_Lev_Exec_Tuple.long_get_bankruptcy_price_exec
-                    get_liq_price_exec = Grid_Lev_Exec_Tuple.long_get_liq_price_exec
+                    get_bankruptcy_price = Grid_Lev_Funcs.long_get_bankruptcy_price
+                    get_liq_price = Grid_Lev_Funcs.long_get_liq_price
 
                     (
                         equity,
@@ -192,8 +196,8 @@ def grid_backtest(
 
                 elif temp_pos_size < 0:
                     # tp on short
-                    get_bankruptcy_price_exec = Grid_Lev_Exec_Tuple.short_get_bankruptcy_price_exec
-                    get_liq_price_exec = Grid_Lev_Exec_Tuple.short_get_liq_price_exec
+                    get_bankruptcy_price = Grid_Lev_Funcs.short_get_bankruptcy_price
+                    get_liq_price = Grid_Lev_Funcs.short_get_liq_price
 
                     (
                         equity,
@@ -223,8 +227,8 @@ def grid_backtest(
                     liq_price,
                 ) = grid_order_handler.calculate_liquidation_price(
                     average_entry=average_entry,
-                    get_bankruptcy_price_exec=get_bankruptcy_price_exec,
-                    get_liq_price_exec=get_liq_price_exec,
+                    get_bankruptcy_price=get_bankruptcy_price,
+                    get_liq_price=get_liq_price,
                     leverage=leverage,
                     og_available_balance=avaliable_balance,
                     og_cash_borrowed=cash_borrowed,
@@ -233,7 +237,7 @@ def grid_backtest(
                     position_size_usd=abs(position_size),
                 )
 
-                grid_order_handler.helpers.set_grid_variables(
+                grid_order_handler.set_grid_variables(
                     available_balance=available_balance,
                     average_entry=average_entry,
                     cash_borrowed=cash_borrowed,
@@ -314,5 +318,4 @@ def grid_backtest(
             pass
         except Exception as e:
             logger.error(f"Error: {e}")
-            print(f"Error: {e}")
-            pass
+            raise Exception(e)

@@ -8,8 +8,7 @@ logger = getLogger()
 
 
 class GridHelperFuncs:
-    pass
-
+    
     def get_current_candle(
         self,
         bar_index: int,

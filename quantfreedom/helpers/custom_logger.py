@@ -8,7 +8,7 @@ from time import gmtime
 def set_loggers(
     disable_logger: bool,
     log_path: str = None,
-    logger_level: str = "INFO",
+    log_level: str = "INFO",
 ):
     if disable_logger:
         getLogger().disabled = True
@@ -26,14 +26,14 @@ def set_loggers(
 
             logger = getLogger()
             logger.disabled = False
-            logger.setLevel(logger_level.upper())
+            logger.setLevel(log_level.upper())
             logger.addHandler(create_logging_handler(filename=filename))
             logger.info("Testing info log")
 
         except:  # this is for the aws lambda function
             logger = getLogger()
             logger.disabled = False
-            logger.setLevel(logger_level.upper())
+            logger.setLevel(log_level.upper())
 
             log_handler = logger.handlers[0]
             log_format = "\n" + "%(levelname)s - %(filename)s - %(funcName)s() - %(lineno)d - %(message)s"

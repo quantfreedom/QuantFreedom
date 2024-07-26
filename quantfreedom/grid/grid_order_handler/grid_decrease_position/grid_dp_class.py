@@ -14,12 +14,15 @@ class GridDecreasePosition:
         exit_price: float,
         exit_size_asset: float,
         equity: float,
+        get_pnl: callable,
         order_status: OrderStatus,  # type: ignore
-        pnl_exec: str,
     ) -> tuple[float, float, float]:
-        pnl: float
 
-        exec(pnl_exec)
+        pnl = get_pnl(
+            average_entry=average_entry,
+            exit_price=exit_price,
+            position_size_asset=exit_size_asset,
+        )
 
         logger.debug(f"pnl= {pnl}")
 

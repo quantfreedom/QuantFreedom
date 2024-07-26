@@ -33,7 +33,7 @@ class GridOrderHandler:
         self.market_fee_pct = 0.00075
         self.limit_fee_pct = 0.00025
         self.price_tick_step = 3
-        self.mmr_pct = 0.5
+        self.mmr_pct = 0.00005
 
         self.helpers = GridHelperFuncs()
         self.leverage_class = GridLeverage()
@@ -43,33 +43,33 @@ class GridOrderHandler:
 
     def check_stop_loss_hit(
         self,
+        check_sl_hit_bool: callable,
         current_candle: CurrentFootprintCandleTuple,
-        sl_hit_exec: str,
     ):
         self.stop_loss_class.grid_check_sl_hit(
+            check_sl_hit_bool=check_sl_hit_bool,
             current_candle=current_candle,
             market_fee_pct=self.market_fee_pct,
-            sl_hit_exec=sl_hit_exec,
             sl_price=self.sl_price,
         )
 
     def check_liq_hit(
         self,
+        check_liq_hit_bool: callable,
         current_candle: CurrentFootprintCandleTuple,
-        liq_hit_bool_exec: str,
     ):
         self.leverage_class.check_liq_hit(
+            check_liq_hit_bool=check_liq_hit_bool,
             current_candle=current_candle,
             liq_price=self.liq_price,
-            liq_hit_bool_exec=liq_hit_bool_exec,
             market_fee_pct=self.market_fee_pct,
         )
 
     def calculate_liquidation_price(
         self,
         average_entry: float,
-        get_bankruptcy_price_exec: str,
-        get_liq_price_exec: str,
+        get_bankruptcy_price: callable,
+        get_liq_price: callable,
         leverage: float,
         og_available_balance: float,
         og_cash_borrowed: float,
@@ -84,8 +84,8 @@ class GridOrderHandler:
             rounded_liq_price,
         ) = self.leverage_class.calc_liq_price(
             average_entry=average_entry,
-            get_bankruptcy_price_exec=get_bankruptcy_price_exec,
-            get_liq_price_exec=get_liq_price_exec,
+            get_bankruptcy_price=get_bankruptcy_price,
+            get_liq_price=get_liq_price,
             leverage=leverage,
             market_fee_pct=self.market_fee_pct,
             mmr_pct=self.mmr_pct,
@@ -110,8 +110,8 @@ class GridOrderHandler:
         exit_price: float,
         exit_size_asset: float,
         equity: float,
+        get_pnl: callable,
         order_status: OrderStatus,  # type: ignore
-        pnl_exec: str,
     ):
         (
             equity,
@@ -124,8 +124,8 @@ class GridOrderHandler:
             exit_price=exit_price,
             exit_size_asset=exit_size_asset,
             equity=equity,
+            get_pnl=get_pnl,
             order_status=order_status,
-            pnl_exec=pnl_exec,
         )
 
         return (
@@ -181,3 +181,51 @@ class GridOrderHandler:
         self.total_trades = 0
         self.tp_pct = 0.0
         self.tp_price = 0.0
+
+    def set_grid_variables(
+        self,
+        available_balance: float,
+        average_entry: float,
+        cash_borrowed: float,
+        cash_used: float,
+        entry_price: float,
+        entry_size_asset: float,
+        entry_size_usd: float,
+        equity: float,
+        exit_price: float,
+        fees_paid: float,
+        leverage: float,
+        liq_price: float,
+        order_status: OrderStatus,  # type: ignore
+        position_size_asset: float,
+        position_size_usd: float,
+        total_possible_loss: float,
+        realized_pnl: float,
+        sl_pct: float,
+        sl_price: float,
+        total_trades: int,
+        tp_pct: float,
+        tp_price: float,
+    ):
+        self.available_balance = available_balance
+        self.average_entry = average_entry
+        self.cash_borrowed = cash_borrowed
+        self.cash_used = cash_used
+        self.entry_price = entry_price
+        self.entry_size_asset = entry_size_asset
+        self.entry_size_usd = entry_size_usd
+        self.equity = equity
+        self.exit_price = exit_price
+        self.fees_paid = fees_paid
+        self.leverage = leverage
+        self.liq_price = liq_price
+        self.order_status = order_status
+        self.position_size_asset = position_size_asset
+        self.position_size_usd = position_size_usd
+        self.total_possible_loss = total_possible_loss
+        self.realized_pnl = realized_pnl
+        self.sl_pct = sl_pct
+        self.sl_price = sl_price
+        self.total_trades = total_trades
+        self.tp_pct = tp_pct
+        self.tp_price = tp_price

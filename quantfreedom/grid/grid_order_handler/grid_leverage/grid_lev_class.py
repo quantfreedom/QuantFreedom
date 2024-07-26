@@ -1,4 +1,5 @@
 from logging import getLogger
+from typing import Callable
 from quantfreedom.helpers.helper_funcs import round_size_by_tick_step
 from quantfreedom.core.enums import CurrentFootprintCandleTuple, DecreasePosition, OrderStatus, RejectedOrder
 
@@ -10,8 +11,8 @@ class GridLeverage:
     def calc_liq_price(
         self,
         average_entry: float,
-        get_bankruptcy_price_exec: str,
-        get_liq_price_exec: str,
+        get_bankruptcy_price: callable,
+        get_liq_price: callable,
         leverage: float,
         market_fee_pct: float,
         mmr_pct: float,
@@ -31,7 +32,10 @@ class GridLeverage:
         initial_margin = (position_size_asset * average_entry) / leverage
         fee_to_open = position_size_asset * average_entry * market_fee_pct  # math checked
 
-        exec(get_bankruptcy_price_exec)  # gets bankruptcy price
+        bankruptcy_price = get_bankruptcy_price(
+            average_entry=average_entry,
+            leverage=leverage,
+        )
 
         fee_to_close = position_size_asset * bankruptcy_price * market_fee_pct
 
@@ -56,7 +60,11 @@ og_available_balance= {og_available_balance}"""
             cash_used = round(og_cash_used + cash_used, 2)
             cash_borrowed = round(og_cash_borrowed + position_size_usd - cash_used, 2)
 
-            exec(get_liq_price_exec)  # gets liq price
+            liq_price = get_liq_price(
+                average_entry=average_entry,
+                leverage=leverage,
+                mmr_pct=mmr_pct,
+            )  # gets liq price
 
             rounded_liq_price = round_size_by_tick_step(
                 user_num=liq_price,
@@ -72,13 +80,15 @@ og_available_balance= {og_available_balance}"""
 
     def check_liq_hit(
         self,
+        check_liq_hit_bool: callable,
         current_candle: CurrentFootprintCandleTuple,
         liq_price: float,
-        liq_hit_bool_exec: str,
         market_fee_pct: float,
     ):
-        liq_hit_bool: bool
-        exec(liq_hit_bool_exec)  # checks if liq was hit
+        liq_hit_bool: bool = check_liq_hit_bool(
+            current_candle=current_candle,
+            liq_price=liq_price,
+        )
 
         if liq_hit_bool:
             logger.debug("Liq Hit")
