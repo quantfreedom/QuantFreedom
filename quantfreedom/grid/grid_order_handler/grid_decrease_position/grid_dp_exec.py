@@ -13,6 +13,7 @@ class GridDPFuncs(NamedTuple):
         position_size_asset: float,
     ):
         pnl = round((exit_price - average_entry) * position_size_asset, 2)
+        logger.debug(f"Long PnL: {pnl}")
         return pnl
 
     def short_get_pnl(
@@ -22,7 +23,7 @@ class GridDPFuncs(NamedTuple):
         position_size_asset: float,
     ):
         pnl = round((exit_price - average_entry) * position_size_asset, 2)
-        logger.de
+        logger.debug(f"Short PnL: {pnl}")
         return pnl
 
 

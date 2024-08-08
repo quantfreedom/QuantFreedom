@@ -179,8 +179,8 @@ def get_qf_score(
 
 
 def round_size_by_tick_step(
-    user_num: float,
     exchange_num: float,
+    user_num: float,
 ) -> float:
     return round(user_num, exchange_num)
 

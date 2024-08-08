@@ -11,14 +11,12 @@ class GridLeverage:
     def calc_liq_price(
         self,
         average_entry: float,
+        equity: float,
         get_bankruptcy_price: callable,
         get_liq_price: callable,
         leverage: float,
         market_fee_pct: float,
         mmr_pct: float,
-        og_available_balance: float,
-        og_cash_borrowed: float,
-        og_cash_used: float,
         position_size_asset: float,
         position_size_usd: float,
         price_tick_step: float,
@@ -26,51 +24,48 @@ class GridLeverage:
         # Getting Order Cost
         # https://www.bybithelp.com/HelpCenterKnowledge/bybitHC_Article?id=000001064&language=en_US
 
-        bankruptcy_price: float
-        liq_price: float
-
-        initial_margin = (position_size_asset * average_entry) / leverage
-        fee_to_open = position_size_asset * average_entry * market_fee_pct  # math checked
-
         bankruptcy_price = get_bankruptcy_price(
             average_entry=average_entry,
             leverage=leverage,
         )
-
+        initial_margin = position_size_asset * average_entry / leverage
+        fee_to_open = position_size_asset * average_entry * market_fee_pct  # math checked
         fee_to_close = position_size_asset * bankruptcy_price * market_fee_pct
-
-        cash_used = initial_margin + fee_to_open + fee_to_close  # math checked
+        cash_used = round(initial_margin + fee_to_open + fee_to_close, 2)  # math checked
 
         logger.debug(
             f"""
-initial_margin= {round(initial_margin, 2)}
-fee_to_open= {round(fee_to_open, 2)}
 bankruptcy_price= {round(bankruptcy_price, 2)}
+cash_used= {cash_used}
 fee to close= {round(fee_to_close, 2)}
-cash_used= {round(cash_used, 2)}
-og_available_balance= {og_available_balance}"""
+fee_to_open= {round(fee_to_open, 2)}
+initial_margin= {round(initial_margin, 2)}
+"""
         )
 
-        if cash_used > og_available_balance:
-            msg = "Cash used bigger than available balance AKA position size too big"
-            logger.warning(msg)
+        if cash_used > equity:
+            logger.warning("Cash used bigger than available balance AKA position size too big")
             raise RejectedOrder
         else:
-            available_balance = round(og_available_balance - cash_used, 2)
-            cash_used = round(og_cash_used + cash_used, 2)
-            cash_borrowed = round(og_cash_borrowed + position_size_usd - cash_used, 2)
+            available_balance = round(equity - cash_used, 2)
+            cash_borrowed = round(position_size_usd - cash_used, 2)
 
             liq_price = get_liq_price(
                 average_entry=average_entry,
                 leverage=leverage,
                 mmr_pct=mmr_pct,
-            )  # gets liq price
-
-            rounded_liq_price = round_size_by_tick_step(
-                user_num=liq_price,
-                exchange_num=price_tick_step,
             )
 
+            rounded_liq_price = round_size_by_tick_step(
+                exchange_num=price_tick_step,
+                user_num=liq_price,
+            )
+            logger.debug(
+                f"""
+available_balance= {available_balance}
+cash_borrowed= {cash_borrowed}
+"""
+            )
         return (
             available_balance,
             cash_borrowed,
@@ -85,6 +80,8 @@ og_available_balance= {og_available_balance}"""
         liq_price: float,
         market_fee_pct: float,
     ):
+        logger.debug(f"liq_price= {liq_price}")
+
         liq_hit_bool: bool = check_liq_hit_bool(
             current_candle=current_candle,
             liq_price=liq_price,
@@ -94,6 +91,7 @@ og_available_balance= {og_available_balance}"""
             logger.debug("Liq Hit")
             raise DecreasePosition(
                 exit_fee_pct=market_fee_pct,
+                exit_price=liq_price,
                 liq_price=liq_price,
                 order_status=OrderStatus.LiquidationFilled,
             )

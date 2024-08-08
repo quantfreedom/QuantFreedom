@@ -48,7 +48,7 @@ class GridLevFuncs(NamedTuple):
         leverage: float,
     ):
         bankruptcy_price = average_entry * (leverage + 1) / leverage
-        logger.debug(f"bankruptcy_price= {bankruptcy_price}")
+        logger.debug(f"bankruptcy_price= {round(bankruptcy_price, 2)}")
 
         return bankruptcy_price
 
@@ -59,7 +59,7 @@ class GridLevFuncs(NamedTuple):
         mmr_pct: float,
     ):
         liq_price = average_entry * (1 + (1 / leverage) - mmr_pct)
-        logger.debug(f"liq_price= {liq_price}")
+        logger.debug(f"liq_price= {round(liq_price, 2)}")
 
         return liq_price
 

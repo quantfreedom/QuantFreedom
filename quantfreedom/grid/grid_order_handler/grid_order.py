@@ -68,31 +68,26 @@ class GridOrderHandler:
     def calculate_liquidation_price(
         self,
         average_entry: float,
+        equity: float,
         get_bankruptcy_price: callable,
         get_liq_price: callable,
         leverage: float,
-        og_available_balance: float,
-        og_cash_borrowed: float,
-        og_cash_used: float,
-        position_size_asset: float,
         position_size_usd: float,
     ):
         (
             available_balance,
             cash_borrowed,
             cash_used,
-            rounded_liq_price,
+            liq_price,
         ) = self.leverage_class.calc_liq_price(
             average_entry=average_entry,
+            equity=equity,
             get_bankruptcy_price=get_bankruptcy_price,
             get_liq_price=get_liq_price,
             leverage=leverage,
             market_fee_pct=self.market_fee_pct,
             mmr_pct=self.mmr_pct,
-            og_available_balance=og_available_balance,
-            og_cash_borrowed=og_cash_borrowed,
-            og_cash_used=og_cash_used,
-            position_size_asset=position_size_asset,
+            position_size_asset=position_size_usd / average_entry,
             position_size_usd=position_size_usd,
             price_tick_step=self.price_tick_step,
         )
@@ -100,7 +95,7 @@ class GridOrderHandler:
             available_balance,
             cash_borrowed,
             cash_used,
-            rounded_liq_price,
+            liq_price,
         )
 
     def calculate_decrease_position(
@@ -136,15 +131,15 @@ class GridOrderHandler:
 
     def calculate_average_entry(
         self,
-        order_size: float,
+        order_size_usd: float,
         entry_price: float,
     ):
         try:
             abs_position_size_usd = abs(self.position_size_usd)
-            total_position_size_usd = abs_position_size_usd + order_size
+            total_position_size_usd = abs_position_size_usd + order_size_usd
 
             position_size_asset = abs_position_size_usd / self.average_entry
-            order_size_asset = order_size / entry_price
+            order_size_asset = order_size_usd / entry_price
             total_asset_size = position_size_asset + order_size_asset
 
             new_average_entry = total_position_size_usd / total_asset_size
@@ -177,14 +172,13 @@ class GridOrderHandler:
         self.total_possible_loss = 0.0
         self.realized_pnl = 0.0
         self.sl_pct = 0.0
-        self.sl_price = 0.0
+        self.sl_price = np.nan
         self.total_trades = 0
         self.tp_pct = 0.0
         self.tp_price = 0.0
 
     def set_grid_variables(
         self,
-        available_balance: float,
         average_entry: float,
         cash_borrowed: float,
         cash_used: float,
@@ -207,7 +201,7 @@ class GridOrderHandler:
         tp_pct: float,
         tp_price: float,
     ):
-        self.available_balance = available_balance
+        logger.debug("setting grid variables")
         self.average_entry = average_entry
         self.cash_borrowed = cash_borrowed
         self.cash_used = cash_used

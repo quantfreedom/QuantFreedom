@@ -118,6 +118,8 @@ class OrderHandler:
         order_status: OrderStatus,  # type: ignore
         timestamp: int,
         set_idx: int,
+        #
+        #
         equity: float = np.nan,
         exit_price: float = np.nan,
         fees_paid: float = np.nan,

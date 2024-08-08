@@ -17,13 +17,15 @@ class GridStopLoss:
         market_fee_pct: float,
         sl_price: float,
     ):
+        logger.debug(f"sl_price= {sl_price}")
+
         sl_hit_bool: bool = check_sl_hit_bool(
             current_candle=current_candle,
             sl_price=sl_price,
         )
 
         if sl_hit_bool:
-            logger.debug(f"Stop loss hit sl_price= {sl_price}")
+            logger.debug(f"Stop loss hit")
             raise DecreasePosition(
                 exit_fee_pct=market_fee_pct,
                 exit_price=sl_price,
