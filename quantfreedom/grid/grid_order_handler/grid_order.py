@@ -32,7 +32,7 @@ class GridOrderHandler:
 
         self.market_fee_pct = 0.00075
         self.limit_fee_pct = 0.00025
-        self.price_tick_step = 3
+        self.price_tick_step = 2
         self.mmr_pct = 0.00005
 
         self.helpers = GridHelperFuncs()
@@ -179,6 +179,7 @@ class GridOrderHandler:
 
     def set_grid_variables(
         self,
+        available_balance: float,
         average_entry: float,
         cash_borrowed: float,
         cash_used: float,
@@ -202,6 +203,7 @@ class GridOrderHandler:
         tp_price: float,
     ):
         logger.debug("setting grid variables")
+        self.available_balance = available_balance
         self.average_entry = average_entry
         self.cash_borrowed = cash_borrowed
         self.cash_used = cash_used

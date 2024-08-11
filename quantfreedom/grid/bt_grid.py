@@ -153,8 +153,8 @@ def grid_backtest(
 
                 buy_signals[bar_index] = buy_order
                 if position_size_usd >= 0:
-                    # adding to long position
-                    logger.debug("adding to a long position")
+                    # either entering or adding to a long position
+                    logger.debug("either entering or adding to a long position adding to a long position")
 
                     get_bankruptcy_price = Grid_Lev_Funcs.long_get_bankruptcy_price
                     get_liq_price = Grid_Lev_Funcs.long_get_liq_price
@@ -169,12 +169,26 @@ def grid_backtest(
                     entry_size_asset = order_size_usd / average_entry
                     entry_size_usd = order_size_usd
                     equity = grid_order_handler.equity
+                    order_status = OrderStatus.EntryFilled
 
                     fees_paid = np.nan
                     realized_pnl = np.nan
                     exit_price = np.nan
+                    (
+                        available_balance,
+                        cash_borrowed,
+                        cash_used,
+                        liq_price,
+                    ) = grid_order_handler.calculate_liquidation_price(
+                        average_entry=average_entry,
+                        equity=grid_order_handler.equity,
+                        get_bankruptcy_price=get_bankruptcy_price,
+                        get_liq_price=get_liq_price,
+                        leverage=leverage,
+                        position_size_usd=abs(temp_pos_size_usd),
+                    )
 
-                elif temp_pos_size_usd >= 0 and position_size_usd < 0:
+                elif temp_pos_size_usd > 0:
                     # switch from short to long
                     logger.debug("switching from short to long")
 
@@ -200,10 +214,24 @@ def grid_backtest(
                     entry_size_asset = order_size_usd / average_entry
                     entry_size_usd = order_size_usd
                     exit_price = buy_order
+                    order_status = OrderStatus.TakeProfitFilled
 
                     ae_buy_array[bar_index] = average_entry
+                    (
+                        available_balance,
+                        cash_borrowed,
+                        cash_used,
+                        liq_price,
+                    ) = grid_order_handler.calculate_liquidation_price(
+                        average_entry=average_entry,
+                        equity=grid_order_handler.equity,
+                        get_bankruptcy_price=get_bankruptcy_price,
+                        get_liq_price=get_liq_price,
+                        leverage=leverage,
+                        position_size_usd=abs(temp_pos_size_usd),
+                    )
 
-                elif temp_pos_size_usd < 0:
+                elif temp_pos_size_usd < 0 and position_size_usd < 0:
                     # tp on short
                     logger.debug("tp on short")
 
@@ -228,24 +256,52 @@ def grid_backtest(
                     entry_size_asset = order_size_usd / average_entry
                     entry_size_usd = order_size_usd
                     exit_price = buy_order
+                    order_status = OrderStatus.TakeProfitFilled
 
-                (
-                    available_balance,
-                    cash_borrowed,
-                    cash_used,
-                    liq_price,
-                ) = grid_order_handler.calculate_liquidation_price(
-                    average_entry=average_entry,
-                    equity=grid_order_handler.equity,
-                    get_bankruptcy_price=get_bankruptcy_price,
-                    get_liq_price=get_liq_price,
-                    leverage=leverage,
-                    position_size_usd=abs(temp_pos_size_usd),
-                )
+                    (
+                        available_balance,
+                        cash_borrowed,
+                        cash_used,
+                        liq_price,
+                    ) = grid_order_handler.calculate_liquidation_price(
+                        average_entry=average_entry,
+                        equity=grid_order_handler.equity,
+                        get_bankruptcy_price=get_bankruptcy_price,
+                        get_liq_price=get_liq_price,
+                        leverage=leverage,
+                        position_size_usd=abs(temp_pos_size_usd),
+                    )
+
+                else:
+                    # closing short position
+                    logger.debug("Closing short position")
+                    
+                    (
+                        equity,
+                        fees_paid,
+                        realized_pnl,
+                    ) = grid_order_handler.calculate_decrease_position(
+                        cur_datetime=candles.candle_open_datetimes[bar_index],
+                        exit_price=buy_order,
+                        exit_fee=grid_order_handler.limit_fee_pct,
+                        exit_size_asset=order_size_usd / average_entry,
+                        equity=equity,
+                        get_pnl=Grid_DP_Funcs.short_get_pnl,
+                        order_status=OrderStatus.TakeProfitFilled,
+                    )
+                    
+                    average_entry = 0
+                    entry_price = buy_order
+                    entry_size_asset = order_size_usd / average_entry
+                    entry_size_usd = order_size_usd
+                    exit_price = buy_order
 
                 position_size_usd = temp_pos_size_usd
                 grid_order_handler.set_grid_variables(
+                    available_balance=available_balance,
                     average_entry=average_entry,
+                    cash_borrowed=cash_borrowed,
+                    cash_used=cash_used,
                     entry_price=entry_price,
                     entry_size_asset=entry_size_asset,
                     entry_size_usd=entry_size_usd,
@@ -254,7 +310,7 @@ def grid_backtest(
                     fees_paid=fees_paid,
                     leverage=leverage,
                     liq_price=liq_price,
-                    order_status=OrderStatus.EntryFilled,
+                    order_status=order_status,
                     position_size_asset=position_size_usd / average_entry,
                     position_size_usd=position_size_usd,
                     total_possible_loss=np.nan,
@@ -265,6 +321,21 @@ def grid_backtest(
                     tp_pct=np.nan,
                     tp_price=np.nan,
                 )
+
+                grid_order_handler.helpers.fill_order_records(
+                    bar_index=bar_index,
+                    equity=equity,
+                    exit_price=exit_price,
+                    fees_paid=fees_paid,
+                    liq_price=liq_price,
+                    order_records=order_records[or_filled],
+                    order_status=order_status,
+                    realized_pnl=realized_pnl,
+                    set_idx=0,
+                    timestamp=candles.candle_open_timestamps[bar_index],
+                )
+
+                or_filled += 1
 
                 ps_array[bar_index] = position_size_usd
                 buy_order = closing_prices[bar_index] - (closing_prices[bar_index] * price_pct)

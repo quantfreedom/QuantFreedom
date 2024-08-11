@@ -53,6 +53,7 @@ class GridHelperFuncs:
         tp_pct: float = np.nan,
         tp_price: float = np.nan,
     ):
+        logger.debug("Fill order records")
         order_records["set_idx"] = set_idx
         order_records["bar_idx"] = bar_index
         order_records["timestamp"] = timestamp
@@ -79,3 +80,33 @@ class GridHelperFuncs:
         order_records["sl_price"] = sl_price
         order_records["tp_pct"] = tp_pct
         order_records["tp_price"] = tp_price
+
+        logger.debug(
+            f"""
+set_idx= {set_idx}
+bar_idx= {bar_index}
+timestamp= {timestamp}
+available_balance= {equity}
+average_entry= {average_entry}
+cash_borrowed= {cash_borrowed}
+cash_used= {cash_used}
+entry_size_asset= {entry_size_asset}
+entry_size_usd= {entry_size_usd}
+entry_price= {entry_price}
+equity= {equity}
+exit_price= {exit_price}
+fees_paid= {fees_paid}
+liq_price= {liq_price}
+leverage= {leverage}
+order_status= {OrderStatus._fields[order_status]}
+total_possible_loss= {total_possible_loss}
+total_trades= {total_trades}
+position_size_asset= {position_size_asset}
+position_size_usd= {position_size_usd}
+realized_pnl= {realized_pnl}
+sl_pct= {sl_pct}
+sl_price= {sl_price}
+tp_pct= {tp_pct}
+tp_price= {tp_price}
+"""
+        )

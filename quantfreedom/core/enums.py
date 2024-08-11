@@ -402,7 +402,7 @@ or_dt = np.dtype(
         ("fees_paid", np.float_),
         ("leverage", np.float_),
         ("liq_price", np.float_),
-        ("total_possible_loss", np.int_),
+        ("total_possible_loss", np.float_),
         ("total_trades", np.int_),
         ("entry_size_asset", np.float_),
         ("entry_size_usd", np.float_),
