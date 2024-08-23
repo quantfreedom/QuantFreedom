@@ -25,7 +25,7 @@ def or_backtest(
     disable_plot: bool,
     strategy: Strategy,
     set_idx: int,
-    logger_level: str = "INFO",
+    log_level: str = "INFO",
 ):
     if disable_logger:
         set_loggers(
@@ -35,7 +35,7 @@ def or_backtest(
         set_loggers(
             disable_logger=disable_logger,
             log_path=strategy.log_folder,
-            logger_level=logger_level,
+            log_level=log_level,
         )
 
     starting_equity = strategy.static_os_tuple.starting_equity

@@ -13,6 +13,7 @@ from quantfreedom.core.enums import (
     or_dt,
 )
 
+from quantfreedom.grid.bt_grid_functions import adding_to_position, switching_positions
 from quantfreedom.grid.grid_order_handler.grid_order import GridOrderHandler
 from quantfreedom.grid.grid_order_handler.grid_leverage.grid_lev_exec import Grid_Lev_Funcs
 from quantfreedom.grid.grid_order_handler.grid_stop_loss.grid_sl_exec import Grid_SL_Funcs
@@ -154,84 +155,69 @@ def grid_backtest(
                 buy_signals[bar_index] = buy_order
                 if position_size_usd >= 0:
                     # either entering or adding to a long position
-                    logger.debug("either entering or adding to a long position adding to a long position")
 
-                    get_bankruptcy_price = Grid_Lev_Funcs.long_get_bankruptcy_price
-                    get_liq_price = Grid_Lev_Funcs.long_get_liq_price
-
-                    average_entry = grid_order_handler.calculate_average_entry(
-                        entry_price=buy_order,
-                        order_size_usd=order_size_usd,
-                    )
-
-                    ae_buy_array[bar_index] = average_entry
-                    entry_price = buy_order
-                    entry_size_asset = order_size_usd / average_entry
-                    entry_size_usd = order_size_usd
-                    equity = grid_order_handler.equity
-                    order_status = OrderStatus.EntryFilled
-
-                    fees_paid = np.nan
-                    realized_pnl = np.nan
-                    exit_price = np.nan
                     (
                         available_balance,
+                        average_entry,
                         cash_borrowed,
                         cash_used,
+                        entry_price,
+                        entry_size_asset,
+                        entry_size_usd,
+                        equity,
+                        exit_price,
+                        fees_paid,
                         liq_price,
-                    ) = grid_order_handler.calculate_liquidation_price(
-                        average_entry=average_entry,
-                        equity=grid_order_handler.equity,
-                        get_bankruptcy_price=get_bankruptcy_price,
-                        get_liq_price=get_liq_price,
+                        order_status,
+                        realized_pnl,
+                    ) = adding_to_position(
+                        average_entry_array=ae_buy_array,
+                        bar_index=bar_index,
+                        entry_price=buy_order,
+                        get_bankruptcy_price=Grid_Lev_Funcs.long_get_bankruptcy_price,
+                        get_liq_price=Grid_Lev_Funcs.long_get_liq_price,
+                        grid_order_handler=grid_order_handler,
                         leverage=leverage,
-                        position_size_usd=abs(temp_pos_size_usd),
+                        long_short="long",
+                        order_size_usd=order_size_usd,
+                        temp_pos_size_usd=temp_pos_size_usd,
                     )
 
                 elif temp_pos_size_usd > 0:
                     # switch from short to long
-                    logger.debug("switching from short to long")
-
-                    get_bankruptcy_price = Grid_Lev_Funcs.long_get_bankruptcy_price
-                    get_liq_price = Grid_Lev_Funcs.long_get_liq_price
-
-                    (
-                        equity,
-                        fees_paid,
-                        realized_pnl,
-                    ) = grid_order_handler.calculate_decrease_position(
-                        cur_datetime=candles.candle_open_datetimes[bar_index],
-                        exit_price=buy_order,
-                        exit_fee=grid_order_handler.limit_fee_pct,
-                        exit_size_asset=abs(position_size_usd) / average_entry,
-                        equity=equity,
-                        get_pnl=Grid_DP_Funcs.short_get_pnl,
-                        order_status=OrderStatus.TakeProfitFilled,
-                    )
-
-                    average_entry = buy_order
-                    entry_price = buy_order
-                    entry_size_asset = order_size_usd / average_entry
-                    entry_size_usd = order_size_usd
-                    exit_price = buy_order
-                    order_status = OrderStatus.TakeProfitFilled
-
-                    ae_buy_array[bar_index] = average_entry
                     (
                         available_balance,
+                        average_entry,
                         cash_borrowed,
                         cash_used,
+                        entry_price,
+                        entry_size_asset,
+                        entry_size_usd,
+                        equity,
+                        exit_price,
+                        fees_paid,
                         liq_price,
-                    ) = grid_order_handler.calculate_liquidation_price(
-                        average_entry=average_entry,
-                        equity=grid_order_handler.equity,
-                        get_bankruptcy_price=get_bankruptcy_price,
-                        get_liq_price=get_liq_price,
+                        order_status,
+                        realized_pnl,
+                    ) = switching_positions(
+                        average_entry_array=ae_buy_array,
+                        bar_index=bar_index,
+                        cur_datetime=candles.candle_open_datetimes[bar_index],
+                        entry_price=buy_order,
+                        exit_fee=grid_order_handler.limit_fee_pct,
+                        from_str="short",
+                        get_pnl=Grid_DP_Funcs.short_get_pnl,
+                        get_bankruptcy_price=Grid_Lev_Funcs.long_get_bankruptcy_price,
+                        get_liq_price=Grid_Lev_Funcs.long_get_liq_price,
+                        grid_order_handler=grid_order_handler,
                         leverage=leverage,
-                        position_size_usd=abs(temp_pos_size_usd),
+                        order_size_usd=order_size_usd,
+                        position_size_usd=abs(position_size_usd),
+                        temp_pos_size_usd=temp_pos_size_usd,
+                        to_string="long",
                     )
 
-                elif temp_pos_size_usd < 0 and position_size_usd < 0:
+                elif temp_pos_size_usd < 0:
                     # tp on short
                     logger.debug("tp on short")
 
@@ -275,7 +261,7 @@ def grid_backtest(
                 else:
                     # closing short position
                     logger.debug("Closing short position")
-                    
+
                     (
                         equity,
                         fees_paid,
@@ -289,7 +275,7 @@ def grid_backtest(
                         get_pnl=Grid_DP_Funcs.short_get_pnl,
                         order_status=OrderStatus.TakeProfitFilled,
                     )
-                    
+
                     average_entry = 0
                     entry_price = buy_order
                     entry_size_asset = order_size_usd / average_entry
@@ -349,53 +335,67 @@ def grid_backtest(
                 sell_signals[bar_index] = sell_order
 
                 if position_size_usd <= 0:
-                    # adding to short position
-                    logger.debug("adding to short position")
-
-                    get_bankruptcy_price = Grid_Lev_Funcs.short_get_bankruptcy_price
-                    get_liq_price = Grid_Lev_Funcs.short_get_liq_price
-
-                    average_entry = grid_order_handler.calculate_average_entry(
-                        entry_price=sell_order,
-                        order_size_usd=order_size_usd,
-                    )
-                    ae_buy_array[bar_index] = average_entry
-                    entry_price = sell_order
-                    entry_size_asset = order_size_usd / average_entry
-                    entry_size_usd = order_size_usd
-                    equity = grid_order_handler.equity
-                    fees_paid = np.nan
-                    realized_pnl = np.nan
-                    exit_price = np.nan
-
-                elif temp_pos_size_usd <= 0 and position_size_usd > 0:
-                    # switching from long to short
-                    logger.debug("switching from long to short")
-
-                    get_bankruptcy_price = Grid_Lev_Funcs.short_get_bankruptcy_price
-                    get_liq_price = Grid_Lev_Funcs.short_get_liq_price
-
+                    # either entering or adding to a short position
                     (
+                        available_balance,
+                        average_entry,
+                        cash_borrowed,
+                        cash_used,
+                        entry_price,
+                        entry_size_asset,
+                        entry_size_usd,
                         equity,
+                        exit_price,
                         fees_paid,
+                        liq_price,
+                        order_status,
                         realized_pnl,
-                    ) = grid_order_handler.calculate_decrease_position(
-                        cur_datetime=candles.candle_open_datetimes[bar_index],
-                        exit_price=sell_order,
-                        exit_fee=grid_order_handler.limit_fee_pct,
-                        exit_size_asset=abs(position_size_usd) / average_entry,
-                        equity=equity,
-                        get_pnl=Grid_DP_Funcs.long_get_pnl,
-                        order_status=OrderStatus.TakeProfitFilled,
+                    ) = adding_to_position(
+                        average_entry_array=ae_sell_array,
+                        bar_index=bar_index,
+                        entry_price=sell_order,
+                        get_bankruptcy_price=Grid_Lev_Funcs.short_get_bankruptcy_price,
+                        get_liq_price=Grid_Lev_Funcs.short_get_liq_price,
+                        grid_order_handler=grid_order_handler,
+                        leverage=leverage,
+                        long_short="short",
+                        order_size_usd=order_size_usd,
+                        temp_pos_size_usd=abs(temp_pos_size_usd),
                     )
 
-                    average_entry = sell_order
-                    entry_price = sell_order
-                    entry_size_asset = order_size_usd / average_entry
-                    entry_size_usd = order_size_usd
-                    exit_price = sell_order
-
-                    ae_buy_array[bar_index] = average_entry
+                elif temp_pos_size_usd < 0:
+                    # switch from long to short
+                    (
+                        available_balance,
+                        average_entry,
+                        cash_borrowed,
+                        cash_used,
+                        entry_price,
+                        entry_size_asset,
+                        entry_size_usd,
+                        equity,
+                        exit_price,
+                        fees_paid,
+                        liq_price,
+                        order_status,
+                        realized_pnl,
+                    ) = switching_positions(
+                        average_entry_array=ae_sell_array,
+                        bar_index=bar_index,
+                        cur_datetime=candles.candle_open_datetimes[bar_index],
+                        entry_price=sell_order,
+                        exit_fee=grid_order_handler.limit_fee_pct,
+                        from_str="long",
+                        get_pnl=Grid_DP_Funcs.long_get_pnl,
+                        get_bankruptcy_price=Grid_Lev_Funcs.short_get_bankruptcy_price,
+                        get_liq_price=Grid_Lev_Funcs.short_get_liq_price,
+                        grid_order_handler=grid_order_handler,
+                        leverage=leverage,
+                        order_size_usd=order_size_usd,
+                        position_size_usd=position_size_usd,
+                        temp_pos_size_usd=abs(temp_pos_size_usd),
+                        to_string="short",
+                    )
 
                 elif temp_pos_size_usd > 0:
                     # tp on long
