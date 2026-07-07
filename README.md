@@ -1,5 +1,4 @@
-I am terrible at updating this readme file so please go to the website for installation instructions beyond pip install
-https://quantfreedom.github.io/QuantFreedom/
+This project is dead in python but i have moved it over to c#
 ```
 pip install quantfreedom
 ```
